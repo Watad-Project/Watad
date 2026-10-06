@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local configuration for flutter_dotenv. Never commit it: copy .env.example.
+.env

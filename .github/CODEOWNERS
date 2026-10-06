@@ -1,0 +1,8 @@
+# Every pull request needs the approval of a maintainer:
+# Ameer (@73azn) or Omar Mulla (@Om4rMu). See AGENTS.md.
+#
+# GitHub enforces this only with branch protection on main ("Require a pull
+# request before merging" + "Require review from Code Owners"). For this
+# private repository in the Watad-Project organization, that needs the
+# organization on the GitHub Team plan (or the repository made public).
+* @73azn @Om4rMu
