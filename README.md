@@ -32,7 +32,7 @@ Flutter App  <-->  REST API (backend)  <-->  Hyperledger Fabric Network
 | Layer | Technology |
 |-------|-----------|
 | Mobile app | Flutter / Dart |
-| Backend | RESTful API |
+| Backend | Supabase |
 | Blockchain | Hyperledger Fabric (custom network) |
 
 ## Getting Started
