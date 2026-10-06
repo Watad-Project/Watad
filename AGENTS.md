@@ -91,6 +91,12 @@ git switch -c feature/gra-12-projects-client
 
 - Fill in the template. The description contains `Closes GRA-<n>`, so Linear closes the issue when the PR merges.
 - **Only Ameer (@73azn) or Omar Mulla (@Om4rMu) approve and merge pull requests.** Never merge your own PR. Agents never approve, merge or force-push.
+- GitHub enforces this on `main` with the "PR" ruleset. A merge needs all of these:
+  - 1 approval from a code owner (`.github/CODEOWNERS`);
+  - a fresh approval after any new commit, given by someone other than the person who pushed last;
+  - a green CI `check` job.
+
+  Deleting `main` and force-pushing to it are blocked.
 
 ## 7. How to do a task
 
