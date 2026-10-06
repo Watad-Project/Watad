@@ -1,0 +1,8 @@
+# Every pull request needs the approval of a maintainer:
+# Ameer (@73azn) or Omar Mulla (@Om4rMu). See AGENTS.md.
+#
+# Enforced on main by the "PR" ruleset (Settings > Rules > Rulesets): every
+# change arrives through a pull request approved by a code owner listed here,
+# approvals reset when new commits are pushed, the latest push is approved by
+# someone else, and the CI "check" job must be green.
+* @73azn @Om4rMu
