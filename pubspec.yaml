@@ -63,6 +63,7 @@ flutter:
   # hold only public values (Supabase URL, publishable key), never a secret.
   assets:
     - .env
+    - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
