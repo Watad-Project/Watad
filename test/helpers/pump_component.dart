@@ -42,7 +42,7 @@ Future<void> pumpLocalizedApp(
       startLocale: locale,
       // No SharedPreferences in tests: the locale is set right here.
       saveLocale: false,
-      assetLoader: const _FileAssetLoader(),
+      assetLoader: const TestAssetLoader(),
       child: Builder(
         builder: (context) => MaterialApp(
           theme: AppTheme.light,
@@ -61,8 +61,8 @@ Future<void> pumpLocalizedApp(
 
 /// Reads the translation files straight from disk. Flutter's asset bundle
 /// loads asynchronously, which a widget test's fake clock never finishes.
-class _FileAssetLoader extends AssetLoader {
-  const _FileAssetLoader();
+class TestAssetLoader extends AssetLoader {
+  const TestAssetLoader();
 
   @override
   Future<Map<String, dynamic>?> load(String path, Locale locale) async {

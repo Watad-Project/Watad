@@ -1,7 +1,10 @@
 {
   "common": {
     "add": "إضافة",
+    "app_name": "وتد",
+    "back_to_start": "العودة إلى البداية",
     "camera": "الكاميرا",
+    "coming_soon": "هذه الشاشة قيد البناء.",
     "copy": "نسخ",
     "decrease": "إنقاص",
     "default": "افتراضي",
@@ -10,6 +13,7 @@
     "edit_on_map": "تعديل على الخريطة",
     "image_or_pdf": "صورة أو PDF",
     "increase": "زيادة",
+    "page_not_found": "لم نجد هذه الصفحة.",
     "reason_required": "السبب مطلوب قبل الإرسال",
     "rejection_reason": "سبب الرفض",
     "required": "إلزامي",

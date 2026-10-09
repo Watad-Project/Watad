@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/localization/app_localization.dart';
+
+import '../../helpers/pump_component.dart';
 
 void main() {
   Map<String, dynamic> load(String languageCode) => jsonDecode(
@@ -58,5 +61,37 @@ void main() {
         reason: 'missing in ${locale.languageCode}.json',
       );
     }
+  });
+
+  testWidgets('toggleLanguage switches Arabic and English, and the direction', (
+    tester,
+  ) async {
+    await pumpComponent(
+      tester,
+      Builder(
+        builder: (context) => TextButton(
+          onPressed: context.toggleLanguage,
+          child: Text(context.isArabic ? 'ar' : 'en'),
+        ),
+      ),
+    );
+
+    expect(find.text('ar'), findsOneWidget);
+    expect(
+      Directionality.of(tester.element(find.text('ar'))),
+      TextDirection.rtl,
+    );
+
+    await tester.tap(find.text('ar'));
+    await tester.pumpAndSettle();
+    expect(find.text('en'), findsOneWidget);
+    expect(
+      Directionality.of(tester.element(find.text('en'))),
+      TextDirection.ltr,
+    );
+
+    await tester.tap(find.text('en'));
+    await tester.pumpAndSettle();
+    expect(find.text('ar'), findsOneWidget);
   });
 }
