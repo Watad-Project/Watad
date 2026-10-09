@@ -71,6 +71,14 @@ final RegExp _colorLiteral = RegExp(
   r'\bColor\(\s*0x|\bColor\.from(?:ARGB|RGBO)\(',
 );
 
+/// `assets/translations/<group>.<language>.json`, e.g. `auth.ar.json`.
+final RegExp _translationFile = RegExp(
+  r'^([a-z][a-z0-9_]*)\.([a-z]{2})\.json$',
+);
+
+/// Translation groups that are not features (APP_ARCHITECTURE.md §14).
+const Set<String> _translationGroups = {'common', 'errors', 'validation'};
+
 void main() {
   if (!File('pubspec.yaml').existsSync() || !Directory('lib').existsSync()) {
     stderr.writeln(
@@ -907,24 +915,51 @@ class _Checker {
     }
   }
 
-  // i18n: every translation file has the same keys.
+  // i18n: one file per group and language, with the same keys in every
+  // language of a group.
 
   void _checkTranslations() {
     final directory = Directory('assets/translations');
     if (!directory.existsSync()) return;
-    final keysByFile = <String, Set<String>>{};
-    final files =
-        _children(directory)
-            .whereType<File>()
-            .where((file) => file.path.endsWith('.json'))
-            .toList()
-          ..sort((a, b) => a.path.compareTo(b.path));
-    for (final file in files) {
-      final path = _normalize(file.path);
+    final features = Directory('lib/features').existsSync()
+        ? _children(Directory('lib/features'))
+              .whereType<Directory>()
+              .map(_name)
+              .toSet()
+        : <String>{};
+    final keys = <String, Map<String, Set<String>>>{};
+    final languages = <String>{};
+
+    for (final entity in _children(directory)) {
+      final path = _normalize(entity.path);
+      final match = entity is File
+          ? _translationFile.firstMatch(_name(entity))
+          : null;
+      if (match == null) {
+        _add(
+          'i18n',
+          path,
+          'assets/translations/ holds only <group>.<language>.json files, '
+              'e.g. auth.ar.json (APP_ARCHITECTURE.md §14).',
+        );
+        continue;
+      }
+      final group = match.group(1)!;
+      final language = match.group(2)!;
+      if (!_translationGroups.contains(group) && !features.contains(group)) {
+        _add(
+          'i18n',
+          path,
+          '"$group" is not a translation group. Name the file after '
+              '${_translationGroups.join(', ')} or a folder in '
+              'lib/features/ (APP_ARCHITECTURE.md §14).',
+        );
+      }
+      languages.add(language);
       try {
-        final decoded = jsonDecode(file.readAsStringSync());
+        final decoded = jsonDecode((entity as File).readAsStringSync());
         if (decoded is Map<String, dynamic>) {
-          keysByFile[path] = _flattenKeys(decoded);
+          (keys[group] ??= {})[language] = _flattenKeys(decoded);
         } else {
           _add('i18n', path, 'A translation file must be a JSON object.');
         }
@@ -932,19 +967,32 @@ class _Checker {
         _add('i18n', path, 'Invalid JSON: ${error.message}');
       }
     }
-    final allKeys = keysByFile.values.fold<Set<String>>(
-      <String>{},
-      (all, keys) => all..addAll(keys),
-    );
-    for (final entry in keysByFile.entries) {
-      final missing = allKeys.difference(entry.value).toList()..sort();
-      for (final key in missing) {
-        _add(
-          'i18n',
-          entry.key,
-          'Missing key "$key". Every key must exist in every file in '
-              'assets/translations/ (APP_ARCHITECTURE.md §14).',
-        );
+
+    for (final MapEntry(key: group, value: byLanguage) in keys.entries) {
+      final allKeys = byLanguage.values.fold<Set<String>>(
+        <String>{},
+        (all, keys) => all..addAll(keys),
+      );
+      for (final language in languages.toList()..sort()) {
+        final path = 'assets/translations/$group.$language.json';
+        final present = byLanguage[language];
+        if (present == null) {
+          _add(
+            'i18n',
+            path,
+            'Missing file. Every group needs a file in every language '
+                '(APP_ARCHITECTURE.md §14).',
+          );
+          continue;
+        }
+        for (final key in allKeys.difference(present).toList()..sort()) {
+          _add(
+            'i18n',
+            path,
+            'Missing key "$group.$key". Every key must exist in every '
+                'language of its group (APP_ARCHITECTURE.md §14).',
+          );
+        }
       }
     }
   }

@@ -63,6 +63,27 @@ flutter:
   # hold only public values (Supabase URL, publishable key), never a secret.
   assets:
     - .env
+    - assets/images/
+    - assets/translations/
+
+  # IBM Plex, from github.com/google/fonts, under the SIL Open Font License
+  # (assets/fonts/OFL.txt). The family names are AppTextStyles.fontFamily and
+  # AppTextStyles.monoFontFamily (lib/core/theme/app_text_styles.dart).
+  fonts:
+    - family: IBMPlexSansArabic
+      fonts:
+        - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansArabic-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSansArabic-Bold.ttf
+          weight: 700
+    - family: IBMPlexMono
+      fonts:
+        - asset: assets/fonts/IBMPlexMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexMono-SemiBold.ttf
+          weight: 600
 
   # To add assets to your application, add an assets section, like this:
   # assets:
