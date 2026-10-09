@@ -14,7 +14,7 @@ class AppPhoneField extends StatelessWidget {
   const AppPhoneField({
     super.key,
     this.label,
-    this.requiredLabel,
+    this.isRequired = false,
     this.controller,
     this.hint,
     this.helperText,
@@ -36,7 +36,9 @@ class AppPhoneField extends StatelessWidget {
   }
 
   final String? label;
-  final String? requiredLabel;
+
+  /// Shows "Required" at the end of the label.
+  final bool isRequired;
   final TextEditingController? controller;
 
   /// A sample number, e.g. "5x xxx xxxx".
@@ -104,7 +106,7 @@ class AppPhoneField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppFieldLabel(label: label!, requiredLabel: requiredLabel),
+        AppFieldLabel(label: label!, isRequired: isRequired),
         const SizedBox(height: AppSpacing.xs),
         field,
       ],

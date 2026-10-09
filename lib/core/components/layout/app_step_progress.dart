@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -10,15 +11,15 @@ class AppStepProgress extends StatelessWidget {
     super.key,
     required this.current,
     required this.total,
-    required this.label,
+    this.label,
   });
 
   /// The current step, counted from 1.
   final int current;
   final int total;
 
-  /// E.g. "Step 2 of 4".
-  final String label;
+  /// Defaults to "Step 2 of 4".
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,14 @@ class AppStepProgress extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: AppTextStyles.caption),
+        Text(
+          label ??
+              context.tr(
+                'common.step_of',
+                namedArgs: {'current': '$current', 'total': '$total'},
+              ),
+          style: AppTextStyles.caption,
+        ),
         const SizedBox(height: AppSpacing.xs),
         Row(
           children: [

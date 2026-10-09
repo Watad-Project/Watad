@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/display/app_card.dart';
@@ -17,13 +18,13 @@ class AppMarketTile extends StatelessWidget {
     required this.title,
     required this.seller,
     required this.priceLabel,
-    required this.addTooltip,
     this.unitLabel,
     this.conditionLabel,
     this.conditionTone = AppTone.success,
     this.imageUrl,
     this.onTap,
     this.onAdd,
+    this.addTooltip,
   });
 
   final String title;
@@ -40,8 +41,8 @@ class AppMarketTile extends StatelessWidget {
   /// Adds the product to the cart. Null disables the button.
   final VoidCallback? onAdd;
 
-  /// What screen readers say for the add button.
-  final String addTooltip;
+  /// What screen readers say for the add button. Defaults to "Add".
+  final String? addTooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +114,7 @@ class AppMarketTile extends StatelessWidget {
                     ),
                     AppIconButton(
                       icon: Icons.add,
-                      tooltip: addTooltip,
+                      tooltip: addTooltip ?? context.tr('common.add'),
                       onPressed: onAdd,
                       variant: AppIconButtonVariant.filled,
                     ),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/display/app_image_placeholder.dart';
@@ -13,23 +14,27 @@ class AppAddressCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.address,
-    required this.editLabel,
     required this.onEdit,
-    required this.deleteLabel,
     required this.onDelete,
-    this.defaultLabel,
+    this.isDefault = false,
+    this.editLabel,
+    this.deleteLabel,
   });
 
   /// E.g. "Home".
   final String title;
   final String address;
-  final String editLabel;
   final VoidCallback? onEdit;
-  final String deleteLabel;
   final VoidCallback? onDelete;
 
-  /// The translated word for "default". Shown only on the default address.
-  final String? defaultLabel;
+  /// Shows the "Default" badge.
+  final bool isDefault;
+
+  /// Defaults to "Edit on map".
+  final String? editLabel;
+
+  /// Defaults to "Delete".
+  final String? deleteLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +60,9 @@ class AppAddressCard extends StatelessWidget {
                           Flexible(
                             child: Text(title, style: AppTextStyles.label),
                           ),
-                          if (defaultLabel != null) ...[
+                          if (isDefault) ...[
                             const SizedBox(width: AppSpacing.xs),
-                            AppStatusBadge(label: defaultLabel!),
+                            AppStatusBadge(label: context.tr('common.default')),
                           ],
                         ],
                       ),
@@ -76,7 +81,7 @@ class AppAddressCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _Action(
-                    label: editLabel,
+                    label: editLabel ?? context.tr('common.edit_on_map'),
                     color: AppColors.ink,
                     onTap: onEdit,
                   ),
@@ -84,7 +89,7 @@ class AppAddressCard extends StatelessWidget {
                 const VerticalDivider(width: 1),
                 Expanded(
                   child: _Action(
-                    label: deleteLabel,
+                    label: deleteLabel ?? context.tr('common.delete'),
                     color: AppColors.error,
                     onTap: onDelete,
                   ),

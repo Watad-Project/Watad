@@ -4,17 +4,13 @@ import 'package:watad/core/components/inputs/app_quantity_stepper.dart';
 import '../../../helpers/pump_component.dart';
 
 void main() {
-  testWidgets('increases and decreases by the step', (tester) async {
+  testWidgets('increases and decreases by the step, with translated tooltips', (
+    tester,
+  ) async {
     final values = <int>[];
     await pumpComponent(
       tester,
-      AppQuantityStepper(
-        value: 20,
-        step: 5,
-        onChanged: values.add,
-        decreaseTooltip: 'إنقاص',
-        increaseTooltip: 'زيادة',
-      ),
+      AppQuantityStepper(value: 20, step: 5, onChanged: values.add),
     );
 
     expect(find.text('20'), findsOneWidget);
@@ -27,14 +23,7 @@ void main() {
     final values = <int>[];
     await pumpComponent(
       tester,
-      AppQuantityStepper(
-        value: 1,
-        min: 1,
-        max: 1,
-        onChanged: values.add,
-        decreaseTooltip: 'إنقاص',
-        increaseTooltip: 'زيادة',
-      ),
+      AppQuantityStepper(value: 1, min: 1, max: 1, onChanged: values.add),
     );
 
     await tester.tap(find.byTooltip('زيادة'));
@@ -45,13 +34,7 @@ void main() {
   testWidgets('shows valueLabel instead of the number', (tester) async {
     await pumpComponent(
       tester,
-      AppQuantityStepper(
-        value: 20,
-        valueLabel: '٢٠',
-        onChanged: (_) {},
-        decreaseTooltip: 'إنقاص',
-        increaseTooltip: 'زيادة',
-      ),
+      AppQuantityStepper(value: 20, valueLabel: '٢٠', onChanged: (_) {}),
     );
 
     expect(find.text('٢٠'), findsOneWidget);

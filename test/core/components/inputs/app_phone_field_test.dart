@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/inputs/app_phone_field.dart';
+import 'package:watad/core/localization/app_localization.dart';
 
 import '../../../helpers/pump_component.dart';
 
@@ -44,7 +45,7 @@ void main() {
     await pumpComponent(
       tester,
       const AppPhoneField(),
-      textDirection: TextDirection.ltr,
+      locale: AppLocalization.english,
     );
 
     final width = tester.getSize(find.byType(Scaffold)).width;

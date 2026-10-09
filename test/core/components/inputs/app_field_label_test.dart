@@ -4,10 +4,12 @@ import 'package:watad/core/components/inputs/app_field_label.dart';
 import '../../../helpers/pump_component.dart';
 
 void main() {
-  testWidgets('shows the label and the required mark', (tester) async {
+  testWidgets('shows the label and the translated required mark', (
+    tester,
+  ) async {
     await pumpComponent(
       tester,
-      const AppFieldLabel(label: 'التفاصيل', requiredLabel: 'إلزامي'),
+      const AppFieldLabel(label: 'التفاصيل', isRequired: true),
     );
 
     expect(find.text('التفاصيل'), findsOneWidget);

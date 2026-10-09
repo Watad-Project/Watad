@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -9,13 +10,13 @@ import 'package:watad/core/theme/app_text_styles.dart';
 class AppUploadZone extends StatelessWidget {
   const AppUploadZone({
     super.key,
-    required this.label,
     required this.onTap,
+    this.label,
     this.icon = Icons.arrow_upward,
   });
 
-  /// What can be uploaded, e.g. "Image or PDF".
-  final String label;
+  /// What can be uploaded. Defaults to "Image or PDF".
+  final String? label;
   final VoidCallback? onTap;
   final IconData icon;
 
@@ -53,7 +54,7 @@ class AppUploadZone extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Flexible(
                     child: Text(
-                      label,
+                      label ?? context.tr('common.image_or_pdf'),
                       style: AppTextStyles.body.copyWith(
                         color: AppColors.textSecondary,
                         height: 1.4,

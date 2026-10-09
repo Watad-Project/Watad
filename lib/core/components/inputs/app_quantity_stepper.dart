@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -5,15 +6,14 @@ import 'package:watad/core/theme/app_text_styles.dart';
 
 /// A number with − and + buttons, e.g. a quantity in the cart.
 ///
-/// The buttons stop at [min] and [max]. The tooltips are required: they are
-/// what screen readers say for the icon-only buttons.
+/// The buttons stop at [min] and [max].
 class AppQuantityStepper extends StatelessWidget {
   const AppQuantityStepper({
     super.key,
     required this.value,
     required this.onChanged,
-    required this.decreaseTooltip,
-    required this.increaseTooltip,
+    this.decreaseTooltip,
+    this.increaseTooltip,
     this.min = 0,
     this.max,
     this.step = 1,
@@ -24,8 +24,12 @@ class AppQuantityStepper extends StatelessWidget {
 
   /// Null disables both buttons.
   final ValueChanged<int>? onChanged;
-  final String decreaseTooltip;
-  final String increaseTooltip;
+
+  /// What screen readers say for −. Defaults to "Decrease".
+  final String? decreaseTooltip;
+
+  /// What screen readers say for +. Defaults to "Increase".
+  final String? increaseTooltip;
   final int min;
   final int? max;
   final int step;
@@ -50,7 +54,7 @@ class AppQuantityStepper extends StatelessWidget {
         children: [
           _button(
             Icons.add,
-            increaseTooltip,
+            increaseTooltip ?? context.tr('common.increase'),
             canIncrease ? () => onChanged!(value + step) : null,
           ),
           const VerticalDivider(width: 1, color: AppColors.borderStrong),
@@ -65,7 +69,7 @@ class AppQuantityStepper extends StatelessWidget {
           const VerticalDivider(width: 1, color: AppColors.borderStrong),
           _button(
             Icons.remove,
-            decreaseTooltip,
+            decreaseTooltip ?? context.tr('common.decrease'),
             canDecrease ? () => onChanged!(value - step) : null,
           ),
         ],

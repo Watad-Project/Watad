@@ -19,10 +19,7 @@ void main() {
   ];
 
   testWidgets('shows every row, the IBAN left to right', (tester) async {
-    await pumpComponent(
-      tester,
-      const AppKeyValueList(rows: rows, copyLabel: 'نسخ'),
-    );
+    await pumpComponent(tester, const AppKeyValueList(rows: rows));
 
     expect(find.text('مؤسسة البناء المتين'), findsOneWidget);
     expect(find.text('٧٢٬٠٠٠ ر.س'), findsOneWidget);
@@ -51,7 +48,7 @@ void main() {
     final copied = <String>[];
     await pumpComponent(
       tester,
-      AppKeyValueList(rows: rows, copyLabel: 'نسخ', onCopied: copied.add),
+      AppKeyValueList(rows: rows, onCopied: copied.add),
     );
 
     await tester.tap(find.text('نسخ'));

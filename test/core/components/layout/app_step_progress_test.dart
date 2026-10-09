@@ -9,12 +9,9 @@ void main() {
   testWidgets('shows the label and one orange bar per done step', (
     tester,
   ) async {
-    await pumpComponent(
-      tester,
-      const AppStepProgress(current: 2, total: 4, label: 'الخطوة ٢ من ٤'),
-    );
+    await pumpComponent(tester, const AppStepProgress(current: 2, total: 4));
 
-    expect(find.text('الخطوة ٢ من ٤'), findsOneWidget);
+    expect(find.text('الخطوة 2 من 4'), findsOneWidget);
     final colors = tester
         .widgetList<Container>(
           find.descendant(

@@ -5,11 +5,10 @@ import 'package:watad/core/components/display/app_verified_name.dart';
 import '../../../helpers/pump_component.dart';
 
 void main() {
-  testWidgets('shows the name and the verified check', (tester) async {
-    await pumpComponent(
-      tester,
-      const AppVerifiedName(name: 'البناء المتين', semanticLabel: 'موثّقة'),
-    );
+  testWidgets('shows the name and the verified check, read out as Verified', (
+    tester,
+  ) async {
+    await pumpComponent(tester, const AppVerifiedName(name: 'البناء المتين'));
 
     expect(find.text('البناء المتين'), findsOneWidget);
     expect(find.bySemanticsLabel('موثّقة'), findsOneWidget);

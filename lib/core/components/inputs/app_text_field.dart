@@ -15,7 +15,7 @@ class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
     this.label,
-    this.requiredLabel,
+    this.isRequired = false,
     this.controller,
     this.initialValue,
     this.hint,
@@ -36,8 +36,8 @@ class AppTextField extends StatelessWidget {
 
   final String? label;
 
-  /// The translated word for "required", shown at the end of the label.
-  final String? requiredLabel;
+  /// Shows "Required" at the end of the label.
+  final bool isRequired;
 
   final TextEditingController? controller;
   final String? initialValue;
@@ -98,7 +98,7 @@ class AppTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppFieldLabel(label: label!, requiredLabel: requiredLabel),
+        AppFieldLabel(label: label!, isRequired: isRequired),
         const SizedBox(height: AppSpacing.xs),
         field,
       ],

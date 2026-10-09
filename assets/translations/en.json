@@ -1,0 +1,22 @@
+{
+  "common": {
+    "add": "Add",
+    "camera": "Camera",
+    "copy": "Copy",
+    "decrease": "Decrease",
+    "default": "Default",
+    "delete": "Delete",
+    "details": "Details",
+    "edit_on_map": "Edit on map",
+    "image_or_pdf": "Image or PDF",
+    "increase": "Increase",
+    "reason_required": "Write a reason before you send.",
+    "rejection_reason": "Reason for rejecting",
+    "required": "Required",
+    "retry": "Try again",
+    "send_rejection": "Send rejection",
+    "step_of": "Step {current} of {total}",
+    "verified": "Verified",
+    "write_reason": "Write the reason..."
+  }
+}

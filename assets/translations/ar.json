@@ -1,0 +1,22 @@
+{
+  "common": {
+    "add": "إضافة",
+    "camera": "الكاميرا",
+    "copy": "نسخ",
+    "decrease": "إنقاص",
+    "default": "افتراضي",
+    "delete": "حذف",
+    "details": "التفاصيل",
+    "edit_on_map": "تعديل على الخريطة",
+    "image_or_pdf": "صورة أو PDF",
+    "increase": "زيادة",
+    "reason_required": "السبب مطلوب قبل الإرسال",
+    "rejection_reason": "سبب الرفض",
+    "required": "إلزامي",
+    "retry": "إعادة المحاولة",
+    "send_rejection": "إرسال الرفض",
+    "step_of": "الخطوة {current} من {total}",
+    "verified": "موثّقة",
+    "write_reason": "اكتب السبب..."
+  }
+}

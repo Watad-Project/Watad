@@ -1,3 +1,5 @@
+// intl (re-exported by easy_localization) has its own TextDirection.
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:watad/core/theme/app_colors.dart';
@@ -20,7 +22,7 @@ class AppKeyValueRow {
   /// For values read digit by digit (IBAN, phone): mono, left to right.
   final bool isMonospace;
 
-  /// Shows the copy action at the end of the line.
+  /// Shows "Copy" at the end of the line.
   final bool isCopyable;
 
   /// What is copied, when it differs from [value] (e.g. without spaces).
@@ -30,17 +32,9 @@ class AppKeyValueRow {
 /// Label-value lines in a quiet panel, e.g. the bank transfer details:
 /// beneficiary, IBAN (with copy), amount.
 class AppKeyValueList extends StatelessWidget {
-  const AppKeyValueList({
-    super.key,
-    required this.rows,
-    this.copyLabel,
-    this.onCopied,
-  });
+  const AppKeyValueList({super.key, required this.rows, this.onCopied});
 
   final List<AppKeyValueRow> rows;
-
-  /// The translated word for "copy". Needed when a row is copyable.
-  final String? copyLabel;
 
   /// Called after a value was copied, e.g. to show a snack bar.
   final ValueChanged<String>? onCopied;
@@ -59,15 +53,15 @@ class AppKeyValueList extends StatelessWidget {
         children: [
           for (var i = 0; i < rows.length; i++) ...[
             if (i > 0) const Divider(),
-            _line(rows[i]),
+            _line(context, rows[i]),
           ],
         ],
       ),
     );
   }
 
-  Widget _line(AppKeyValueRow row) {
-    final showCopy = row.isCopyable && copyLabel != null;
+  Widget _line(BuildContext context, AppKeyValueRow row) {
+    final showCopy = row.isCopyable;
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 52),
       child: Padding(
@@ -107,7 +101,7 @@ class AppKeyValueList extends StatelessWidget {
                 style: TextButton.styleFrom(
                   textStyle: AppTextStyles.label.copyWith(fontSize: 14),
                 ),
-                child: Text(copyLabel!),
+                child: Text(context.tr('common.copy')),
               ),
           ],
         ),

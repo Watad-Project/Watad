@@ -20,7 +20,6 @@ void main() {
           unitLabel: '/ طن',
           conditionLabel: 'جديد',
           conditionTone: AppTone.success,
-          addTooltip: 'أضف إلى السلة',
           onTap: () => taps++,
           onAdd: () => adds++,
         ),
@@ -30,7 +29,7 @@ void main() {
     for (final text in ['مصنع الرياض للحديد', '٢٬٧٥٠ ر.س', '/ طن', 'جديد']) {
       expect(find.text(text), findsOneWidget);
     }
-    await tester.tap(find.byTooltip('أضف إلى السلة'));
+    await tester.tap(find.byTooltip('إضافة'));
     await tester.tap(find.text('حديد تسليح ١٢ مم'));
     expect(adds, 1);
     expect(taps, 1);

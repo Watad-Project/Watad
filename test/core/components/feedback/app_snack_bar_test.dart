@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
-import 'package:watad/core/theme/app_theme.dart';
+
+import '../../../helpers/pump_component.dart';
 
 void main() {
-  /// Pumps an empty screen and returns a context under its Scaffold.
+  /// Pumps an empty Arabic screen and returns a context under its Scaffold.
   Future<BuildContext> pumpScreen(WidgetTester tester) async {
     late BuildContext screen;
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light,
-        home: Scaffold(
-          body: Builder(
-            builder: (context) {
-              screen = context;
-              return const SizedBox.expand();
-            },
-          ),
+    await pumpLocalizedApp(
+      tester,
+      Scaffold(
+        body: Builder(
+          builder: (context) {
+            screen = context;
+            return const SizedBox.expand();
+          },
         ),
       ),
     );
@@ -43,7 +42,7 @@ void main() {
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
   });
 
-  testWidgets('runs the action of an error and keeps it 6 seconds', (
+  testWidgets('adds a translated retry button to an error, kept 6 s', (
     tester,
   ) async {
     final context = await pumpScreen(tester);
@@ -51,8 +50,7 @@ void main() {
 
     context.showErrorSnackBar(
       'لا يوجد اتصال بالإنترنت. تحقق من الشبكة وحاول مرة أخرى.',
-      actionLabel: 'إعادة المحاولة',
-      onAction: () => retries++,
+      onRetry: () => retries++,
     );
     await tester.pumpAndSettle();
 
@@ -61,6 +59,15 @@ void main() {
     expect(snackBar.duration, const Duration(seconds: 6));
     await tester.tap(find.text('إعادة المحاولة'));
     expect(retries, 1);
+  });
+
+  testWidgets('an error without onRetry has no button', (tester) async {
+    final context = await pumpScreen(tester);
+
+    context.showErrorSnackBar('رقم السجل التجاري غير صحيح.');
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBarAction), findsNothing);
   });
 
   testWidgets('a new snack bar replaces the one on screen', (tester) async {

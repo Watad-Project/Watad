@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -11,12 +12,13 @@ import 'package:watad/core/theme/app_text_styles.dart';
 class AppCameraTile extends StatelessWidget {
   const AppCameraTile({
     super.key,
-    required this.label,
     required this.onTap,
+    this.label,
     this.size = 72,
   });
 
-  final String label;
+  /// Defaults to "Camera".
+  final String? label;
   final VoidCallback? onTap;
   final double size;
 
@@ -48,7 +50,7 @@ class AppCameraTile extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  label,
+                  label ?? context.tr('common.camera'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.labelSmall.copyWith(

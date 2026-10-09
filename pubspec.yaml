@@ -64,6 +64,7 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/translations/
 
   # IBM Plex, from github.com/google/fonts, under the SIL Open Font License
   # (assets/fonts/OFL.txt). The family names are AppTextStyles.fontFamily and

@@ -11,10 +11,8 @@ void main() {
       AppAddressCard(
         title: 'المنزل',
         address: 'الرياض · النرجس · طريق الأمير سلمان · 7421',
-        defaultLabel: 'افتراضي',
-        editLabel: 'تعديل على الخريطة',
+        isDefault: true,
         onEdit: () => actions.add('edit'),
-        deleteLabel: 'حذف',
         onDelete: () => actions.add('delete'),
       ),
     );
@@ -35,9 +33,7 @@ void main() {
       AppAddressCard(
         title: 'العمل',
         address: 'جدة',
-        editLabel: 'تعديل',
         onEdit: () {},
-        deleteLabel: 'حذف',
         onDelete: () {},
       ),
     );

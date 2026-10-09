@@ -15,7 +15,6 @@ class AppBusinessMiniCard extends StatelessWidget {
     required this.ratingLabel,
     required this.projectsLabel,
     this.isVerified = false,
-    this.verifiedLabel,
     this.imageUrl,
     this.onTap,
   });
@@ -28,9 +27,6 @@ class AppBusinessMiniCard extends StatelessWidget {
   /// E.g. "64 projects".
   final String projectsLabel;
   final bool isVerified;
-
-  /// What screen readers say for the verified check.
-  final String? verifiedLabel;
   final String? imageUrl;
   final VoidCallback? onTap;
 
@@ -52,11 +48,7 @@ class AppBusinessMiniCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isVerified)
-                  AppVerifiedName(
-                    name: name,
-                    style: nameStyle,
-                    semanticLabel: verifiedLabel,
-                  )
+                  AppVerifiedName(name: name, style: nameStyle)
                 else
                   Text(
                     name,

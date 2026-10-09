@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -15,7 +16,7 @@ class AppVerifiedName extends StatelessWidget {
   final String name;
   final TextStyle style;
 
-  /// What screen readers say for the check, e.g. "Verified".
+  /// What screen readers say for the check. Defaults to "Verified".
   final String? semanticLabel;
 
   @override
@@ -37,7 +38,7 @@ class AppVerifiedName extends StatelessWidget {
           Icons.check_circle,
           size: iconSize,
           color: AppColors.success,
-          semanticLabel: semanticLabel,
+          semanticLabel: semanticLabel ?? context.tr('common.verified'),
         ),
       ],
     );

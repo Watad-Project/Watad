@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -50,12 +51,11 @@ class AppSnackBar extends StatelessWidget {
 /// Snack bars from any widget under the app's `MaterialApp`:
 ///
 /// ```dart
-/// context.showSuccessSnackBar('addresses.saved'.tr());
+/// context.showSuccessSnackBar(context.tr('addresses.saved'));
 ///
 /// context.showErrorSnackBar(
-///   failure.messageKey.tr(),
-///   actionLabel: 'common.retry'.tr(),
-///   onAction: _reload,
+///   context.tr(failure.messageKey),
+///   onRetry: _reload,
 /// );
 /// ```
 ///
@@ -116,16 +116,20 @@ extension AppSnackBarContext on BuildContext {
 
   /// Something went wrong, with a red mark. It stays 6 seconds instead of 4,
   /// because people read a problem more slowly than a confirmation.
+  ///
+  /// Pass [onRetry] when trying again can help (a dropped connection, a
+  /// timeout): it adds a "Try again" button. Leave it out when it can't
+  /// (wrong input, no permission).
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showErrorSnackBar(
     String message, {
-    String? actionLabel,
-    VoidCallback? onAction,
+    VoidCallback? onRetry,
   }) {
     return showSnackBar(
       message,
       tone: AppTone.danger,
-      actionLabel: actionLabel,
-      onAction: onAction,
+      // `this.` picks the context's translation, not the global `tr()`.
+      actionLabel: onRetry == null ? null : this.tr('common.retry'),
+      onAction: onRetry,
       duration: const Duration(seconds: 6),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/inputs/app_radio_row.dart';
@@ -8,32 +9,32 @@ import 'package:watad/core/theme/app_text_styles.dart';
 /// The form for rejecting something (a task update, a receipt, a refund, a
 /// document): pick a reason, explain it, send.
 ///
-/// The send button is enabled once a reason is picked. Sending with empty
-/// details shows [detailsRequiredError] instead of calling [onSubmit].
+/// The send button turns on once a reason is picked. Sending with empty
+/// details shows "Write a reason before you send" instead of calling
+/// [onSubmit].
+///
+/// The title, the hint and the button say "Reason for rejecting", "Write the
+/// reason..." and "Send rejection" unless you pass something more specific.
 class AppRejectReasonForm extends StatefulWidget {
   const AppRejectReasonForm({
     super.key,
-    required this.title,
     required this.reasons,
-    required this.detailsLabel,
-    required this.requiredLabel,
-    required this.detailsHint,
-    required this.detailsRequiredError,
-    required this.submitLabel,
     required this.onSubmit,
+    this.title,
+    this.detailsHint,
+    this.submitLabel,
     this.isSubmitting = false,
   });
 
-  final String title;
+  /// The translated reasons to choose from.
   final List<String> reasons;
-  final String detailsLabel;
-  final String requiredLabel;
-  final String detailsHint;
-  final String detailsRequiredError;
-  final String submitLabel;
 
   /// Called with the index of the chosen reason and the trimmed details.
   final void Function(int reasonIndex, String details) onSubmit;
+
+  final String? title;
+  final String? detailsHint;
+  final String? submitLabel;
   final bool isSubmitting;
 
   @override
@@ -66,7 +67,10 @@ class _AppRejectReasonFormState extends State<AppRejectReasonForm> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(widget.title, style: AppTextStyles.h2),
+        Text(
+          widget.title ?? context.tr('common.rejection_reason'),
+          style: AppTextStyles.h2,
+        ),
         const SizedBox(height: AppSpacing.sm),
         for (var i = 0; i < widget.reasons.length; i++) ...[
           if (i > 0) const SizedBox(height: AppSpacing.xs),
@@ -81,21 +85,21 @@ class _AppRejectReasonFormState extends State<AppRejectReasonForm> {
         ],
         const SizedBox(height: AppSpacing.md),
         AppTextField(
-          label: widget.detailsLabel,
-          requiredLabel: widget.requiredLabel,
+          label: context.tr('common.details'),
+          isRequired: true,
           controller: _details,
-          hint: widget.detailsHint,
+          hint: widget.detailsHint ?? context.tr('common.write_reason'),
           minLines: 3,
           maxLines: 5,
           enabled: !widget.isSubmitting,
-          errorText: _showError ? widget.detailsRequiredError : null,
+          errorText: _showError ? context.tr('common.reason_required') : null,
           onChanged: (_) {
             if (_showError) setState(() => _showError = false);
           },
         ),
         const SizedBox(height: AppSpacing.md),
         AppButton(
-          label: widget.submitLabel,
+          label: widget.submitLabel ?? context.tr('common.send_rejection'),
           variant: AppButtonVariant.dark,
           isLoading: widget.isSubmitting,
           onPressed: _reason == null ? null : _submit,

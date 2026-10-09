@@ -40,7 +40,7 @@ class AppDropdown<T> extends StatefulWidget {
     required this.value,
     required this.onChanged,
     this.label,
-    this.requiredLabel,
+    this.isRequired = false,
     this.hint,
     this.errorText,
   });
@@ -49,7 +49,9 @@ class AppDropdown<T> extends StatefulWidget {
   final T? value;
   final ValueChanged<T>? onChanged;
   final String? label;
-  final String? requiredLabel;
+
+  /// Shows "Required" at the end of the label.
+  final bool isRequired;
 
   /// Shown while nothing is chosen.
   final String? hint;
@@ -151,10 +153,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.label != null) ...[
-          AppFieldLabel(
-            label: widget.label!,
-            requiredLabel: widget.requiredLabel,
-          ),
+          AppFieldLabel(label: widget.label!, isRequired: widget.isRequired),
           const SizedBox(height: AppSpacing.xs),
         ],
         field,

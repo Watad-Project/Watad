@@ -10,13 +10,7 @@ void main() {
     await pumpComponent(
       tester,
       AppRejectReasonForm(
-        title: 'سبب الرفض',
         reasons: const ['الأدلة غير كافية', 'العمل غير مكتمل'],
-        detailsLabel: 'التفاصيل',
-        requiredLabel: 'إلزامي',
-        detailsHint: 'اكتب السبب...',
-        detailsRequiredError: 'السبب مطلوب قبل الإرسال',
-        submitLabel: 'إرسال الرفض',
         onSubmit: (reason, details) => submitted.add((reason, details)),
       ),
     );
@@ -25,6 +19,20 @@ void main() {
 
   FilledButton submitButton(WidgetTester tester) =>
       tester.widget<FilledButton>(find.byType(FilledButton));
+
+  testWidgets('uses the translated title, labels and button', (tester) async {
+    await pumpForm(tester);
+
+    for (final text in [
+      'سبب الرفض',
+      'التفاصيل',
+      'إلزامي',
+      'اكتب السبب...',
+      'إرسال الرفض',
+    ]) {
+      expect(find.text(text), findsOneWidget);
+    }
+  });
 
   testWidgets('the send button waits for a reason', (tester) async {
     await pumpForm(tester);
