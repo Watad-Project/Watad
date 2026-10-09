@@ -817,6 +817,41 @@ context.pushNamed(
 );
 ```
 
+### How the router is set up
+
+The router is set up once, in `lib/core/router/`. Every route lives in the feature that owns it.
+
+| File | Holds |
+|------|-------|
+| `app_routes.dart` | `AppRoutes`: every route's name and path |
+| `app_router.dart` | `appRouter`, built by `createAppRouter()`: starts on `/splash`, spreads each role folder's routes list, holds the guard (`_guard`) and shows `AppNotFoundView` for unknown addresses |
+
+These routes exist today. Each one opens a placeholder page ("This screen is still being built") until its issue builds the real screen:
+
+| Path | Name constant | Routes file (in `lib/features/`) | Page | Issue |
+|------|---------------|----------------------------------|------|-------|
+| `/splash` | `splashName` | `splash/shared/presentation/splash_routes.dart` | `SplashPage` | GRA-8 |
+| `/onboarding` | `onboardingName` | `onboarding/shared/presentation/onboarding_routes.dart` | `OnboardingPage` | GRA-9 |
+| `/auth/login` | `loginName` | `auth/shared/presentation/auth_routes.dart` | `LoginPage` | GRA-10 |
+| `/auth/role` | `roleSelectionName` | `auth/shared/presentation/auth_routes.dart` | `RoleSelectionPage` | GRA-11 |
+| `/auth/signup/client` | `signUpClientName` | `auth/shared/presentation/auth_routes.dart` | `SignUpClientPage` | GRA-12 |
+| `/auth/signup/business` | `signUpBusinessName` | `auth/shared/presentation/auth_routes.dart` | `SignUpBusinessPage` | GRA-13 |
+| `/contractor/business-verification/license` | `contractorLicenseUploadName` | `business_verification/contractor/presentation/contractor_business_verification_routes.dart` | `ContractorLicenseUploadPage` | GRA-14 |
+| `/business-verification/status` | `verificationStatusName` | `business_verification/shared/presentation/business_verification_routes.dart` | `VerificationStatusPage` | GRA-15 |
+| `/contractor/onboarding/specialty` | `contractorSpecialtyName` | `onboarding/contractor/presentation/contractor_onboarding_routes.dart` | `ContractorSpecialtyPage` | GRA-16 |
+
+**Your screen already has a placeholder?** Replace the page in your `pages/` folder. Keep the route's name and path. If the page needs a bloc, create it in the route's builder (see the example above). You don't touch `lib/core/`.
+
+**Adding a new route:**
+
+1. Add its name and path to `AppRoutes`, in a block for your feature and role.
+2. Add a `GoRoute` to your role folder's routes list in `presentation/<prefix><feature>_routes.dart`. Create the file if your folder doesn't have one yet.
+3. If you created a routes file, spread its list in `createAppRouter()` (sorted by file name). The `AppRoutes` constants and this one line are the only core edits a feature makes (§6).
+4. Add the route to the list in `test/core/router/app_router_test.dart`, which opens every route by name.
+5. Navigate by name: `context.goNamed(AppRoutes.loginName)`.
+
+**Guards** live only in `_guard` in `app_router.dart`. For now it lets every route through. The auth issues add the rules from the session: signed out goes to the login page, and a role without access goes to its own home.
+
 ---
 
 ## 12. Dependency injection (get_it)
@@ -950,6 +985,16 @@ Rules:
 
 - In code: `'projects.client.list_title'.tr()`, with values `'projects.client.offers_count'.tr(namedArgs: {'count': '$n'})`, and plurals with `.plural(n)`.
 - Blocs, use cases and repositories never translate. They carry keys (`Failure.messageKey`) or data; widgets translate.
+- In widgets, SHOULD prefer `context.tr('projects.client.list_title')`. It rebuilds the widget when the language changes; `'…'.tr()` reads a global and can leave a `const` widget in the old language.
+- Inside a group, start the key with the screen, then the element: `auth.login_title`, `auth.login_email_hint`, `projects.client.details_title`.
+
+Setup (`lib/core/localization/app_localization.dart`):
+
+- `main.dart` wraps the app in `AppLocalization.scope`. The first launch is in Arabic; after that the app opens in the language the person picked last, saved on the phone.
+- `WatadApp` takes the localization delegates, the supported locales and the current locale from easy_localization. Arabic runs right to left and English left to right with no work in the screens.
+- Change the language with `context.changeLanguage(AppLocalization.english)` or `context.toggleLanguage()`. Read it with `context.isArabic`.
+- easy_localization re-exports `intl`, which has its own `TextDirection`. A file that imports both easy_localization and Flutter's `TextDirection` adds `hide TextDirection` to the easy_localization import.
+- In widget tests, use `pumpComponent` or `pumpLocalizedApp` from `test/helpers/pump_component.dart`. They load the real translation files, so a missing key fails the test.
 - Format money through `Money` and the money component, and dates through the helpers in `lib/core/utils/`. Never build strings like `"SAR 1,500"` by hand.
 
 RTL (the checker enforces the first four):
