@@ -1,0 +1,20 @@
+{
+  "confirm": "Confirm",
+  "create_account": "Create an account",
+  "email_hint": "abdullah@example.com",
+  "email_label": "Email",
+  "email_required_error": "Email is required",
+  "invalid_email_error": "Please enter a valid email address",
+  "invalid_otp_error": "Incomplete verification code",
+  "login_subtitle": "Enter your email, then a 4-digit verification code sent to your inbox.",
+  "login_title": "Log In",
+  "new_user": "New user?",
+  "otp_expired_or_invalid": "The verification code is incorrect or expired",
+  "otp_label": "Verification code",
+  "otp_required_error": "Verification code is required",
+  "otp_sent_success": "Verification code sent to your email",
+  "resend_code": "Resend",
+  "resend_countdown": "Didn't receive the code? Resend in {time}",
+  "resend_prefix": "Didn't receive the code?",
+  "too_many_requests": "Too many requests, please try again later"
+}
