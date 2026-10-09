@@ -41,13 +41,51 @@ A Registry row looks like this. Put the type names in backticks in the first col
 
 | Component | File | Use it for | Key parameters | Added |
 |-----------|------|------------|----------------|-------|
-| _None yet. The first components arrive with the foundation._ | | | | |
+| `AppButton`, `AppButtonVariant` | `buttons/app_button.dart` | Every button: primary (orange), secondary (outlined), dark (ink), link; full width except link; spinner while loading | `label`, `onPressed`, `variant`, `isLoading`, `icon`, `trailingIcon` | 2026-10-09 |
+| `AppIconButton`, `AppIconButtonVariant` | `buttons/app_icon_button.dart` | Icon-only button: plain (back arrow, toolbar) or filled orange square (add to cart); 48×48 tap target | `icon`, `tooltip`, `onPressed`, `variant` | 2026-10-09 |
+| `AppFieldLabel` | `inputs/app_field_label.dart` | The label above a field, with an optional red "required" mark | `label`, `requiredLabel` | 2026-10-09 |
+| `AppTextField` | `inputs/app_text_field.dart` | Text input with label, hint, helper, error and `Form` validation; mono left-to-right mode for CR numbers and IBANs | `label`, `requiredLabel`, `controller`, `hint`, `helperText`, `errorText`, `validator`, `isMonospace`, `maxLines` | 2026-10-09 |
+| `AppPhoneField` | `inputs/app_phone_field.dart` | Saudi mobile number: fixed +966, digits grouped as 5x xxx xxxx, Arabic-Indic digits accepted; `AppPhoneField.fullNumber()` gives +9665xxxxxxxx | `label`, `controller`, `hint`, `errorText`, `validator` | 2026-10-09 |
+| `AppDropdown`, `AppDropdownOption` | `inputs/app_dropdown.dart` | Select field whose list opens under it; options with a toned subtitle, and a tag badge shown next to the chosen value | `options`, `value`, `onChanged`, `label`, `hint`, `errorText` | 2026-10-09 |
+| `AppQuantityStepper` | `inputs/app_quantity_stepper.dart` | A number with − and + buttons (market, cart) | `value`, `onChanged`, `min`, `max`, `step`, `decreaseTooltip`, `increaseTooltip`, `valueLabel` | 2026-10-09 |
+| `AppSwitch` | `inputs/app_switch.dart` | On/off switch, alone or as a full-width settings row with a label | `value`, `onChanged`, `label`, `semanticLabel` | 2026-10-09 |
+| `AppCheckbox` | `inputs/app_checkbox.dart` | Checkbox with a tappable label (accepting the terms) | `value`, `onChanged`, `label` | 2026-10-09 |
+| `AppRadioRow`, `AppRadioRowAccent` | `inputs/app_radio_row.dart` | One bordered choice in a list (payment method, address, task, rejection reason); orange or ink when selected | `title`, `subtitle`, `subtitleTone`, `selected`, `onTap`, `accent` | 2026-10-09 |
+| `AppFilterChips` | `inputs/app_filter_chips.dart` | Scrollable row of round filter chips, one selected (market, work, projects) | `labels`, `selectedIndex`, `onSelected` | 2026-10-09 |
+| `AppSegmentedTabs` | `inputs/app_segmented_tabs.dart` | Two or three equal boxes switching a list between views; the selected one is ink | `labels`, `selectedIndex`, `onChanged` | 2026-10-09 |
+| `AppUploadZone` | `inputs/app_upload_zone.dart` | Dashed box to pick a document (license, title deed, receipt); reports the tap only | `label`, `onTap`, `icon` | 2026-10-09 |
+| `AppCameraTile` | `inputs/app_camera_tile.dart` | Dark square that opens the camera, before the photo thumbnails; reports the tap only | `label`, `onTap`, `size` | 2026-10-09 |
+| `AppRejectReasonForm` | `inputs/app_reject_reason_form.dart` | Reject something: pick a reason, write the required details, send (task update, receipt, refund, document) | `title`, `reasons`, `detailsLabel`, `requiredLabel`, `detailsHint`, `detailsRequiredError`, `submitLabel`, `onSubmit`, `isSubmitting` | 2026-10-09 |
+| `AppLogo` | `display/app_logo.dart` | The Watad logo, for light or dark surfaces | `height`, `onDark`, `semanticLabel` | 2026-10-09 |
+| `AppCard` | `display/app_card.dart` | White outlined card, tappable, clips a photo at the top | `child`, `onTap`, `padding`, `color` | 2026-10-09 |
+| `AppImagePlaceholder` | `display/app_image_placeholder.dart` | The striped box where a photo is missing or loading | `label` | 2026-10-09 |
+| `AppNetworkImage` | `display/app_network_image.dart` | Network image with the striped placeholder while loading, on error and without a URL | `url`, `width`, `height`, `fit`, `borderRadius`, `semanticLabel` | 2026-10-09 |
+| `AppPhotoTile` | `display/app_photo_tile.dart` | Square photo thumbnail, numbered placeholder until there is a photo (task evidence, receipts) | `image`, `placeholderLabel`, `onTap`, `size` | 2026-10-09 |
+| `AppStatusBadge` | `display/app_status_badge.dart` | Round status label in a tone (orange waiting, green done, red rejected, gray neutral); white on photos | `label`, `tone`, `onImage` | 2026-10-09 |
+| `AppIconTag` | `display/app_icon_tag.dart` | Tinted tag with a square mark (✓ ! ?); trust marks with the ledger hash; timeline notes | `label`, `icon`, `tone`, `detail` | 2026-10-09 |
+| `AppVerifiedName` | `display/app_verified_name.dart` | A business name with the green verified check | `name`, `style`, `semanticLabel` | 2026-10-09 |
+| `AppProjectCard` | `display/app_project_card.dart` | A project in a list: photo and status, title, contractor, task progress, dates, amount (client and contractor) | `title`, `subtitle`, `statusLabel`, `statusTone`, `progress`, `progressLabel`, `percentLabel`, `dateLabel`, `amountLabel`, `imageUrl`, `onTap` | 2026-10-09 |
+| `AppTimeline`, `AppTimelineItem`, `AppTimelineState` | `display/app_timeline.dart` | Vertical list of steps joined by a line (project tasks): done, current, upcoming | `items` (`title`, `state`, `subtitle`, `trailing`, `tag`) | 2026-10-09 |
+| `AppMarketTile` | `display/app_market_tile.dart` | A product in the market grid: photo and condition, name, seller, price per unit, add button | `title`, `seller`, `priceLabel`, `unitLabel`, `conditionLabel`, `conditionTone`, `imageUrl`, `onTap`, `onAdd`, `addTooltip` | 2026-10-09 |
+| `AppCartGroup` | `display/app_cart_group.dart` | One seller's cart lines in an outlined box with a header and a note | `title`, `note`, `children` | 2026-10-09 |
+| `AppCartLine` | `display/app_cart_line.dart` | A product line of a cart, order or refund: thumbnail, name, quantity, price | `title`, `subtitle`, `priceLabel`, `imageUrl`, `trailing`, `onTap` | 2026-10-09 |
+| `AppSummaryRows`, `AppSummaryRow` | `display/app_summary_rows.dart` | Bill lines (subtotal, VAT) and the bold total (cart, checkout, refunds, stage payments) | `rows`, `total` | 2026-10-09 |
+| `AppAddressCard` | `display/app_address_card.dart` | A saved address with a "default" badge and edit/delete actions | `title`, `address`, `defaultLabel`, `editLabel`, `onEdit`, `deleteLabel`, `onDelete` | 2026-10-09 |
+| `AppBusinessMiniCard` | `display/app_business_mini_card.dart` | Small business card for horizontal lists: photo, verified name, rating, projects | `name`, `ratingLabel`, `projectsLabel`, `isVerified`, `imageUrl`, `onTap` | 2026-10-09 |
+| `AppKeyValueList`, `AppKeyValueRow` | `display/app_key_value_list.dart` | Label-value lines in a quiet panel, with an optional copy action (bank transfer, receipt, order details) | `rows` (`label`, `value`, `isMonospace`, `isCopyable`, `copyValue`), `copyLabel`, `onCopied` | 2026-10-09 |
+| `AppStateStepper` | `display/app_state_stepper.dart` | The states something goes through, in a row, reached ones in orange (task: proposed → paid) | `labels`, `currentIndex` | 2026-10-09 |
+| `AppStatusCard` | `feedback/app_status_card.dart` | Where a submission stands: pending, rejected with reason and retry, accepted (receipts, task updates, refunds, verification) | `tone`, `title`, `subtitle`, `reasonTitle`, `reasonText`, `action` | 2026-10-09 |
+| `AppActionBar` | `layout/app_action_bar.dart` | The bottom bar of actions; with two, the primary takes 2/3 of the width | `primary`, `secondary` | 2026-10-09 |
+| `AppTopBar` | `layout/app_top_bar.dart` | The top bar of sub-screens: back arrow (flips in RTL) and a quiet title | `title`, `onBack`, `actions` | 2026-10-09 |
+| `AppStepProgress` | `layout/app_step_progress.dart` | "Step 2 of 4" with one bar per step (multi-step flows) | `current`, `total`, `label` | 2026-10-09 |
+| `AppTabBar` | `layout/app_tab_bar.dart` | Underlined tabs of equal width (business profile) | `labels`, `controller`, `onTap` | 2026-10-09 |
+| `AppBottomNav`, `AppBottomNavItem` | `layout/app_bottom_nav.dart` | The main tabs at the bottom; the shell passes the tabs of the signed-in role | `items`, `currentIndex`, `onTap` | 2026-10-09 |
 
-When you add the first component, replace the "None yet" row.
+Statuses are shown in four tones, `AppTone` in `lib/core/theme/app_tone.dart` (attention, success, danger, neutral). Components that show a status take a tone instead of colors.
 
 ## 4. Reserved names
 
-Almost every screen needs these components. None of them exists yet. When you need one, build it **with exactly this name and path**, then add its row to the Registry. Because everyone uses the same names, two people never build two different buttons. If they work in parallel, Git reports a conflict instead of letting a duplicate slip in.
+Almost every screen needs these components. Some exist already (see the Registry); when you need one that does not, build it **with exactly this name and path**, then add its row to the Registry. Because everyone uses the same names, two people never build two different buttons. If they work in parallel, Git reports a conflict instead of letting a duplicate slip in.
 
 | Need | Component | File (in `lib/core/components/`) |
 |------|-----------|-----------------------------------|
