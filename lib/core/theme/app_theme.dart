@@ -218,6 +218,10 @@ abstract final class AppTheme {
           height: 1.5,
         ),
         actionTextColor: AppColors.primary,
+        // Keep the action on the message's line. With Flutter's default
+        // (0.25), an Arabic label such as "إعادة المحاولة" moves to its own
+        // line and leaves an empty 40% gap beside the message.
+        actionOverflowThreshold: 1,
         behavior: SnackBarBehavior.floating,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
