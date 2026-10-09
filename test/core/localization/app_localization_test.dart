@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,9 +7,9 @@ import 'package:watad/core/localization/app_localization.dart';
 import '../../helpers/pump_component.dart';
 
 void main() {
-  Map<String, dynamic> load(String languageCode) => jsonDecode(
-    File('${AppLocalization.path}/$languageCode.json').readAsStringSync(),
-  ) as Map<String, dynamic>;
+  /// Every translation of [locale], grouped as the app reads them.
+  Future<Map<String, dynamic>> load(Locale locale) =>
+      const TestAssetLoader().load(AppLocalization.path, locale);
 
   bool hasKey(Map<String, dynamic> json, String key) {
     Object? node = json;
@@ -23,19 +22,19 @@ void main() {
     return node is String;
   }
 
-  test('every supported locale has a translation file', () {
+  test('every supported locale has the common translations', () async {
     for (final locale in AppLocalization.supportedLocales) {
+      final translations = await load(locale);
       expect(
-        File('${AppLocalization.path}/${locale.languageCode}.json')
-            .existsSync(),
-        isTrue,
-        reason: '${locale.languageCode}.json is missing',
+        translations['common'],
+        isA<Map<String, dynamic>>(),
+        reason: 'common.${locale.languageCode}.json is missing',
       );
     }
   });
 
   // A key that is missing shows up on screen as "common.something".
-  test('every key the code translates exists in every language', () {
+  test('every key the code translates exists in every language', () async {
     final keyInCode = RegExp(r"""\btr\(\s*'([a-z0-9_.]+)'""");
     final keys = <String>{};
     for (final file in Directory('lib').listSync(recursive: true)) {
@@ -53,12 +52,12 @@ void main() {
     expect(keys, isNotEmpty);
 
     for (final locale in AppLocalization.supportedLocales) {
-      final json = load(locale.languageCode);
-      final missing = keys.where((key) => !hasKey(json, key)).toList();
+      final translations = await load(locale);
+      final missing = keys.where((key) => !hasKey(translations, key)).toList();
       expect(
         missing,
         isEmpty,
-        reason: 'missing in ${locale.languageCode}.json',
+        reason: 'missing in the ${locale.languageCode} files',
       );
     }
   });

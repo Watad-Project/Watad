@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/localization/app_translations_loader.dart';
 import 'package:watad/core/theme/app_theme.dart';
 
 /// Shows [child] on a scrollable page, with the app theme and the real
@@ -59,14 +60,24 @@ Future<void> pumpLocalizedApp(
   await tester.pump();
 }
 
-/// Reads the translation files straight from disk. Flutter's asset bundle
-/// loads asynchronously, which a widget test's fake clock never finishes.
+/// Reads the translation files straight from disk, grouped exactly like
+/// `AppTranslationsLoader` does in the app. Flutter's asset bundle loads
+/// asynchronously, which a widget test's fake clock never finishes.
 class TestAssetLoader extends AssetLoader {
   const TestAssetLoader();
 
   @override
-  Future<Map<String, dynamic>?> load(String path, Locale locale) async {
-    final file = File('$path/${locale.languageCode}.json');
-    return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+  Future<Map<String, dynamic>> load(String path, Locale locale) async {
+    final translations = <String, dynamic>{};
+    for (final file in Directory(path).listSync().whereType<File>()) {
+      final group = AppTranslationsLoader.groupOf(
+        file.uri.pathSegments.last,
+        locale.languageCode,
+      );
+      if (group != null) {
+        translations[group] = jsonDecode(file.readAsStringSync());
+      }
+    }
+    return translations;
   }
 }

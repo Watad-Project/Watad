@@ -1,9 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
+import 'package:watad/core/localization/app_translations_loader.dart';
 
-/// The app's languages, where their translations live
-/// (`assets/translations/ar.json` and `en.json`), and the easy_localization
-/// setup around the app.
+/// The app's languages, where their translations live (one file per group
+/// and language in `assets/translations/`, read by [AppTranslationsLoader]),
+/// and the easy_localization setup around the app.
 abstract final class AppLocalization {
   static const String path = 'assets/translations';
 
@@ -25,7 +26,7 @@ abstract final class AppLocalization {
   /// storage.
   static Widget scope({
     required Widget child,
-    AssetLoader assetLoader = const RootBundleAssetLoader(),
+    AssetLoader assetLoader = const AppTranslationsLoader(),
     bool saveLocale = true,
   }) {
     return EasyLocalization(
