@@ -83,7 +83,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppTabBar` | `layout/app_tab_bar.dart` | Underlined tabs of equal width (business profile) | `labels`, `controller`, `onTap` | 2026-10-09 |
 | `AppBottomNav`, `AppBottomNavItem` | `layout/app_bottom_nav.dart` | The main tabs at the bottom; the shell passes the tabs of the signed-in role | `items`, `currentIndex`, `onTap` | 2026-10-09 |
 
-Components translate their own generic words (Required, Copy, Try again, Camera, Delete…) from the `common` group of `assets/translations/`, with `context.tr()`. Screens pass only the text that is specific to them. Where a label has a default, passing your own text replaces it.
+Components translate their own generic words (Required, Copy, Try again, Camera, Delete…) from the `common` group (`assets/translations/common.ar.json` and `common.en.json`), with `context.tr()`. Screens pass only the text that is specific to them. Where a label has a default, passing your own text replaces it.
 
 Statuses are shown in four tones, `AppTone` in `lib/core/theme/app_tone.dart` (attention, success, danger, neutral). Components that show a status take a tone instead of colors.
 

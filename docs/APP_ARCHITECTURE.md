@@ -22,7 +22,7 @@ Related files: [`AGENTS.md`](../AGENTS.md) (workflow and golden rules) · [`ARCH
 7. **Repositories return `Result<T>`** (`Success` or `Failed`). Nothing throws up to the UI (§13).
 8. **Constructor injection everywhere.** `get_it` registrations live in the role folder's `*_injection.dart`; `getIt` is used only there and in route builders (§12).
 9. **Navigation is `go_router`, by route name.** Names and paths live in `lib/core/router/app_routes.dart` (§11).
-10. **No hard-coded text.** Every visible string is a translation key in every file in `assets/translations/` (§14).
+10. **No hard-coded text.** Every visible string is a translation key, in both language files of its group in `assets/translations/` (§14).
 11. **RTL-safe layout:** `start`/`end`, never `left`/`right` (§14).
 12. **Components first.** Use one from `APP_COMPONENTS.md`. If none fits, create it in `lib/core/components/` and register it in the same change (§15).
 13. **Packages from the registry only.** A new package is added to `APP_PACKAGES.md` in the same change (§15).
@@ -39,7 +39,7 @@ Related files: [`AGENTS.md`](../AGENTS.md) (workflow and golden rules) · [`ARCH
 | Navigation | `go_router` | One router, routes by name (§11) |
 | Backend | `supabase_flutter` | Auth, Postgres views and RPCs, Storage, Realtime. Only in `datasource/` |
 | Dependency injection | `get_it` | Manual registration, no code generation (§12) |
-| Localization | `easy_localization` | JSON files in `assets/translations/` (§14) |
+| Localization | `easy_localization` | One JSON file per group and language in `assets/translations/` (§14) |
 | OTP / PIN input | `pinput` | Only inside the `AppOtpInput` component |
 | Configuration | `flutter_dotenv` | Loads `.env` in `main()`; everything else reads it through `Env` (`lib/core/config/`) |
 
@@ -229,7 +229,7 @@ The maintainers create these once, before feature work starts. **If one you need
 | `lib/core/theme/` | `AppTheme` (light and dark) and the design tokens |
 | `lib/core/enums/` | One file per Postgres enum in `ARCHITECTURE.md` §4 |
 | `lib/core/utils/money.dart`, `dates.dart` | `Money` (§8) and the date helpers |
-| `assets/translations/ar.json`, `en.json` | Translations (§14) |
+| `assets/translations/common.ar.json`, `common.en.json` | The shared translations (§14). Each feature adds its own pair |
 
 ---
 
@@ -960,33 +960,35 @@ Rules:
 
 ## 14. Localization and RTL
 
-- All user-facing text comes from `assets/translations/<locale>.json` through easy_localization. The locales are `ar` (right-to-left) and `en`.
-- Every key MUST exist in every translation file. Add the keys in the same change as the code; the checker compares the files.
-- Keys are nested JSON and snake_case. Top-level groups:
-  - `common`: shared words (Save, Cancel, Retry, …);
+- All user-facing text comes from easy_localization. The locales are `ar` (right-to-left) and `en`.
+- Text is split into groups. Each group has one file per language in `assets/translations/`, named `<group>.<language>.json`:
+  - `common`: shared words (Save, Cancel, Retry, …), also used by the components;
   - `errors`: failure messages (§13);
   - `validation`: form messages;
-  - one group per feature, with a sub-group per role for role-specific text.
+  - one group per feature, named exactly like its folder in `lib/features/`. The feature owns its two files, so teams don't edit the same file.
+- Write the keys without the group's name: `AppTranslationsLoader` puts each file under its group. Inside a file, keys are nested JSON and snake_case, with a sub-object per role for role-specific text.
+- Every key MUST exist in both languages of its group. Add the keys in the same change as the code; the checker compares the files.
+- A new feature adds `<feature>.ar.json` and `<feature>.en.json`. There is nothing to register: `assets/translations/` is already in `pubspec.yaml`, and the loader finds new files by name.
+
+`assets/translations/projects.en.json` (its Arabic twin is `projects.ar.json`, with the same keys):
 
 ```json
 {
-  "common": { "retry": "Retry" },
-  "errors": { "network": "Check your internet connection and try again." },
-  "validation": { "title_required": "Enter a title." },
-  "projects": {
-    "client": {
-      "list_title": "My projects",
-      "empty": "You have no projects yet.",
-      "offers_count": "{count} offers"
-    }
+  "client": {
+    "list_title": "My projects",
+    "empty": "You have no projects yet.",
+    "offers_count": "{count} offers"
   }
 }
 ```
+
+`assets/translations/common.en.json`, `errors.en.json` and `validation.en.json` look the same, e.g. `{ "retry": "Retry" }`. The keys above are read as `projects.client.list_title` and `common.retry`.
 
 - In code: `'projects.client.list_title'.tr()`, with values `'projects.client.offers_count'.tr(namedArgs: {'count': '$n'})`, and plurals with `.plural(n)`.
 - Blocs, use cases and repositories never translate. They carry keys (`Failure.messageKey`) or data; widgets translate.
 - In widgets, SHOULD prefer `context.tr('projects.client.list_title')`. It rebuilds the widget when the language changes; `'…'.tr()` reads a global and can leave a `const` widget in the old language.
 - Inside a group, start the key with the screen, then the element: `auth.login_title`, `auth.login_email_hint`, `projects.client.details_title`.
+- Format money through `Money` and the money component, and dates through the helpers in `lib/core/utils/`. Never build strings like `"SAR 1,500"` by hand.
 
 Setup (`lib/core/localization/app_localization.dart`):
 
@@ -995,7 +997,6 @@ Setup (`lib/core/localization/app_localization.dart`):
 - Change the language with `context.changeLanguage(AppLocalization.english)` or `context.toggleLanguage()`. Read it with `context.isArabic`.
 - easy_localization re-exports `intl`, which has its own `TextDirection`. A file that imports both easy_localization and Flutter's `TextDirection` adds `hide TextDirection` to the easy_localization import.
 - In widget tests, use `pumpComponent` or `pumpLocalizedApp` from `test/helpers/pump_component.dart`. They load the real translation files, so a missing key fails the test.
-- Format money through `Money` and the money component, and dates through the helpers in `lib/core/utils/`. Never build strings like `"SAR 1,500"` by hand.
 
 RTL (the checker enforces the first four):
 
@@ -1147,7 +1148,7 @@ void main() {
 5. **Datasource:** models → remote data source → repository implementation.
 6. **Presentation:** bloc (events, states) → pages → widgets, built from components first.
 7. **Wire it up:** `<prefix><feature>_injection.dart` plus one line in `lib/core/di/injection.dart`; `<prefix><feature>_routes.dart`, its constants in `app_routes.dart`, and the spread in `app_router.dart`.
-8. **Text:** add the keys to every translation file.
+8. **Text:** add the keys to your feature's `<feature>.ar.json` and `<feature>.en.json`.
 9. **Registries:** add new components to `APP_COMPONENTS.md` and new packages to `APP_PACKAGES.md`.
 10. **Tests** (§16).
 11. **Run the four checks** (`AGENTS.md`) and fix every problem in the code. Never weaken a rule to pass.
@@ -1168,6 +1169,6 @@ void main() {
 | `di` | `getIt` only in `core/di`, `core/router`, `*_injection.dart`, `*_routes.dart`, `main.dart`, `app.dart` |
 | `secrets` | No server-only secret, key or function name in `lib/` or `test/` (even in comments); no hard-coded Supabase URL or key; only placeholders in `.env.example`; `.env` never committed |
 | `registry` | Every `pubspec.yaml` dependency is registered in `APP_PACKAGES.md` and none is on its "Not allowed" list; every public type in `lib/core/components/` is in `APP_COMPONENTS.md`; no stale rows in either |
-| `i18n` | All files in `assets/translations/` have the same keys |
+| `i18n` | Files in `assets/translations/` are named `<group>.<language>.json`; the group is `common`, `errors`, `validation` or a folder in `lib/features/`; every group has a file in every language, with the same keys |
 | `theme` | No `Color(0x…)` / `Color.fromARGB` / `Color.fromRGBO` in features |
 | `rtl` | No `EdgeInsets.only(left/right)`, `EdgeInsets.fromLTRB`, `BorderRadius.only(topLeft…)`, `Alignment.*Left/Right`, `TextAlign.left/right` in `lib/` |
