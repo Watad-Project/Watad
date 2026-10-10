@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:watad/core/components/feedback/app_not_found_view.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/core/router/app_router.dart';
+import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/features/splash/shared/domain/entities/splash_destination.dart';
 import 'package:watad/features/splash/shared/domain/repositories/splash_repository.dart';
 import 'package:watad/features/splash/shared/domain/usecases/get_initial_destination_use_case.dart';
 import 'package:watad/features/splash/shared/presentation/bloc/splash_bloc.dart';
+import 'package:watad/features/splash/shared/presentation/pages/splash_page.dart';
 
-import '../../helpers/pump_router.dart';
+import '../../../../helpers/pump_router.dart';
 
 class FakeSplashRepository implements SplashRepository {
   const FakeSplashRepository(this.result);
@@ -20,10 +20,8 @@ class FakeSplashRepository implements SplashRepository {
       result;
 }
 
-// Each role folder tests its own routes in
-// test/features/<feature>/<role>/presentation/ (APP_ARCHITECTURE.md §11).
 void main() {
-  setUp(() {
+  testWidgets('every splash route opens its page at its path', (tester) async {
     getIt.registerFactory(
       () => SplashBloc(
         const GetInitialDestinationUseCase(
@@ -31,25 +29,13 @@ void main() {
         ),
       ),
     );
-  });
+    addTearDown(getIt.reset);
 
-  tearDown(getIt.reset);
-
-  testWidgets('starts at the start path', (tester) async {
     final router = await pumpAppRouter(tester);
 
-    expect(currentPath(router), appStartPath);
-  });
-
-  testWidgets('an unknown address shows the not-found page', (tester) async {
-    final router = await pumpAppRouter(tester);
-
-    router.go('/no-such-page');
+    router.goNamed(SplashRoutes.splashName);
     await tester.pumpAndSettle();
-    expect(find.byType(AppNotFoundView), findsOneWidget);
-
-    await tester.tap(find.text('العودة إلى البداية'));
-    await tester.pumpAndSettle();
-    expect(currentPath(router), appStartPath);
+    expect(currentPath(router), SplashRoutes.splashPath);
+    expect(find.byType(SplashPage), findsOneWidget);
   });
 }
