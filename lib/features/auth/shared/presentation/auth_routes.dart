@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/core/router/app_routes.dart';
 import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_otp_use_case.dart';
