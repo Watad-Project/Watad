@@ -1,19 +1,17 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/auth/shared/datasource/models/auth_session_model.dart';
 
-/// Remote data source contract for authentication with Supabase.
 abstract interface class AuthRemoteDataSource {
-  /// Calls Supabase to send an OTP to the given [email].
+  /// Emails a sign-in code to the account with this [email].
   Future<void> sendOtp({required String email});
 
-  /// Calls Supabase to verify the [token] for [email] and returns the session model.
+  /// Checks the [token] sent to [email] and signs the user in.
   Future<AuthSessionModel> verifyOtp({
     required String email,
     required String token,
   });
 }
 
-/// Supabase implementation of [AuthRemoteDataSource].
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   const AuthRemoteDataSourceImpl(this._client);
 
@@ -21,7 +19,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> sendOtp({required String email}) async {
-    await _client.auth.signInWithOtp(email: email);
+    // Login never creates an account; the sign-up screens do (GRA-10).
+    await _client.auth.signInWithOtp(email: email, shouldCreateUser: false);
   }
 
   @override
@@ -34,6 +33,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       token: token,
       type: OtpType.email,
     );
-    return AuthSessionModel.fromAuthResponse(response);
+    final user = response.user;
+    if (user == null) {
+      throw const AuthException('The code was accepted without a user');
+    }
+    return AuthSessionModel.fromJson(user.toJson());
   }
 }

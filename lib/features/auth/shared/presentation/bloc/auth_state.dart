@@ -1,96 +1,84 @@
 part of 'auth_bloc.dart';
 
-/// Status phases of the login-with-OTP flow.
 enum AuthStatus {
-  /// No backend call in progress.
-  initial,
+  /// Waiting for the user.
+  idle,
 
-  /// Sending the OTP email.
-  sendingOtp,
+  /// Sending a code to the email.
+  sendingCode,
 
-  /// OTP email sent successfully.
-  otpSent,
+  /// Checking the code.
+  verifying,
 
-  /// Verifying the entered OTP.
-  verifyingOtp,
-
-  /// OTP verified; user is authenticated.
-  verified,
+  /// The code was right: the user is signed in.
+  signedIn,
 }
 
-/// State of the login-with-OTP form.
+/// The login form. Field errors stay until the field changes; the
+/// snack bar messages are shown once, so every new state drops them.
 final class AuthState {
   const AuthState({
-    this.status = AuthStatus.initial,
     this.email = '',
     this.otp = '',
+    this.status = AuthStatus.idle,
+    this.codeSent = false,
+    this.resendSeconds = 0,
     this.emailError,
     this.otpError,
-    this.resendSeconds = 0,
-    this.message,
-    this.session,
+    this.successMessage,
+    this.errorMessage,
   });
 
-  /// Current phase of the authentication flow.
+  final String email;
+  final String otp;
   final AuthStatus status;
 
-  /// Current email text.
-  final String email;
+  /// Whether a code went to [email].
+  final bool codeSent;
 
-  /// Current OTP text.
-  final String otp;
-
-  /// Translation key for the email field error, or `null` when valid.
-  final String? emailError;
-
-  /// Translation key for the OTP field error, or `null` when valid.
-  final String? otpError;
-
-  /// Seconds remaining before the resend button becomes active.
+  /// Seconds before another code can be asked for.
   final int resendSeconds;
 
-  /// A one-shot translation key shown as a snackbar (e.g. error or feedback).
-  final String? message;
+  /// Translation keys of the field errors.
+  final String? emailError;
+  final String? otpError;
 
-  /// The authenticated user session once verified.
-  final AuthSession? session;
+  /// Translation keys for a snack bar, for this state only.
+  final String? successMessage;
+  final String? errorMessage;
 
-  /// Whether the resend button is enabled.
-  bool get canResend => resendSeconds == 0;
+  bool get isBusy =>
+      status == AuthStatus.sendingCode || status == AuthStatus.verifying;
 
-  /// Whether a backend call is in progress.
-  bool get isLoading =>
-      status == AuthStatus.sendingOtp || status == AuthStatus.verifyingOtp;
+  bool get canResend => codeSent && resendSeconds == 0;
 
+  /// Pass `null` to clear a field error; leave it out to keep it.
   AuthState copyWith({
-    AuthStatus? status,
-    String? email,
     String? otp,
-    Object? emailError = _sentinel,
-    Object? otpError = _sentinel,
+    AuthStatus? status,
+    bool? codeSent,
     int? resendSeconds,
-    Object? message = _sentinel,
-    Object? session = _sentinel,
+    Object? emailError = _keep,
+    Object? otpError = _keep,
+    String? successMessage,
+    String? errorMessage,
   }) {
     return AuthState(
-      status: status ?? this.status,
-      email: email ?? this.email,
+      email: email,
       otp: otp ?? this.otp,
-      emailError: identical(emailError, _sentinel)
+      status: status ?? this.status,
+      codeSent: codeSent ?? this.codeSent,
+      resendSeconds: resendSeconds ?? this.resendSeconds,
+      emailError: identical(emailError, _keep)
           ? this.emailError
           : emailError as String?,
-      otpError: identical(otpError, _sentinel)
+      otpError: identical(otpError, _keep)
           ? this.otpError
           : otpError as String?,
-      resendSeconds: resendSeconds ?? this.resendSeconds,
-      message: identical(message, _sentinel)
-          ? this.message
-          : message as String?,
-      session: identical(session, _sentinel)
-          ? this.session
-          : session as AuthSession?,
+      successMessage: successMessage,
+      errorMessage: errorMessage,
     );
   }
 }
 
-const Object _sentinel = Object();
+const Object _keep = Object();

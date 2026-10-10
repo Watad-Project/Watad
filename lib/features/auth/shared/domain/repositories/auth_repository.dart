@@ -1,12 +1,13 @@
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
 
-/// Abstract contract for authentication operations.
+/// Signing in with a code sent by email.
 abstract interface class AuthRepository {
-  /// Sends an email verification code (OTP) to the given [email].
+  /// Emails a sign-in code to the account with this [email]. It never
+  /// creates an account: the sign-up screens do.
   Future<Result<void>> sendOtp({required String email});
 
-  /// Verifies the [token] sent to [email] and returns the authenticated session.
+  /// Checks the [token] sent to [email] and signs the user in.
   Future<Result<AuthSession>> verifyOtp({
     required String email,
     required String token,

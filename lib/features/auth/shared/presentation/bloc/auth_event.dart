@@ -1,37 +1,35 @@
 part of 'auth_bloc.dart';
 
-/// Events for the login-with-OTP flow.
 sealed class AuthEvent {
   const AuthEvent();
 }
 
-/// The user changed the email text field.
+/// The user typed in the email field.
 final class AuthEmailChanged extends AuthEvent {
   const AuthEmailChanged(this.email);
 
-  /// The current email text.
   final String email;
 }
 
-/// The user changed the OTP input.
+/// The user typed in the code boxes.
 final class AuthOtpChanged extends AuthEvent {
   const AuthOtpChanged(this.otp);
 
-  /// The current OTP text.
   final String otp;
 }
 
-/// The user tapped the confirm button or completed the OTP input.
+/// The user asked for a code: the first one, or again once the countdown
+/// has ended.
+final class AuthOtpRequested extends AuthEvent {
+  const AuthOtpRequested();
+}
+
+/// The user filled the code boxes or tapped confirm after a code was sent.
 final class AuthOtpSubmitted extends AuthEvent {
   const AuthOtpSubmitted();
 }
 
-/// The user tapped the resend code button.
-final class AuthResendRequested extends AuthEvent {
-  const AuthResendRequested();
-}
-
-/// One second of the resend countdown elapsed.
+/// One second of the resend countdown went by.
 final class AuthCountdownTicked extends AuthEvent {
   const AuthCountdownTicked();
 }

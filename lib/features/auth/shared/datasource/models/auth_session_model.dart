@@ -1,21 +1,13 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
 
-/// Data model for [AuthSession], mapping from Supabase [AuthResponse].
 class AuthSessionModel extends AuthSession {
-  const AuthSessionModel({
-    required super.userId,
-    super.accessToken,
-    super.email,
-  });
+  const AuthSessionModel({required super.userId, super.email});
 
-  /// Creates an [AuthSessionModel] from a Supabase [AuthResponse].
-  factory AuthSessionModel.fromAuthResponse(AuthResponse response) {
-    final user = response.user ?? response.session?.user;
+  /// Maps the auth user that `verifyOTP` returns (`User.toJson()`).
+  factory AuthSessionModel.fromJson(Map<String, dynamic> json) {
     return AuthSessionModel(
-      userId: user?.id ?? '',
-      accessToken: response.session?.accessToken,
-      email: user?.email,
+      userId: json['id'] as String,
+      email: json['email'] as String?,
     );
   }
 }

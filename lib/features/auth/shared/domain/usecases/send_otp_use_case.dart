@@ -3,13 +3,13 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 
-/// Sends an email verification code (OTP) after validating the email format.
+/// Emails a sign-in code to an address, once it is a valid one.
 class SendOtpUseCase implements UseCase<void, String> {
   const SendOtpUseCase(this._repository);
 
   final AuthRepository _repository;
 
-  static final RegExp _emailRegExp = RegExp(
+  static final RegExp _email = RegExp(
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$",
   );
 
@@ -19,7 +19,7 @@ class SendOtpUseCase implements UseCase<void, String> {
     if (email.isEmpty) {
       return const Failed(ValidationFailure('auth.email_required_error'));
     }
-    if (!_emailRegExp.hasMatch(email)) {
+    if (!_email.hasMatch(email)) {
       return const Failed(ValidationFailure('auth.invalid_email_error'));
     }
     return _repository.sendOtp(email: email);

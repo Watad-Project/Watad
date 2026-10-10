@@ -1,124 +1,176 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
-import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/auth_bloc.dart';
 
-class FakeAuthRepository implements AuthRepository {
-  FakeAuthRepository({
-    this.sendOtpResult = const Success(null),
-    this.verifyOtpResult = const Success(AuthSession(userId: 'u1')),
-  });
-
-  Result<void> sendOtpResult;
-  Result<AuthSession> verifyOtpResult;
-
-  @override
-  Future<Result<void>> sendOtp({required String email}) async => sendOtpResult;
-
-  @override
-  Future<Result<AuthSession>> verifyOtp({
-    required String email,
-    required String token,
-  }) async => verifyOtpResult;
-}
+import '../../../../../helpers/fake_auth_repository.dart';
 
 void main() {
   late FakeAuthRepository repository;
-  late SendOtpUseCase sendOtp;
-  late VerifyOtpUseCase verifyOtp;
   late AuthBloc bloc;
 
   setUp(() {
     repository = FakeAuthRepository();
-    sendOtp = SendOtpUseCase(repository);
-    verifyOtp = VerifyOtpUseCase(repository);
-    bloc = AuthBloc(sendOtp, verifyOtp);
+    bloc = AuthBloc(SendOtpUseCase(repository), VerifyOtpUseCase(repository));
   });
 
-  tearDown(() async {
-    await bloc.close();
+  tearDown(() => bloc.close());
+
+  /// Adds [events] and returns the state once [until] holds.
+  Future<AuthState> run(
+    List<AuthEvent> events,
+    bool Function(AuthState state) until,
+  ) {
+    final reached = bloc.stream.firstWhere(until);
+    events.forEach(bloc.add);
+    return reached;
+  }
+
+  Future<AuthState> sendCode() => run(const [
+    AuthEmailChanged('user@watad.sa'),
+    AuthOtpRequested(),
+  ], (s) => s.codeSent);
+
+  test('starts idle, with no code sent', () {
+    expect(bloc.state.status, AuthStatus.idle);
+    expect(bloc.state.codeSent, isFalse);
   });
 
-  test('initial state has 28 resend seconds and initial status', () {
-    expect(bloc.state.status, AuthStatus.initial);
-    expect(bloc.state.resendSeconds, 28);
-    expect(bloc.state.email, '');
-    expect(bloc.state.otp, '');
+  group('asking for a code', () {
+    test('with an invalid email shows the email error', () async {
+      final state = await run(const [
+        AuthEmailChanged('not-an-email'),
+        AuthOtpRequested(),
+      ], (s) => s.emailError != null);
+
+      expect(state.emailError, 'auth.invalid_email_error');
+      expect(state.codeSent, isFalse);
+      expect(repository.sentTo, isEmpty);
+    });
+
+    test('sends it and starts the resend countdown', () async {
+      final state = await sendCode();
+
+      expect(repository.sentTo, ['user@watad.sa']);
+      expect(state.successMessage, 'auth.otp_sent_success');
+      expect(state.resendSeconds, AuthBloc.resendCooldownSeconds);
+      expect(state.canResend, isFalse);
+    });
+
+    test('for an email without an account says so', () async {
+      repository.sendOtpResult = const Failed(AuthFailure());
+
+      final state = await run(const [
+        AuthEmailChanged('nobody@watad.sa'),
+        AuthOtpRequested(),
+      ], (s) => s.errorMessage != null);
+
+      expect(state.errorMessage, 'auth.no_account_error');
+      expect(state.codeSent, isFalse);
+    });
+
+    test('too often shows the rate limit message', () async {
+      repository.sendOtpResult = const Failed(RateLimitFailure());
+
+      final state = await run(const [
+        AuthEmailChanged('user@watad.sa'),
+        AuthOtpRequested(),
+      ], (s) => s.errorMessage != null);
+
+      expect(state.errorMessage, 'errors.rate_limit');
+    });
+
+    test('again during the countdown sends nothing', () async {
+      await sendCode();
+      bloc.add(const AuthOtpRequested());
+      await pumpEventQueue();
+
+      expect(repository.sentTo, ['user@watad.sa']);
+    });
+
+    test('the countdown counts down each second', () async {
+      await sendCode();
+
+      final state = await run(const [
+        AuthCountdownTicked(),
+      ], (s) => s.resendSeconds < AuthBloc.resendCooldownSeconds);
+
+      expect(state.resendSeconds, AuthBloc.resendCooldownSeconds - 1);
+    });
   });
 
-  test('AuthEmailChanged updates email and clears emailError', () {
-    bloc.add(const AuthEmailChanged('user@watad.sa'));
-    expectLater(
-      bloc.stream,
-      emits(
-        predicate<AuthState>(
-          (s) => s.email == 'user@watad.sa' && s.emailError == null,
-        ),
-      ),
-    );
+  test('changing the email after a code was sent starts over', () async {
+    await sendCode();
+
+    final state = await run(const [
+      AuthEmailChanged('other@watad.sa'),
+    ], (s) => s.email == 'other@watad.sa');
+
+    expect(state.codeSent, isFalse);
+    expect(state.resendSeconds, 0);
   });
 
-  test('AuthOtpChanged updates otp and clears otpError', () {
-    bloc.add(const AuthOtpChanged('1234'));
-    expectLater(
-      bloc.stream,
-      emits(predicate<AuthState>((s) => s.otp == '1234' && s.otpError == null)),
-    );
-  });
+  group('checking the code', () {
+    test('an incomplete code shows the code error', () async {
+      await sendCode();
 
-  test('AuthOtpSubmitted emits validation error for empty fields', () async {
-    bloc.add(const AuthOtpSubmitted());
-    await expectLater(
-      bloc.stream,
-      emitsInOrder([
-        predicate<AuthState>((s) => s.status == AuthStatus.verifyingOtp),
-        predicate<AuthState>(
-          (s) =>
-              s.emailError == 'auth.email_required_error' &&
-              s.status == AuthStatus.initial,
-        ),
-      ]),
-    );
-  });
+      final state = await run(const [
+        AuthOtpChanged('1234'),
+        AuthOtpSubmitted(),
+      ], (s) => s.otpError != null);
 
-  test('AuthOtpSubmitted verifies successfully on valid inputs', () async {
-    bloc.add(const AuthEmailChanged('user@watad.sa'));
-    bloc.add(const AuthOtpChanged('1234'));
-    bloc.add(const AuthOtpSubmitted());
+      expect(state.otpError, 'auth.invalid_otp_error');
+      expect(repository.checked, isEmpty);
+    });
 
-    await expectLater(
-      bloc.stream,
-      emitsInOrder([
-        predicate<AuthState>((s) => s.email == 'user@watad.sa'),
-        predicate<AuthState>((s) => s.otp == '1234'),
-        predicate<AuthState>((s) => s.status == AuthStatus.verifyingOtp),
-        predicate<AuthState>(
-          (s) => s.status == AuthStatus.verified && s.session?.userId == 'u1',
-        ),
-      ]),
-    );
-  });
+    test('a wrong or expired code shows its error', () async {
+      repository.verifyOtpResult = const Failed(AuthFailure());
+      await sendCode();
 
-  test('AuthOtpSubmitted emits server error failure message', () async {
-    repository.verifyOtpResult = const Failed(AuthFailure());
-    bloc.add(const AuthEmailChanged('user@watad.sa'));
-    bloc.add(const AuthOtpChanged('1234'));
-    bloc.add(const AuthOtpSubmitted());
+      final state = await run(const [
+        AuthOtpChanged('482910'),
+        AuthOtpSubmitted(),
+      ], (s) => s.otpError != null);
 
-    await expectLater(
-      bloc.stream,
-      emitsInOrder([
-        predicate<AuthState>((s) => s.email == 'user@watad.sa'),
-        predicate<AuthState>((s) => s.otp == '1234'),
-        predicate<AuthState>((s) => s.status == AuthStatus.verifyingOtp),
-        predicate<AuthState>(
-          (s) => s.status == AuthStatus.initial && s.message == 'errors.auth',
-        ),
-      ]),
-    );
+      expect(state.otpError, 'auth.otp_expired_or_invalid');
+      expect(state.status, AuthStatus.idle);
+    });
+
+    test('no connection shows the network message', () async {
+      repository.verifyOtpResult = const Failed(NetworkFailure());
+      await sendCode();
+
+      final state = await run(const [
+        AuthOtpChanged('482910'),
+        AuthOtpSubmitted(),
+      ], (s) => s.errorMessage != null);
+
+      expect(state.errorMessage, 'errors.network');
+      expect(state.otpError, isNull);
+    });
+
+    test('the right code signs the user in', () async {
+      await sendCode();
+
+      final state = await run(const [
+        AuthOtpChanged('482910'),
+        AuthOtpSubmitted(),
+      ], (s) => s.status == AuthStatus.signedIn);
+
+      expect(repository.checked, [('user@watad.sa', '482910')]);
+      expect(state.successMessage, 'auth.signed_in');
+    });
+
+    test('before a code was sent does nothing', () async {
+      bloc
+        ..add(const AuthEmailChanged('user@watad.sa'))
+        ..add(const AuthOtpChanged('482910'))
+        ..add(const AuthOtpSubmitted());
+      await pumpEventQueue();
+
+      expect(repository.checked, isEmpty);
+    });
   });
 }

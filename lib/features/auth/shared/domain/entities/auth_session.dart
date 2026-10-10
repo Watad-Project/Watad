@@ -1,13 +1,11 @@
-/// Represents an authenticated session.
+/// The signed-in user, as the auth service returns them once a code is
+/// verified. The session's tokens stay inside the Supabase client, which
+/// sends them with every call; the app never handles them.
 class AuthSession {
-  const AuthSession({required this.userId, this.accessToken, this.email});
+  const AuthSession({required this.userId, this.email});
 
-  /// The unique ID of the authenticated user.
+  /// The user's id (`auth.users.id`, also `users.id`).
   final String userId;
 
-  /// The JWT access token for Supabase requests.
-  final String? accessToken;
-
-  /// The email address of the authenticated user.
   final String? email;
 }

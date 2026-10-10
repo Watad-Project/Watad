@@ -2,69 +2,53 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
-import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
+import 'package:watad/features/auth/shared/domain/entities/email_otp.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 
-class FakeAuthRepository implements AuthRepository {
-  Result<AuthSession> verifyOtpResult = const Success(
-    AuthSession(userId: 'test-user'),
-  );
-
-  @override
-  Future<Result<void>> sendOtp({required String email}) async =>
-      const Success(null);
-
-  @override
-  Future<Result<AuthSession>> verifyOtp({
-    required String email,
-    required String token,
-  }) async => verifyOtpResult;
-}
+import '../../../../../helpers/fake_auth_repository.dart';
 
 void main() {
   late FakeAuthRepository repository;
-  late VerifyOtpUseCase useCase;
+  late VerifyOtpUseCase verifyOtp;
 
   setUp(() {
     repository = FakeAuthRepository();
-    useCase = VerifyOtpUseCase(repository);
+    verifyOtp = VerifyOtpUseCase(repository);
   });
 
-  test('returns ValidationFailure when email is empty', () async {
-    final result = await useCase(
-      const VerifyOtpParams(email: '', token: '1234'),
-    );
-    expect(result, isA<Failed<AuthSession>>());
-    final failure = (result as Failed<AuthSession>).failure;
-    expect(failure, isA<ValidationFailure>());
-    expect(failure.messageKey, 'auth.email_required_error');
+  Future<Result<AuthSession>> check(String token) =>
+      verifyOtp(EmailOtp(email: 'user@watad.sa', token: token));
+
+  Matcher validationFailure(String key) => isA<Failed<AuthSession>>().having(
+    (result) => result.failure,
+    'failure',
+    isA<ValidationFailure>().having((f) => f.messageKey, 'messageKey', key),
+  );
+
+  test('Supabase email codes have 6 digits', () {
+    expect(VerifyOtpUseCase.codeLength, 6);
   });
 
-  test('returns ValidationFailure when OTP is empty', () async {
-    final result = await useCase(
-      const VerifyOtpParams(email: 'user@example.com', token: ''),
-    );
-    expect(result, isA<Failed<AuthSession>>());
-    final failure = (result as Failed<AuthSession>).failure;
-    expect(failure, isA<ValidationFailure>());
-    expect(failure.messageKey, 'auth.otp_required_error');
+  test('an empty code is required, and nothing is checked', () async {
+    expect(await check(''), validationFailure('auth.otp_required_error'));
+    expect(repository.checked, isEmpty);
   });
 
-  test('returns ValidationFailure when OTP length is less than 4', () async {
-    final result = await useCase(
-      const VerifyOtpParams(email: 'user@example.com', token: '12'),
-    );
-    expect(result, isA<Failed<AuthSession>>());
-    final failure = (result as Failed<AuthSession>).failure;
-    expect(failure, isA<ValidationFailure>());
-    expect(failure.messageKey, 'auth.invalid_otp_error');
+  test('a short code or one with letters is rejected', () async {
+    expect(await check('1234'), validationFailure('auth.invalid_otp_error'));
+    expect(await check('12ab56'), validationFailure('auth.invalid_otp_error'));
+    expect(repository.checked, isEmpty);
   });
 
-  test('calls repository on valid inputs and returns AuthSession', () async {
-    final result = await useCase(
-      const VerifyOtpParams(email: 'user@example.com', token: '1234'),
+  test('a whole code is checked and signs the user in', () async {
+    final result = await verifyOtp(
+      const EmailOtp(email: ' user@watad.sa ', token: ' 482910 '),
     );
-    expect(result, isA<Success<AuthSession>>());
-    expect((result as Success<AuthSession>).data.userId, 'test-user');
+
+    expect(
+      result,
+      isA<Success<AuthSession>>().having((s) => s.data.userId, 'id', 'user-1'),
+    );
+    expect(repository.checked, [('user@watad.sa', '482910')]);
   });
 }

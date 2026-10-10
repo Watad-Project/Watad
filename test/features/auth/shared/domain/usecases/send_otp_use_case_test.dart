@@ -1,50 +1,55 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
-import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_otp_use_case.dart';
 
-class FakeAuthRepository implements AuthRepository {
-  Result<void> sendOtpResult = const Success(null);
-
-  @override
-  Future<Result<void>> sendOtp({required String email}) async => sendOtpResult;
-
-  @override
-  Future<Result<AuthSession>> verifyOtp({
-    required String email,
-    required String token,
-  }) async => const Success(AuthSession(userId: 'test'));
-}
+import '../../../../../helpers/fake_auth_repository.dart';
 
 void main() {
   late FakeAuthRepository repository;
-  late SendOtpUseCase useCase;
+  late SendOtpUseCase sendOtp;
 
   setUp(() {
     repository = FakeAuthRepository();
-    useCase = SendOtpUseCase(repository);
+    sendOtp = SendOtpUseCase(repository);
   });
 
-  test('returns ValidationFailure when email is empty', () async {
-    final result = await useCase('');
-    expect(result, isA<Failed<void>>());
-    final failure = (result as Failed<void>).failure;
-    expect(failure, isA<ValidationFailure>());
-    expect(failure.messageKey, 'auth.email_required_error');
+  Matcher validationFailure(String key) => isA<Failed<void>>().having(
+    (result) => result.failure,
+    'failure',
+    isA<ValidationFailure>().having((f) => f.messageKey, 'messageKey', key),
+  );
+
+  test('an empty email is required, and nothing is sent', () async {
+    expect(await sendOtp('  '), validationFailure('auth.email_required_error'));
+    expect(repository.sentTo, isEmpty);
   });
 
-  test('returns ValidationFailure when email format is invalid', () async {
-    final result = await useCase('invalid-email');
-    expect(result, isA<Failed<void>>());
-    final failure = (result as Failed<void>).failure;
-    expect(failure, isA<ValidationFailure>());
-    expect(failure.messageKey, 'auth.invalid_email_error');
+  test('an invalid email is rejected, and nothing is sent', () async {
+    expect(
+      await sendOtp('not-an-email'),
+      validationFailure('auth.invalid_email_error'),
+    );
+    expect(repository.sentTo, isEmpty);
   });
 
-  test('calls repository when email is valid', () async {
-    final result = await useCase('valid@example.com');
-    expect(result, isA<Success<void>>());
+  test('a valid email gets a code, without the spaces around it', () async {
+    expect(await sendOtp(' user@watad.sa '), isA<Success<void>>());
+    expect(repository.sentTo, ['user@watad.sa']);
+  });
+
+  test("passes the repository's failure on", () async {
+    repository.sendOtpResult = const Failed(RateLimitFailure());
+
+    final result = await sendOtp('user@watad.sa');
+
+    expect(
+      result,
+      isA<Failed<void>>().having(
+        (r) => r.failure,
+        'failure',
+        isA<RateLimitFailure>(),
+      ),
+    );
   });
 }

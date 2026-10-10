@@ -3,118 +3,132 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
+import 'package:watad/features/auth/shared/domain/entities/email_otp.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
 
-/// Manages the login-with-OTP flow: validation, resend countdown, and Supabase auth.
+/// Login with an email code: send a code to the email, wait before it can
+/// be sent again, then check the code.
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc(this._sendOtp, this._verifyOtp)
-    : super(const AuthState(resendSeconds: _resendCooldownSeconds)) {
-    on<AuthEmailChanged>(
-      (e, emit) => emit(state.copyWith(email: e.email, emailError: null)),
-    );
-    on<AuthOtpChanged>(
-      (e, emit) => emit(state.copyWith(otp: e.otp, otpError: null)),
-    );
+  AuthBloc(this._sendOtp, this._verifyOtp) : super(const AuthState()) {
+    on<AuthEmailChanged>(_onEmailChanged);
+    on<AuthOtpChanged>(_onOtpChanged);
+    on<AuthOtpRequested>(_onOtpRequested);
     on<AuthOtpSubmitted>(_onOtpSubmitted);
-    on<AuthResendRequested>(_onResendRequested);
     on<AuthCountdownTicked>(_onCountdownTicked);
-    _startCountdown();
   }
+
+  /// Supabase sends a new code to the same email at most once a minute.
+  static const int resendCooldownSeconds = 60;
 
   final SendOtpUseCase _sendOtp;
   final VerifyOtpUseCase _verifyOtp;
+  Timer? _countdown;
 
-  static const int _resendCooldownSeconds = 28;
-  Timer? _countdownTimer;
-
-  void _startCountdown() {
-    _countdownTimer?.cancel();
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      add(const AuthCountdownTicked());
-    });
+  void _onEmailChanged(AuthEmailChanged event, Emitter<AuthState> emit) {
+    // A code belongs to one email: another email starts over.
+    _countdown?.cancel();
+    emit(AuthState(email: event.email));
   }
 
-  Future<void> _onOtpSubmitted(
-    AuthOtpSubmitted event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(
-      state.copyWith(
-        status: AuthStatus.verifyingOtp,
-        emailError: null,
-        otpError: null,
-      ),
-    );
-
-    final result = await _verifyOtp(
-      VerifyOtpParams(email: state.email, token: state.otp),
-    );
-    switch (result) {
-      case Success(:final data):
-        emit(state.copyWith(status: AuthStatus.verified, session: data));
-      case Failed(:final failure):
-        final isEmail =
-            failure is ValidationFailure &&
-            failure.messageKey.contains('email');
-        final isOtp =
-            failure is ValidationFailure && failure.messageKey.contains('otp');
-        emit(
-          state.copyWith(
-            status: AuthStatus.initial,
-            emailError: isEmail ? failure.messageKey : null,
-            otpError: isOtp ? failure.messageKey : null,
-            message: (!isEmail && !isOtp) ? failure.messageKey : null,
-          ),
-        );
-    }
+  void _onOtpChanged(AuthOtpChanged event, Emitter<AuthState> emit) {
+    emit(state.copyWith(otp: event.otp, otpError: null));
   }
 
-  Future<void> _onResendRequested(
-    AuthResendRequested event,
+  Future<void> _onOtpRequested(
+    AuthOtpRequested event,
     Emitter<AuthState> emit,
   ) async {
-    if (state.resendSeconds > 0) return;
-    emit(state.copyWith(status: AuthStatus.sendingOtp, emailError: null));
+    if (state.isBusy || (state.codeSent && !state.canResend)) return;
+    emit(state.copyWith(status: AuthStatus.sendingCode, emailError: null));
 
     final result = await _sendOtp(state.email);
     switch (result) {
       case Success():
         emit(
           state.copyWith(
-            status: AuthStatus.otpSent,
-            message: 'auth.otp_sent_success',
-            resendSeconds: _resendCooldownSeconds,
+            status: AuthStatus.idle,
+            codeSent: true,
+            resendSeconds: resendCooldownSeconds,
+            successMessage: 'auth.otp_sent_success',
           ),
         );
         _startCountdown();
       case Failed(:final failure):
-        final isEmail =
-            failure is ValidationFailure &&
-            failure.messageKey.contains('email');
         emit(
           state.copyWith(
-            status: AuthStatus.initial,
-            emailError: isEmail ? failure.messageKey : null,
-            message: !isEmail ? failure.messageKey : null,
+            status: AuthStatus.idle,
+            emailError: failure is ValidationFailure
+                ? failure.messageKey
+                : null,
+            errorMessage: switch (failure) {
+              ValidationFailure() => null,
+              // Login does not create accounts, so an unknown email fails.
+              AuthFailure() => 'auth.no_account_error',
+              _ => failure.messageKey,
+            },
+          ),
+        );
+    }
+  }
+
+  Future<void> _onOtpSubmitted(
+    AuthOtpSubmitted event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (state.isBusy || !state.codeSent) return;
+    emit(state.copyWith(status: AuthStatus.verifying, otpError: null));
+
+    final result = await _verifyOtp(
+      EmailOtp(email: state.email, token: state.otp),
+    );
+    switch (result) {
+      case Success():
+        _countdown?.cancel();
+        emit(
+          state.copyWith(
+            status: AuthStatus.signedIn,
+            successMessage: 'auth.signed_in',
+          ),
+        );
+      case Failed(:final failure):
+        emit(
+          state.copyWith(
+            status: AuthStatus.idle,
+            otpError: switch (failure) {
+              ValidationFailure(:final messageKey) => messageKey,
+              AuthFailure() => 'auth.otp_expired_or_invalid',
+              _ => null,
+            },
+            errorMessage: switch (failure) {
+              ValidationFailure() || AuthFailure() => null,
+              _ => failure.messageKey,
+            },
           ),
         );
     }
   }
 
   void _onCountdownTicked(AuthCountdownTicked event, Emitter<AuthState> emit) {
-    final s = state.resendSeconds - 1;
-    emit(state.copyWith(resendSeconds: s < 0 ? 0 : s, message: null));
-    if (s <= 0) _countdownTimer?.cancel();
+    final seconds = state.resendSeconds - 1;
+    if (seconds <= 0) _countdown?.cancel();
+    emit(state.copyWith(resendSeconds: seconds < 0 ? 0 : seconds));
+  }
+
+  void _startCountdown() {
+    _countdown?.cancel();
+    _countdown = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => add(const AuthCountdownTicked()),
+    );
   }
 
   @override
   Future<void> close() {
-    _countdownTimer?.cancel();
+    _countdown?.cancel();
     return super.close();
   }
 }
