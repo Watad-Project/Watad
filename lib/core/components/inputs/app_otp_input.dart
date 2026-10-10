@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// ignore: depend_on_referenced_packages
 import 'package:material_ui/material_ui.dart' as m_ui;
 import 'package:pinput/pinput.dart';
 import 'package:watad/core/theme/app_colors.dart';
@@ -24,10 +23,11 @@ class AppOtpInput extends StatelessWidget {
     this.autofocus = false,
   });
 
-  /// Default number of PIN digits across the app until confirmed by design.
-  static const int defaultLength = 4;
+  /// Supabase sends 6-digit email codes (its setting allows 6 to 10, never
+  /// fewer), so 6 boxes unless a screen says otherwise.
+  static const int defaultLength = 6;
 
-  /// The number of PIN boxes (typically 4 or 6).
+  /// The number of boxes.
   final int length;
 
   final TextEditingController? controller;
