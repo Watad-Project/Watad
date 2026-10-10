@@ -14,6 +14,8 @@ These are the rules for every AI agent (Claude, Codex, Cursor, Copilot, Gemini, 
 
 Agents: open and read these files at the start of every task. They change, so don't rely on what you remember from an earlier session.
 
+**The rules are enforced by `tool/check_architecture.dart`.** Run `dart run tool/check_architecture.dart` after every change, not only before you push. It checks the folders, names, layers, routing, every Supabase call against `docs/ARCHITECTURE.md`, translations, money and the required tests; `docs/APP_ARCHITECTURE.md` §18 lists every rule. **A pull request that fails it is rejected**, whatever else it does. Fix the code until it passes; never change the checker, the rules or `analysis_options.yaml` to make it pass.
+
 ## 2. The project
 
 Watad (Taibah University graduation project, CS 492) is a Flutter app where **clients** (project owners) hire **contractors** (verified businesses) for construction and renovation work. It also has an off-chain marketplace. The backend is **Supabase**: Postgres with RLS, Auth, Storage and one Edge Function. Agreed projects are copied to a **Hyperledger Fabric** blockchain by the server, never by the app.
@@ -113,6 +115,8 @@ git switch -c feature/gra-12-projects-client
    5. translations;
    6. registries;
    7. tests.
+
+   After each step, run `dart run tool/check_architecture.dart` and fix what it reports before you start the next one.
 7. Do everything in §8, then push and open the PR.
 8. Report what you changed and anything you could not do.
 
@@ -127,7 +131,7 @@ git switch -c feature/gra-12-projects-client
    dart run tool/check_architecture.dart
    ```
 
-   CI runs the same four on every PR, and a PR that fails any of them is not merged.
+   CI runs the same four on every PR, and a PR that fails any of them is not merged. The architecture check is the strict one: each problem names its rule, file, line and the section to read. Fix every one; there are no exceptions, and a maintainer rejects a PR that works around it.
 2. Run **`flutter clean`**, so that only source files leave your machine and the project stays small. Run `flutter pub get` afterwards if you keep working.
 3. Check `git status`. Only your task's files may be in the commit: no `.env`, `build/`, `.dart_tool/` or IDE files.
 4. Done also means:
@@ -138,7 +142,7 @@ git switch -c feature/gra-12-projects-client
 
 ## 9. Working with other people and agents
 
-- **Stay inside the folders of your task.** In `lib/core/` you may only do the edits listed in `APP_ARCHITECTURE.md` §6: add a component, add route constants and spread your routes, add your DI line.
+- **Stay inside the folders of your task.** In `lib/core/` you may only do the edits listed in `APP_ARCHITECTURE.md` §6: add a component, add your names file in `router/routes/` and spread your routes, add your DI line.
 - **A maintainer must approve changes to:**
   - anything else in `lib/core/`;
   - `pubspec.yaml` (except adding a registered package);
@@ -163,6 +167,7 @@ git switch -c feature/gra-12-projects-client
 - you need a banned package, or one that overlaps a registered package;
 - you are not sure which feature or role folder something belongs in;
 - the instructions conflict with these rules;
+- `dart run tool/check_architecture.dart` reports a problem you can only fix by changing the checker or a rule;
 - your Flutter version is not 3.47.6.
 
 **Maintainers:** Ameer (@73azn) and Omar Mulla (@Om4rMu). They approve and merge pull requests and approve rule changes. In `docs/ARCHITECTURE.md`, a project **owner** is the client who created a project, not a maintainer.
