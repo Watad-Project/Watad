@@ -1,36 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
-import 'package:watad/core/router/app_routes.dart';
-import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
-import 'package:watad/features/business_verification/contractor/presentation/contractor_business_verification_routes.dart';
-import 'package:watad/features/business_verification/shared/presentation/business_verification_routes.dart';
-import 'package:watad/features/onboarding/contractor/presentation/contractor_onboarding_routes.dart';
-import 'package:watad/features/onboarding/shared/presentation/onboarding_routes.dart';
-import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
 /// The app's only router, used by `WatadApp`.
 final GoRouter appRouter = createAppRouter();
+
+/// Where the app opens, and where "Back to start" on the not-found page
+/// leads. No screen exists yet, so every address shows the not-found page.
+/// The splash screen's task points this at the splash path
+/// (APP_ARCHITECTURE.md §11).
+const String appStartPath = '/';
 
 /// Builds the router. The app builds it once ([appRouter]); tests build a
 /// fresh one each, so one test's navigation doesn't leak into the next.
 GoRouter createAppRouter() {
   return GoRouter(
-    initialLocation: AppRoutes.splashPath,
+    initialLocation: appStartPath,
     redirect: _guard,
     errorBuilder: (context, state) => Scaffold(
-      body: AppNotFoundView(
-        onBackToStart: () => context.goNamed(AppRoutes.splashName),
-      ),
+      body: AppNotFoundView(onBackToStart: () => context.go(appStartPath)),
     ),
     routes: [
-      // One line per role folder, sorted by file name.
-      ...authRoutes,
-      ...businessVerificationRoutes,
-      ...contractorBusinessVerificationRoutes,
-      ...contractorOnboardingRoutes,
-      ...onboardingRoutes,
-      ...splashRoutes,
+      // One line per role folder, sorted by file name: ...clientProjectsRoutes.
+      // Each folder's names and paths live in lib/core/router/routes/.
     ],
   );
 }

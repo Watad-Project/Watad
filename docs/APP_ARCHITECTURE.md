@@ -21,13 +21,13 @@ Related files: [`AGENTS.md`](../AGENTS.md) (workflow and golden rules) · [`ARCH
 6. **State management is `flutter_bloc`.** One bloc per page or flow. Blocs call use cases only (§10).
 7. **Repositories return `Result<T>`** (`Success` or `Failed`). Nothing throws up to the UI (§13).
 8. **Constructor injection everywhere.** `get_it` registrations live in the role folder's `*_injection.dart`; `getIt` is used only there and in route builders (§12).
-9. **Navigation is `go_router`, by route name.** Names and paths live in `lib/core/router/app_routes.dart` (§11).
+9. **Navigation is `go_router`, by route name.** Each role folder keeps its route names and paths in its own file in `lib/core/router/routes/` (§11).
 10. **No hard-coded text.** Every visible string is a translation key, in both language files of its group in `assets/translations/` (§14).
 11. **RTL-safe layout:** `start`/`end`, never `left`/`right` (§14).
 12. **Components first.** Use one from `APP_COMPONENTS.md`. If none fits, create it in `lib/core/components/` and register it in the same change (§15).
 13. **Packages from the registry only.** A new package is added to `APP_PACKAGES.md` in the same change (§15).
 14. **Names carry the role:** files in `client/` start with `client_`, public types with `Client` (§7).
-15. **Green before done:** format, analyze, test and the architecture check all pass (§18, `AGENTS.md`).
+15. **Green before done:** format, analyze, test and the architecture check all pass (§18, `AGENTS.md`). A pull request that fails `dart run tool/check_architecture.dart` is rejected.
 
 ---
 
@@ -126,7 +126,7 @@ Rules:
 - MUST use exactly the folder names above. The checker rejects anything else, for example `data/`, `screens/`, `views/`, `models/` inside `domain/`, `helpers/` or `utils/` inside a feature.
 - The only file allowed directly in a role folder is its injection file. The only file allowed directly in `presentation/` is its routes file. `datasource/` and `domain/` hold folders only.
 - You MAY add sub-folders inside `remote/`, `models/`, `entities/`, `usecases/`, `bloc/`, `pages/` and `widgets/` to group files.
-- MUST NOT create empty folders.
+- MUST NOT create empty folders. `lib/` holds only Dart files.
 
 Examples:
 
@@ -195,7 +195,7 @@ lib/core/
 ├── enums/         # Dart mirrors of the Postgres enums (ARCHITECTURE.md §4) (pure Dart)
 ├── error/         # Failure, Result                                       (pure Dart)
 ├── localization/  # supported locales and translation helpers
-├── router/        # app_router.dart (the GoRouter), app_routes.dart (names and paths)
+├── router/        # app_router.dart (the GoRouter); routes/: one file of names and paths per role folder
 ├── supabase/      # Supabase setup, guardSupabaseCall(), storage helpers
 ├── theme/         # AppTheme, colors, text styles, spacing
 ├── usecase/       # UseCase<T, P>, NoParams                               (pure Dart)
@@ -208,7 +208,7 @@ Rules:
 - `lib/core/` MUST NOT contain feature logic: no feature entities or blocs, and no table, view or RPC names outside `core/supabase/`.
 - In a feature task you MAY do only these edits in core:
   - add a component to `components/` and register it (§15);
-  - add your route constants to `router/app_routes.dart` and spread your routes list in `router/app_router.dart` (§11);
+  - add or edit your own names file in `router/routes/`, and spread your routes list in `router/app_router.dart` (§11);
   - add your register call to `di/injection.dart` (§12).
 - Any other change in core needs a maintainer: changing how an existing component behaves, theme, errors, Supabase helpers, router guards or bootstrap.
 
@@ -225,7 +225,7 @@ The maintainers create these once, before feature work starts. **If one you need
 | `lib/core/error/failure.dart`, `result.dart` | `Failure` and its subclasses, `Result` (§13) |
 | `lib/core/usecase/usecase.dart` | `UseCase<T, P>`, `NoParams` (§8) |
 | `lib/core/supabase/supabase_guard.dart` | `guardSupabaseCall()` (§13) |
-| `lib/core/router/app_router.dart`, `app_routes.dart` | `appRouter`, `AppRoutes`, sign-in and role guards (§11) |
+| `lib/core/router/app_router.dart` | `appRouter`, `appStartPath`, the sign-in and role guards, the not-found page (§11). The names files in `router/routes/` are added by the features |
 | `lib/core/theme/` | `AppTheme` (light and dark) and the design tokens |
 | `lib/core/enums/` | One file per Postgres enum in `ARCHITECTURE.md` §4 |
 | `lib/core/utils/money.dart`, `dates.dart` | `Money` (§8) and the date helpers |
@@ -254,8 +254,10 @@ Code, comments, commit messages and docs are in English. User-facing text lives 
 | Page | `<Prefix><Name>Page` | `ClientProjectsPage` |
 | Feature widget | `<Prefix><Name>` (no `Widget` suffix) | `ClientProjectTile` |
 | Injection file / function | `<prefix><feature>_injection.dart` / `register<Prefix><Feature>Dependencies` | `registerClientProjectsDependencies` |
-| Routes file / list | `<prefix><feature>_routes.dart` / `<prefix><Feature>Routes` | `clientProjectsRoutes` |
-| Route constants | `AppRoutes.<prefix><Name>Name` / `…Path` | `AppRoutes.clientProjectsName` |
+| Routes file / list (in `presentation/`) | `<prefix><feature>_routes.dart` / `<prefix><Feature>Routes` | `clientProjectsRoutes` |
+| Names file / class (in `lib/core/router/routes/`) | `<prefix><feature>_routes.dart` / `<Prefix><Feature>Routes` | `ClientProjectsRoutes` |
+| Route constants | `<page>Name` / `<page>Path`, where `<page>` is the page's name without the role prefix and `Page` | `ClientProjectsRoutes.projectDetailsName` |
+| Route name value | kebab-case of `<page>`, starting with the role in a role folder; unique in the app | `'client-project-details'` |
 | Translation key | `<feature>.<role>.<key>`, or `<feature>.<key>` in `shared/`, snake_case | `projects.client.list_title` |
 | Component | `App<Name>` in `app_<name>.dart` | `AppButton` |
 
@@ -454,6 +456,7 @@ Rules:
 
 - The only layer that imports `supabase_flutter` (besides `lib/main.dart`, `core/supabase/` and `core/di/`).
 - The only place that contains table, view, column, RPC and bucket names. Take them from `ARCHITECTURE.md`. **Never guess a column name**; `ARCHITECTURE.md` §7 explains how to look it up.
+- Write those names as string literals in the call (`.from('v_my_projects')`, `.rpc('accept_offer', …)`), so reviewers and the checker can see them. The checker compares every call with the tables of `ARCHITECTURE.md` §3, §3a, §6, §7 and §8 (§18).
 - **Reads** come from `v_*` views (`ARCHITECTURE.md` §7). Select only the columns the model maps (`select('id, title, …')`), and filter and order on the server.
 - **Writes** go through RPCs (`ARCHITECTURE.md` §6), or are an insert/update with exactly the columns of `ARCHITECTURE.md` §3a. Build the map by hand in the remote data source; never serialize a whole entity into a write.
 - **Remote data sources** are an `abstract interface class` plus an `…Impl`. They receive `SupabaseClient` through the constructor (never `Supabase.instance`), return models or `void`, and let Supabase exceptions propagate.
@@ -762,26 +765,41 @@ class ClientProjectTile extends StatelessWidget {
 ## 11. Routing (go_router)
 
 - There is one `GoRouter`: `appRouter` in `lib/core/router/app_router.dart`. It only spreads the routes lists of the role folders and holds the guards (signed in, role). Features MUST NOT add their own redirects.
-- Every route has a name and a path constant in `lib/core/router/app_routes.dart`.
+- **Each role folder owns one names file** in `lib/core/router/routes/`, with the same file name as its routes list: `lib/core/router/routes/<prefix><feature>_routes.dart`. It declares `abstract final class <Prefix><Feature>Routes` with a `…Name` and a `…Path` constant for every route of that folder, and nothing else: no imports, no logic. Only that folder's task edits it.
+- The names files live in core, not in the feature, because other features navigate with them: the sign-in page goes to the client's home, a project opens its chat. A feature MAY import any names file. It still MUST NOT import another feature (§5).
+- Route name values are kebab-case and unique in the whole app. In a role folder they start with the role: `'client-project-details'`. go_router stops on a duplicate name, so the route tests catch it.
 - Paths are `/<role>/<feature>/…` for role folders (e.g. `/client/projects/:projectId`) and `/<feature>/…` for `shared/` (e.g. `/auth/sign-in`). Use kebab-case segments and pass ids as path parameters.
 - Navigate by name: use `context.pushNamed(…)` to open a page on top (details, forms) and `context.goNamed(…)` to switch area (after sign-in, bottom-navigation tabs). MUST NOT build paths by string interpolation, and MUST NOT use `Navigator.push` or `MaterialPageRoute`.
 - Pass ids, not objects. Do not pass entities through `extra:`. The destination page loads its own data by id, which keeps deep links and refreshes working.
 - Each role folder exposes its routes as a top-level `final List<RouteBase>` in `presentation/<prefix><feature>_routes.dart`. The route builder creates the page's bloc.
+- Every `GoRoute` takes its `name:` and `path:` from its folder's names file, every name in the names file has its `GoRoute`, and every page in `pages/` is opened by one. Only `app_router.dart` imports a routes list.
 - Dialogs and bottom sheets are not routes. Open them from the page with `showDialog` or `showModalBottomSheet`.
 
+**Why one names file per role folder?** For the same reason each feature has its own translation files (§14): a team edits only its own files, so two pull requests never change the same list of constants. The only shared line is the spread in `app_router.dart`, added once, when a role folder gets its first route.
+
 ```dart
-// lib/features/projects/client/presentation/client_projects_routes.dart
+// lib/core/router/routes/client_projects_routes.dart (the names file)
+/// The routes of lib/features/projects/client/. Any feature navigates to
+/// them with these names.
+abstract final class ClientProjectsRoutes {
+  static const String projectsName = 'client-projects';
+  static const String projectsPath = '/client/projects';
+}
+```
+
+```dart
+// lib/features/projects/client/presentation/client_projects_routes.dart (the routes list)
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/di/injection.dart';
-import 'package:watad/core/router/app_routes.dart';
+import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_projects_bloc.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_projects_page.dart';
 
 final List<RouteBase> clientProjectsRoutes = [
   GoRoute(
-    name: AppRoutes.clientProjectsName,
-    path: AppRoutes.clientProjectsPath,
+    name: ClientProjectsRoutes.projectsName,
+    path: ClientProjectsRoutes.projectsPath,
     builder: (context, state) => BlocProvider(
       create: (_) =>
           getIt<ClientProjectsBloc>()..add(const ClientProjectsFetched()),
@@ -792,63 +810,77 @@ final List<RouteBase> clientProjectsRoutes = [
 ```
 
 ```dart
-// lib/core/router/app_routes.dart (add your constants, grouped by feature and role)
-abstract final class AppRoutes {
-  // projects / client
-  static const String clientProjectsName = 'client-projects';
-  static const String clientProjectsPath = '/client/projects';
+// lib/core/router/app_router.dart (spread your list, one line, sorted by file name)
+import 'package:watad/features/projects/client/presentation/client_projects_routes.dart';
+
+GoRouter createAppRouter() {
+  return GoRouter(
+    // …
+    routes: [
+      ...clientProjectsRoutes,
+    ],
+  );
 }
 ```
 
+Navigating from another feature: import the target's names file, never the target feature.
+
 ```dart
-// lib/core/router/app_router.dart (spread your list)
-final GoRouter appRouter = GoRouter(
-  initialLocation: AppRoutes.clientProjectsPath,
-  routes: [...clientProjectsRoutes],
-);
+// lib/features/auth/shared/presentation/pages/login_page.dart
+import 'package:watad/core/router/routes/client_projects_routes.dart';
+
+context.goNamed(ClientProjectsRoutes.projectsName);
 ```
 
-Opening a page with an id:
+Opening a page with an id (a route whose path is `/client/projects/:projectId`):
 
 ```dart
 context.pushNamed(
-  AppRoutes.clientProjectDetailsName,
+  ClientProjectsRoutes.projectDetailsName,
   pathParameters: {'projectId': project.id},
 );
 ```
 
 ### How the router is set up
 
-The router is set up once, in `lib/core/router/`. Every route lives in the feature that owns it.
+The router is set up once, in `lib/core/router/`. Every route's page and `GoRoute` live in the feature that owns it; its name and path live in that folder's names file.
 
 | File | Holds |
 |------|-------|
-| `app_routes.dart` | `AppRoutes`: every route's name and path |
-| `app_router.dart` | `appRouter`, built by `createAppRouter()`: starts on `/splash`, spreads each role folder's routes list, holds the guard (`_guard`) and shows `AppNotFoundView` for unknown addresses |
+| `app_router.dart` | `appRouter`, built by `createAppRouter()`: opens at `appStartPath`, spreads each role folder's routes list, holds the guard (`_guard`) and shows `AppNotFoundView` for unknown addresses |
+| `routes/<prefix><feature>_routes.dart` | One role folder's route names and paths, e.g. `AuthRoutes`, `ClientProjectsRoutes`. Each is created by the feature that owns it |
 
-These routes exist today. Each one opens a placeholder page ("This screen is still being built") until its issue builds the real screen:
+No feature has routes yet. Until the first screen exists, the app opens at `/` and shows the not-found page. The task that builds the splash screen points `appStartPath` at the splash path (`const String appStartPath = SplashRoutes.splashPath;`) and updates `test/app_test.dart` to expect its page.
 
-| Path | Name constant | Routes file (in `lib/features/`) | Page | Issue |
-|------|---------------|----------------------------------|------|-------|
-| `/splash` | `splashName` | `splash/shared/presentation/splash_routes.dart` | `SplashPage` | GRA-8 |
-| `/onboarding` | `onboardingName` | `onboarding/shared/presentation/onboarding_routes.dart` | `OnboardingPage` | GRA-9 |
-| `/auth/login` | `loginName` | `auth/shared/presentation/auth_routes.dart` | `LoginPage` | GRA-10 |
-| `/auth/role` | `roleSelectionName` | `auth/shared/presentation/auth_routes.dart` | `RoleSelectionPage` | GRA-11 |
-| `/auth/signup/client` | `signUpClientName` | `auth/shared/presentation/auth_routes.dart` | `SignUpClientPage` | GRA-12 |
-| `/auth/signup/business` | `signUpBusinessName` | `auth/shared/presentation/auth_routes.dart` | `SignUpBusinessPage` | GRA-13 |
-| `/contractor/business-verification/license` | `contractorLicenseUploadName` | `business_verification/contractor/presentation/contractor_business_verification_routes.dart` | `ContractorLicenseUploadPage` | GRA-14 |
-| `/business-verification/status` | `verificationStatusName` | `business_verification/shared/presentation/business_verification_routes.dart` | `VerificationStatusPage` | GRA-15 |
-| `/contractor/onboarding/specialty` | `contractorSpecialtyName` | `onboarding/contractor/presentation/contractor_onboarding_routes.dart` | `ContractorSpecialtyPage` | GRA-16 |
+**Adding a route:**
 
-**Your screen already has a placeholder?** Replace the page in your `pages/` folder. Keep the route's name and path. If the page needs a bloc, create it in the route's builder (see the example above). You don't touch `lib/core/`.
+1. Add its `…Name` and `…Path` to your names file, `lib/core/router/routes/<prefix><feature>_routes.dart`. If your folder has none yet, create it with its class.
+2. Add a `GoRoute` to your routes list in `presentation/<prefix><feature>_routes.dart`. Create the file if your folder doesn't have one yet.
+3. If you created the routes list, spread it in `createAppRouter()` (one line, sorted by file name). Your names file and this line are the only core edits routing needs (§6).
+4. Test your routes in `test/features/<feature>/<role>/presentation/<prefix><feature>_routes_test.dart`: open each one by name and check its path and page (example below). If a route builder creates a bloc, register it in `getIt` with fake repositories first (§16) and call `getIt.reset()` in `tearDown`.
+5. Navigate by name from any feature: import the names file and call `context.goNamed(AuthRoutes.loginName)`.
 
-**Adding a new route:**
+```dart
+// test/features/auth/shared/presentation/auth_routes_test.dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/features/auth/shared/presentation/pages/login_page.dart';
 
-1. Add its name and path to `AppRoutes`, in a block for your feature and role.
-2. Add a `GoRoute` to your role folder's routes list in `presentation/<prefix><feature>_routes.dart`. Create the file if your folder doesn't have one yet.
-3. If you created a routes file, spread its list in `createAppRouter()` (sorted by file name). The `AppRoutes` constants and this one line are the only core edits a feature makes (§6).
-4. Add the route to the list in `test/core/router/app_router_test.dart`, which opens every route by name.
-5. Navigate by name: `context.goNamed(AppRoutes.loginName)`.
+import '../../../../helpers/pump_router.dart';
+
+void main() {
+  testWidgets('every auth route opens its page at its path', (tester) async {
+    final router = await pumpAppRouter(tester);
+
+    router.goNamed(AuthRoutes.loginName);
+    await tester.pumpAndSettle();
+    expect(currentPath(router), AuthRoutes.loginPath);
+    expect(find.byType(LoginPage), findsOneWidget);
+  });
+}
+```
+
+`pumpAppRouter` and `currentPath` come from `test/helpers/pump_router.dart`: a fresh copy of the real router, with the theme and the real translations.
 
 **Guards** live only in `_guard` in `app_router.dart`. For now it lets every route through. The auth issues add the rules from the session: signed out goes to the login page, and a role without access goes to its own home.
 
@@ -1034,6 +1066,7 @@ Icons that point in a direction (back, forward, chevrons) must flip in RTL. Chec
 
 - `test/` mirrors `lib/`. `lib/features/projects/client/datasource/models/client_project_model.dart` is tested in `test/features/projects/client/datasource/models/client_project_model_test.dart`.
 - MUST test every model's `fromJson` (with a realistic row from the view, including `null`s), every use case that has logic, and every bloc's success and failure paths.
+- MUST test every routes list (§11) and every component (`APP_COMPONENTS.md`). The checker fails when a model, bloc, cubit, routes list or component has no test file at its mirrored path, and when a test file mirrors no file in `lib/`. Shared test code goes in `test/helpers/`.
 - Use hand-written fakes that implement the domain interfaces. Tests never call the real Supabase project. (`mocktail` and `bloc_test` are not in the registry; add and register them if the team wants them.)
 
 ```dart
@@ -1147,7 +1180,7 @@ void main() {
 4. **Domain:** entities → repository interface → use cases.
 5. **Datasource:** models → remote data source → repository implementation.
 6. **Presentation:** bloc (events, states) → pages → widgets, built from components first.
-7. **Wire it up:** `<prefix><feature>_injection.dart` plus one line in `lib/core/di/injection.dart`; `<prefix><feature>_routes.dart`, its constants in `app_routes.dart`, and the spread in `app_router.dart`.
+7. **Wire it up:** `<prefix><feature>_injection.dart` plus one line in `lib/core/di/injection.dart`; `<prefix><feature>_routes.dart`, its names file in `lib/core/router/routes/`, and the spread in `app_router.dart` (§11).
 8. **Text:** add the keys to your feature's `<feature>.ar.json` and `<feature>.en.json`.
 9. **Registries:** add new components to `APP_COMPONENTS.md` and new packages to `APP_PACKAGES.md`.
 10. **Tests** (§16).
@@ -1157,18 +1190,25 @@ void main() {
 
 ## 18. What the checker enforces
 
-`dart run tool/check_architecture.dart` runs locally and in CI. Each problem is printed with its rule name:
+`dart run tool/check_architecture.dart` runs locally and in CI. **It is the gate: a pull request that fails it is rejected**, whatever else it does. Run it after every change, not only before you push, and fix the code until it passes. Each problem is printed with its rule name, the file and line, and the section to read:
 
 | Rule | What it checks |
 |------|----------------|
-| `structure` | `lib/` has only `main.dart`, `app.dart`, `core/`, `features/`; `lib/core/` has only the folders of §6; feature → role → layer → folder names exactly as in §4; only the injection file in a role folder and only the routes file in `presentation/` |
-| `naming` | Files in a role folder start with the role (`client_…`); public types start with it (`Client…`); `shared/` uses no role prefix (§7) |
-| `layers` | The import matrix of §5, including pure-Dart `domain/` and pure core folders, no Flutter in blocs, and no relative imports |
-| `isolation` | No feature imports another feature; no role folder imports another role folder; `shared/` imports no role; only `core/di` and `core/router` import features |
+| `structure` | `lib/` has only `main.dart`, `app.dart`, `core/`, `features/`; `lib/core/` has only the folders of §6; feature → role → layer → folder names exactly as in §4; only the injection file in a role folder and only the routes file in `presentation/`; no empty folders; only Dart files in `lib/` |
+| `naming` | Files in a role folder start with the role (`client_…`); public types start with it (`Client…`); `shared/` uses no role prefix. A file declares the type it is named after (`client_projects_bloc.dart` → `ClientProjectsBloc`). Folder suffixes: `_remote_data_source`, `_model`, `_repository_impl` (datasource), `_repository`, `_use_case` (domain), `_bloc` / `_cubit` / `_event` / `_state`, `_page`. Widgets have no `Widget` suffix; components are `app_<name>.dart` (§7) |
+| `layers` | The import matrix of §5, including pure-Dart `domain/` and pure core folders, no Flutter in blocs, and no relative imports. Entities have no JSON; entity and model fields are final; models are `<Entity>Model extends <Entity>` with `fromJson`; domain repositories are `abstract interface class` returning `Future<Result<…>>` or `Stream<Result<…>>`; use cases implement `UseCase`; remote data sources are an interface plus `…Impl`; repository implementations wrap every call in `guardSupabaseCall`; no `try`/`catch` in data sources, repositories, use cases or blocs; blocs take no repository and declare their event and state parts; events and states are `sealed` / `final`; cubits call no use case; pages and widgets create no bloc (§8 to §10, §13) |
+| `isolation` | No feature imports another feature; no role folder imports another role folder; `shared/` imports no role; only `core/di` imports injection files and only `app_router.dart` imports routes lists |
+| `routing` | `lib/core/router/` holds `app_router.dart` and `routes/` only. Every routes list has its names file, `abstract final class <Prefix><Feature>Routes` with only `…Name` / `…Path` constants; names are the kebab-case page name (with the role) and paths start with `/<role>/<feature>`, both unique in the app; every name has a path, a page and a `GoRoute`; every `GoRoute` uses its names file; every page has a route; `app_router.dart` spreads every list, sorted. No `Navigator.push`, page routes, navigation by path or by a string name, `extra:`, redirects or `GoRouter` in features, and features never import `appRouter` (§11) |
+| `data` | Every Supabase call in `datasource/`, checked against `ARCHITECTURE.md`: names written as literals; reads only from the views of §7 (realtime `stream` may use a §3 table); inserts and updates only on the tables and exact columns of §3a, with a map written by hand; deletes only where §3a allows them; RPCs only from §6 (never the server-only ones); buckets only from §8; `Supabase.instance` only in `lib/main.dart` and `lib/core/di/`. Keep the tables of those sections in their current format: the checker reads them |
 | `packages` | `supabase_flutter`, `get_it`, `pinput` and `flutter_dotenv` only where allowed |
-| `di` | `getIt` only in `core/di`, `core/router`, `*_injection.dart`, `*_routes.dart`, `main.dart`, `app.dart` |
+| `di` | `getIt` only in `core/di`, `core/router`, `*_injection.dart`, `*_routes.dart`, `main.dart`, `app.dart`. A role folder with `datasource/`, use cases or blocs has its injection file with `register<Prefix><Feature>Dependencies(GetIt getIt)`, called from `configureDependencies()` in alphabetical order; blocs and cubits are registered with `registerFactory` (§12) |
 | `secrets` | No server-only secret, key or function name in `lib/` or `test/` (even in comments); no hard-coded Supabase URL or key; only placeholders in `.env.example`; `.env` never committed |
 | `registry` | Every `pubspec.yaml` dependency is registered in `APP_PACKAGES.md` and none is on its "Not allowed" list; every public type in `lib/core/components/` is in `APP_COMPONENTS.md`; no stale rows in either |
-| `i18n` | Files in `assets/translations/` are named `<group>.<language>.json`; the group is `common`, `errors`, `validation` or a folder in `lib/features/`; every group has a file in every language, with the same keys |
+| `i18n` | Files in `assets/translations/` are named `<group>.<language>.json`; the group is `common`, `errors`, `validation` or a folder in `lib/features/`; every group has a file in every language, with the same keys. Every key used in the code exists. No Arabic text in Dart code, and no literal text in `Text(…)`, `label:`, `title:`, `hintText:` and similar in pages, widgets and components |
+| `money` | No `double` / `num` named like money (`amount`, `price`, `budget`, `cost`, `fee`, `balance`, …): use `Money` (golden rule 8) |
+| `hygiene` | No `print` / `debugPrint` in `lib/`; every `// ignore:` has a comment on the line above that explains it (`AGENTS.md` §10) |
+| `tests` | Every model, bloc, cubit, routes list and component has a test at its mirrored path in `test/`; every test file mirrors a file in `lib/`; tests never call `Supabase.initialize` (§16) |
 | `theme` | No `Color(0x…)` / `Color.fromARGB` / `Color.fromRGBO` in features |
 | `rtl` | No `EdgeInsets.only(left/right)`, `EdgeInsets.fromLTRB`, `BorderRadius.only(topLeft…)`, `Alignment.*Left/Right`, `TextAlign.left/right` in `lib/` |
+
+The checker reads the code without running it, so it cannot see everything: choosing the right feature and role folders (§3), the right columns of a view, or whether a use case has logic worth testing is still up to you and the reviewer.
