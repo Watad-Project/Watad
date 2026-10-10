@@ -10,13 +10,16 @@ import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.d
 part 'auth_event.dart';
 part 'auth_state.dart';
 
-/// Manages the login-with-OTP flow: email validation, OTP validation,
-/// resend countdown, and Supabase authentication.
+/// Manages the login-with-OTP flow: validation, resend countdown, and Supabase auth.
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._sendOtp, this._verifyOtp)
     : super(const AuthState(resendSeconds: _resendCooldownSeconds)) {
-    on<AuthEmailChanged>(_onEmailChanged);
-    on<AuthOtpChanged>(_onOtpChanged);
+    on<AuthEmailChanged>(
+      (e, emit) => emit(state.copyWith(email: e.email, emailError: null)),
+    );
+    on<AuthOtpChanged>(
+      (e, emit) => emit(state.copyWith(otp: e.otp, otpError: null)),
+    );
     on<AuthOtpSubmitted>(_onOtpSubmitted);
     on<AuthResendRequested>(_onResendRequested);
     on<AuthCountdownTicked>(_onCountdownTicked);
@@ -36,14 +39,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
-  void _onEmailChanged(AuthEmailChanged event, Emitter<AuthState> emit) {
-    emit(state.copyWith(email: event.email, emailError: null));
-  }
-
-  void _onOtpChanged(AuthOtpChanged event, Emitter<AuthState> emit) {
-    emit(state.copyWith(otp: event.otp, otpError: null));
-  }
-
   Future<void> _onOtpSubmitted(
     AuthOtpSubmitted event,
     Emitter<AuthState> emit,
@@ -59,36 +54,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _verifyOtp(
       VerifyOtpParams(email: state.email, token: state.otp),
     );
-
     switch (result) {
       case Success(:final data):
         emit(state.copyWith(status: AuthStatus.verified, session: data));
       case Failed(:final failure):
-        if (failure is ValidationFailure) {
-          if (failure.messageKey == 'auth.email_required_error' ||
-              failure.messageKey == 'auth.invalid_email_error') {
-            emit(
-              state.copyWith(
-                status: AuthStatus.initial,
-                emailError: failure.messageKey,
-              ),
-            );
-          } else {
-            emit(
-              state.copyWith(
-                status: AuthStatus.initial,
-                otpError: failure.messageKey,
-              ),
-            );
-          }
-        } else {
-          emit(
-            state.copyWith(
-              status: AuthStatus.initial,
-              message: failure.messageKey,
-            ),
-          );
-        }
+        final isEmail =
+            failure is ValidationFailure &&
+            failure.messageKey.contains('email');
+        final isOtp =
+            failure is ValidationFailure && failure.messageKey.contains('otp');
+        emit(
+          state.copyWith(
+            status: AuthStatus.initial,
+            emailError: isEmail ? failure.messageKey : null,
+            otpError: isOtp ? failure.messageKey : null,
+            message: (!isEmail && !isOtp) ? failure.messageKey : null,
+          ),
+        );
     }
   }
 
@@ -97,11 +79,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     if (state.resendSeconds > 0) return;
-
     emit(state.copyWith(status: AuthStatus.sendingOtp, emailError: null));
 
     final result = await _sendOtp(state.email);
-
     switch (result) {
       case Success():
         emit(
@@ -113,35 +93,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
         _startCountdown();
       case Failed(:final failure):
-        if (failure is ValidationFailure) {
-          emit(
-            state.copyWith(
-              status: AuthStatus.initial,
-              emailError: failure.messageKey,
-            ),
-          );
-        } else {
-          emit(
-            state.copyWith(
-              status: AuthStatus.initial,
-              message: failure.messageKey,
-            ),
-          );
-        }
+        final isEmail =
+            failure is ValidationFailure &&
+            failure.messageKey.contains('email');
+        emit(
+          state.copyWith(
+            status: AuthStatus.initial,
+            emailError: isEmail ? failure.messageKey : null,
+            message: !isEmail ? failure.messageKey : null,
+          ),
+        );
     }
   }
 
   void _onCountdownTicked(AuthCountdownTicked event, Emitter<AuthState> emit) {
-    final newSeconds = state.resendSeconds - 1;
-    emit(
-      state.copyWith(
-        resendSeconds: newSeconds < 0 ? 0 : newSeconds,
-        message: null,
-      ),
-    );
-    if (newSeconds <= 0) {
-      _countdownTimer?.cancel();
-    }
+    final s = state.resendSeconds - 1;
+    emit(state.copyWith(resendSeconds: s < 0 ? 0 : s, message: null));
+    if (s <= 0) _countdownTimer?.cancel();
   }
 
   @override

@@ -14,22 +14,17 @@ import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/auth_bloc.dart';
 
 /// Passwordless login screen with email OTP (/auth/login).
-///
-/// Implemented as a [StatelessWidget] driven entirely by [AuthBloc].
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  String _formatSeconds(int totalSeconds) {
-    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
-    return '\u202A$minutes:$seconds\u202C';
-  }
+  static String _formatTime(int sec) =>
+      '\u202A${(sec ~/ 60).toString().padLeft(2, '0')}:${(sec % 60).toString().padLeft(2, '0')}\u202C';
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
-      listenWhen: (previous, current) =>
-          current.message != null || current.status == AuthStatus.verified,
+      listenWhen: (_, curr) =>
+          curr.message != null || curr.status == AuthStatus.verified,
       listener: (context, state) {
         if (state.message != null) {
           context.showSnackBar(context.tr(state.message!));
@@ -39,6 +34,7 @@ class LoginPage extends StatelessWidget {
         }
       },
       builder: (context, state) {
+        final bloc = context.read<AuthBloc>();
         return Scaffold(
           backgroundColor: AppColors.surface,
           body: SafeArea(
@@ -78,8 +74,7 @@ class LoginPage extends StatelessWidget {
                         errorText: state.emailError != null
                             ? context.tr(state.emailError!)
                             : null,
-                        onChanged: (val) =>
-                            context.read<AuthBloc>().add(AuthEmailChanged(val)),
+                        onChanged: (v) => bloc.add(AuthEmailChanged(v)),
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Center(
@@ -88,25 +83,79 @@ class LoginPage extends StatelessWidget {
                           errorText: state.otpError != null
                               ? context.tr(state.otpError!)
                               : null,
-                          onChanged: (val) =>
-                              context.read<AuthBloc>().add(AuthOtpChanged(val)),
-                          onCompleted: (_) => context.read<AuthBloc>().add(
-                            const AuthOtpSubmitted(),
-                          ),
+                          onChanged: (v) => bloc.add(AuthOtpChanged(v)),
+                          onCompleted: (_) =>
+                              bloc.add(const AuthOtpSubmitted()),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       AppButton(
                         label: context.tr('auth.confirm'),
-                        onPressed: () => context.read<AuthBloc>().add(
-                          const AuthOtpSubmitted(),
-                        ),
+                        onPressed: () => bloc.add(const AuthOtpSubmitted()),
                         isLoading: state.isLoading,
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _buildResendSection(context, state),
+                      if (state.resendSeconds > 0)
+                        Text(
+                          context.tr(
+                            'auth.resend_countdown',
+                            namedArgs: {
+                              'time': _formatTime(state.resendSeconds),
+                            },
+                          ),
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        )
+                      else
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              context.tr('auth.resend_prefix'),
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            GestureDetector(
+                              onTap: () =>
+                                  bloc.add(const AuthResendRequested()),
+                              child: Text(
+                                context.tr('auth.resend_code'),
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       const SizedBox(height: AppSpacing.md),
-                      _buildNewUserLink(context),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            context.tr('auth.new_user'),
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          GestureDetector(
+                            onTap: () =>
+                                context.pushNamed(AppRoutes.roleSelectionName),
+                            child: Text(
+                              context.tr('auth.create_account'),
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -115,62 +164,6 @@ class LoginPage extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildResendSection(BuildContext context, AuthState state) {
-    if (state.resendSeconds > 0) {
-      final formattedTime = _formatSeconds(state.resendSeconds);
-      return Text(
-        context.tr('auth.resend_countdown', namedArgs: {'time': formattedTime}),
-        style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-        textAlign: TextAlign.center,
-      );
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          context.tr('auth.resend_prefix'),
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        GestureDetector(
-          onTap: () =>
-              context.read<AuthBloc>().add(const AuthResendRequested()),
-          child: Text(
-            context.tr('auth.resend_code'),
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNewUserLink(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          context.tr('auth.new_user'),
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        GestureDetector(
-          onTap: () => context.pushNamed(AppRoutes.roleSelectionName),
-          child: Text(
-            context.tr('auth.create_account'),
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
