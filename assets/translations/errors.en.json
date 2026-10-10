@@ -1,0 +1,10 @@
+{
+  "auth": "We couldn't verify you. Check the code, or sign in again.",
+  "conflict": "This changed in the meantime. Refresh and try again.",
+  "network": "No connection. Check your internet and try again.",
+  "not_found": "We couldn't find what you're looking for.",
+  "permission": "You don't have permission to do this.",
+  "rate_limit": "Too many attempts. Wait a moment and try again.",
+  "server": "Something went wrong on our side. Try again later.",
+  "unknown": "Something went wrong. Try again."
+}
