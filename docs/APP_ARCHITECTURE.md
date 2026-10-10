@@ -463,7 +463,7 @@ Rules:
 - **Models** extend their entity and add one `factory fromJson(Map<String, dynamic> json)`. Parse enums with `fromJson` of the core enum, amounts with `Money.fromJson` and timestamps with `DateTime.parse`. Accept `null` exactly where the column is nullable.
 - **Repository implementations** implement the domain interface and wrap every call in `guardSupabaseCall` (§13). No business rules here.
 - **Storage:** follow the bucket and path rules of `ARCHITECTURE.md` §8. Store paths, never URLs. Private buckets are read through signed URLs.
-- **Realtime** (e.g. chat): subscribe in the remote data source, expose a `Stream`, and remove the channel when the stream is cancelled.
+- **Realtime** (e.g. chat): subscribe in the remote data source, expose a `Stream`, and remove the channel when the stream is cancelled. The repository returns `Stream<Result<T>>` through `guardSupabaseStream` (§13).
 
 ```dart
 // lib/features/projects/client/datasource/models/client_project_model.dart
@@ -888,12 +888,80 @@ void main() {
 
 ## 12. Dependency injection (get_it)
 
-- There is one container: `getIt` in `lib/core/di/injection.dart`. `configureDependencies()` registers the core services and then calls one register function per role folder, in alphabetical order.
+get_it is how the layers of §5 meet without knowing each other. Every class asks for what it needs **in its constructor**, typed as the layer below (its interface, where it has one). Only the injection files know which class fills each constructor, and only they and the route builders touch `getIt`. So a bloc never knows Supabase exists, and a test can hand any class a fake.
+
+### Rules
+
+- There is one container: `getIt` in `lib/core/di/injection.dart`. `configureDependencies()` registers the core services and then calls one register function per role folder, in alphabetical order. `main()` calls it once, after `Supabase.initialize()`.
 - Each role folder has exactly one `<prefix><feature>_injection.dart` at its root with `void register<Prefix><Feature>Dependencies(GetIt getIt)`. It registers that folder's classes only.
 - Lifetimes: data sources, repositories and use cases use `registerLazySingleton`. Blocs and cubits always use `registerFactory`, so each `BlocProvider` gets a fresh instance and closes it.
 - Register against the interface: `registerLazySingleton<ClientProjectsRepository>(() => ClientProjectsRepositoryImpl(getIt()))`.
-- Inject through constructors everywhere. `getIt` may appear only in `lib/core/di/`, `lib/core/router/`, `*_injection.dart` files, `*_routes.dart` files, `lib/main.dart` and `lib/app.dart`. Never in blocs, use cases, repositories, data sources or widgets.
+- Inject through constructors everywhere. `getIt` may appear only in `lib/core/di/`, `lib/core/router/`, `*_injection.dart` files, `*_routes.dart` files, `lib/main.dart` and `lib/app.dart`. Never in blocs, use cases, repositories, data sources or widgets. `package:get_it` itself is imported only in `lib/core/di/` and the injection files; routes files take `getIt` from `lib/core/di/injection.dart`.
+- Register each class once, in the role folder that owns it. get_it throws on a second registration of the same type.
+- A bloc that needs an id gets it in an event, not in its constructor (see step 4).
 - No `injectable` and no code generation.
+
+### How one folder is wired
+
+Read it from the bottom up. The route builder asks get_it for a bloc. get_it builds the bloc with its use case, the use case with the repository, the repository with the data source, and the data source with the Supabase client. Each `getIt()` inside a register call fills one constructor parameter, by its type.
+
+```
+lib/core/di/injection.dart        SupabaseClient                         registerLazySingleton
+                                     │ constructor
+client_projects_injection.dart    ClientProjectsRemoteDataSource ◄─ …Impl  registerLazySingleton<interface>
+                                     │ constructor
+                                  ClientProjectsRepository ◄─ …Impl        registerLazySingleton<domain interface>
+                                     │ constructor
+                                  ClientGetMyProjectsUseCase               registerLazySingleton
+                                     │ constructor
+                                  ClientProjectsBloc                       registerFactory
+                                     ▲
+client_projects_routes.dart       getIt<ClientProjectsBloc>() in the GoRoute builder
+```
+
+| Class | Register with | Registered as | Why |
+|-------|---------------|---------------|-----|
+| `SupabaseClient` | `registerLazySingleton` | `SupabaseClient` | Once, in `lib/core/di/`. Never in a feature |
+| Remote data source | `registerLazySingleton` | its interface: `<ClientProjectsRemoteDataSource>` | Stateless, one for the app |
+| Repository | `registerLazySingleton` | the domain interface: `<ClientProjectsRepository>` | The use case asks for the interface, so it never sees `…Impl` or Supabase |
+| Use case | `registerLazySingleton` | its own class | Stateless, one for the app |
+| Bloc / cubit | `registerFactory` | its own class | A new one for each page. `BlocProvider` closes it when the page goes away, and a closed bloc cannot take events again |
+
+### Step by step
+
+**1. Constructors.** Each class takes its dependencies as constructor parameters, typed as the layer below. No `getIt`, no `Supabase.instance`:
+
+```dart
+class ClientProjectsRemoteDataSourceImpl
+    implements ClientProjectsRemoteDataSource {
+  const ClientProjectsRemoteDataSourceImpl(this._client);
+
+  final SupabaseClient _client;
+}
+
+class ClientProjectsRepositoryImpl implements ClientProjectsRepository {
+  const ClientProjectsRepositoryImpl(this._remote);
+
+  final ClientProjectsRemoteDataSource _remote; // the interface
+}
+
+class ClientGetMyProjectsUseCase
+    implements UseCase<List<ClientProject>, NoParams> {
+  const ClientGetMyProjectsUseCase(this._repository);
+
+  final ClientProjectsRepository _repository; // the domain interface
+}
+
+class ClientProjectsBloc
+    extends Bloc<ClientProjectsEvent, ClientProjectsState> {
+  ClientProjectsBloc(this._getMyProjects)
+    : super(const ClientProjectsInitial());
+
+  final ClientGetMyProjectsUseCase _getMyProjects; // use cases only
+}
+```
+
+**2. The injection file** registers the folder's classes, bottom layer first:
 
 ```dart
 // lib/features/projects/client/client_projects_injection.dart
@@ -920,6 +988,8 @@ void registerClientProjectsDependencies(GetIt getIt) {
 }
 ```
 
+**3. One line in core.** Call the register function from `configureDependencies()`, in alphabetical order. This line is the only edit a feature makes in `lib/core/di/` (§6):
+
 ```dart
 // lib/core/di/injection.dart
 import 'package:get_it/get_it.dart';
@@ -932,12 +1002,79 @@ final GetIt getIt = GetIt.instance;
 
 /// Called once from main(), after Supabase.initialize().
 void configureDependencies() {
+  // Lazy, so registering never touches Supabase: data sources take the
+  // client through their constructor.
   getIt.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
   // Features: one line per role folder, in alphabetical order.
   registerClientProjectsDependencies(getIt);
 }
 ```
+
+**4. The route builder** asks for the bloc. It is the only place a bloc comes from (§11):
+
+```dart
+GoRoute(
+  // name and path from the folder's names (§11)
+  builder: (context, state) => BlocProvider(
+    create: (_) =>
+        getIt<ClientProjectsBloc>()..add(const ClientProjectsFetched()),
+    child: const ClientProjectsPage(),
+  ),
+),
+```
+
+A bloc for one item gets the id from the path in its first event, so get_it never needs to know it:
+
+```dart
+builder: (context, state) => BlocProvider(
+  create: (_) => getIt<ClientProjectDetailsBloc>()
+    ..add(ClientProjectDetailsFetched(state.pathParameters['projectId']!)),
+  child: const ClientProjectDetailsPage(),
+),
+```
+
+**5. The page** reads the bloc from the context, never from get_it: `BlocBuilder<ClientProjectsBloc, ClientProjectsState>(…)`, `context.read<ClientProjectsBloc>().add(…)` (§10).
+
+### Sharing
+
+- **Inside a feature:** `shared/` registers its classes in `<feature>_injection.dart`, and the role folders use them through `getIt()` in their own register calls. For example, `ClientPayStageUseCase(getIt())` in `client_payments_injection.dart` receives the `PaymentsRepository` that `payments_injection.dart` registered. The order of the register calls does not matter: lazy singletons and factories are built on first use, after `configureDependencies()` has finished.
+- **Between features:** never. A feature cannot import another feature's types (§5), so it cannot ask get_it for them either. A service that several features need goes in `lib/core/` and is registered in `configureDependencies()` by a maintainer.
+
+### Testing
+
+- Unit tests of use cases, blocs and repositories do not use get_it. Build the class with hand-written fakes through its constructor (§16).
+- A test that opens a route runs its builder, which calls `getIt`. Register what the builder needs, with fakes, and reset after each test:
+
+```dart
+setUp(() {
+  getIt.registerFactory(
+    () => ClientProjectsBloc(
+      ClientGetMyProjectsUseCase(
+        FakeClientProjectsRepository(const Success([])),
+      ),
+    ),
+  );
+});
+tearDown(getIt.reset);
+```
+
+- Never call `configureDependencies()` in a test: it registers the real Supabase client.
+
+### Common mistakes
+
+| Mistake | Do this instead |
+|---------|-----------------|
+| `getIt<…>()` inside a bloc, use case, repository, data source or widget | Take it as a constructor parameter |
+| `Supabase.instance.client` in a data source | Take `SupabaseClient` in the constructor |
+| `registerLazySingleton(() => ClientProjectsBloc(…))` | `registerFactory`: the second visit to the page would get a closed bloc and crash |
+| `registerLazySingleton(() => ClientProjectsRepositoryImpl(…))` | `registerLazySingleton<ClientProjectsRepository>(…)`: without the interface type, `getIt<ClientProjectsRepository>()` finds nothing |
+| A use case or bloc that asks for `…RepositoryImpl` | Ask for the domain interface |
+| A bloc that takes a repository, or another bloc | A bloc takes use cases only. Two screens that share data each read it through a use case (§10) |
+| `BlocProvider(create: …)` in a page | Create the bloc in the route builder |
+| Registering a `shared/` class again in a role folder | Register it once, in `shared/`, and resolve it with `getIt()` |
+| An id as a bloc constructor parameter | Send it in the first event |
+| `GetIt.instance` / `GetIt.I` in a feature, or a second `GetIt` | Use `getIt` from `lib/core/di/injection.dart`, in injection and routes files only |
 
 ---
 
@@ -968,18 +1105,21 @@ final class Failed<T> extends Result<T> {
 }
 ```
 
-`lib/core/error/failure.dart` declares `sealed class Failure { final String messageKey; final Object? cause; }` and these subclasses. The mapping from Supabase errors lives in `guardSupabaseCall` (`lib/core/supabase/supabase_guard.dart`) and nowhere else.
+`lib/core/error/failure.dart` declares `sealed class Failure { final String messageKey; final Object? cause; }` and these subclasses. The mapping from Supabase errors lives in `lib/core/supabase/supabase_guard.dart` and nowhere else: `guardSupabaseCall` wraps a `Future`, and `guardSupabaseStream` wraps a realtime `Stream` (each event becomes `Success`, each error `Failed`). The messages are in `assets/translations/errors.*.json` and `validation.*.json`.
 
-| Failure | When | `messageKey` |
+| Failure | When (Postgres / PostgREST code, HTTP status) | `messageKey` |
 |---------|------|--------------|
 | `NetworkFailure` | No connection, timeout | `errors.network` |
-| `AuthFailure` | Not signed in, session expired, wrong OTP | `errors.auth` |
-| `PermissionFailure` | RLS or an RPC rejected the caller (Postgres `42501`) | `errors.permission` |
-| `NotFoundFailure` | No row (PostgREST `PGRST116`) | `errors.not_found` |
-| `ConflictFailure` | Unique violation (`23505`), or the data changed meanwhile | `errors.conflict` |
-| `ValidationFailure` | A use case or a check constraint (`23514`) rejected the input | its own key, e.g. `validation.title_required` |
+| `AuthFailure` | Not signed in, session expired, wrong OTP (auth errors, `PGRST301`–`PGRST303`, `401`) | `errors.auth` |
+| `PermissionFailure` | RLS or an RPC rejected the caller (`42501`, `403`) | `errors.permission` |
+| `NotFoundFailure` | No row (`PGRST116`), an RPC found nothing (`P0002`), a missing file (`404`) | `errors.not_found` |
+| `ConflictFailure` | Unique violation (`23505`), or the data changed meanwhile (`40001`, `409`) | `errors.conflict` |
+| `RateLimitFailure` | Too many attempts, e.g. asking for sign-in codes (`429`) | `errors.rate_limit` |
+| `ValidationFailure` | A use case rejected the input (its own key, e.g. `validation.title_required`), or a database rule did (`23514`, `23502`, `22P02`, `22023`: `validation.invalid`) | its own key |
 | `ServerFailure` | Any other database, storage or RPC error | `errors.server` |
 | `UnknownFailure` | Anything else | `errors.unknown` |
+
+**The RPCs and the table disagree today.** Every RPC raises its rules (`'Only the project owner can accept offers'`, `'The offer amount changed to %; review it again'`, …) as Postgres `P0001` with an English message and no code, so all of them reach the app as `ServerFailure`. The fix is a migration that gives them codes: `42501` when the caller may not do it, `P0002` when the row is not found, `40001` when the data changed meanwhile, `22023` when an argument is invalid. The app already maps those codes, so it needs no change then. Never parse the message text instead.
 
 Rules:
 
