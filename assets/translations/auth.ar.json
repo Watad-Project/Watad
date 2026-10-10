@@ -1,0 +1,20 @@
+{
+  "confirm": "تأكيد",
+  "create_account": "أنشئ حساباً",
+  "email_hint": "abdullah@example.com",
+  "email_label": "البريد الإلكتروني",
+  "email_required_error": "البريد الإلكتروني مطلوب",
+  "invalid_email_error": "الرجاء إدخال بريد إلكتروني صحيح",
+  "invalid_otp_error": "أدخل الرمز كاملاً من ٦ أرقام",
+  "login_subtitle": "البريد الإلكتروني ثم رمز تحقّق من ٦ أرقام يصلك على بريدك.",
+  "login_title": "تسجيل الدخول",
+  "new_user": "مستخدم جديد؟",
+  "no_account_error": "لا يوجد حساب بهذا البريد. أنشئ حساباً من الأسفل.",
+  "otp_expired_or_invalid": "رمز التحقق غير صحيح أو منتهي الصلاحية",
+  "otp_required_error": "رمز التحقق مطلوب",
+  "otp_sent_success": "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
+  "resend_code": "إعادة الإرسال",
+  "resend_countdown": "لم يصلك الرمز؟ إعادة الإرسال خلال {time}",
+  "resend_prefix": "لم يصلك الرمز؟",
+  "signed_in": "تم تسجيل الدخول"
+}

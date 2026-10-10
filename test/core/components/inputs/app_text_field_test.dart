@@ -22,6 +22,18 @@ void main() {
     expect(changes.last, 'مؤسسة البناء');
   });
 
+  testWidgets('reports the keyboard action with the text', (tester) async {
+    String? submitted;
+    await pumpComponent(
+      tester,
+      AppTextField(onSubmitted: (value) => submitted = value),
+    );
+
+    await tester.enterText(find.byType(TextFormField), 'user@watad.sa');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    expect(submitted, 'user@watad.sa');
+  });
+
   testWidgets('shows the error text', (tester) async {
     await pumpComponent(
       tester,
