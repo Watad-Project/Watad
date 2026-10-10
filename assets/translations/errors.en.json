@@ -1,0 +1,9 @@
+{
+  "auth": "Authentication error, please try again",
+  "conflict": "Data conflict, please try again later",
+  "network": "Network connection error, please check your connection",
+  "not_found": "Requested data not found",
+  "permission": "You do not have permission to perform this action",
+  "server": "Server error, please try again later",
+  "unknown": "An unexpected error occurred, please try again later"
+}
