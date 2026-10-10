@@ -35,37 +35,38 @@ void main() {
     of: find.byType(AppTextField),
     matching: find.byType(TextFormField),
   );
-  final confirm = find.widgetWithText(AppButton, 'تأكيد');
+  final loginButton = find.widgetWithText(AppButton, 'تسجيل الدخول');
+  final confirmButton = find.widgetWithText(AppButton, 'تأكيد');
 
   Future<void> sendCode(WidgetTester tester) async {
     await tester.enterText(emailField, 'user@watad.sa');
-    await tester.tap(confirm);
+    await tester.tap(loginButton);
     await tester.pump();
     await tester.pump();
   }
 
-  testWidgets('shows the login screen, with 6 code boxes', (tester) async {
-    await openLogin(tester);
-
-    expect(find.byType(LoginPage), findsOneWidget);
-    expect(find.text('تسجيل الدخول'), findsOneWidget);
-    expect(
-      find.text('البريد الإلكتروني ثم رمز تحقّق من ٦ أرقام يصلك على بريدك.'),
-      findsOneWidget,
-    );
-    final boxes = tester.widget<AppOtpInput>(find.byType(AppOtpInput));
-    expect(boxes.length, 6);
-    expect(boxes.enabled, isFalse);
-    expect(find.textContaining('إعادة الإرسال'), findsNothing);
-    expect(find.text('أنشئ حساباً'), findsOneWidget);
-  });
-
-  testWidgets('confirm with an empty email shows the email error', (
+  testWidgets('shows the login screen, with email field and login button', (
     tester,
   ) async {
     await openLogin(tester);
 
-    await tester.tap(confirm);
+    expect(find.byType(LoginPage), findsOneWidget);
+    expect(loginButton, findsOneWidget);
+    expect(
+      find.text('البريد الإلكتروني ثم رمز تحقّق من ٦ أرقام يصلك على بريدك.'),
+      findsOneWidget,
+    );
+    expect(find.byType(AppOtpInput), findsNothing);
+    expect(find.textContaining('إعادة الإرسال'), findsNothing);
+    expect(find.text('أنشئ حساباً'), findsOneWidget);
+  });
+
+  testWidgets('login with an empty email shows the email error', (
+    tester,
+  ) async {
+    await openLogin(tester);
+
+    await tester.tap(loginButton);
     await tester.pump();
     await tester.pump();
 
@@ -73,26 +74,30 @@ void main() {
     expect(repository.sentTo, isEmpty);
   });
 
-  testWidgets('confirm sends the code, then counts down to resend', (
-    tester,
-  ) async {
-    await openLogin(tester);
+  testWidgets(
+    'login sends the code, reveals otp boxes, and counts down to resend',
+    (tester) async {
+      await openLogin(tester);
 
-    await sendCode(tester);
+      await sendCode(tester);
 
-    expect(repository.sentTo, ['user@watad.sa']);
-    expect(
-      find.text('تم إرسال رمز التحقق إلى بريدك الإلكتروني'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('إعادة الإرسال خلال'), findsOneWidget);
-    expect(tester.widget<AppOtpInput>(find.byType(AppOtpInput)).enabled, true);
+      expect(repository.sentTo, ['user@watad.sa']);
+      expect(
+        find.text('تم إرسال رمز التحقق إلى بريدك الإلكتروني'),
+        findsOneWidget,
+      );
+      expect(confirmButton, findsOneWidget);
+      expect(find.textContaining('إعادة الإرسال خلال'), findsOneWidget);
+      final boxes = tester.widget<AppOtpInput>(find.byType(AppOtpInput));
+      expect(boxes.length, 6);
+      expect(boxes.enabled, true);
 
-    await tester.pump(const Duration(seconds: 61));
-    await tester.pump();
+      await tester.pump(const Duration(seconds: 61));
+      await tester.pump();
 
-    expect(find.text('إعادة الإرسال'), findsOneWidget);
-  });
+      expect(find.text('إعادة الإرسال'), findsOneWidget);
+    },
+  );
 
   testWidgets('a wrong code shows the code error under the boxes', (
     tester,
@@ -107,5 +112,19 @@ void main() {
 
     expect(repository.checked, [('user@watad.sa', '482910')]);
     expect(find.text('رمز التحقق غير صحيح أو منتهي الصلاحية'), findsOneWidget);
+  });
+
+  testWidgets('tapping confirm with an empty code shows the otp error', (
+    tester,
+  ) async {
+    await openLogin(tester);
+    await sendCode(tester);
+
+    await tester.tap(confirmButton);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('رمز التحقق مطلوب'), findsOneWidget);
+    expect(repository.checked, isEmpty);
   });
 }

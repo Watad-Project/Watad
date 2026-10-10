@@ -76,22 +76,26 @@ class LoginPage extends StatelessWidget {
                         onChanged: (email) => bloc.add(AuthEmailChanged(email)),
                         onSubmitted: (_) => bloc.add(const AuthOtpRequested()),
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Center(
-                        child: AppOtpInput(
-                          length: VerifyOtpUseCase.codeLength,
-                          enabled: state.codeSent && !state.isBusy,
-                          errorText: state.otpError == null
-                              ? null
-                              : context.tr(state.otpError!),
-                          onChanged: (otp) => bloc.add(AuthOtpChanged(otp)),
-                          onCompleted: (_) =>
-                              bloc.add(const AuthOtpSubmitted()),
+                      if (state.codeSent) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        Center(
+                          child: AppOtpInput(
+                            length: VerifyOtpUseCase.codeLength,
+                            enabled: !state.isBusy,
+                            errorText: state.otpError == null
+                                ? null
+                                : context.tr(state.otpError!),
+                            onChanged: (otp) => bloc.add(AuthOtpChanged(otp)),
+                            onCompleted: (_) =>
+                                bloc.add(const AuthOtpSubmitted()),
+                          ),
                         ),
-                      ),
+                      ],
                       const SizedBox(height: AppSpacing.xl),
                       AppButton(
-                        label: context.tr('auth.confirm'),
+                        label: state.codeSent
+                            ? context.tr('auth.confirm')
+                            : context.tr('auth.login_title'),
                         isLoading: state.isBusy,
                         onPressed: () => bloc.add(
                           state.codeSent
