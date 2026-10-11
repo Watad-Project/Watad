@@ -36,80 +36,128 @@ class LoginPage extends StatelessWidget {
         final bloc = context.read<AuthBloc>();
         return Scaffold(
           backgroundColor: AppColors.surface,
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xl,
-                  vertical: AppSpacing.xxl,
-                ),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 420),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Center(child: AppLogo(height: 72)),
-                      const SizedBox(height: AppSpacing.xl),
-                      Text(
-                        context.tr('auth.login_title'),
-                        style: AppTextStyles.h1,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        context.tr('auth.login_subtitle'),
-                        style: AppTextStyles.body.copyWith(
-                          color: AppColors.textSecondary,
+          body: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.xxl,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Center(child: AppLogo(height: 72)),
+                        const SizedBox(height: AppSpacing.xl),
+                        Text(
+                          context.tr('auth.login_title'),
+                          style: AppTextStyles.h1,
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSpacing.xxl),
-                      AppTextField(
-                        label: context.tr('auth.email_label'),
-                        hint: context.tr('auth.email_hint'),
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.send,
-                        errorText: state.emailError == null
-                            ? null
-                            : context.tr(state.emailError!),
-                        onChanged: (email) => bloc.add(AuthEmailChanged(email)),
-                        onSubmitted: (_) => bloc.add(const AuthOtpRequested()),
-                      ),
-                      if (state.codeSent) ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        Center(
-                          child: AppOtpInput(
-                            length: VerifyOtpUseCase.codeLength,
-                            enabled: !state.isBusy,
-                            errorText: state.otpError == null
-                                ? null
-                                : context.tr(state.otpError!),
-                            onChanged: (otp) => bloc.add(AuthOtpChanged(otp)),
-                            onCompleted: (_) =>
-                                bloc.add(const AuthOtpSubmitted()),
-                          ),
+                        const SizedBox(height: AppSpacing.xxl),
+                        AppTextField(
+                          label: context.tr('auth.email_label'),
+                          hint: context.tr('auth.email_hint'),
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.send,
+                          errorText: state.emailError == null
+                              ? null
+                              : context.tr(state.emailError!),
+                          onChanged: (email) =>
+                              bloc.add(AuthEmailChanged(email)),
+                          onSubmitted: (_) {
+                            FocusScope.of(context).unfocus();
+                            bloc.add(const AuthOtpRequested());
+                          },
                         ),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                                opacity: animation,
+                                child: SizeTransition(
+                                  sizeFactor: animation,
+                                  child: child,
+                                ),
+                              ),
+                          child: state.codeSent
+                              ? Column(
+                                  key: const ValueKey('otp_section'),
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(height: AppSpacing.lg),
+                                    Center(
+                                      child: AppOtpInput(
+                                        length: VerifyOtpUseCase.codeLength,
+                                        enabled: !state.isBusy,
+                                        errorText: state.otpError == null
+                                            ? null
+                                            : context.tr(state.otpError!),
+                                        onChanged: (otp) =>
+                                            bloc.add(AuthOtpChanged(otp)),
+                                        onCompleted: (_) =>
+                                            bloc.add(const AuthOtpSubmitted()),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey('empty_otp'),
+                                ),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        AppButton(
+                          label: state.codeSent
+                              ? context.tr('auth.confirm')
+                              : context.tr('auth.login_title'),
+                          isLoading: state.isBusy,
+                          onPressed: () {
+                            FocusScope.of(context).unfocus();
+                            bloc.add(
+                              state.codeSent
+                                  ? const AuthOtpSubmitted()
+                                  : const AuthOtpRequested(),
+                            );
+                          },
+                        ),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                                opacity: animation,
+                                child: SizeTransition(
+                                  sizeFactor: animation,
+                                  child: child,
+                                ),
+                              ),
+                          child: state.codeSent
+                              ? Column(
+                                  key: const ValueKey('resend_section'),
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(height: AppSpacing.lg),
+                                    _ResendHint(state: state),
+                                  ],
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey('empty_resend'),
+                                ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        const _NewUserHint(),
                       ],
-                      const SizedBox(height: AppSpacing.xl),
-                      AppButton(
-                        label: state.codeSent
-                            ? context.tr('auth.confirm')
-                            : context.tr('auth.login_title'),
-                        isLoading: state.isBusy,
-                        onPressed: () => bloc.add(
-                          state.codeSent
-                              ? const AuthOtpSubmitted()
-                              : const AuthOtpRequested(),
-                        ),
-                      ),
-                      if (state.codeSent) ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        _ResendHint(state: state),
-                      ],
-                      const SizedBox(height: AppSpacing.md),
-                      const _NewUserHint(),
-                    ],
+                    ),
                   ),
                 ),
               ),

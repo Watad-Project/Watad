@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart' show DefaultCupertinoLocalizations;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -22,7 +23,10 @@ Future<GoRouter> pumpAppRouter(WidgetTester tester) async {
         builder: (context) => MaterialApp.router(
           theme: AppTheme.light,
           routerConfig: router,
-          localizationsDelegates: context.localizationDelegates,
+          localizationsDelegates: [
+            ...context.localizationDelegates,
+            DefaultCupertinoLocalizations.delegate,
+          ],
           supportedLocales: context.supportedLocales,
           locale: context.locale,
         ),

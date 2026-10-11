@@ -41,8 +41,7 @@ void main() {
   Future<void> sendCode(WidgetTester tester) async {
     await tester.enterText(emailField, 'user@watad.sa');
     await tester.tap(loginButton);
-    await tester.pump();
-    await tester.pump();
+    await tester.pumpAndSettle();
   }
 
   testWidgets('shows the login screen, with email field and login button', (
@@ -54,7 +53,7 @@ void main() {
     expect(loginButton, findsOneWidget);
     expect(
       find.text('البريد الإلكتروني ثم رمز تحقّق من ٦ أرقام يصلك على بريدك.'),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.byType(AppOtpInput), findsNothing);
     expect(find.textContaining('إعادة الإرسال'), findsNothing);

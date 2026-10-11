@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show DefaultCupertinoLocalizations;
 import 'package:flutter/material.dart';
 import 'package:material_ui/material_ui.dart' as m_ui;
 import 'package:pinput/pinput.dart';
@@ -106,7 +107,12 @@ class AppOtpInput extends StatelessWidget {
       pinput = Localizations.override(
         context: context,
         locale: ambientLocale,
-        delegates: const [_OtpMaterialLocalizationsDelegate()],
+        delegates: const [
+          _OtpMaterialLocalizationsDelegate(),
+          DefaultWidgetsLocalizations.delegate,
+          DefaultMaterialLocalizations.delegate,
+          DefaultCupertinoLocalizations.delegate,
+        ],
         child: pinput,
       );
     }
