@@ -48,6 +48,7 @@ The Flutter version the whole team uses, and the registry of every package the a
 | `get_it` | runtime | Dependency injection, registered by hand | `lib/core/di/` and `*_injection.dart` files only | 2026-10-06 |
 | `go_router` | runtime | Navigation by route name | `presentation/` (not blocs), `lib/core/router/` | 2026-10-06 |
 | `pinput` | runtime | OTP / PIN input. The package is `pinput`, not `pin_put` | `lib/core/components/` only (the `AppOtpInput` component) | 2026-10-06 |
+| `shared_preferences` | runtime | On-device key-value storage (e.g. remember onboarding seen) | `datasource/`, `lib/core/` | 2026-10-11 |
 | `supabase_flutter` | runtime | Backend: Auth, Postgres views and RPCs, Storage, Realtime | `datasource/`, `lib/core/supabase/`, `lib/core/di/`, `lib/main.dart` | 2026-10-06 |
 | `flutter_lints` | dev | Lint rules used by `analysis_options.yaml` | not imported | 2026-10-06 |
 | `flutter_test` | dev (SDK) | Unit and widget tests | `test/` | 2026-10-06 |
