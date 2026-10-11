@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
+import 'package:watad/core/router/routes/splash_routes.dart';
+import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
 /// The app's only router, used by `WatadApp`.
 final GoRouter appRouter = createAppRouter();
 
 /// Where the app opens, and where "Back to start" on the not-found page
-/// leads. No screen exists yet, so every address shows the not-found page.
-/// The splash screen's task points this at the splash path
-/// (APP_ARCHITECTURE.md §11).
-const String appStartPath = '/';
+/// leads.
+const String appStartPath = SplashRoutes.splashPath;
 
 /// Builds the router. The app builds it once ([appRouter]); tests build a
 /// fresh one each, so one test's navigation doesn't leak into the next.
@@ -20,10 +20,7 @@ GoRouter createAppRouter() {
     errorBuilder: (context, state) => Scaffold(
       body: AppNotFoundView(onBackToStart: () => context.go(appStartPath)),
     ),
-    routes: [
-      // One line per role folder, sorted by file name: ...clientProjectsRoutes.
-      // Each folder's names and paths live in lib/core/router/routes/.
-    ],
+    routes: [...splashRoutes],
   );
 }
 
