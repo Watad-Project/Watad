@@ -78,17 +78,31 @@ class LoginPage extends StatelessWidget {
                           },
                         ),
                         AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
+                          duration: const Duration(milliseconds: 600),
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) =>
-                              FadeTransition(
-                                opacity: animation,
-                                child: SizeTransition(
-                                  sizeFactor: animation,
+                          transitionBuilder: (child, animation) {
+                            final slide =
+                                Tween<Offset>(
+                                  begin: const Offset(0.0, 0.2),
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                );
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SizeTransition(
+                                sizeFactor: animation,
+                                child: SlideTransition(
+                                  position: slide,
                                   child: child,
                                 ),
                               ),
+                            );
+                          },
                           child: state.codeSent
                               ? Column(
                                   key: const ValueKey('otp_section'),
@@ -115,32 +129,54 @@ class LoginPage extends StatelessWidget {
                                 ),
                         ),
                         const SizedBox(height: AppSpacing.xl),
-                        AppButton(
-                          label: state.codeSent
-                              ? context.tr('auth.confirm')
-                              : context.tr('auth.login_title'),
-                          isLoading: state.isBusy,
-                          onPressed: () {
-                            FocusScope.of(context).unfocus();
-                            bloc.add(
-                              state.codeSent
-                                  ? const AuthOtpSubmitted()
-                                  : const AuthOtpRequested(),
-                            );
-                          },
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 400),
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(opacity: animation, child: child),
+                          child: AppButton(
+                            key: ValueKey(
+                              state.codeSent ? 'confirm_btn' : 'login_btn',
+                            ),
+                            label: state.codeSent
+                                ? context.tr('auth.confirm')
+                                : context.tr('auth.login_title'),
+                            isLoading: state.isBusy,
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              bloc.add(
+                                state.codeSent
+                                    ? const AuthOtpSubmitted()
+                                    : const AuthOtpRequested(),
+                              );
+                            },
+                          ),
                         ),
                         AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
+                          duration: const Duration(milliseconds: 600),
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) =>
-                              FadeTransition(
-                                opacity: animation,
-                                child: SizeTransition(
-                                  sizeFactor: animation,
+                          transitionBuilder: (child, animation) {
+                            final slide =
+                                Tween<Offset>(
+                                  begin: const Offset(0.0, 0.2),
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                );
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SizeTransition(
+                                sizeFactor: animation,
+                                child: SlideTransition(
+                                  position: slide,
                                   child: child,
                                 ),
                               ),
+                            );
+                          },
                           child: state.codeSent
                               ? Column(
                                   key: const ValueKey('resend_section'),
