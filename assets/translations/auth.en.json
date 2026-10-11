@@ -1,0 +1,11 @@
+{
+  "continue": "Continue",
+  "role_client_description": "I own a property and am looking for a contractor.",
+  "role_client_note": "No document required — verification code is sufficient to enter",
+  "role_client_title": "Client",
+  "role_contractor_description": "A contracting business looking for projects.",
+  "role_contractor_note": "Required document: contractor license — mandatory before submitting any offer",
+  "role_contractor_title": "Contractor",
+  "role_subtitle": "Your choice determines which screens you access after verification.",
+  "role_title": "How do you use Watad?"
+}
