@@ -1,0 +1,15 @@
+{
+  "business_step_label": "حساب منشأة · الخطوة ١ من ٢",
+  "business_subtitle": "بعدها ترفع رخصة المقاول للمراجعة.",
+  "business_title": "بيانات المنشأة",
+  "company_name_hint": "مثال: شركة البناء الحديث",
+  "company_name_label": "اسم المنشأة",
+  "cr_number_hint": "١٠ أرقام",
+  "cr_number_label": "رقم السجل التجاري",
+  "email_hint": "name@company.com",
+  "email_label": "البريد الإلكتروني",
+  "next_upload_license": "التالي — رفع رخصة مقاول",
+  "phone_hint": "5x xxx xxxx",
+  "phone_label": "رقم الجوال",
+  "terms_agreement": "أوافق على الشروط وسياسة الخصوصية"
+}

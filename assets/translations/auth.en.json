@@ -1,0 +1,15 @@
+{
+  "business_step_label": "Business Account · Step 1 of 2",
+  "business_subtitle": "Next, you will upload the contractor license for review.",
+  "business_title": "Business Information",
+  "company_name_hint": "e.g. Modern Construction Co.",
+  "company_name_label": "Company Name",
+  "cr_number_hint": "10 digits",
+  "cr_number_label": "Commercial Registration Number",
+  "email_hint": "name@company.com",
+  "email_label": "Email",
+  "next_upload_license": "Next — Upload Contractor License",
+  "phone_hint": "5x xxx xxxx",
+  "phone_label": "Mobile Number",
+  "terms_agreement": "I agree to the terms and privacy policy"
+}
