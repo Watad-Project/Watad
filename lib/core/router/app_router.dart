@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
+import 'package:watad/features/kyc/contractor/presentation/contractor_kyc_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
 /// The app's only router, used by `WatadApp`.
@@ -20,7 +21,7 @@ GoRouter createAppRouter() {
     errorBuilder: (context, state) => Scaffold(
       body: AppNotFoundView(onBackToStart: () => context.go(appStartPath)),
     ),
-    routes: [...splashRoutes],
+    routes: [...contractorKycRoutes, ...splashRoutes],
   );
 }
 

@@ -1,0 +1,17 @@
+{
+  "contractor": {
+    "license_step_label": "تسجيل مقاول — المستند الوحيد",
+    "license_title": "رخصة مقاول",
+    "license_subtitle": "مستند واحد فقط. تُراجَع خلال ٢٤ ساعة، وبعد الاعتماد يظهر شارة التوثيق ويمكنك تقديم العروض.",
+    "upload_zone_title": "تصوير أو رفع الرخصة",
+    "upload_zone_hint": "JPG أو PDF · حتى ١٠ ميغابايت",
+    "from_camera": "الكاميرا",
+    "from_files": "من الملفات",
+    "submit_button": "إرسال للمراجعة",
+    "license_footnote": "لن نطلب أي مستند آخر الآن. مستندات المشروع تُطلب لاحقاً عند الحاجة.",
+    "status_title": "حالة التوثيق",
+    "status_pending_title": "قيد المراجعة",
+    "status_pending_subtitle": "طلبك قيد المراجعة وسيتم الرد خلال ٢٤ ساعة.",
+    "file_selected_prefix": "تم اختيار الملف: {fileName}"
+  }
+}

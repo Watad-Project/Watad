@@ -1,3 +1,6 @@
 {
-  "invalid": "Some values aren't valid. Check them and try again."
+  "invalid": "Some values aren't valid. Check them and try again.",
+  "file_required": "Please select the license document first.",
+  "file_too_large": "File size exceeds the allowed limit (10MB).",
+  "file_type_not_supported": "File format not supported. Please upload a JPG or PDF file only."
 }
