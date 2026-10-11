@@ -22,6 +22,7 @@ class AppOtpInput extends StatelessWidget {
     this.errorText,
     this.enabled = true,
     this.autofocus = false,
+    this.contextMenuBuilder,
   });
 
   /// Supabase sends 6-digit email codes (its setting allows 6 to 10, never
@@ -39,6 +40,7 @@ class AppOtpInput extends StatelessWidget {
   final String? errorText;
   final bool enabled;
   final bool autofocus;
+  final EditableTextContextMenuBuilder? contextMenuBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +96,13 @@ class AppOtpInput extends StatelessWidget {
         validator: validator,
         onCompleted: onCompleted,
         onChanged: onChanged,
+        contextMenuBuilder:
+            contextMenuBuilder ??
+            (context, editableTextState) {
+              return AdaptiveTextSelectionToolbar.editableText(
+                editableTextState: editableTextState,
+              );
+            },
       ),
     );
 
