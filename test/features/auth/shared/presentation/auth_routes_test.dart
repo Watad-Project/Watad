@@ -11,7 +11,10 @@ void main() {
   tearDown(getIt.reset);
 
   testWidgets('every auth route opens its page at its path', (tester) async {
-    final router = await pumpAppRouter(tester);
+    final router = await pumpAppRouter(
+      tester,
+      initialLocation: AuthRoutes.loginPath,
+    );
 
     router.goNamed(AuthRoutes.loginName);
     await tester.pumpAndSettle();

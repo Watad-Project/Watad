@@ -14,9 +14,9 @@ const String appStartPath = SplashRoutes.splashPath;
 
 /// Builds the router. The app builds it once ([appRouter]); tests build a
 /// fresh one each, so one test's navigation doesn't leak into the next.
-GoRouter createAppRouter() {
+GoRouter createAppRouter({String? initialLocation}) {
   return GoRouter(
-    initialLocation: appStartPath,
+    initialLocation: initialLocation ?? appStartPath,
     redirect: _guard,
     errorBuilder: (context, state) => Scaffold(
       body: AppNotFoundView(onBackToStart: () => context.go(appStartPath)),

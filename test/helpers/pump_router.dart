@@ -12,8 +12,11 @@ import 'pump_component.dart';
 /// Shows a fresh app router in a localized app, set up like `WatadApp`, and
 /// returns it. Route tests navigate with it, e.g.
 /// `router.goNamed(AuthRoutes.loginName)`.
-Future<GoRouter> pumpAppRouter(WidgetTester tester) async {
-  final router = createAppRouter();
+Future<GoRouter> pumpAppRouter(
+  WidgetTester tester, {
+  String? initialLocation,
+}) async {
+  final router = createAppRouter(initialLocation: initialLocation);
   addTearDown(router.dispose);
   await tester.pumpWidget(
     AppLocalization.scope(
