@@ -1,0 +1,22 @@
+{
+  "accept_terms": "أوافق على الشروط وسياسة الخصوصية",
+  "client_signup_header": "حساب عميل",
+  "client_signup_subtitle": "يصلك رمز التحقق على بريدك بعد التسجيل.",
+  "client_signup_title": "أنشئ حسابك",
+  "confirm": "تأكيد",
+  "create_account": "إنشاء الحساب",
+  "email": "البريد الإلكتروني",
+  "email_hint": "name@example.com",
+  "full_name": "الاسم الكامل",
+  "full_name_hint": "أدخل الاسم الكامل",
+  "national_id": "رقم الهوية / الإقامة",
+  "national_id_hint": "١٠ أرقام",
+  "otp_subtitle": "أدخل رمز التحقق المرسل إلى {email}",
+  "otp_title": "رمز التحقق",
+  "phone": "رقم الجوال",
+  "phone_hint": "5x xxx xxxx",
+  "resend_code": "إعادة الإرسال",
+  "resend_countdown": "إعادة الإرسال خلال {time}",
+  "resend_prefix": "لم يصلك الرمز؟",
+  "signup_success": "تم إنشاء الحساب بنجاح"
+}
