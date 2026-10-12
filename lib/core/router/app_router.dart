@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
+import 'package:watad/features/onboarding/shared/presentation/onboarding_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
 /// The app's only router, used by `WatadApp`.
@@ -27,6 +28,7 @@ GoRouter createAppRouter({String? initialLocation}) {
       ...authRoutes,
       ...splashRoutes,
     ],
+    routes: [...onboardingRoutes, ...splashRoutes],
   );
 }
 
