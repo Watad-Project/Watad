@@ -11,14 +11,30 @@ class AppFilterChips extends StatelessWidget {
     required this.labels,
     required this.selectedIndex,
     required this.onSelected,
+    this.isWrapped = false,
   });
 
   final List<String> labels;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+  final bool isWrapped;
 
   @override
   Widget build(BuildContext context) {
+    if (isWrapped) {
+      return Wrap(
+        spacing: AppSpacing.xs,
+        runSpacing: AppSpacing.xs,
+        children: [
+          for (var i = 0; i < labels.length; i++)
+            _Chip(
+              label: labels[i],
+              selected: i == selectedIndex,
+              onTap: () => onSelected(i),
+            ),
+        ],
+      );
+    }
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(

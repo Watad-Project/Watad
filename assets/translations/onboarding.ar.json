@@ -1,0 +1,15 @@
+{
+  "contractor_profile_completion_title": "إكمال ملف المنشأة",
+  "save_button": "حفظ",
+  "save_error": "تعذر حفظ التخصص، يرجى المحاولة مرة أخرى.",
+  "save_success": "تم حفظ التخصص بنجاح",
+  "specialty_electrical_plumbing": "كهرباء وسباكة",
+  "specialty_finishes": "تشطيبات",
+  "specialty_general_contracting": "مقاولات عامة",
+  "specialty_insulation": "عزل",
+  "specialty_label": "التخصص",
+  "specialty_renovation": "ترميم",
+  "specialty_required": "يرجى اختيار تخصص المنشأة",
+  "specialty_subtitle": "يظهر للعملاء على ملف منشأتك ويحدد المشاريع المقترحة لك.",
+  "specialty_title": "تخصص المنشأة"
+}

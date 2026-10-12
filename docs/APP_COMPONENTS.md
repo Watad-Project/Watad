@@ -51,7 +51,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppSwitch` | `inputs/app_switch.dart` | On/off switch, alone or as a full-width settings row with a label | `value`, `onChanged`, `label`, `semanticLabel` | 2026-10-09 |
 | `AppCheckbox` | `inputs/app_checkbox.dart` | Checkbox with a tappable label (accepting the terms) | `value`, `onChanged`, `label` | 2026-10-09 |
 | `AppRadioRow`, `AppRadioRowAccent` | `inputs/app_radio_row.dart` | One bordered choice in a list (payment method, address, task, rejection reason); orange or ink when selected | `title`, `subtitle`, `subtitleTone`, `selected`, `onTap`, `accent` | 2026-10-09 |
-| `AppFilterChips` | `inputs/app_filter_chips.dart` | Scrollable row of round filter chips, one selected (market, work, projects) | `labels`, `selectedIndex`, `onSelected` | 2026-10-09 |
+| `AppFilterChips` | `inputs/app_filter_chips.dart` | Scrollable row of round filter chips, one selected (market, work, projects) | `labels`, `selectedIndex`, `onSelected`, `isWrapped` | 2026-10-09 |
 | `AppSegmentedTabs` | `inputs/app_segmented_tabs.dart` | Two or three equal boxes switching a list between views; the selected one is ink | `labels`, `selectedIndex`, `onChanged` | 2026-10-09 |
 | `AppUploadZone` | `inputs/app_upload_zone.dart` | Dashed box to pick a document (license, title deed, receipt); reports the tap only | `onTap`, `label` (default "Image or PDF"), `icon` | 2026-10-09 |
 | `AppCameraTile` | `inputs/app_camera_tile.dart` | Dark square that opens the camera, before the photo thumbnails; reports the tap only | `onTap`, `label` (default "Camera"), `size` | 2026-10-09 |

@@ -1,0 +1,15 @@
+{
+  "contractor_profile_completion_title": "Complete Business Profile",
+  "save_button": "Save",
+  "save_error": "Failed to save specialty, please try again.",
+  "save_success": "Specialty saved successfully",
+  "specialty_electrical_plumbing": "Electrical & Plumbing",
+  "specialty_finishes": "Finishes",
+  "specialty_general_contracting": "General Contracting",
+  "specialty_insulation": "Insulation",
+  "specialty_label": "Specialty",
+  "specialty_renovation": "Restoration",
+  "specialty_required": "Please select a specialty",
+  "specialty_subtitle": "Visible to clients on your profile and determines suggested projects for you.",
+  "specialty_title": "Business Specialty"
+}
