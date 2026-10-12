@@ -26,9 +26,9 @@ GoRouter createAppRouter({String? initialLocation}) {
       // One line per role folder, sorted by file name. Each folder's names
       // and paths live in lib/core/router/routes/.
       ...authRoutes,
+      ...onboardingRoutes,
       ...splashRoutes,
     ],
-    routes: [...onboardingRoutes, ...splashRoutes],
   );
 }
 
