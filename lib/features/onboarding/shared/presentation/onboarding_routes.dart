@@ -9,8 +9,6 @@ final List<RouteBase> onboardingRoutes = [
   GoRoute(
     name: OnboardingRoutes.onboardingName,
     path: OnboardingRoutes.onboardingPath,
-    // The login route comes with GRA-10. Once it is on main, pass
-    // `onFinished: (context) => context.goNamed(AuthRoutes.loginName)`.
     builder: (context, state) => BlocProvider(
       create: (_) => getIt<OnboardingBloc>(),
       child: const OnboardingPage(),

@@ -1,19 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_page_dots.dart';
+import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/onboarding/shared/presentation/bloc/onboarding_bloc.dart';
 import 'package:watad/features/onboarding/shared/presentation/widgets/onboarding_slide.dart';
 
 class OnboardingPage extends StatefulWidget {
-  const OnboardingPage({this.onFinished, super.key});
-
-  /// Leaves the onboarding once it is marked as seen. The route passes it and
-  /// navigates with goNamed, so Back can't return here.
-  final void Function(BuildContext context)? onFinished;
+  const OnboardingPage({super.key});
 
   @override
   State<OnboardingPage> createState() => _OnboardingPageState();
@@ -63,15 +61,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 
+  /// Leaves the onboarding once it is marked as seen. goNamed, so Back can't
+  /// return here.
+  void _leave(BuildContext context) => context.goNamed(AuthRoutes.loginName);
+
   void _onStateChanged(BuildContext context, OnboardingState state) {
     switch (state) {
       case OnboardingSaveSuccess():
-        widget.onFinished?.call(context);
+        _leave(context);
       case OnboardingSaveFailure(:final failure):
         // Don't keep the user here: at worst they see the onboarding again on
         // the next launch.
         context.showErrorSnackBar(context.tr(failure.messageKey));
-        widget.onFinished?.call(context);
+        _leave(context);
       case OnboardingInitial() || OnboardingSaveInProgress():
         break;
     }
