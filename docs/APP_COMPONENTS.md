@@ -60,6 +60,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppCard` | `display/app_card.dart` | White outlined card, tappable, clips a photo at the top | `child`, `onTap`, `padding`, `color` | 2026-10-09 |
 | `AppImagePlaceholder` | `display/app_image_placeholder.dart` | The striped box where a photo is missing or loading | `label` | 2026-10-09 |
 | `AppNetworkImage` | `display/app_network_image.dart` | Network image with the striped placeholder while loading, on error and without a URL | `url`, `width`, `height`, `fit`, `borderRadius`, `semanticLabel` | 2026-10-09 |
+| `AppLottie` | `display/app_lottie.dart` | A Lottie animation from `assets/animations/` (onboarding illustrations); loops by default; the only place that imports `lottie` | `asset`, `width`, `height`, `fit`, `repeat`, `semanticLabel` | 2026-10-12 |
 | `AppPhotoTile` | `display/app_photo_tile.dart` | Square photo thumbnail, numbered placeholder until there is a photo (task evidence, receipts) | `image`, `placeholderLabel`, `onTap`, `size` | 2026-10-09 |
 | `AppStatusBadge` | `display/app_status_badge.dart` | Round status label in a tone (orange waiting, green done, red rejected, gray neutral); white on photos | `label`, `tone`, `onImage` | 2026-10-09 |
 | `AppIconTag` | `display/app_icon_tag.dart` | Tinted tag with a square mark (✓ ! ?); trust marks with the ledger hash; timeline notes | `label`, `icon`, `tone`, `detail` | 2026-10-09 |
@@ -80,6 +81,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppActionBar` | `layout/app_action_bar.dart` | The bottom bar of actions; with two, the primary takes 2/3 of the width | `primary`, `secondary` | 2026-10-09 |
 | `AppTopBar` | `layout/app_top_bar.dart` | The top bar of sub-screens: back arrow (flips in RTL) and a quiet title | `title`, `onBack`, `actions` | 2026-10-09 |
 | `AppStepProgress` | `layout/app_step_progress.dart` | "Step 2 of 4" with one bar per step (multi-step flows) | `current`, `total`, `label` (default "Step 2 of 4") | 2026-10-09 |
+| `AppPageDots` | `layout/app_page_dots.dart` | One dot per page under swipeable pages (onboarding); the current page is an orange pill; follows the reading direction | `count`, `currentIndex`, `semanticLabel` | 2026-10-12 |
 | `AppTabBar` | `layout/app_tab_bar.dart` | Underlined tabs of equal width (business profile) | `labels`, `controller`, `onTap` | 2026-10-09 |
 | `AppBottomNav`, `AppBottomNavItem` | `layout/app_bottom_nav.dart` | The main tabs at the bottom; the shell passes the tabs of the signed-in role | `items`, `currentIndex`, `onTap` | 2026-10-09 |
 
