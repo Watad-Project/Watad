@@ -850,7 +850,7 @@ The router is set up once, in `lib/core/router/`. Every route's page and `GoRout
 | `app_router.dart` | `appRouter`, built by `createAppRouter()`: opens at `appStartPath`, spreads each role folder's routes list, holds the guard (`_guard`) and shows `AppNotFoundView` for unknown addresses |
 | `routes/<prefix><feature>_routes.dart` | One role folder's route names and paths, e.g. `AuthRoutes`, `ClientProjectsRoutes`. Each is created by the feature that owns it |
 
-No feature has routes yet. Until the first screen exists, the app opens at `/` and shows the not-found page. The task that builds the splash screen points `appStartPath` at the splash path (`const String appStartPath = SplashRoutes.splashPath;`) and updates `test/app_test.dart` to expect its page.
+The first routes are `auth`'s: `AuthRoutes.loginName` opens the login page at `/auth/login`. Until the splash screen exists, the app still opens at `/` and shows the not-found page. The task that builds the splash screen points `appStartPath` at the splash path (`const String appStartPath = SplashRoutes.splashPath;`) and updates `test/app_test.dart` to expect its page.
 
 **Adding a route:**
 
