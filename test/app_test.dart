@@ -3,36 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/app.dart';
 import 'package:watad/core/di/injection.dart';
-import 'package:watad/core/error/result.dart';
 import 'package:watad/core/localization/app_localization.dart';
-import 'package:watad/features/splash/shared/domain/entities/splash_destination.dart';
-import 'package:watad/features/splash/shared/domain/repositories/splash_repository.dart';
-import 'package:watad/features/splash/shared/domain/usecases/get_initial_destination_use_case.dart';
-import 'package:watad/features/splash/shared/presentation/bloc/splash_bloc.dart';
 import 'package:watad/features/splash/shared/presentation/pages/splash_page.dart';
 
+import 'helpers/fake_splash_repository.dart';
 import 'helpers/pump_component.dart';
 
-class FakeSplashRepository implements SplashRepository {
-  const FakeSplashRepository(this.result);
-
-  final Result<SplashDestination> result;
-
-  @override
-  Future<Result<SplashDestination>> determineInitialDestination() async =>
-      result;
-}
-
 void main() {
-  setUp(() {
-    getIt.registerFactory(
-      () => SplashBloc(
-        const GetInitialDestinationUseCase(
-          FakeSplashRepository(Success(SplashDestination.login)),
-        ),
-      ),
-    );
-  });
+  // The splash fake never answers, so the app stays on the splash page.
+  setUp(() => registerFakeSplashBloc(FakeSplashRepository()));
 
   tearDown(getIt.reset);
 

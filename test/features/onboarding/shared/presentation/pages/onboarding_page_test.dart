@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/core/router/routes/onboarding_routes.dart';
 import 'package:watad/features/onboarding/shared/domain/repositories/onboarding_repository.dart';
 import 'package:watad/features/onboarding/shared/domain/usecases/mark_onboarding_seen_use_case.dart';
 import 'package:watad/features/onboarding/shared/presentation/bloc/onboarding_bloc.dart';
 import 'package:watad/features/onboarding/shared/presentation/pages/onboarding_page.dart';
 
+import '../../../../../helpers/fake_auth_repository.dart';
+import '../../../../../helpers/fake_splash_repository.dart';
 import '../../../../../helpers/pump_component.dart';
+import '../../../../../helpers/pump_router.dart';
 
 class FakeOnboardingRepository implements OnboardingRepository {
   FakeOnboardingRepository([this.result = const Success<void>(null)]);
@@ -27,8 +34,8 @@ class FakeOnboardingRepository implements OnboardingRepository {
 
 void main() {
   late FakeOnboardingRepository repository;
-  late int finishedCount;
 
+  // For the tests that don't leave the page: no router needed.
   Future<void> pumpPage(
     WidgetTester tester, {
     Locale locale = AppLocalization.arabic,
@@ -37,23 +44,40 @@ void main() {
       tester,
       BlocProvider(
         create: (_) => OnboardingBloc(MarkOnboardingSeenUseCase(repository)),
-        child: OnboardingPage(onFinished: (_) => finishedCount++),
+        child: const OnboardingPage(),
       ),
       locale: locale,
     );
   }
 
   // Not pumpAndSettle: the slide animation loops.
-  Future<void> tapAndWait(WidgetTester tester, String text) async {
-    await tester.tap(find.text(text));
+  Future<void> pumpOneSecond(WidgetTester tester) async {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
   }
 
-  setUp(() {
-    repository = FakeOnboardingRepository();
-    finishedCount = 0;
-  });
+  // Opens the page in the real router, so finishing can leave it.
+  Future<GoRouter> openPage(WidgetTester tester) async {
+    getIt.registerFactory(
+      () => OnboardingBloc(MarkOnboardingSeenUseCase(repository)),
+    );
+    registerFakeAuthBloc(FakeAuthRepository());
+    // The router opens at the splash page first. Its fake never answers.
+    registerFakeSplashBloc(FakeSplashRepository());
+    final router = await pumpAppRouter(tester);
+    router.goNamed(OnboardingRoutes.onboardingName);
+    await pumpOneSecond(tester);
+    return router;
+  }
+
+  Future<void> tapAndWait(WidgetTester tester, String text) async {
+    await tester.tap(find.text(text));
+    await pumpOneSecond(tester);
+  }
+
+  setUp(() => repository = FakeOnboardingRepository());
+
+  tearDown(getIt.reset);
 
   testWidgets('starts on the first slide, right to left, with next and skip', (
     tester,
@@ -74,13 +98,12 @@ void main() {
 
     expect(find.text('عقود موثّقة لا تتغيّر'), findsOneWidget);
     expect(repository.calls, 0);
-    expect(finishedCount, 0);
   });
 
   testWidgets('the last slide says get started, hides skip and finishes', (
     tester,
   ) async {
-    await pumpPage(tester);
+    final router = await openPage(tester);
     await tapAndWait(tester, 'التالي');
     await tapAndWait(tester, 'التالي');
 
@@ -91,28 +114,28 @@ void main() {
     await tapAndWait(tester, 'ابدأ الآن');
 
     expect(repository.calls, 1);
-    expect(finishedCount, 1);
+    expect(currentPath(router), AuthRoutes.loginPath);
   });
 
   testWidgets('skip marks the onboarding as seen and finishes', (tester) async {
-    await pumpPage(tester);
+    final router = await openPage(tester);
 
     await tapAndWait(tester, 'تخطّي');
 
     expect(repository.calls, 1);
-    expect(finishedCount, 1);
+    expect(currentPath(router), AuthRoutes.loginPath);
   });
 
   testWidgets('a failed save shows the error and still finishes', (
     tester,
   ) async {
     repository = FakeOnboardingRepository(const Failed<void>(UnknownFailure()));
-    await pumpPage(tester);
+    final router = await openPage(tester);
 
     await tapAndWait(tester, 'تخطّي');
 
     expect(find.text('حدث خطأ ما. حاول مرة أخرى.'), findsOneWidget);
-    expect(finishedCount, 1);
+    expect(currentPath(router), AuthRoutes.loginPath);
   });
 
   testWidgets('shows the English text left to right', (tester) async {
