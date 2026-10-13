@@ -17,5 +17,7 @@ void registerAuthDependencies(GetIt getIt) {
     ..registerLazySingleton(() => SendOtpUseCase(getIt()))
     ..registerLazySingleton(() => VerifyOtpUseCase(getIt()))
     ..registerFactory(() => AuthBloc(getIt(), getIt()))
-    ..registerFactory(RoleBloc.new);
+    ..registerFactory<RoleBloc>(() {
+      return RoleBloc();
+    });
 }

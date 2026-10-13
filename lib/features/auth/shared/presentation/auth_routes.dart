@@ -19,9 +19,7 @@ final List<RouteBase> authRoutes = [
   GoRoute(
     name: AuthRoutes.roleName,
     path: AuthRoutes.rolePath,
-    builder: (context, state) => BlocProvider(
-      create: (_) => getIt<RoleBloc>(),
-      child: const RolePage(),
-    ),
+    builder: (context, state) =>
+        BlocProvider(create: (_) => getIt<RoleBloc>(), child: const RolePage()),
   ),
 ];
