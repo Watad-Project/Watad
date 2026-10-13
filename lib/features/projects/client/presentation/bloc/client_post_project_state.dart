@@ -8,6 +8,11 @@ final class ClientPostProjectState {
   const ClientPostProjectState({
     this.currentStep = 1,
     this.projectType,
+    this.scopeOfWork = '',
+    this.minBudget,
+    this.maxBudget,
+    this.locationAddress,
+    this.photos = const [],
     this.status = ClientPostProjectStatus.initial,
     this.failure,
   });
@@ -17,6 +22,21 @@ final class ClientPostProjectState {
 
   /// The selected project type.
   final ClientProjectType? projectType;
+
+  /// The entered scope of work (step 2).
+  final String scopeOfWork;
+
+  /// The minimum budget in SAR (step 2).
+  final int? minBudget;
+
+  /// The maximum budget in SAR (step 2).
+  final int? maxBudget;
+
+  /// The chosen project location / address string (step 2).
+  final String? locationAddress;
+
+  /// Attached photo labels or file paths (step 2).
+  final List<String> photos;
 
   /// Status of operations (initial, submitting, success, failure).
   final ClientPostProjectStatus status;
@@ -33,15 +53,44 @@ final class ClientPostProjectState {
   /// Whether step 1 is valid to proceed to step 2.
   bool get canProceedFromStep1 => projectType != null;
 
+  /// Whether step 2 is valid to proceed to step 3 (or review).
+  bool get canProceedFromStep2 {
+    final validScope = scopeOfWork.trim().isNotEmpty;
+    final validBudget =
+        minBudget != null &&
+        minBudget! > 0 &&
+        maxBudget != null &&
+        maxBudget! >= minBudget!;
+    final validLocation =
+        locationAddress != null && locationAddress!.trim().isNotEmpty;
+    return validScope && validBudget && validLocation;
+  }
+
+  /// Whether the current budget fields satisfy min <= max.
+  bool get isBudgetValid {
+    if (minBudget == null || maxBudget == null) return true;
+    return maxBudget! >= minBudget!;
+  }
+
   ClientPostProjectState copyWith({
     int? currentStep,
     ClientProjectType? projectType,
+    String? scopeOfWork,
+    int? minBudget,
+    int? maxBudget,
+    String? locationAddress,
+    List<String>? photos,
     ClientPostProjectStatus? status,
     Failure? failure,
   }) {
     return ClientPostProjectState(
       currentStep: currentStep ?? this.currentStep,
       projectType: projectType ?? this.projectType,
+      scopeOfWork: scopeOfWork ?? this.scopeOfWork,
+      minBudget: minBudget ?? this.minBudget,
+      maxBudget: maxBudget ?? this.maxBudget,
+      locationAddress: locationAddress ?? this.locationAddress,
+      photos: photos ?? this.photos,
       status: status ?? this.status,
       failure: failure ?? this.failure,
     );

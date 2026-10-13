@@ -9,6 +9,12 @@ class ClientPostProjectBloc
     extends Bloc<ClientPostProjectEvent, ClientPostProjectState> {
   ClientPostProjectBloc() : super(const ClientPostProjectState()) {
     on<ClientPostProjectTypeSelected>(_onTypeSelected);
+    on<ClientPostProjectScopeChanged>(_onScopeChanged);
+    on<ClientPostProjectMinBudgetChanged>(_onMinBudgetChanged);
+    on<ClientPostProjectMaxBudgetChanged>(_onMaxBudgetChanged);
+    on<ClientPostProjectLocationChanged>(_onLocationChanged);
+    on<ClientPostProjectPhotoAdded>(_onPhotoAdded);
+    on<ClientPostProjectPhotoRemoved>(_onPhotoRemoved);
     on<ClientPostProjectStepAdvanced>(_onStepAdvanced);
     on<ClientPostProjectStepRetreated>(_onStepRetreated);
     on<ClientPostProjectReset>(_onReset);
@@ -19,6 +25,49 @@ class ClientPostProjectBloc
     Emitter<ClientPostProjectState> emit,
   ) {
     emit(state.copyWith(projectType: event.type));
+  }
+
+  void _onScopeChanged(
+    ClientPostProjectScopeChanged event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    emit(state.copyWith(scopeOfWork: event.scope));
+  }
+
+  void _onMinBudgetChanged(
+    ClientPostProjectMinBudgetChanged event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    emit(state.copyWith(minBudget: event.minBudget));
+  }
+
+  void _onMaxBudgetChanged(
+    ClientPostProjectMaxBudgetChanged event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    emit(state.copyWith(maxBudget: event.maxBudget));
+  }
+
+  void _onLocationChanged(
+    ClientPostProjectLocationChanged event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    emit(state.copyWith(locationAddress: event.location));
+  }
+
+  void _onPhotoAdded(
+    ClientPostProjectPhotoAdded event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    emit(state.copyWith(photos: [...state.photos, event.photo]));
+  }
+
+  void _onPhotoRemoved(
+    ClientPostProjectPhotoRemoved event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    final updated = [...state.photos]..removeAt(event.index);
+    emit(state.copyWith(photos: updated));
   }
 
   void _onStepAdvanced(

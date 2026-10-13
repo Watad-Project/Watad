@@ -4,11 +4,53 @@ sealed class ClientPostProjectEvent {
   const ClientPostProjectEvent();
 }
 
-/// The user selected a project type on step 1.
+/// The user selected or changed a project type.
 final class ClientPostProjectTypeSelected extends ClientPostProjectEvent {
   const ClientPostProjectTypeSelected(this.type);
 
   final ClientProjectType type;
+}
+
+/// The user typed or changed the scope of work (step 2).
+final class ClientPostProjectScopeChanged extends ClientPostProjectEvent {
+  const ClientPostProjectScopeChanged(this.scope);
+
+  final String scope;
+}
+
+/// The user changed the minimum budget (step 2).
+final class ClientPostProjectMinBudgetChanged extends ClientPostProjectEvent {
+  const ClientPostProjectMinBudgetChanged(this.minBudget);
+
+  final int? minBudget;
+}
+
+/// The user changed the maximum budget (step 2).
+final class ClientPostProjectMaxBudgetChanged extends ClientPostProjectEvent {
+  const ClientPostProjectMaxBudgetChanged(this.maxBudget);
+
+  final int? maxBudget;
+}
+
+/// The user selected or changed the location address (step 2).
+final class ClientPostProjectLocationChanged extends ClientPostProjectEvent {
+  const ClientPostProjectLocationChanged(this.location);
+
+  final String location;
+}
+
+/// The user added a photo (step 2).
+final class ClientPostProjectPhotoAdded extends ClientPostProjectEvent {
+  const ClientPostProjectPhotoAdded(this.photo);
+
+  final String photo;
+}
+
+/// The user removed a photo by index (step 2).
+final class ClientPostProjectPhotoRemoved extends ClientPostProjectEvent {
+  const ClientPostProjectPhotoRemoved(this.index);
+
+  final int index;
 }
 
 /// The user advanced to the next step.

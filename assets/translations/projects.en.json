@@ -11,6 +11,25 @@
     "type_renovation_hint": "Requires property deed",
     "type_repairs": "Home repairs",
     "type_repairs_hint": "No deed needed — published directly",
-    "next_button": "Next"
+    "tag_requires_deed": "Deed required",
+    "tag_no_deed": "No deed needed",
+    "next_button": "Next",
+    "details_title": "Project details",
+    "scope_of_work_label": "Scope of work",
+    "scope_of_work_hint_deed": "Facade renovation, insulation replacement, and exterior re-plastering...",
+    "scope_of_work_hint_repairs": "Leak in the second floor bathroom and kitchen sink replacement...",
+    "budget_label": "Budget (SAR)",
+    "budget_min_hint": "Minimum",
+    "budget_max_hint": "Maximum",
+    "budget_error_min_greater": "Maximum budget must be greater than or equal to minimum",
+    "location_label": "Project location",
+    "location_change": "Change on map",
+    "default_location_deed": "Riyadh · Al-Morouj",
+    "default_location_repairs": "Riyadh · An-Narjis",
+    "no_deed_banner_title": "No property deed required",
+    "no_deed_banner_subtitle": "The project will be published directly after review and offers will open.",
+    "photos_label": "Project photos",
+    "next_deed_button": "Next — Property Deed",
+    "next_review_button": "Next — Review & Publish"
   }
 }

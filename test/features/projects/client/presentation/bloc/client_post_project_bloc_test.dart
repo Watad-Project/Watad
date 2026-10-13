@@ -10,6 +10,7 @@ void main() {
       expect(bloc.state.projectType, isNull);
       expect(bloc.state.status, ClientPostProjectStatus.initial);
       expect(bloc.state.canProceedFromStep1, isFalse);
+      expect(bloc.state.canProceedFromStep2, isFalse);
       bloc.close();
     });
 
@@ -44,6 +45,58 @@ void main() {
                 s.requiresDeed == false &&
                 s.totalSteps == 3 &&
                 s.canProceedFromStep1 == true;
+          }),
+        ),
+      );
+
+      await bloc.close();
+    });
+
+    test('handles step 2 fields and validation', () async {
+      final bloc = ClientPostProjectBloc();
+
+      bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse));
+      bloc.add(const ClientPostProjectScopeChanged('House foundation work'));
+      bloc.add(const ClientPostProjectMinBudgetChanged(50000));
+      bloc.add(const ClientPostProjectMaxBudgetChanged(100000));
+      bloc.add(const ClientPostProjectLocationChanged('Riyadh Al-Morouj'));
+      bloc.add(const ClientPostProjectPhotoAdded('photo1.jpg'));
+
+      await expectLater(
+        bloc.stream,
+        emitsThrough(
+          predicate<ClientPostProjectState>((s) {
+            return s.scopeOfWork == 'House foundation work' &&
+                s.minBudget == 50000 &&
+                s.maxBudget == 100000 &&
+                s.locationAddress == 'Riyadh Al-Morouj' &&
+                s.photos.length == 1 &&
+                s.canProceedFromStep2 == true &&
+                s.isBudgetValid == true;
+          }),
+        ),
+      );
+
+      bloc.add(const ClientPostProjectPhotoRemoved(0));
+      await expectLater(
+        bloc.stream,
+        emits(predicate<ClientPostProjectState>((s) => s.photos.isEmpty)),
+      );
+
+      await bloc.close();
+    });
+
+    test('invalidates budget when max is less than min', () async {
+      final bloc = ClientPostProjectBloc();
+
+      bloc.add(const ClientPostProjectMinBudgetChanged(100000));
+      bloc.add(const ClientPostProjectMaxBudgetChanged(50000));
+
+      await expectLater(
+        bloc.stream,
+        emitsThrough(
+          predicate<ClientPostProjectState>((s) {
+            return s.isBudgetValid == false && s.canProceedFromStep2 == false;
           }),
         ),
       );

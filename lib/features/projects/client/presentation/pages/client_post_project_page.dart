@@ -7,9 +7,9 @@ import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
-
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step1.dart';
+import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step2.dart';
 
 /// The client's main flow for posting a construction project.
 class ClientPostProjectPage extends StatelessWidget {
@@ -25,6 +25,33 @@ class ClientPostProjectPage extends StatelessWidget {
     } else {
       context.goNamed(ClientNavigationRoutes.navigationName);
     }
+  }
+
+  String _nextButtonLabel(BuildContext context, ClientPostProjectState state) {
+    if (state.currentStep == 1) {
+      return context.tr('projects.client.next_button');
+    }
+    if (state.requiresDeed) {
+      return context.tr('projects.client.next_deed_button');
+    }
+    return context.tr('projects.client.next_review_button');
+  }
+
+  bool _canProceed(ClientPostProjectState state) {
+    if (state.currentStep == 1) {
+      return state.canProceedFromStep1;
+    }
+    if (state.currentStep == 2) {
+      return state.canProceedFromStep2;
+    }
+    return false;
+  }
+
+  String _stepTitle(BuildContext context, ClientPostProjectState state) {
+    if (state.currentStep == 1) {
+      return context.tr('projects.client.step_1');
+    }
+    return '';
   }
 
   @override
@@ -45,7 +72,7 @@ class ClientPostProjectPage extends StatelessWidget {
           child: Scaffold(
             backgroundColor: AppColors.surface,
             appBar: AppTopBar(
-              title: context.tr('projects.client.step_1'),
+              title: _stepTitle(context, state),
               onBack: () => _onBack(context, state),
             ),
             body: SafeArea(
@@ -58,13 +85,51 @@ class ClientPostProjectPage extends StatelessWidget {
                     );
                   },
                 ),
+                2 => ClientPostProjectStep2(
+                  state: state,
+                  onTypeChanged: (type) {
+                    context.read<ClientPostProjectBloc>().add(
+                      ClientPostProjectTypeSelected(type),
+                    );
+                  },
+                  onScopeChanged: (scope) {
+                    context.read<ClientPostProjectBloc>().add(
+                      ClientPostProjectScopeChanged(scope),
+                    );
+                  },
+                  onMinBudgetChanged: (minBudget) {
+                    context.read<ClientPostProjectBloc>().add(
+                      ClientPostProjectMinBudgetChanged(minBudget),
+                    );
+                  },
+                  onMaxBudgetChanged: (maxBudget) {
+                    context.read<ClientPostProjectBloc>().add(
+                      ClientPostProjectMaxBudgetChanged(maxBudget),
+                    );
+                  },
+                  onLocationChanged: (location) {
+                    context.read<ClientPostProjectBloc>().add(
+                      ClientPostProjectLocationChanged(location),
+                    );
+                  },
+                  onPhotoAdded: (photo) {
+                    context.read<ClientPostProjectBloc>().add(
+                      ClientPostProjectPhotoAdded(photo),
+                    );
+                  },
+                  onPhotoRemoved: (index) {
+                    context.read<ClientPostProjectBloc>().add(
+                      ClientPostProjectPhotoRemoved(index),
+                    );
+                  },
+                ),
                 _ => const SizedBox.shrink(),
               },
             ),
             bottomNavigationBar: AppActionBar(
               primary: AppButton(
-                label: context.tr('projects.client.next_button'),
-                onPressed: state.canProceedFromStep1
+                label: _nextButtonLabel(context, state),
+                onPressed: _canProceed(state)
                     ? () {
                         context.read<ClientPostProjectBloc>().add(
                           const ClientPostProjectStepAdvanced(),

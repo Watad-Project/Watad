@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/feedback/app_status_card.dart';
+import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
@@ -41,7 +43,6 @@ void main() {
     ) async {
       await pumpLocalizedApp(tester, buildPage());
 
-      // Tap dropdown to open menu
       await tester.tap(find.text('اختر النوع'));
       await tester.pumpAndSettle();
 
@@ -104,6 +105,135 @@ void main() {
       );
       expect(find.text('Select type'), findsOneWidget);
       expect(find.text('Next'), findsOneWidget);
+    });
+  });
+
+  group('ClientPostProjectPage - Step 2', () {
+    testWidgets(
+      'Variant A: renders deed-required fields, photo row, and deed next button',
+      (tester) async {
+        final bloc = ClientPostProjectBloc()
+          ..add(
+            const ClientPostProjectTypeSelected(ClientProjectType.renovation),
+          )
+          ..add(const ClientPostProjectStepAdvanced());
+
+        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+        await tester.pumpAndSettle();
+
+        expect(find.text('الخطوة 2 من 4'), findsOneWidget);
+        expect(find.text('تفاصيل المشروع'), findsOneWidget);
+        expect(find.text('ترميم منزل'), findsOneWidget);
+        expect(find.text('يتطلب صك'), findsOneWidget);
+        expect(find.text('نطاق العمل'), findsOneWidget);
+        expect(find.text('الميزانية (ر.س)'), findsOneWidget);
+        expect(find.text('موقع المشروع'), findsOneWidget);
+        expect(find.text('الرياض · حي المروج'), findsOneWidget);
+        expect(find.text('تغيير على الخريطة'), findsOneWidget);
+        expect(find.text('التالي — توثيق الملكية'), findsOneWidget);
+        expect(find.byIcon(Icons.add), findsOneWidget);
+
+        final nextButton = tester.widget<AppButton>(find.byType(AppButton));
+        expect(nextButton.onPressed, isNull);
+      },
+    );
+
+    testWidgets(
+      'Variant B: renders repairs fields, info banner, and review next button',
+      (tester) async {
+        final bloc = ClientPostProjectBloc()
+          ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
+          ..add(const ClientPostProjectStepAdvanced());
+
+        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+        await tester.pumpAndSettle();
+
+        expect(find.text('الخطوة 2 من 3'), findsOneWidget);
+        expect(find.text('تفاصيل المشروع'), findsOneWidget);
+        expect(find.text('إصلاحات داخل المنزل'), findsOneWidget);
+        expect(find.text('لا يلزم صك'), findsOneWidget);
+        expect(find.text('لا حاجة لصك الملكية'), findsOneWidget);
+        expect(
+          find.text('يُنشر المشروع مباشرة بعد المراجعة وتُفتح العروض.'),
+          findsOneWidget,
+        );
+        expect(find.byType(AppStatusCard), findsOneWidget);
+        expect(find.text('التالي — المراجعة والنشر'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'entering valid scope and budget enables next button in step 2',
+      (tester) async {
+        final bloc = ClientPostProjectBloc()
+          ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
+          ..add(const ClientPostProjectStepAdvanced());
+
+        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+        await tester.pumpAndSettle();
+
+        final textFields = find.byType(AppTextField);
+        // Scope field
+        await tester.enterText(textFields.at(0), 'Leak repair');
+        // Min budget
+        await tester.enterText(textFields.at(1), '2000');
+        // Max budget
+        await tester.enterText(textFields.at(2), '4000');
+        await tester.pumpAndSettle();
+
+        expect(bloc.state.canProceedFromStep2, isTrue);
+        final nextButton = tester.widget<AppButton>(find.byType(AppButton));
+        expect(nextButton.onPressed, isNotNull);
+      },
+    );
+
+    testWidgets(
+      'changing project type in step 2 dynamically updates variant and step count',
+      (tester) async {
+        final bloc = ClientPostProjectBloc()
+          ..add(
+            const ClientPostProjectTypeSelected(ClientProjectType.renovation),
+          )
+          ..add(const ClientPostProjectStepAdvanced());
+
+        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+        await tester.pumpAndSettle();
+
+        expect(find.text('الخطوة 2 من 4'), findsOneWidget);
+        expect(find.text('التالي — توثيق الملكية'), findsOneWidget);
+
+        // Open dropdown in Step 2
+        await tester.tap(find.text('ترميم منزل'));
+        await tester.pumpAndSettle();
+
+        // Switch to repairs
+        await tester.tap(find.text('إصلاحات داخل المنزل'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('الخطوة 2 من 3'), findsOneWidget);
+        expect(find.text('التالي — المراجعة والنشر'), findsOneWidget);
+        expect(find.text('لا حاجة لصك الملكية'), findsOneWidget);
+      },
+    );
+
+    testWidgets('renders English strings for step 2', (tester) async {
+      final bloc = ClientPostProjectBloc()
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectStepAdvanced());
+
+      await pumpLocalizedApp(
+        tester,
+        buildPage(bloc: bloc),
+        locale: AppLocalization.english,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Step 2 of 4'), findsOneWidget);
+      expect(find.text('Project details'), findsOneWidget);
+      expect(find.text('Scope of work'), findsOneWidget);
+      expect(find.text('Budget (SAR)'), findsOneWidget);
+      expect(find.text('Project location'), findsOneWidget);
+      expect(find.text('Next — Property Deed'), findsOneWidget);
     });
   });
 }

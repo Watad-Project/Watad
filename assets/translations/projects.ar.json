@@ -11,6 +11,25 @@
     "type_renovation_hint": "يتطلب صك الملكية",
     "type_repairs": "إصلاحات داخل المنزل",
     "type_repairs_hint": "لا يلزم صك — يُنشر مباشرة",
-    "next_button": "التالي"
+    "tag_requires_deed": "يتطلب صك",
+    "tag_no_deed": "لا يلزم صك",
+    "next_button": "التالي",
+    "details_title": "تفاصيل المشروع",
+    "scope_of_work_label": "نطاق العمل",
+    "scope_of_work_hint_deed": "ترميم الواجهة وتغيير العزل وإعادة التليس الخارجي...",
+    "scope_of_work_hint_repairs": "تسرّب في حمّام الدور الثاني وتغيير مغسلة المطبخ...",
+    "budget_label": "الميزانية (ر.س)",
+    "budget_min_hint": "الحد الأدنى",
+    "budget_max_hint": "الحد الأقصى",
+    "budget_error_min_greater": "الحد الأقصى يجب أن يكون أكبر من أو يساوي الحد الأدنى",
+    "location_label": "موقع المشروع",
+    "location_change": "تغيير على الخريطة",
+    "default_location_deed": "الرياض · حي المروج",
+    "default_location_repairs": "الرياض · حي النرجس",
+    "no_deed_banner_title": "لا حاجة لصك الملكية",
+    "no_deed_banner_subtitle": "يُنشر المشروع مباشرة بعد المراجعة وتُفتح العروض.",
+    "photos_label": "صور المشروع",
+    "next_deed_button": "التالي — توثيق الملكية",
+    "next_review_button": "التالي — المراجعة والنشر"
   }
 }
