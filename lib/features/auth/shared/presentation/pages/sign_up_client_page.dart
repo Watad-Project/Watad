@@ -74,6 +74,8 @@ class _SignUpClientPageState extends State<SignUpClientPage> {
                 bloc.add(const SignUpClientStepBack());
               } else if (context.canPop()) {
                 context.pop();
+              } else {
+                context.goNamed(AuthRoutes.roleName);
               }
             },
           ),

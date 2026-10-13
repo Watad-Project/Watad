@@ -9,6 +9,7 @@ import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_
 import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_sign_up_otp_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/auth_bloc.dart';
+import 'package:watad/features/auth/shared/presentation/bloc/role_bloc.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/sign_up_client_bloc.dart';
 
 /// Registers everything in lib/features/auth/shared/.
@@ -25,6 +26,9 @@ void registerAuthDependencies(GetIt getIt) {
     ..registerLazySingleton(() => VerifyOtpUseCase(getIt()))
     ..registerLazySingleton(() => VerifySignUpOtpUseCase(getIt()))
     ..registerFactory(() => AuthBloc(getIt(), getIt()))
+    ..registerFactory<RoleBloc>(() {
+      return RoleBloc();
+    })
     ..registerFactory(
       () => SignUpClientBloc(
         checkEmailRegistered: getIt(),

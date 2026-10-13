@@ -37,165 +37,153 @@ class LoginPage extends StatelessWidget {
       builder: (context, state) {
         final bloc = context.read<AuthBloc>();
         return Scaffold(
-          backgroundColor: AppColors.surface,
-          body: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xl,
-                    vertical: AppSpacing.xxl,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Center(child: AppLogo(height: 72)),
-                        const SizedBox(height: AppSpacing.xl),
-                        Text(
-                          context.tr('auth.login_title'),
-                          style: AppTextStyles.h1,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: AppSpacing.xxl),
-                        AppTextField(
-                          label: context.tr('auth.email_label'),
-                          hint: context.tr('auth.email_hint'),
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.send,
-                          errorText: state.emailError == null
-                              ? null
-                              : context.tr(state.emailError!),
-                          onChanged: (email) =>
-                              bloc.add(AuthEmailChanged(email)),
-                          onSubmitted: (_) {
-                            FocusScope.of(context).unfocus();
+          body: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Center(child: AppLogo(size: 72)),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        context.tr('auth.login_title'),
+                        style: AppTextStyles.h1,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      AppTextField(
+                        key: const ValueKey('email_field'),
+                        label: context.tr('auth.email_label'),
+                        hint: context.tr('auth.email_hint'),
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.done,
+                        enabled: !state.codeSent && !state.isBusy,
+                        errorText: state.emailError == null
+                            ? null
+                            : context.tr(state.emailError!),
+                        onChanged: (email) => bloc.add(AuthEmailChanged(email)),
+                        onSubmitted: (_) {
+                          if (!state.codeSent) {
                             bloc.add(const AuthOtpRequested());
-                          },
-                        ),
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 600),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) {
-                            final slide =
-                                Tween<Offset>(
-                                  begin: const Offset(0.0, 0.2),
-                                  end: Offset.zero,
-                                ).animate(
-                                  CurvedAnimation(
-                                    parent: animation,
-                                    curve: Curves.easeOutCubic,
-                                  ),
-                                );
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SizeTransition(
-                                sizeFactor: animation,
-                                child: SlideTransition(
-                                  position: slide,
-                                  child: child,
-                                ),
-                              ),
-                            );
-                          },
-                          child: state.codeSent
-                              ? Column(
-                                  key: const ValueKey('otp_section'),
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const SizedBox(height: AppSpacing.lg),
-                                    Center(
-                                      child: AppOtpInput(
-                                        length: VerifyOtpUseCase.codeLength,
-                                        enabled: !state.isBusy,
-                                        errorText: state.otpError == null
-                                            ? null
-                                            : context.tr(state.otpError!),
-                                        onChanged: (otp) =>
-                                            bloc.add(AuthOtpChanged(otp)),
-                                        onCompleted: (_) =>
-                                            bloc.add(const AuthOtpSubmitted()),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : const SizedBox.shrink(
-                                  key: ValueKey('empty_otp'),
-                                ),
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 400),
-                          transitionBuilder: (child, animation) =>
-                              FadeTransition(opacity: animation, child: child),
-                          child: AppButton(
-                            key: ValueKey(
-                              state.codeSent ? 'confirm_btn' : 'login_btn',
+                          }
+                        },
+                      ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 600),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) {
+                          final slide = Tween<Offset>(
+                            begin: const Offset(0.0, 0.2),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutCubic,
                             ),
-                            label: state.codeSent
-                                ? context.tr('auth.confirm')
-                                : context.tr('auth.login_title'),
-                            isLoading: state.isBusy,
-                            onPressed: () {
-                              FocusScope.of(context).unfocus();
-                              bloc.add(
-                                state.codeSent
-                                    ? const AuthOtpSubmitted()
-                                    : const AuthOtpRequested(),
-                              );
-                            },
-                          ),
-                        ),
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 600),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) {
-                            final slide =
-                                Tween<Offset>(
-                                  begin: const Offset(0.0, 0.2),
-                                  end: Offset.zero,
-                                ).animate(
-                                  CurvedAnimation(
-                                    parent: animation,
-                                    curve: Curves.easeOutCubic,
-                                  ),
-                                );
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SizeTransition(
-                                sizeFactor: animation,
-                                child: SlideTransition(
-                                  position: slide,
-                                  child: child,
-                                ),
+                          );
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SizeTransition(
+                              sizeFactor: animation,
+                              child: SlideTransition(
+                                position: slide,
+                                child: child,
                               ),
+                            ),
+                          );
+                        },
+                        child: state.codeSent
+                            ? Column(
+                                key: const ValueKey('otp_section'),
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: AppSpacing.lg),
+                                  Center(
+                                    child: AppOtpInput(
+                                      length: VerifyOtpUseCase.codeLength,
+                                      enabled: !state.isBusy,
+                                      errorText: state.otpError == null
+                                          ? null
+                                          : context.tr(state.otpError!),
+                                      onChanged: (otp) =>
+                                          bloc.add(AuthOtpChanged(otp)),
+                                      onCompleted: (_) =>
+                                          bloc.add(const AuthOtpSubmitted()),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(key: ValueKey('empty_otp')),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        transitionBuilder: (child, animation) =>
+                            FadeTransition(opacity: animation, child: child),
+                        child: AppButton(
+                          key: ValueKey(
+                            state.codeSent ? 'confirm_btn' : 'login_btn',
+                          ),
+                          label: state.codeSent
+                              ? context.tr('auth.confirm')
+                              : context.tr('auth.login_title'),
+                          isLoading: state.isBusy,
+                          onPressed: () {
+                            FocusScope.of(context).unfocus();
+                            bloc.add(
+                              state.codeSent
+                                  ? const AuthOtpSubmitted()
+                                  : const AuthOtpRequested(),
                             );
                           },
-                          child: state.codeSent
-                              ? Column(
-                                  key: const ValueKey('resend_section'),
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const SizedBox(height: AppSpacing.lg),
-                                    _ResendHint(state: state),
-                                  ],
-                                )
-                              : const SizedBox.shrink(
-                                  key: ValueKey('empty_resend'),
-                                ),
                         ),
-                        const SizedBox(height: AppSpacing.md),
-                        const _NewUserHint(),
-                      ],
-                    ),
+                      ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 600),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) {
+                          final slide = Tween<Offset>(
+                            begin: const Offset(0.0, 0.2),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutCubic,
+                            ),
+                          );
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SizeTransition(
+                              sizeFactor: animation,
+                              child: SlideTransition(
+                                position: slide,
+                                child: child,
+                              ),
+                            ),
+                          );
+                        },
+                        child: state.codeSent
+                            ? Column(
+                                key: const ValueKey('resend_section'),
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: AppSpacing.lg),
+                                  _ResendHint(state: state),
+                                ],
+                              )
+                            : const SizedBox.shrink(
+                                key: ValueKey('empty_resend'),
+                              ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      const _NewUserHint(),
+                    ],
                   ),
                 ),
               ),
@@ -261,8 +249,6 @@ class _NewUserHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // GRA-11 adds the role selection route (/auth/role) to AuthRoutes and
-    // makes "Create an account" open it.
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -272,7 +258,7 @@ class _NewUserHint extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.xs),
         GestureDetector(
-          onTap: () => context.goNamed(AuthRoutes.signUpClientName),
+          onTap: () => context.pushNamed(AuthRoutes.roleName),
           child: Text(
             context.tr('auth.create_account'),
             style: AppTextStyles.caption.copyWith(
