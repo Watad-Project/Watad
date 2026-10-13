@@ -1,3 +1,8 @@
 {
+  "client_home": "Home",
+  "client_projects": "My Projects",
+  "client_market": "Market",
+  "client_chats": "Messages",
+  "client_account": "Account",
   "coming_soon": "Coming soon"
 }

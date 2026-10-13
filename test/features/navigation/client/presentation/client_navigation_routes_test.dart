@@ -6,6 +6,7 @@ import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/features/navigation/client/presentation/pages/client_navigation_page.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_placeholder.dart';
 
+import '../../../../helpers/fake_client_home_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -16,6 +17,7 @@ void main() {
     //
     // The router opens at the splash page first. Its fake never answers.
     registerFakeSplashBloc(FakeSplashRepository());
+    registerFakeClientHomeBloc(FakeClientHomeRepository());
   });
 
   tearDown(getIt.reset);

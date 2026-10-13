@@ -1,0 +1,15 @@
+{
+  "client": {
+    "empty_contractors": "No suggested contractors at the moment.",
+    "greeting_evening": "Good evening",
+    "greeting_format": "{greeting}, {name}",
+    "greeting_morning": "Good morning",
+    "phone_verified": "Verified phone",
+    "post_project_subtitle": "Describe the work and receive offers from verified contractors.",
+    "post_project_title": "Post a project",
+    "search_hint": "Search for a contractor or material",
+    "see_all": "All",
+    "start_now": "Start now",
+    "suggested_contractors": "Suggested contractors"
+  }
+}

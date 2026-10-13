@@ -1,0 +1,15 @@
+{
+  "client": {
+    "empty_contractors": "لا يوجد مقاولون مقترحون حالياً.",
+    "greeting_evening": "مساء الخير",
+    "greeting_format": "{greeting}، {name}",
+    "greeting_morning": "صباح الخير",
+    "phone_verified": "جوال موثّق",
+    "post_project_subtitle": "صف العمل واستقبل عروض المقاولين الموثّقين.",
+    "post_project_title": "انشر مشروعاً",
+    "search_hint": "ابحث عن مقاول أو مادة",
+    "see_all": "الكل",
+    "start_now": "ابدأ الآن",
+    "suggested_contractors": "مقاولون مقترحون"
+  }
+}

@@ -1,4 +1,5 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:watad/core/router/routes/client_home_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -32,11 +33,32 @@ class ClientNavigationPage extends StatelessWidget {
   ///    and the feature's `register…Dependencies(getIt)` to the setUp of this
   ///    folder's routes test.
   static const List<NavigationTab> tabs = [
-    NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'navigation.client_home',
+      icon: Icons.home_outlined,
+      selectedIcon: Icons.home,
+      routeName: ClientHomeRoutes.homeName,
+    ),
+    NavigationTab(
+      labelKey: 'navigation.client_projects',
+      icon: Icons.dashboard_outlined,
+      selectedIcon: Icons.dashboard,
+    ),
+    NavigationTab(
+      labelKey: 'navigation.client_market',
+      icon: Icons.receipt_long_outlined,
+      selectedIcon: Icons.receipt_long,
+    ),
+    NavigationTab(
+      labelKey: 'navigation.client_chats',
+      icon: Icons.mail_outline_rounded,
+      selectedIcon: Icons.mail_rounded,
+    ),
+    NavigationTab(
+      labelKey: 'navigation.client_account',
+      icon: Icons.sentiment_satisfied_outlined,
+      selectedIcon: Icons.sentiment_satisfied,
+    ),
   ];
 
   /// Builds each tab's screen; the route takes them from getIt.
