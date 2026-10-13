@@ -8,7 +8,9 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/features/auth/shared/presentation/bloc/role_bloc.dart';
 import 'package:watad/features/auth/shared/presentation/pages/login_page.dart';
+import 'package:watad/features/auth/shared/presentation/pages/role_page.dart';
 
 import '../../../../../helpers/fake_auth_repository.dart';
 import '../../../../../helpers/pump_router.dart';
@@ -19,6 +21,7 @@ void main() {
   setUp(() {
     repository = FakeAuthRepository();
     registerFakeAuthBloc(repository);
+    getIt.registerFactory(RoleBloc.new);
   });
 
   tearDown(getIt.reset);
@@ -128,5 +131,17 @@ void main() {
 
     expect(find.text('رمز التحقق مطلوب'), findsOneWidget);
     expect(repository.checked, isEmpty);
+  });
+
+  testWidgets('tapping create account navigates to role selection screen', (
+    tester,
+  ) async {
+    final router = await openLogin(tester);
+
+    await tester.tap(find.text('أنشئ حساباً'));
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), AuthRoutes.rolePath);
+    expect(find.byType(RolePage), findsOneWidget);
   });
 }

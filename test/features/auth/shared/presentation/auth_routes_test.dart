@@ -1,13 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/features/auth/shared/presentation/bloc/role_bloc.dart';
 import 'package:watad/features/auth/shared/presentation/pages/login_page.dart';
+import 'package:watad/features/auth/shared/presentation/pages/role_page.dart';
 
 import '../../../../helpers/fake_auth_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
 void main() {
-  setUp(() => registerFakeAuthBloc(FakeAuthRepository()));
+  setUp(() {
+    registerFakeAuthBloc(FakeAuthRepository());
+    getIt.registerFactory(RoleBloc.new);
+  });
   tearDown(getIt.reset);
 
   testWidgets('every auth route opens its page at its path', (tester) async {
@@ -21,5 +26,11 @@ void main() {
 
     expect(currentPath(router), AuthRoutes.loginPath);
     expect(find.byType(LoginPage), findsOneWidget);
+
+    router.goNamed(AuthRoutes.roleName);
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), AuthRoutes.rolePath);
+    expect(find.byType(RolePage), findsOneWidget);
   });
 }

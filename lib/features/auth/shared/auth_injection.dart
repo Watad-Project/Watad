@@ -5,6 +5,7 @@ import 'package:watad/features/auth/shared/domain/repositories/auth_repository.d
 import 'package:watad/features/auth/shared/domain/usecases/send_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/auth_bloc.dart';
+import 'package:watad/features/auth/shared/presentation/bloc/role_bloc.dart';
 
 /// Registers everything in lib/features/auth/shared/.
 void registerAuthDependencies(GetIt getIt) {
@@ -15,5 +16,8 @@ void registerAuthDependencies(GetIt getIt) {
     ..registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(getIt()))
     ..registerLazySingleton(() => SendOtpUseCase(getIt()))
     ..registerLazySingleton(() => VerifyOtpUseCase(getIt()))
-    ..registerFactory(() => AuthBloc(getIt(), getIt()));
+    ..registerFactory(() => AuthBloc(getIt(), getIt()))
+    ..registerFactory<RoleBloc>(() {
+      return RoleBloc();
+    });
 }

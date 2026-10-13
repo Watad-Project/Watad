@@ -1,5 +1,6 @@
 {
   "confirm": "تأكيد",
+  "continue": "متابعة",
   "create_account": "أنشئ حساباً",
   "email_hint": "abdullah@example.com",
   "email_label": "البريد الإلكتروني",
@@ -16,5 +17,13 @@
   "resend_code": "إعادة الإرسال",
   "resend_countdown": "لم يصلك الرمز؟ إعادة الإرسال خلال {time}",
   "resend_prefix": "لم يصلك الرمز؟",
+  "role_client_description": "أملك عقاراً وأبحث عن مقاول.",
+  "role_client_note": "لا يلزم أي مستند — رمز التحقق يكفي للدخول",
+  "role_client_title": "عميل",
+  "role_contractor_description": "منشأة مقاولات تبحث عن مشاريع.",
+  "role_contractor_note": "المستند المطلوب: رخصة مقاول — إلزامي قبل تقديم أي عرض",
+  "role_contractor_title": "مقاول",
+  "role_subtitle": "يحدّد اختيارك الشاشات التي تدخل إليها بعد التحقق.",
+  "role_title": "كيف تستخدم وتد؟",
   "signed_in": "تم تسجيل الدخول"
 }

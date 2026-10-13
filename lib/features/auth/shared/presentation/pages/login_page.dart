@@ -1,11 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_logo.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_otp_input.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
+import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -259,8 +261,6 @@ class _NewUserHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // GRA-11 adds the role selection route (/auth/role) to AuthRoutes and
-    // makes "Create an account" open it.
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -269,11 +269,14 @@ class _NewUserHint extends StatelessWidget {
           style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(width: AppSpacing.xs),
-        Text(
-          context.tr('auth.create_account'),
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w600,
+        GestureDetector(
+          onTap: () => context.goNamed(AuthRoutes.roleName),
+          child: Text(
+            context.tr('auth.create_account'),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
