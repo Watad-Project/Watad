@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -11,6 +11,7 @@ class ClientNavigationPage extends StatelessWidget {
   });
 
   /// The client's tabs, in order; in Arabic the first one is on the right.
+  /// For now every tab is a placeholder.
   ///
   /// How a feature becomes a tab (the same for every role):
   /// 1. Build the page as usual, with its own `GoRoute` and names file, and
@@ -25,35 +26,17 @@ class ClientNavigationPage extends StatelessWidget {
   ///      instanceName: ClientProjectsRoutes.projectsName,
   ///    );
   ///    ```
-  /// 3. Set that route name as the tab's `routeName` below, which replaces
-  ///    the placeholder, and add the feature's `register…Dependencies(getIt)`
-  ///    to the setUp of this folder's routes test.
+  /// 3. Replace one placeholder below with the feature's tab:
+  ///    `NavigationTab(labelKey: …, icon: …, selectedIcon: …, routeName: …)`,
+  ///    with that route name. Add the label's key to every language file,
+  ///    and the feature's `register…Dependencies(getIt)` to the setUp of this
+  ///    folder's routes test.
   static const List<NavigationTab> tabs = [
-    NavigationTab(
-      labelKey: 'navigation.home',
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.my_projects',
-      icon: Icons.assignment_outlined,
-      selectedIcon: Icons.assignment_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.market',
-      icon: Icons.storefront_outlined,
-      selectedIcon: Icons.storefront_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.chats',
-      icon: Icons.chat_bubble_outline_rounded,
-      selectedIcon: Icons.chat_bubble_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.account',
-      icon: Icons.person_outline_rounded,
-      selectedIcon: Icons.person_rounded,
-    ),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
   ];
 
   /// Builds each tab's screen; the route takes them from getIt.

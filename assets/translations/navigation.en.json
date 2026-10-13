@@ -1,17 +1,3 @@
 {
-  "home": "Home",
-  "my_projects": "My projects",
-  "market": "Market",
-  "chats": "Chats",
-  "account": "Account",
-  "dashboard": "Dashboard",
-  "work": "Work",
-  "my_business": "My business",
-  "verification": "Verification",
-  "reports": "Reports",
-  "listings": "Listings",
-  "payments": "Payments",
-  "users": "Users",
-  "coming_soon": "Coming soon",
-  "coming_soon_description": "We're building this section. It will be available soon."
+  "coming_soon": "Coming soon"
 }

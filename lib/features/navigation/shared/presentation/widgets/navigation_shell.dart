@@ -58,13 +58,9 @@ class _NavigationShellState extends State<NavigationShell> {
     }
   }
 
-  Widget _screenAt(BuildContext context, int index) {
+  Widget _screenAt(int index) {
     final build = widget.screens[index];
-    if (build == null) {
-      return NavigationPlaceholder(
-        title: context.tr(widget.tabs[index].labelKey),
-      );
-    }
+    if (build == null) return const NavigationPlaceholder();
     return _built.putIfAbsent(index, build);
   }
 
@@ -77,7 +73,7 @@ class _NavigationShellState extends State<NavigationShell> {
           for (var index = 0; index < widget.tabs.length; index++)
             // A tab that never opened isn't built yet.
             if (index == _currentIndex || _built.containsKey(index))
-              _screenAt(context, index)
+              _screenAt(index)
             else
               const SizedBox.shrink(),
         ],

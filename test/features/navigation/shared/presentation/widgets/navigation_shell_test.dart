@@ -41,19 +41,19 @@ class _CounterScreenState extends State<_CounterScreen> {
 
 const _tabs = [
   NavigationTab(
-    labelKey: 'navigation.home',
+    labelKey: 'navigation.coming_soon',
     icon: Icons.home_outlined,
     selectedIcon: Icons.home,
     routeName: 'tab-a',
   ),
   NavigationTab(
-    labelKey: 'navigation.my_projects',
+    labelKey: 'navigation.coming_soon',
     icon: Icons.assignment_outlined,
     selectedIcon: Icons.assignment,
     routeName: 'tab-b',
   ),
   NavigationTab(
-    labelKey: 'navigation.market',
+    labelKey: 'navigation.coming_soon',
     icon: Icons.storefront_outlined,
     selectedIcon: Icons.storefront,
   ),
@@ -109,9 +109,13 @@ void main() {
     await pumpShell(tester);
 
     expect(find.text('a 0'), findsOneWidget);
-    expect(find.text('الرئيسية'), findsOneWidget);
-    expect(find.text('مشاريعي'), findsOneWidget);
-    expect(find.text('السوق'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AppBottomNav),
+        matching: find.text('قريبًا'),
+      ),
+      findsNWidgets(3),
+    );
   });
 
   testWidgets('switching tabs keeps each screen as it was', (tester) async {
@@ -150,7 +154,6 @@ void main() {
 
     await tapTab(tester, Icons.storefront_outlined);
     expect(find.byType(NavigationPlaceholder), findsOneWidget);
-    expect(find.text('قريبًا'), findsOneWidget);
   });
 
   testWidgets('selectedRouteName opens its tab, also after the start', (

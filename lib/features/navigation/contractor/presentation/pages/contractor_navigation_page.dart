@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -11,33 +11,14 @@ class ContractorNavigationPage extends StatelessWidget {
   });
 
   /// The contractor's tabs, in order; in Arabic the first one is on the
-  /// right. How a feature becomes a tab: see `ClientNavigationPage.tabs`.
+  /// right. For now every tab is a placeholder. How a feature becomes a tab:
+  /// see `ClientNavigationPage.tabs`.
   static const List<NavigationTab> tabs = [
-    NavigationTab(
-      labelKey: 'navigation.dashboard',
-      icon: Icons.space_dashboard_outlined,
-      selectedIcon: Icons.space_dashboard_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.work',
-      icon: Icons.work_outline_rounded,
-      selectedIcon: Icons.work_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.market',
-      icon: Icons.storefront_outlined,
-      selectedIcon: Icons.storefront_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.chats',
-      icon: Icons.chat_bubble_outline_rounded,
-      selectedIcon: Icons.chat_bubble_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.my_business',
-      icon: Icons.business_outlined,
-      selectedIcon: Icons.business_rounded,
-    ),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
   ];
 
   /// Builds each tab's screen; the route takes them from getIt.

@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
-/// The admin's main screen: the admin sections as tabs and the bottom
-/// navigation. They replace the section chips of the admin mockup.
+/// The admin's main screen: their tabs and the bottom navigation.
 class AdminNavigationPage extends StatelessWidget {
   const AdminNavigationPage({
     required this.screens,
@@ -12,33 +11,14 @@ class AdminNavigationPage extends StatelessWidget {
   });
 
   /// The admin's tabs, in order; in Arabic the first one is on the right.
-  /// How a feature becomes a tab: see `ClientNavigationPage.tabs`.
+  /// For now every tab is a placeholder. How a feature becomes a tab: see
+  /// `ClientNavigationPage.tabs`.
   static const List<NavigationTab> tabs = [
-    NavigationTab(
-      labelKey: 'navigation.verification',
-      icon: Icons.verified_user_outlined,
-      selectedIcon: Icons.verified_user_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.reports',
-      icon: Icons.flag_outlined,
-      selectedIcon: Icons.flag_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.listings',
-      icon: Icons.sell_outlined,
-      selectedIcon: Icons.sell_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.payments',
-      icon: Icons.payments_outlined,
-      selectedIcon: Icons.payments_rounded,
-    ),
-    NavigationTab(
-      labelKey: 'navigation.users',
-      icon: Icons.people_outline_rounded,
-      selectedIcon: Icons.people_rounded,
-    ),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
+    NavigationTab.placeholder(),
   ];
 
   /// Builds each tab's screen; the route takes them from getIt.
