@@ -1,0 +1,16 @@
+{
+  "client": {
+    "step_1": "الخطوة ١",
+    "choose_type_title": "ما نوع مشروعك؟",
+    "choose_type_subtitle": "يحدد النوع إن كان صك الملكية مطلوباً قبل النشر.",
+    "project_type_label": "نوع المشروع",
+    "project_type_placeholder": "اختر النوع",
+    "type_new_house": "تأسيس منزل",
+    "type_new_house_hint": "يتطلب صك الملكية",
+    "type_renovation": "ترميم منزل",
+    "type_renovation_hint": "يتطلب صك الملكية",
+    "type_repairs": "إصلاحات داخل المنزل",
+    "type_repairs_hint": "لا يلزم صك — يُنشر مباشرة",
+    "next_button": "التالي"
+  }
+}

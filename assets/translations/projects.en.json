@@ -1,0 +1,16 @@
+{
+  "client": {
+    "step_1": "Step 1",
+    "choose_type_title": "What is your project type?",
+    "choose_type_subtitle": "The type determines whether a property deed is required before publishing.",
+    "project_type_label": "Project type",
+    "project_type_placeholder": "Select type",
+    "type_new_house": "New home construction",
+    "type_new_house_hint": "Requires property deed",
+    "type_renovation": "Home renovation",
+    "type_renovation_hint": "Requires property deed",
+    "type_repairs": "Home repairs",
+    "type_repairs_hint": "No deed needed — published directly",
+    "next_button": "Next"
+  }
+}
