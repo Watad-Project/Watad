@@ -21,11 +21,8 @@ void main() {
   });
 
   testWidgets('displays error text', (tester) async {
-    await pumpComponent(
-      tester,
-      const AppOtpInput(errorText: 'common.invalid_code'),
-    );
+    await pumpComponent(tester, const AppOtpInput(errorText: 'رمز غير صحيح'));
 
-    expect(find.byType(AppOtpInput), findsOneWidget);
+    expect(find.text('رمز غير صحيح'), findsOneWidget);
   });
 }

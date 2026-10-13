@@ -27,6 +27,16 @@ class FakeAuthRepository implements AuthRepository {
   Result<void> saveProfileResult;
 
   @override
+  Future<Result<void>> sendOtp({required String email}) async =>
+      const Success(null);
+
+  @override
+  Future<Result<AuthSession>> verifyOtp({
+    required String email,
+    required String token,
+  }) async => verifyOtpResult;
+
+  @override
   Future<Result<bool>> isEmailRegistered(String email) async =>
       emailRegisteredResult;
 

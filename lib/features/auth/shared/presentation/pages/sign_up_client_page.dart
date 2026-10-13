@@ -9,6 +9,7 @@ import 'package:watad/core/components/inputs/app_otp_input.dart';
 import 'package:watad/core/components/inputs/app_phone_field.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -205,6 +206,8 @@ class _FormSection extends StatelessWidget {
             bloc.add(const SignUpClientSubmitted());
           },
         ),
+        const SizedBox(height: AppSpacing.md),
+        const _ExistingUserHint(),
       ],
     );
   }
@@ -293,6 +296,35 @@ class _OtpSection extends StatelessWidget {
               ),
             ],
           ),
+      ],
+    );
+  }
+}
+
+/// "Already have an account? Log In".
+class _ExistingUserHint extends StatelessWidget {
+  const _ExistingUserHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          context.tr('auth.already_have_account'),
+          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        GestureDetector(
+          onTap: () => context.goNamed(AuthRoutes.loginName),
+          child: Text(
+            context.tr('auth.login_title'),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
       ],
     );
   }
