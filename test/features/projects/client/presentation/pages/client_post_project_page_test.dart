@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/feedback/app_status_card.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
+import 'package:watad/core/components/inputs/app_upload_zone.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_post_project_page.dart';
@@ -234,6 +236,154 @@ void main() {
       expect(find.text('Budget (SAR)'), findsOneWidget);
       expect(find.text('Project location'), findsOneWidget);
       expect(find.text('Next — Property Deed'), findsOneWidget);
+    });
+  });
+
+  group('ClientPostProjectPage - Step 3', () {
+    testWidgets('renders Step 3 initial upload state when deed is required', (
+      tester,
+    ) async {
+      final bloc = ClientPostProjectBloc()
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectStepAdvanced())
+        ..add(const ClientPostProjectStepAdvanced());
+
+      await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+      await tester.pumpAndSettle();
+
+      expect(find.text('الخطوة 3 من 4'), findsOneWidget);
+      expect(find.text('صك ملكية العقار أو الأرض'), findsOneWidget);
+      expect(
+        find.text(
+          'مطلوب لمشاريع التأسيس والترميم فقط. بعد اعتماده يصبح المشروع مرئياً للمقاولين وتُفتح العروض.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('١ · لم يُرفع بعد — تصوير أو رفع الصك'), findsOneWidget);
+      expect(find.byType(AppUploadZone), findsOneWidget);
+      expect(find.text('التالي — المراجعة والنشر'), findsOneWidget);
+
+      final nextButton = tester.widget<AppButton>(find.byType(AppButton));
+      expect(nextButton.onPressed, isNull);
+    });
+
+    testWidgets(
+      'tapping upload zone uploads deed and transitions to under review',
+      (tester) async {
+        final bloc = ClientPostProjectBloc()
+          ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+          ..add(const ClientPostProjectStepAdvanced())
+          ..add(const ClientPostProjectStepAdvanced());
+
+        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byType(AppUploadZone));
+        await tester.pumpAndSettle();
+
+        expect(bloc.state.deedStatus, ClientDeedVerificationStatus.underReview);
+        expect(find.text('٢ · قيد المراجعة'), findsOneWidget);
+        expect(
+          find.text(
+            'حُفظ المشروع كمسودة وهو غير مرئي للمقاولين حتى اعتماد الصك.',
+          ),
+          findsOneWidget,
+        );
+
+        final nextButton = tester.widget<AppButton>(find.byType(AppButton));
+        expect(nextButton.onPressed, isNotNull);
+      },
+    );
+
+    testWidgets('renders verified deed state and enables next button', (
+      tester,
+    ) async {
+      final bloc = ClientPostProjectBloc()
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectStepAdvanced())
+        ..add(const ClientPostProjectStepAdvanced())
+        ..add(
+          const ClientPostProjectDeedStatusChanged(
+            ClientDeedVerificationStatus.verified,
+          ),
+        );
+
+      await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+      await tester.pumpAndSettle();
+
+      expect(find.text('٣ · موثّق'), findsOneWidget);
+      expect(
+        find.text(
+          'المشروع منشور، والعروض مفتوحة. تظهر علامة «ملكية موثّقة» للمقاولين.',
+        ),
+        findsOneWidget,
+      );
+
+      final nextButton = tester.widget<AppButton>(find.byType(AppButton));
+      expect(nextButton.onPressed, isNotNull);
+    });
+
+    testWidgets(
+      'renders rejected deed card with retry button and disables next',
+      (tester) async {
+        final bloc = ClientPostProjectBloc()
+          ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+          ..add(const ClientPostProjectStepAdvanced())
+          ..add(const ClientPostProjectStepAdvanced())
+          ..add(
+            const ClientPostProjectDeedStatusChanged(
+              ClientDeedVerificationStatus.rejected,
+              rejectionReason: 'مرفوض — اسم المالك لا يطابق الهوية',
+            ),
+          );
+
+        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+        await tester.pumpAndSettle();
+
+        expect(find.text('مرفوض — اسم المالك لا يطابق الهوية'), findsOneWidget);
+        expect(find.text('إعادة الرفع'), findsOneWidget);
+
+        // Next button is disabled
+        final nextButton = tester.widget<AppButton>(
+          find.byWidgetPredicate(
+            (w) => w is AppButton && w.label == 'التالي — المراجعة والنشر',
+          ),
+        );
+        expect(nextButton.onPressed, isNull);
+
+        // Tap retry button
+        await tester.tap(find.text('إعادة الرفع'));
+        await tester.pumpAndSettle();
+
+        expect(bloc.state.deedStatus, ClientDeedVerificationStatus.none);
+        expect(find.byType(AppUploadZone), findsOneWidget);
+        expect(
+          find.text('١ · لم يُرفع بعد — تصوير أو رفع الصك'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('renders English strings for step 3', (tester) async {
+      final bloc = ClientPostProjectBloc()
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectStepAdvanced())
+        ..add(const ClientPostProjectStepAdvanced());
+
+      await pumpLocalizedApp(
+        tester,
+        buildPage(bloc: bloc),
+        locale: AppLocalization.english,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Step 3 of 4'), findsOneWidget);
+      expect(find.text('Property or Land Ownership Deed'), findsOneWidget);
+      expect(
+        find.text('1 · Not uploaded yet — Photograph or upload deed'),
+        findsOneWidget,
+      );
+      expect(find.text('Next — Review & Publish'), findsOneWidget);
     });
   });
 }

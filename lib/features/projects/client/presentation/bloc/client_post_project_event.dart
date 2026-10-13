@@ -53,6 +53,27 @@ final class ClientPostProjectPhotoRemoved extends ClientPostProjectEvent {
   final int index;
 }
 
+/// The user selected or uploaded a property ownership deed document (step 3).
+final class ClientPostProjectDeedSelected extends ClientPostProjectEvent {
+  const ClientPostProjectDeedSelected({required this.filePath, this.fileName});
+
+  final String filePath;
+  final String? fileName;
+}
+
+/// The deed verification status changed (step 3).
+final class ClientPostProjectDeedStatusChanged extends ClientPostProjectEvent {
+  const ClientPostProjectDeedStatusChanged(this.status, {this.rejectionReason});
+
+  final ClientDeedVerificationStatus status;
+  final String? rejectionReason;
+}
+
+/// The user tapped re-upload after a deed was rejected (step 3).
+final class ClientPostProjectDeedRetry extends ClientPostProjectEvent {
+  const ClientPostProjectDeedRetry();
+}
+
 /// The user advanced to the next step.
 final class ClientPostProjectStepAdvanced extends ClientPostProjectEvent {
   const ClientPostProjectStepAdvanced();

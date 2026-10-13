@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/failure.dart';
+import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
 
 part 'client_post_project_event.dart';
@@ -15,6 +16,9 @@ class ClientPostProjectBloc
     on<ClientPostProjectLocationChanged>(_onLocationChanged);
     on<ClientPostProjectPhotoAdded>(_onPhotoAdded);
     on<ClientPostProjectPhotoRemoved>(_onPhotoRemoved);
+    on<ClientPostProjectDeedSelected>(_onDeedSelected);
+    on<ClientPostProjectDeedStatusChanged>(_onDeedStatusChanged);
+    on<ClientPostProjectDeedRetry>(_onDeedRetry);
     on<ClientPostProjectStepAdvanced>(_onStepAdvanced);
     on<ClientPostProjectStepRetreated>(_onStepRetreated);
     on<ClientPostProjectReset>(_onReset);
@@ -68,6 +72,44 @@ class ClientPostProjectBloc
   ) {
     final updated = [...state.photos]..removeAt(event.index);
     emit(state.copyWith(photos: updated));
+  }
+
+  void _onDeedSelected(
+    ClientPostProjectDeedSelected event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        deedFilePath: event.filePath,
+        deedFileName: event.fileName,
+        deedStatus: ClientDeedVerificationStatus.underReview,
+        clearDeed: false,
+      ),
+    );
+  }
+
+  void _onDeedStatusChanged(
+    ClientPostProjectDeedStatusChanged event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        deedStatus: event.status,
+        deedRejectionReason: event.rejectionReason,
+      ),
+    );
+  }
+
+  void _onDeedRetry(
+    ClientPostProjectDeedRetry event,
+    Emitter<ClientPostProjectState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        clearDeed: true,
+        deedStatus: ClientDeedVerificationStatus.none,
+      ),
+    );
   }
 
   void _onStepAdvanced(

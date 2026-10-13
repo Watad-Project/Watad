@@ -10,6 +10,7 @@ import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step1.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step2.dart';
+import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step3.dart';
 
 /// The client's main flow for posting a construction project.
 class ClientPostProjectPage extends StatelessWidget {
@@ -31,8 +32,11 @@ class ClientPostProjectPage extends StatelessWidget {
     if (state.currentStep == 1) {
       return context.tr('projects.client.next_button');
     }
-    if (state.requiresDeed) {
-      return context.tr('projects.client.next_deed_button');
+    if (state.currentStep == 2) {
+      if (state.requiresDeed) {
+        return context.tr('projects.client.next_deed_button');
+      }
+      return context.tr('projects.client.next_review_button');
     }
     return context.tr('projects.client.next_review_button');
   }
@@ -43,6 +47,9 @@ class ClientPostProjectPage extends StatelessWidget {
     }
     if (state.currentStep == 2) {
       return state.canProceedFromStep2;
+    }
+    if (state.currentStep == 3 && state.requiresDeed) {
+      return state.canProceedFromStep3;
     }
     return false;
   }
@@ -123,6 +130,25 @@ class ClientPostProjectPage extends StatelessWidget {
                     );
                   },
                 ),
+                3 =>
+                  state.requiresDeed
+                      ? ClientPostProjectStep3(
+                          state: state,
+                          onUploadDeed: () {
+                            context.read<ClientPostProjectBloc>().add(
+                              const ClientPostProjectDeedSelected(
+                                filePath: 'mock/path/deed.pdf',
+                                fileName: 'deed.pdf',
+                              ),
+                            );
+                          },
+                          onRetryDeed: () {
+                            context.read<ClientPostProjectBloc>().add(
+                              const ClientPostProjectDeedRetry(),
+                            );
+                          },
+                        )
+                      : const SizedBox.shrink(),
                 _ => const SizedBox.shrink(),
               },
             ),

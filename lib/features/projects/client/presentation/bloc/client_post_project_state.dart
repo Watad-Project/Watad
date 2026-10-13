@@ -13,6 +13,10 @@ final class ClientPostProjectState {
     this.maxBudget,
     this.locationAddress,
     this.photos = const [],
+    this.deedFilePath,
+    this.deedFileName,
+    this.deedStatus = ClientDeedVerificationStatus.none,
+    this.deedRejectionReason,
     this.status = ClientPostProjectStatus.initial,
     this.failure,
   });
@@ -37,6 +41,18 @@ final class ClientPostProjectState {
 
   /// Attached photo labels or file paths (step 2).
   final List<String> photos;
+
+  /// Local path or remote storage URL of the ownership deed (step 3).
+  final String? deedFilePath;
+
+  /// Name of the deed file (step 3).
+  final String? deedFileName;
+
+  /// Deed verification lifecycle status (step 3).
+  final ClientDeedVerificationStatus deedStatus;
+
+  /// Reason why the deed was rejected, if status is rejected (step 3).
+  final String? deedRejectionReason;
 
   /// Status of operations (initial, submitting, success, failure).
   final ClientPostProjectStatus status;
@@ -66,6 +82,13 @@ final class ClientPostProjectState {
     return validScope && validBudget && validLocation;
   }
 
+  /// Whether step 3 is valid to proceed to step 4 (review).
+  /// For deed projects, requires deed to be uploaded (underReview or verified).
+  bool get canProceedFromStep3 =>
+      deedFilePath != null ||
+      deedStatus == ClientDeedVerificationStatus.underReview ||
+      deedStatus == ClientDeedVerificationStatus.verified;
+
   /// Whether the current budget fields satisfy min <= max.
   bool get isBudgetValid {
     if (minBudget == null || maxBudget == null) return true;
@@ -80,6 +103,11 @@ final class ClientPostProjectState {
     int? maxBudget,
     String? locationAddress,
     List<String>? photos,
+    String? deedFilePath,
+    String? deedFileName,
+    ClientDeedVerificationStatus? deedStatus,
+    String? deedRejectionReason,
+    bool clearDeed = false,
     ClientPostProjectStatus? status,
     Failure? failure,
   }) {
@@ -91,6 +119,12 @@ final class ClientPostProjectState {
       maxBudget: maxBudget ?? this.maxBudget,
       locationAddress: locationAddress ?? this.locationAddress,
       photos: photos ?? this.photos,
+      deedFilePath: clearDeed ? null : (deedFilePath ?? this.deedFilePath),
+      deedFileName: clearDeed ? null : (deedFileName ?? this.deedFileName),
+      deedStatus: deedStatus ?? this.deedStatus,
+      deedRejectionReason: clearDeed
+          ? null
+          : (deedRejectionReason ?? this.deedRejectionReason),
       status: status ?? this.status,
       failure: failure ?? this.failure,
     );

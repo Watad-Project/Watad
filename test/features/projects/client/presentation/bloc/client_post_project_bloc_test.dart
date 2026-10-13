@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 
@@ -120,6 +121,83 @@ void main() {
           predicate<ClientPostProjectState>((s) => s.currentStep == 2),
           predicate<ClientPostProjectState>((s) => s.currentStep == 1),
         ]),
+      );
+
+      await bloc.close();
+    });
+
+    test('handles step 3 deed upload and review lifecycle', () async {
+      final bloc = ClientPostProjectBloc();
+
+      bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse));
+      expect(bloc.state.deedStatus, ClientDeedVerificationStatus.none);
+      expect(bloc.state.canProceedFromStep3, isFalse);
+
+      bloc.add(
+        const ClientPostProjectDeedSelected(
+          filePath: 'path/to/deed.pdf',
+          fileName: 'my_deed.pdf',
+        ),
+      );
+
+      await expectLater(
+        bloc.stream,
+        emitsThrough(
+          predicate<ClientPostProjectState>((s) {
+            return s.deedFilePath == 'path/to/deed.pdf' &&
+                s.deedFileName == 'my_deed.pdf' &&
+                s.deedStatus == ClientDeedVerificationStatus.underReview &&
+                s.canProceedFromStep3 == true;
+          }),
+        ),
+      );
+
+      bloc.add(
+        const ClientPostProjectDeedStatusChanged(
+          ClientDeedVerificationStatus.verified,
+        ),
+      );
+
+      await expectLater(
+        bloc.stream,
+        emits(
+          predicate<ClientPostProjectState>((s) {
+            return s.deedStatus == ClientDeedVerificationStatus.verified &&
+                s.canProceedFromStep3 == true;
+          }),
+        ),
+      );
+
+      bloc.add(
+        const ClientPostProjectDeedStatusChanged(
+          ClientDeedVerificationStatus.rejected,
+          rejectionReason: 'مرفوض — اسم المالك لا يطابق الهوية',
+        ),
+      );
+
+      await expectLater(
+        bloc.stream,
+        emits(
+          predicate<ClientPostProjectState>((s) {
+            return s.deedStatus == ClientDeedVerificationStatus.rejected &&
+                s.deedRejectionReason == 'مرفوض — اسم المالك لا يطابق الهوية';
+          }),
+        ),
+      );
+
+      bloc.add(const ClientPostProjectDeedRetry());
+
+      await expectLater(
+        bloc.stream,
+        emits(
+          predicate<ClientPostProjectState>((s) {
+            return s.deedFilePath == null &&
+                s.deedFileName == null &&
+                s.deedStatus == ClientDeedVerificationStatus.none &&
+                s.deedRejectionReason == null &&
+                s.canProceedFromStep3 == false;
+          }),
+        ),
       );
 
       await bloc.close();

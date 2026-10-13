@@ -30,6 +30,15 @@
     "no_deed_banner_subtitle": "يُنشر المشروع مباشرة بعد المراجعة وتُفتح العروض.",
     "photos_label": "صور المشروع",
     "next_deed_button": "التالي — توثيق الملكية",
-    "next_review_button": "التالي — المراجعة والنشر"
+    "next_review_button": "التالي — المراجعة والنشر",
+    "deed_title": "صك ملكية العقار أو الأرض",
+    "deed_subtitle": "مطلوب لمشاريع التأسيس والترميم فقط. بعد اعتماده يصبح المشروع مرئياً للمقاولين وتُفتح العروض.",
+    "deed_upload_label": "١ · لم يُرفع بعد — تصوير أو رفع الصك",
+    "deed_status_under_review_title": "٢ · قيد المراجعة",
+    "deed_status_under_review_desc": "حُفظ المشروع كمسودة وهو غير مرئي للمقاولين حتى اعتماد الصك.",
+    "deed_status_verified_title": "٣ · موثّق",
+    "deed_status_verified_desc": "المشروع منشور، والعروض مفتوحة. تظهر علامة «ملكية موثّقة» للمقاولين.",
+    "deed_status_rejected_default_title": "مرفوض — اسم المالك لا يطابق الهوية",
+    "deed_reupload": "إعادة الرفع"
   }
 }

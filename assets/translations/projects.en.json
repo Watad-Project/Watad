@@ -30,6 +30,15 @@
     "no_deed_banner_subtitle": "The project will be published directly after review and offers will open.",
     "photos_label": "Project photos",
     "next_deed_button": "Next — Property Deed",
-    "next_review_button": "Next — Review & Publish"
+    "next_review_button": "Next — Review & Publish",
+    "deed_title": "Property or Land Ownership Deed",
+    "deed_subtitle": "Required for construction and renovation projects only. Once approved, the project becomes visible to contractors and offers are opened.",
+    "deed_upload_label": "1 · Not uploaded yet — Photograph or upload deed",
+    "deed_status_under_review_title": "2 · Under Review",
+    "deed_status_under_review_desc": "The project is saved as a draft and hidden from contractors until deed approval.",
+    "deed_status_verified_title": "3 · Verified",
+    "deed_status_verified_desc": "The project is published and offers are open. \"Verified Ownership\" badge is shown to contractors.",
+    "deed_status_rejected_default_title": "Rejected — Owner name does not match ID",
+    "deed_reupload": "Re-upload"
   }
 }
