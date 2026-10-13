@@ -7,6 +7,7 @@ import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/features/auth/shared/presentation/pages/login_page.dart';
 import 'package:watad/features/onboarding/shared/presentation/pages/onboarding_page.dart';
 import 'package:watad/features/splash/shared/domain/entities/splash_destination.dart';
+import 'package:watad/features/splash/shared/presentation/bloc/splash_bloc.dart';
 import 'package:watad/features/splash/shared/presentation/pages/splash_page.dart';
 
 import '../../../../helpers/fake_auth_repository.dart';
@@ -26,6 +27,10 @@ void main() {
 
   tearDown(getIt.reset);
 
+  // The splash answers only after its minimum duration (SplashBloc).
+  Future<void> waitForSplash(WidgetTester tester) =>
+      tester.pump(SplashBloc.defaultMinimumDuration);
+
   testWidgets('every splash route opens its page at its path', (tester) async {
     final router = await pumpAppRouter(tester);
 
@@ -39,6 +44,7 @@ void main() {
     final router = await pumpAppRouter(tester);
 
     splash.answer(const Success(SplashDestination.onboarding));
+    await waitForSplash(tester);
     // Not pumpAndSettle: the slide animation loops.
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
@@ -53,6 +59,7 @@ void main() {
     final router = await pumpAppRouter(tester);
 
     splash.answer(const Success(SplashDestination.login));
+    await waitForSplash(tester);
     await tester.pumpAndSettle();
     expect(currentPath(router), AuthRoutes.loginPath);
     expect(find.byType(LoginPage), findsOneWidget);
@@ -65,8 +72,24 @@ void main() {
     final router = await pumpAppRouter(tester);
 
     splash.answer(const Success(SplashDestination.home));
+    await waitForSplash(tester);
     await tester.pumpAndSettle();
     expect(currentPath(router), AuthRoutes.loginPath);
     expect(find.byType(LoginPage), findsOneWidget);
+  });
+
+  testWidgets('stays on screen for its minimum duration', (tester) async {
+    final router = await pumpAppRouter(tester);
+
+    splash.answer(const Success(SplashDestination.login));
+    await tester.pump(
+      SplashBloc.defaultMinimumDuration - const Duration(milliseconds: 500),
+    );
+    expect(currentPath(router), SplashRoutes.splashPath);
+    expect(find.byType(SplashPage), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+    expect(currentPath(router), AuthRoutes.loginPath);
   });
 }
