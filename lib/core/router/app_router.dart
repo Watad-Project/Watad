@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
+import 'package:watad/features/navigation/admin/presentation/admin_navigation_routes.dart';
+import 'package:watad/features/navigation/client/presentation/client_navigation_routes.dart';
+import 'package:watad/features/navigation/contractor/presentation/contractor_navigation_routes.dart';
 import 'package:watad/features/onboarding/shared/presentation/onboarding_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
@@ -25,7 +28,10 @@ GoRouter createAppRouter({String? initialLocation}) {
     routes: [
       // One line per role folder, sorted by file name. Each folder's names
       // and paths live in lib/core/router/routes/.
+      ...adminNavigationRoutes,
       ...authRoutes,
+      ...clientNavigationRoutes,
+      ...contractorNavigationRoutes,
       ...onboardingRoutes,
       ...splashRoutes,
     ],
