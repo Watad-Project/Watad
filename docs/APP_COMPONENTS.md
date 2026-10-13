@@ -84,7 +84,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppStepProgress` | `layout/app_step_progress.dart` | "Step 2 of 4" with one bar per step (multi-step flows) | `current`, `total`, `label` (default "Step 2 of 4") | 2026-10-09 |
 | `AppPageDots` | `layout/app_page_dots.dart` | One dot per page under swipeable pages (onboarding); the current page is an orange pill; follows the reading direction | `count`, `currentIndex`, `semanticLabel` | 2026-10-12 |
 | `AppTabBar` | `layout/app_tab_bar.dart` | Underlined tabs of equal width (business profile) | `labels`, `controller`, `onTap` | 2026-10-09 |
-| `AppBottomNav`, `AppBottomNavItem` | `layout/app_bottom_nav.dart` | The main tabs at the bottom; the shell passes the tabs of the signed-in role | `items`, `currentIndex`, `onTap` | 2026-10-09 |
+| `AppBottomNav`, `AppBottomNavItem` | `layout/app_bottom_nav.dart` | The main tabs at the bottom: a rounded bar floating above the bottom edge, the selected tab in an orange pill, optional count badges; the navigation feature passes the tabs of the role | `items` (`icon`, `activeIcon`, `label`, `badgeCount`), `currentIndex`, `onTap` | 2026-10-09 |
 
 Components translate their own generic words (Required, Copy, Try again, Camera, Delete…) from the `common` group (`assets/translations/common.ar.json` and `common.en.json`), with `context.tr()`. Screens pass only the text that is specific to them. Where a label has a default, passing your own text replaces it.
 
