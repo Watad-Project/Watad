@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
+
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step1.dart';
 
@@ -18,8 +20,10 @@ class ClientPostProjectPage extends StatelessWidget {
       context.read<ClientPostProjectBloc>().add(
         const ClientPostProjectStepRetreated(),
       );
-    } else {
+    } else if (context.canPop()) {
       context.pop();
+    } else {
+      context.goNamed(ClientNavigationRoutes.navigationName);
     }
   }
 
