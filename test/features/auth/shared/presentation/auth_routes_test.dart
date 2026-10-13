@@ -16,7 +16,7 @@ void main() {
     repository = FakeAuthRepository();
     registerFakeAuthBloc(repository);
     registerFakeSignUpClientBloc(repository);
-    getIt.registerFactory<RoleBloc>(() => RoleBloc());
+    getIt.registerFactory(RoleBloc.new);
   });
   tearDown(getIt.reset);
 

@@ -37,7 +37,8 @@ class RolePage extends StatelessWidget {
           backgroundColor: AppColors.surface,
           appBar: AppTopBar(
             title: '',
-            onBack: onBack ??
+            onBack:
+                onBack ??
                 () {
                   if (context.canPop()) {
                     context.pop();
