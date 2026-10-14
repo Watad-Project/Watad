@@ -89,6 +89,22 @@ Rules:
 - A role folder MAY import its own feature's `shared/`. `shared/` MUST NOT import any role folder.
 - MUST NOT add a role column or work out the user's role inside a feature. Which areas a user may open is decided once, in the foundation (auth session and router guards).
 
+### How the app knows the user's role
+
+The backend has no client or contractor column (`ARCHITECTURE.md` §2). The app works the role out in one place, `lib/core/supabase/app_session.dart`, from the signed-in user's `v_my_profile` row:
+
+| `v_my_profile` | `AppRole` | Opens after sign-in |
+|----------------|-----------|---------------------|
+| `is_admin = true` (`users.role = 'admin'`) | `admin` | `/admin/navigation` |
+| `is_business = true` (the user has a `businesses` row) | `contractor` | `/contractor/navigation` |
+| anything else | `client` | `/client/navigation` |
+
+- `AppSession` reads that row once per user and forgets it when the signed-in user changes. It is registered in `lib/core/di/`, and only the router's guard uses it (§11).
+- After the login code is verified, and when the app opens with a saved session, the guard sends the user to their role's navigation. A signed-out user or another role can't open a role's navigation.
+- A feature never asks for the role. It knows it from the folder it lives in: `client/` code runs for clients, `contractor/` for contractors, `admin/` for admins, `shared/` for everyone. A screen that shows something from the profile (a name, a company name) reads `v_my_profile` in its own datasource, like any other view.
+- The guard only decides which screens open. The data is protected by the server: RLS limits every read and write (`ARCHITECTURE.md` §10).
+- A user with a business counts as a contractor, also if they post projects. Whether such a user can switch to the client side is an open question (GRA-31).
+
 ---
 
 ## 4. Folder structure
@@ -225,6 +241,7 @@ The maintainers create these once, before feature work starts. **If one you need
 | `lib/core/error/failure.dart`, `result.dart` | `Failure` and its subclasses, `Result` (§13) |
 | `lib/core/usecase/usecase.dart` | `UseCase<T, P>`, `NoParams` (§8) |
 | `lib/core/supabase/supabase_guard.dart` | `guardSupabaseCall()` (§13) |
+| `lib/core/supabase/app_session.dart` | `AppSession` and `AppRole`: who is signed in and their role, for the router's guard (§3) |
 | `lib/core/router/app_router.dart` | `appRouter`, `appStartPath`, the sign-in and role guards, the not-found page (§11). The names files in `router/routes/` are added by the features |
 | `lib/core/theme/` | `AppTheme` (light and dark) and the design tokens |
 | `lib/core/enums/` | One file per Postgres enum in `ARCHITECTURE.md` §4 |
@@ -847,10 +864,10 @@ The router is set up once, in `lib/core/router/`. Every route's page and `GoRout
 
 | File | Holds |
 |------|-------|
-| `app_router.dart` | `appRouter`, built by `createAppRouter()`: opens at `appStartPath`, spreads each role folder's routes list, holds the guard (`_guard`) and shows `AppNotFoundView` for unknown addresses |
+| `app_router.dart` | `appRouter`, built by `createAppRouter(session: …)`: opens at `appStartPath`, spreads each role folder's routes list, holds the guard (`_guard`) and shows `AppNotFoundView` for unknown addresses |
 | `routes/<prefix><feature>_routes.dart` | One role folder's route names and paths, e.g. `AuthRoutes`, `ClientProjectsRoutes`. Each is created by the feature that owns it |
 
-No feature has routes yet. Until the first screen exists, the app opens at `/` and shows the not-found page. The task that builds the splash screen points `appStartPath` at the splash path (`const String appStartPath = SplashRoutes.splashPath;`) and updates `test/app_test.dart` to expect its page.
+The app opens at `appStartPath`, the splash page (`SplashRoutes.splashPath`). `AuthRoutes.loginName` opens the login page at `/auth/login`.
 
 **Adding a route:**
 
@@ -880,9 +897,15 @@ void main() {
 }
 ```
 
-`pumpAppRouter` and `currentPath` come from `test/helpers/pump_router.dart`: a fresh copy of the real router, with the theme and the real translations.
+`pumpAppRouter` and `currentPath` come from `test/helpers/pump_router.dart`: a fresh copy of the real router, with the theme and the real translations. `pumpAppRouter` starts signed out. To open a route behind the guard (a role's navigation), sign a fake session in: `pumpAppRouter(tester, session: FakeAppSession()..signIn(AppRole.client))`, from `test/helpers/fake_app_session.dart`.
 
-**Guards** live only in `_guard` in `app_router.dart`. For now it lets every route through. The auth issues add the rules from the session: signed out goes to the login page, and a role without access goes to its own home.
+**Guards** live only in `_guard` in `app_router.dart`. It reads `AppSession` (§3) and runs again whenever the signed-in user changes:
+
+- A signed-in user on the login page goes to their role's navigation.
+- A role's navigation sends a signed-out user to the login page, and another role to its own navigation.
+- If the role can't be read (e.g. offline), the user stays where they are.
+
+Every other route is open.
 
 ---
 
