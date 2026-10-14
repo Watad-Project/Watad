@@ -44,10 +44,15 @@ class ClientPostProjectStepReview extends StatelessWidget {
     final typeName = state.projectType != null
         ? context.tr(state.projectType!.titleKey)
         : '';
-    final budgetText = context.tr(
-      'projects.client.review_budget_range',
-      args: ['${state.minBudget ?? 0}', '${state.maxBudget ?? 0}'],
-    );
+    final hasBudget =
+        (state.minBudget != null && state.minBudget! > 0) ||
+        (state.maxBudget != null && state.maxBudget! > 0);
+    final budgetText = hasBudget
+        ? context.tr(
+            'projects.client.review_budget_range',
+            args: ['${state.minBudget ?? 0}', '${state.maxBudget ?? 0}'],
+          )
+        : context.tr('projects.client.budget_unspecified');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.md),

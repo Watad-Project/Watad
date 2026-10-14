@@ -46,6 +46,7 @@
     "review_scope": "Scope of work",
     "review_budget": "Expected budget",
     "review_budget_range": "{} — {} SAR",
+    "budget_unspecified": "Not specified",
     "review_location": "Project location",
     "review_deed_status": "Property deed",
     "review_deed_verified": "Verified Deed",

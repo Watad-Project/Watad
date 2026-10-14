@@ -73,12 +73,11 @@ final class ClientPostProjectState {
   bool get canProceedFromStep2 {
     final validScope = scopeOfWork.trim().isNotEmpty;
     final validBudget =
-        minBudget != null &&
-        minBudget! > 0 &&
-        maxBudget != null &&
-        maxBudget! >= minBudget!;
+        isBudgetValid &&
+        (minBudget == null || minBudget! > 0) &&
+        (maxBudget == null || maxBudget! > 0);
     final validLocation =
-        locationAddress != null && locationAddress!.trim().isNotEmpty;
+        locationAddress == null || locationAddress!.trim().isNotEmpty;
     return validScope && validBudget && validLocation;
   }
 

@@ -46,6 +46,7 @@
     "review_scope": "نطاق العمل",
     "review_budget": "الميزانية المتوقعة",
     "review_budget_range": "{} — {} ر.س",
+    "budget_unspecified": "غير محددة",
     "review_location": "موقع المشروع",
     "review_deed_status": "صك الملكية",
     "review_deed_verified": "ملكية موثّقة",
