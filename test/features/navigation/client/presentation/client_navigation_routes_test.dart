@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/layout/app_bottom_nav.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
+import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/navigation/client/presentation/pages/client_navigation_page.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_placeholder.dart';
 
+import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -23,7 +25,10 @@ void main() {
   testWidgets('every client navigation route opens its page at its path', (
     tester,
   ) async {
-    final router = await pumpAppRouter(tester);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
 
     router.goNamed(ClientNavigationRoutes.navigationName);
     await tester.pumpAndSettle();
@@ -35,7 +40,10 @@ void main() {
   testWidgets('every tab opens its screen or, until then, a placeholder', (
     tester,
   ) async {
-    final router = await pumpAppRouter(tester);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
     router.goNamed(ClientNavigationRoutes.navigationName);
     await tester.pumpAndSettle();
 
