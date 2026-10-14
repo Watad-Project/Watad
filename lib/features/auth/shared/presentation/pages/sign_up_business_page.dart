@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,8 @@ import 'package:watad/core/components/inputs/app_phone_field.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/layout/app_step_progress.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -31,6 +34,7 @@ class _SignUpBusinessPageState extends State<SignUpBusinessPage> {
   late final TextEditingController _crNumberController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
+  late final TapGestureRecognizer _termsLinkRecognizer;
 
   @override
   void initState() {
@@ -39,6 +43,7 @@ class _SignUpBusinessPageState extends State<SignUpBusinessPage> {
     _crNumberController = TextEditingController();
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
+    _termsLinkRecognizer = TapGestureRecognizer()..onTap = () {};
   }
 
   @override
@@ -47,6 +52,7 @@ class _SignUpBusinessPageState extends State<SignUpBusinessPage> {
     _crNumberController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _termsLinkRecognizer.dispose();
     super.dispose();
   }
 
@@ -58,7 +64,11 @@ class _SignUpBusinessPageState extends State<SignUpBusinessPage> {
           context.showErrorSnackBar(state.generalError!.tr());
         }
         if (state.status == BusinessSignUpStatus.success) {
-          widget.onSuccess?.call(context);
+          if (widget.onSuccess != null) {
+            widget.onSuccess!(context);
+          } else {
+            context.pushNamed(ContractorKycRoutes.licenseName);
+          }
         }
       },
       builder: (context, state) {
@@ -74,6 +84,8 @@ class _SignUpBusinessPageState extends State<SignUpBusinessPage> {
                 bloc.add(const BusinessSignUpStepBack());
               } else if (context.canPop()) {
                 context.pop();
+              } else {
+                context.goNamed(AuthRoutes.roleName);
               }
             },
           ),
@@ -89,6 +101,7 @@ class _SignUpBusinessPageState extends State<SignUpBusinessPage> {
                       crNumberController: _crNumberController,
                       emailController: _emailController,
                       phoneController: _phoneController,
+                      termsLinkRecognizer: _termsLinkRecognizer,
                     ),
             ),
           ),
@@ -106,6 +119,7 @@ class _FormSection extends StatelessWidget {
     required this.crNumberController,
     required this.emailController,
     required this.phoneController,
+    required this.termsLinkRecognizer,
   });
 
   final BusinessSignUpState state;
@@ -114,6 +128,7 @@ class _FormSection extends StatelessWidget {
   final TextEditingController crNumberController;
   final TextEditingController emailController;
   final TextEditingController phoneController;
+  final TapGestureRecognizer termsLinkRecognizer;
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +192,27 @@ class _FormSection extends StatelessWidget {
         AppCheckbox(
           value: state.termsAgreed,
           onChanged: (agreed) => bloc.add(BusinessSignUpTermsToggled(agreed)),
-          label: context.tr('auth.terms_agreement'),
+          labelWidget: RichText(
+            text: TextSpan(
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.ink,
+                height: 1.4,
+              ),
+              children: [
+                TextSpan(
+                  text: context.tr('auth.terms_agreement_prefix'),
+                ),
+                TextSpan(
+                  text: context.tr('auth.terms_agreement_link'),
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer: termsLinkRecognizer,
+                ),
+              ],
+            ),
+          ),
         ),
         if (state.termsError != null) ...[
           const SizedBox(height: AppSpacing.xxs),

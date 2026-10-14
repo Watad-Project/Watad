@@ -17,7 +17,7 @@
   "login_subtitle": "البريد الإلكتروني ثم رمز تحقّق من ٦ أرقام يصلك على بريدك.",
   "login_title": "تسجيل الدخول",
   "new_user": "مستخدم جديد؟",
-  "next_upload_license": "التالي — رفع رخصة مقاول",
+  "next_upload_license": "التالي",
   "no_account_error": "لا يوجد حساب بهذا البريد. أنشئ حساباً من الأسفل.",
   "otp_expired_or_invalid": "رمز التحقق غير صحيح أو منتهي الصلاحية",
   "otp_required_error": "رمز التحقق مطلوب",
@@ -38,5 +38,7 @@
   "role_subtitle": "يحدّد اختيارك الشاشات التي تدخل إليها بعد التحقق.",
   "role_title": "كيف تستخدم وتد؟",
   "signed_in": "تم تسجيل الدخول",
-  "terms_agreement": "أوافق على الشروط وسياسة الخصوصية"
+  "terms_agreement": "أوافق على الشروط وسياسة الخصوصية",
+  "terms_agreement_prefix": "أوافق على ",
+  "terms_agreement_link": "الشروط وسياسة الخصوصية"
 }

@@ -1,0 +1,20 @@
+{
+  "contractor": {
+    "license_step_label": "Contractor registration — The only document",
+    "license_title": "Contractor license",
+    "license_subtitle": "One document only. Reviewed within 24 hours; once approved, the verified badge appears and you can submit offers.",
+    "upload_zone_title": "Take photo or upload license",
+    "upload_zone_hint": "JPG or PDF · up to 10MB",
+    "from_camera": "Camera",
+    "from_files": "From files",
+    "submit_button": "Submit for review",
+    "license_footnote": "We will not ask for any other document now. Project documents will be requested later when needed.",
+    "status_title": "Verification status",
+    "status_pending_title": "Under review",
+    "status_pending_subtitle": "Your application is under review and will be processed within 24 hours.",
+    "file_selected_prefix": "Selected file: {fileName}",
+    "upload_success": "License submitted successfully for review.",
+    "camera_permission_required": "Please grant camera permission to take a photo of the license.",
+    "storage_permission_required": "Please grant storage permission to select the document."
+  }
+}

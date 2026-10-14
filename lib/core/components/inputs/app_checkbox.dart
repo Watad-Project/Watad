@@ -12,41 +12,48 @@ class AppCheckbox extends StatelessWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    required this.label,
-  });
+    this.label,
+    this.labelWidget,
+  }) : assert(
+         label != null || labelWidget != null,
+         'Either label or labelWidget must be provided.',
+       );
 
   final bool value;
   final ValueChanged<bool>? onChanged;
-  final String label;
+  final String? label;
+  final Widget? labelWidget;
 
   @override
   Widget build(BuildContext context) {
     final toggle = onChanged == null ? null : () => onChanged!(!value);
-    return MergeSemantics(
-      child: InkWell(
-        onTap: toggle,
-        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.md)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
-          child: Row(
-            children: [
-              Checkbox(
-                value: value,
-                onChanged: toggle == null ? null : (_) => toggle(),
-              ),
-              const SizedBox(width: AppSpacing.xxs),
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.ink,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
+    final child =
+        labelWidget ??
+        Text(
+          label ?? '',
+          style: AppTextStyles.body.copyWith(color: AppColors.ink, height: 1.4),
+        );
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Checkbox(
+            value: value,
+            onChanged: toggle == null ? null : (_) => toggle(),
           ),
-        ),
+          const SizedBox(width: AppSpacing.xxs),
+          Expanded(
+            child: InkWell(
+              onTap: toggle,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(AppRadius.md),
+              ),
+              child: child,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -17,7 +17,7 @@
   "login_subtitle": "Enter your email, then the 6-digit verification code sent to your inbox.",
   "login_title": "Log In",
   "new_user": "New user?",
-  "next_upload_license": "Next — Upload Contractor License",
+  "next_upload_license": "Next",
   "no_account_error": "No account uses this email. Create one below.",
   "otp_expired_or_invalid": "The verification code is incorrect or expired",
   "otp_required_error": "Verification code is required",
@@ -38,5 +38,7 @@
   "role_subtitle": "Your choice determines which screens you access after verification.",
   "role_title": "How do you use Watad?",
   "signed_in": "You're signed in",
-  "terms_agreement": "I agree to the terms and privacy policy"
+  "terms_agreement": "I agree to the terms and privacy policy",
+  "terms_agreement_prefix": "I agree to the ",
+  "terms_agreement_link": "terms and privacy policy"
 }

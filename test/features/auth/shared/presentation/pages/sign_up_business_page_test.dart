@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import 'package:watad/core/components/inputs/app_otp_input.dart';
 import 'package:watad/core/components/inputs/app_phone_field.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_business_sign_up_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
@@ -14,9 +17,21 @@ import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.d
 import 'package:watad/features/auth/shared/presentation/bloc/business_sign_up_bloc.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/role_bloc.dart';
 import 'package:watad/features/auth/shared/presentation/pages/sign_up_business_page.dart';
+import 'package:watad/features/kyc/contractor/domain/entities/contractor_license_submission.dart';
+import 'package:watad/features/kyc/contractor/domain/repositories/contractor_kyc_repository.dart';
+import 'package:watad/features/kyc/contractor/domain/usecases/contractor_upload_license_use_case.dart';
+import 'package:watad/features/kyc/contractor/presentation/bloc/contractor_license_bloc.dart';
 
 import '../../../../../helpers/fake_auth_repository.dart';
 import '../../../../../helpers/pump_router.dart';
+
+class FakeContractorKycRepository implements ContractorKycRepository {
+  @override
+  Future<Result<ContractorLicenseSubmission>> uploadLicense({
+    required Uint8List bytes,
+    required String fileName,
+  }) async => throw UnimplementedError();
+}
 
 void main() {
   late FakeAuthRepository repository;
@@ -31,6 +46,11 @@ void main() {
           SendSignUpOtpUseCase(repository),
           VerifyOtpUseCase(repository),
           SaveBusinessSignUpUseCase(repository),
+        ),
+      )
+      ..registerFactory(
+        () => ContractorLicenseBloc(
+          ContractorUploadLicenseUseCase(FakeContractorKycRepository()),
         ),
       );
   });
@@ -60,10 +80,7 @@ void main() {
     expect(find.byType(AppTextField), findsNWidgets(3));
     expect(find.byType(AppPhoneField), findsOneWidget);
     expect(find.byType(AppCheckbox), findsOneWidget);
-    expect(
-      find.widgetWithText(AppButton, 'التالي — رفع رخصة مقاول'),
-      findsOneWidget,
-    );
+    expect(find.widgetWithText(AppButton, 'التالي'), findsOneWidget);
   });
 
   testWidgets('submitting empty form displays validation errors', (
@@ -71,7 +88,7 @@ void main() {
   ) async {
     await openSignUpBusiness(tester);
 
-    await tester.tap(find.widgetWithText(AppButton, 'التالي — رفع رخصة مقاول'));
+    await tester.tap(find.widgetWithText(AppButton, 'التالي'));
     await tester.pumpAndSettle();
 
     expect(find.text('يرجى إدخال اسم المنشأة.'), findsOneWidget);
@@ -109,13 +126,11 @@ void main() {
       await tester.enterText(phoneField, '501234567');
 
       // Checkbox
-      await tester.tap(find.byType(AppCheckbox));
+      await tester.tap(find.byType(Checkbox));
       await tester.pumpAndSettle();
 
       // Submit form
-      await tester.tap(
-        find.widgetWithText(AppButton, 'التالي — رفع رخصة مقاول'),
-      );
+      await tester.tap(find.widgetWithText(AppButton, 'التالي'));
       await tester.pumpAndSettle();
 
       expect(repository.sentTo, contains('contractor@watad.sa'));
@@ -159,10 +174,10 @@ void main() {
       matching: find.byType(TextFormField),
     );
     await tester.enterText(phoneField, '501234567');
-    await tester.tap(find.byType(AppCheckbox));
+    await tester.tap(find.byType(Checkbox));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(AppButton, 'التالي — رفع رخصة مقاول'));
+    await tester.tap(find.widgetWithText(AppButton, 'التالي'));
     await tester.pumpAndSettle();
 
     expect(find.text('رمز التحقق'), findsOneWidget);
@@ -173,9 +188,6 @@ void main() {
 
     // Form should be back
     expect(find.text('بيانات المنشأة'), findsOneWidget);
-    expect(
-      find.widgetWithText(AppButton, 'التالي — رفع رخصة مقاول'),
-      findsOneWidget,
-    );
+    expect(find.widgetWithText(AppButton, 'التالي'), findsOneWidget);
   });
 }
