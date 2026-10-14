@@ -19,13 +19,11 @@ class ClientPostProjectStep3 extends StatelessWidget {
     required this.state,
     required this.onUploadDeed,
     required this.onRetryDeed,
-    this.onCycleStatus,
   });
 
   final ClientPostProjectState state;
   final VoidCallback onUploadDeed;
   final VoidCallback onRetryDeed;
-  final VoidCallback? onCycleStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -55,29 +53,21 @@ class ClientPostProjectStep3 extends StatelessWidget {
               label: context.tr('projects.client.deed_upload_label'),
               onTap: onUploadDeed,
             ),
-            ClientDeedVerificationStatus.underReview => GestureDetector(
-              onTap: onCycleStatus,
-              child: AppStatusCard(
-                key: const Key('client_post_project_deed_under_review'),
-                tone: AppTone.attention,
-                title: context.tr(
-                  'projects.client.deed_status_under_review_title',
-                ),
-                subtitle: context.tr(
-                  'projects.client.deed_status_under_review_desc',
-                ),
+            ClientDeedVerificationStatus.underReview => AppStatusCard(
+              key: const Key('client_post_project_deed_under_review'),
+              tone: AppTone.attention,
+              title: context.tr(
+                'projects.client.deed_status_under_review_title',
+              ),
+              subtitle: context.tr(
+                'projects.client.deed_status_under_review_desc',
               ),
             ),
-            ClientDeedVerificationStatus.verified => GestureDetector(
-              onTap: onCycleStatus,
-              child: AppStatusCard(
-                key: const Key('client_post_project_deed_verified'),
-                tone: AppTone.success,
-                title: context.tr('projects.client.deed_status_verified_title'),
-                subtitle: context.tr(
-                  'projects.client.deed_status_verified_desc',
-                ),
-              ),
+            ClientDeedVerificationStatus.verified => AppStatusCard(
+              key: const Key('client_post_project_deed_verified'),
+              tone: AppTone.success,
+              title: context.tr('projects.client.deed_status_verified_title'),
+              subtitle: context.tr('projects.client.deed_status_verified_desc'),
             ),
             ClientDeedVerificationStatus.rejected => AppStatusCard(
               key: const Key('client_post_project_deed_rejected'),
