@@ -2,8 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
-import 'package:watad/features/auth/shared/domain/usecases/check_email_registered_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_business_sign_up_use_case.dart';
+import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
+import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/business_sign_up_bloc.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/role_bloc.dart';
 import 'package:watad/features/auth/shared/presentation/pages/login_page.dart';
@@ -21,7 +22,8 @@ void main() {
       ..registerFactory(RoleBloc.new)
       ..registerFactory(
         () => BusinessSignUpBloc(
-          CheckEmailRegisteredUseCase(authRepository),
+          SendSignUpOtpUseCase(authRepository),
+          VerifyOtpUseCase(authRepository),
           SaveBusinessSignUpUseCase(authRepository),
         ),
       );

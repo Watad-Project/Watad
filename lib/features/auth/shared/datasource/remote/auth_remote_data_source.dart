@@ -3,17 +3,14 @@ import 'package:watad/features/auth/shared/datasource/models/auth_session_model.
 import 'package:watad/features/auth/shared/domain/entities/business_sign_up.dart';
 
 abstract interface class AuthRemoteDataSource {
-  /// Emails a sign-in code to the account with this [email].
-  Future<void> sendOtp({required String email});
+  /// Emails a sign-in or sign-up code to the account with this [email].
+  Future<void> sendOtp({required String email, bool shouldCreateUser = false});
 
   /// Checks the [token] sent to [email] and signs the user in.
   Future<AuthSessionModel> verifyOtp({
     required String email,
     required String token,
   });
-
-  /// Checks whether [email] is already registered.
-  Future<bool> isEmailRegistered(String email);
 
   /// Saves the business signup data.
   Future<void> saveBusinessSignUp(BusinessSignUp data);
@@ -25,9 +22,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final SupabaseClient _client;
 
   @override
-  Future<void> sendOtp({required String email}) async {
-    // Login never creates an account; the sign-up screens do (GRA-10).
-    await _client.auth.signInWithOtp(email: email, shouldCreateUser: false);
+  Future<void> sendOtp({
+    required String email,
+    bool shouldCreateUser = false,
+  }) async {
+    await _client.auth.signInWithOtp(
+      email: email,
+      shouldCreateUser: shouldCreateUser,
+    );
   }
 
   @override
@@ -48,19 +50,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<bool> isEmailRegistered(String email) async {
-    final rows = await _client
-        .from('v_public_profiles')
-        .select('id')
-        .eq('email', email.trim().toLowerCase())
-        .limit(1);
-    return rows.isNotEmpty;
-  }
-
-  @override
   Future<void> saveBusinessSignUp(BusinessSignUp data) async {
-    // In sign-up flow, temporary client-side / auth session data is recorded
-    // before the auth verification / license upload step.
-    return;
+    await _client.from('businesses').insert({
+      'company_name': data.companyName,
+      'cr_number': data.crNumber,
+      'specialized_field': data.specializedField,
+    });
   }
 }

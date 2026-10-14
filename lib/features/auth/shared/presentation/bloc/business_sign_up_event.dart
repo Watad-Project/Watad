@@ -37,3 +37,27 @@ final class BusinessSignUpTermsToggled extends BusinessSignUpEvent {
 final class BusinessSignUpSubmitted extends BusinessSignUpEvent {
   const BusinessSignUpSubmitted();
 }
+
+final class BusinessSignUpOtpChanged extends BusinessSignUpEvent {
+  const BusinessSignUpOtpChanged(this.otp);
+
+  final String otp;
+}
+
+final class BusinessSignUpOtpSubmitted extends BusinessSignUpEvent {
+  const BusinessSignUpOtpSubmitted();
+}
+
+final class BusinessSignUpOtpResendRequested extends BusinessSignUpEvent {
+  const BusinessSignUpOtpResendRequested();
+}
+
+final class BusinessSignUpResendTick extends BusinessSignUpEvent {
+  const BusinessSignUpResendTick(this.seconds);
+
+  final int seconds;
+}
+
+final class BusinessSignUpStepBack extends BusinessSignUpEvent {
+  const BusinessSignUpStepBack();
+}

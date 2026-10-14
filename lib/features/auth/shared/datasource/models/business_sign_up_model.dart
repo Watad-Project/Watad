@@ -6,6 +6,7 @@ class BusinessSignUpModel extends BusinessSignUp {
     required super.crNumber,
     required super.email,
     required super.phone,
+    super.specializedField = 'contractor',
     super.role = 'contractor',
   });
 
@@ -13,8 +14,9 @@ class BusinessSignUpModel extends BusinessSignUp {
     return BusinessSignUpModel(
       companyName: json['company_name'] as String,
       crNumber: json['cr_number'] as String,
-      email: json['email'] as String,
-      phone: json['phone'] as String,
+      email: json['email'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
+      specializedField: json['specialized_field'] as String? ?? 'contractor',
       role: json['role'] as String? ?? 'contractor',
     );
   }

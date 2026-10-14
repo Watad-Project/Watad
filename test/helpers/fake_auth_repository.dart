@@ -19,12 +19,19 @@ class FakeAuthRepository implements AuthRepository {
   /// The emails a code was sent to.
   final List<String> sentTo = [];
 
+  /// The emails and shouldCreateUser flags recorded.
+  final List<(String, bool)> sentToWithCreateUser = [];
+
   /// The codes that were checked, as (email, token).
   final List<(String, String)> checked = [];
 
   @override
-  Future<Result<void>> sendOtp({required String email}) async {
+  Future<Result<void>> sendOtp({
+    required String email,
+    bool shouldCreateUser = false,
+  }) async {
     sentTo.add(email);
+    sentToWithCreateUser.add((email, shouldCreateUser));
     return sendOtpResult;
   }
 
@@ -37,16 +44,14 @@ class FakeAuthRepository implements AuthRepository {
     return verifyOtpResult;
   }
 
-  Result<bool> isEmailRegisteredResult = const Success(false);
   Result<void> saveBusinessSignUpResult = const Success(null);
+  BusinessSignUp? savedBusiness;
 
   @override
-  Future<Result<bool>> isEmailRegistered(String email) async =>
-      isEmailRegisteredResult;
-
-  @override
-  Future<Result<void>> saveBusinessSignUp(BusinessSignUp data) async =>
-      saveBusinessSignUpResult;
+  Future<Result<void>> saveBusinessSignUp(BusinessSignUp data) async {
+    savedBusiness = data;
+    return saveBusinessSignUpResult;
+  }
 }
 
 /// For tests that open the login route: the route builder takes its

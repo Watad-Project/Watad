@@ -22,6 +22,8 @@
   "otp_expired_or_invalid": "The verification code is incorrect or expired",
   "otp_required_error": "Verification code is required",
   "otp_sent_success": "Verification code sent to your email",
+  "otp_subtitle": "Enter the code sent to {email}",
+  "otp_title": "Verification Code",
   "phone_hint": "5x xxx xxxx",
   "phone_label": "Mobile Number",
   "resend_code": "Resend",

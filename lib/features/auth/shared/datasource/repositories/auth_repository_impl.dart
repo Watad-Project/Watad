@@ -11,18 +11,18 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remote;
 
   @override
-  Future<Result<void>> sendOtp({required String email}) =>
-      guardSupabaseCall(() => _remote.sendOtp(email: email));
+  Future<Result<void>> sendOtp({
+    required String email,
+    bool shouldCreateUser = false,
+  }) => guardSupabaseCall(
+    () => _remote.sendOtp(email: email, shouldCreateUser: shouldCreateUser),
+  );
 
   @override
   Future<Result<AuthSession>> verifyOtp({
     required String email,
     required String token,
   }) => guardSupabaseCall(() => _remote.verifyOtp(email: email, token: token));
-
-  @override
-  Future<Result<bool>> isEmailRegistered(String email) =>
-      guardSupabaseCall(() => _remote.isEmailRegistered(email));
 
   @override
   Future<Result<void>> saveBusinessSignUp(BusinessSignUp data) =>

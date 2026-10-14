@@ -4,41 +4,55 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
 import 'package:watad/features/auth/shared/domain/entities/business_sign_up.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
-import 'package:watad/features/auth/shared/domain/usecases/check_email_registered_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_business_sign_up_use_case.dart';
+import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
+import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/business_sign_up_bloc.dart';
 
 class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository({
-    this.emailRegisteredResult = const Success(false),
+    this.sendOtpResult = const Success(null),
+    this.verifyOtpResult = const Success(AuthSession(userId: 'u', email: 'e')),
     this.saveResult = const Success(null),
   });
 
-  Result<bool> emailRegisteredResult;
+  Result<void> sendOtpResult;
+  Result<AuthSession> verifyOtpResult;
   Result<void> saveResult;
 
+  final List<String> sentTo = [];
+  final List<(String, String)> verified = [];
+  BusinessSignUp? savedBusiness;
+
   @override
-  Future<Result<void>> sendOtp({required String email}) async =>
-      const Success(null);
+  Future<Result<void>> sendOtp({
+    required String email,
+    bool shouldCreateUser = false,
+  }) async {
+    sentTo.add(email);
+    return sendOtpResult;
+  }
 
   @override
   Future<Result<AuthSession>> verifyOtp({
     required String email,
     required String token,
-  }) async => const Success(AuthSession(userId: 'u', email: 'e'));
+  }) async {
+    verified.add((email, token));
+    return verifyOtpResult;
+  }
 
   @override
-  Future<Result<bool>> isEmailRegistered(String email) async =>
-      emailRegisteredResult;
-
-  @override
-  Future<Result<void>> saveBusinessSignUp(BusinessSignUp data) async =>
-      saveResult;
+  Future<Result<void>> saveBusinessSignUp(BusinessSignUp data) async {
+    savedBusiness = data;
+    return saveResult;
+  }
 }
 
 BusinessSignUpBloc buildBloc(FakeAuthRepository repository) =>
     BusinessSignUpBloc(
-      CheckEmailRegisteredUseCase(repository),
+      SendSignUpOtpUseCase(repository),
+      VerifyOtpUseCase(repository),
       SaveBusinessSignUpUseCase(repository),
     );
 
@@ -48,12 +62,15 @@ void main() {
       final repository = FakeAuthRepository();
       final bloc = buildBloc(repository);
       expect(bloc.state.status, BusinessSignUpStatus.initial);
+      expect(bloc.state.step, BusinessSignUpStep.form);
       expect(bloc.state.companyName, '');
       expect(bloc.state.crNumber, '');
       expect(bloc.state.email, '');
       expect(bloc.state.phone, '');
       expect(bloc.state.termsAgreed, false);
+      expect(bloc.state.otp, '');
       expect(bloc.state.isSubmitting, false);
+      expect(bloc.state.isOtpStep, false);
       bloc.close();
     });
 
@@ -69,6 +86,7 @@ void main() {
           predicate<BusinessSignUpState>((s) => s.email == 'info@watad.sa'),
           predicate<BusinessSignUpState>((s) => s.phone == '501234567'),
           predicate<BusinessSignUpState>((s) => s.termsAgreed == true),
+          predicate<BusinessSignUpState>((s) => s.otp == '123456'),
         ]),
       );
 
@@ -77,6 +95,7 @@ void main() {
       bloc.add(const BusinessSignUpEmailChanged('info@watad.sa'));
       bloc.add(const BusinessSignUpPhoneChanged('501234567'));
       bloc.add(const BusinessSignUpTermsToggled(true));
+      bloc.add(const BusinessSignUpOtpChanged('123456'));
 
       await expectation;
       await bloc.close();
@@ -108,7 +127,7 @@ void main() {
       },
     );
 
-    test('emits inProgress then success on successful submission', () async {
+    test('emits inProgress then switches to OTP step on successful form submission', () async {
       final repository = FakeAuthRepository();
       final bloc = buildBloc(repository);
 
@@ -126,51 +145,23 @@ void main() {
             (s) => s.status == BusinessSignUpStatus.inProgress,
           ),
           predicate<BusinessSignUpState>(
-            (s) => s.status == BusinessSignUpStatus.success,
-          ),
-        ]),
-      );
-
-      bloc.add(const BusinessSignUpSubmitted());
-      await expectation;
-      await bloc.close();
-    });
-
-    test('emits failure when email is already registered', () async {
-      final repository = FakeAuthRepository(
-        emailRegisteredResult: const Success(true),
-      );
-      final bloc = buildBloc(repository);
-
-      bloc.add(const BusinessSignUpCompanyNameChanged('شركة وتد'));
-      bloc.add(const BusinessSignUpCrNumberChanged('1010123456'));
-      bloc.add(const BusinessSignUpEmailChanged('info@watad.sa'));
-      bloc.add(const BusinessSignUpPhoneChanged('501234567'));
-      bloc.add(const BusinessSignUpTermsToggled(true));
-      await Future<void>.delayed(Duration.zero);
-
-      final expectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          predicate<BusinessSignUpState>(
-            (s) => s.status == BusinessSignUpStatus.inProgress,
-          ),
-          predicate<BusinessSignUpState>(
             (s) =>
-                s.status == BusinessSignUpStatus.failure &&
-                s.emailError == 'validation.email_already_registered',
+                s.step == BusinessSignUpStep.otp &&
+                s.resendSeconds == BusinessSignUpBloc.resendCooldownSeconds &&
+                s.isOtpStep == true,
           ),
         ]),
       );
 
       bloc.add(const BusinessSignUpSubmitted());
       await expectation;
+      expect(repository.sentTo, contains('info@watad.sa'));
       await bloc.close();
     });
 
-    test('emits failure when server save fails', () async {
+    test('emits failure when sending sign up OTP fails', () async {
       final repository = FakeAuthRepository(
-        saveResult: const Failed(ServerFailure()),
+        sendOtpResult: const Failed(ServerFailure()),
       );
       final bloc = buildBloc(repository);
 
@@ -197,6 +188,161 @@ void main() {
 
       bloc.add(const BusinessSignUpSubmitted());
       await expectation;
+      await bloc.close();
+    });
+
+    test('emits otpError when submitting OTP with invalid length', () async {
+      final repository = FakeAuthRepository();
+      final bloc = buildBloc(repository);
+
+      bloc.add(const BusinessSignUpOtpChanged('123'));
+      await Future<void>.delayed(Duration.zero);
+
+      final expectation = expectLater(
+        bloc.stream,
+        emits(
+          predicate<BusinessSignUpState>(
+            (s) => s.otpError == 'auth.invalid_otp_error',
+          ),
+        ),
+      );
+
+      bloc.add(const BusinessSignUpOtpSubmitted());
+      await expectation;
+      await bloc.close();
+    });
+
+    test(
+      'verifies OTP, inserts business and emits success on valid OTP',
+      () async {
+        final repository = FakeAuthRepository();
+        final bloc = buildBloc(repository);
+
+        bloc.add(const BusinessSignUpCompanyNameChanged('شركة وتد'));
+        bloc.add(const BusinessSignUpCrNumberChanged('1010123456'));
+        bloc.add(const BusinessSignUpEmailChanged('info@watad.sa'));
+        bloc.add(const BusinessSignUpPhoneChanged('501234567'));
+        bloc.add(const BusinessSignUpTermsToggled(true));
+        bloc.add(const BusinessSignUpOtpChanged('123456'));
+        await Future<void>.delayed(Duration.zero);
+
+        final expectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            predicate<BusinessSignUpState>(
+              (s) => s.status == BusinessSignUpStatus.inProgress,
+            ),
+            predicate<BusinessSignUpState>(
+              (s) => s.status == BusinessSignUpStatus.success,
+            ),
+          ]),
+        );
+
+        bloc.add(const BusinessSignUpOtpSubmitted());
+        await expectation;
+
+        expect(repository.verified, [('info@watad.sa', '123456')]);
+        expect(repository.savedBusiness?.companyName, 'شركة وتد');
+        expect(repository.savedBusiness?.crNumber, '1010123456');
+        expect(repository.savedBusiness?.email, 'info@watad.sa');
+        expect(repository.savedBusiness?.phone, '+966501234567');
+        expect(repository.savedBusiness?.specializedField, 'contractor');
+        expect(repository.savedBusiness?.role, 'contractor');
+        await bloc.close();
+      },
+    );
+
+    test('emits failure when OTP verification fails', () async {
+      final repository = FakeAuthRepository(
+        verifyOtpResult: const Failed(
+          ValidationFailure('auth.otp_expired_or_invalid'),
+        ),
+      );
+      final bloc = buildBloc(repository);
+
+      bloc.add(const BusinessSignUpCompanyNameChanged('شركة وتد'));
+      bloc.add(const BusinessSignUpCrNumberChanged('1010123456'));
+      bloc.add(const BusinessSignUpEmailChanged('info@watad.sa'));
+      bloc.add(const BusinessSignUpPhoneChanged('501234567'));
+      bloc.add(const BusinessSignUpTermsToggled(true));
+      bloc.add(const BusinessSignUpOtpChanged('123456'));
+      await Future<void>.delayed(Duration.zero);
+
+      final expectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          predicate<BusinessSignUpState>(
+            (s) => s.status == BusinessSignUpStatus.inProgress,
+          ),
+          predicate<BusinessSignUpState>(
+            (s) =>
+                s.status == BusinessSignUpStatus.failure &&
+                s.otpError == 'auth.otp_expired_or_invalid',
+          ),
+        ]),
+      );
+
+      bloc.add(const BusinessSignUpOtpSubmitted());
+      await expectation;
+      expect(repository.savedBusiness, isNull);
+      await bloc.close();
+    });
+
+    test(
+      'emits failure when server save fails after OTP verification',
+      () async {
+        final repository = FakeAuthRepository(
+          saveResult: const Failed(ServerFailure()),
+        );
+        final bloc = buildBloc(repository);
+
+        bloc.add(const BusinessSignUpCompanyNameChanged('شركة وتد'));
+        bloc.add(const BusinessSignUpCrNumberChanged('1010123456'));
+        bloc.add(const BusinessSignUpEmailChanged('info@watad.sa'));
+        bloc.add(const BusinessSignUpPhoneChanged('501234567'));
+        bloc.add(const BusinessSignUpTermsToggled(true));
+        bloc.add(const BusinessSignUpOtpChanged('123456'));
+        await Future<void>.delayed(Duration.zero);
+
+        final expectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            predicate<BusinessSignUpState>(
+              (s) => s.status == BusinessSignUpStatus.inProgress,
+            ),
+            predicate<BusinessSignUpState>(
+              (s) =>
+                  s.status == BusinessSignUpStatus.failure &&
+                  s.generalError == 'errors.server',
+            ),
+          ]),
+        );
+
+        bloc.add(const BusinessSignUpOtpSubmitted());
+        await expectation;
+        await bloc.close();
+      },
+    );
+
+    test('step back from OTP transitions back to form step', () async {
+      final repository = FakeAuthRepository();
+      final bloc = buildBloc(repository);
+
+      bloc.add(const BusinessSignUpCompanyNameChanged('شركة وتد'));
+      bloc.add(const BusinessSignUpCrNumberChanged('1010123456'));
+      bloc.add(const BusinessSignUpEmailChanged('info@watad.sa'));
+      bloc.add(const BusinessSignUpPhoneChanged('501234567'));
+      bloc.add(const BusinessSignUpTermsToggled(true));
+      bloc.add(const BusinessSignUpSubmitted());
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(bloc.state.step, BusinessSignUpStep.otp);
+
+      bloc.add(const BusinessSignUpStepBack());
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(bloc.state.step, BusinessSignUpStep.form);
+      expect(bloc.state.companyName, 'شركة وتد');
       await bloc.close();
     });
   });

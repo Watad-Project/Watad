@@ -27,5 +27,18 @@ void main() {
     });
 
     expect(model.role, 'contractor');
+    expect(model.specializedField, 'contractor');
+  });
+
+  test('fromJson reads specialized_field if present', () {
+    final model = BusinessSignUpModel.fromJson(const {
+      'company_name': 'مؤسسة الوتد',
+      'cr_number': '1010987654',
+      'email': 'test@watad.sa',
+      'phone': '+966555555555',
+      'specialized_field': 'construction',
+    });
+
+    expect(model.specializedField, 'construction');
   });
 }

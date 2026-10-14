@@ -22,6 +22,8 @@
   "otp_expired_or_invalid": "رمز التحقق غير صحيح أو منتهي الصلاحية",
   "otp_required_error": "رمز التحقق مطلوب",
   "otp_sent_success": "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
+  "otp_subtitle": "أدخل الرمز المرسل إلى {email}",
+  "otp_title": "رمز التحقق",
   "phone_hint": "5x xxx xxxx",
   "phone_label": "رقم الجوال",
   "resend_code": "إعادة الإرسال",
