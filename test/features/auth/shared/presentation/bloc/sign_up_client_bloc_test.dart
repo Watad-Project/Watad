@@ -114,9 +114,7 @@ void main() {
     );
 
     test('emits codeSent and step otp on successful submission', () async {
-      final repo = FakeAuthRepository(
-        sendOtpResult: const Success(null),
-      );
+      final repo = FakeAuthRepository(sendOtpResult: const Success(null));
       final bloc = buildBloc(repo);
 
       bloc.add(const SignUpClientFullNameChanged('Ahmad Ali'));
