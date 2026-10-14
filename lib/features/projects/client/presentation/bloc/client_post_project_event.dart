@@ -88,3 +88,8 @@ final class ClientPostProjectStepRetreated extends ClientPostProjectEvent {
 final class ClientPostProjectReset extends ClientPostProjectEvent {
   const ClientPostProjectReset();
 }
+
+/// The user confirmed and submitted the project for publishing (review step).
+final class ClientPostProjectSubmitted extends ClientPostProjectEvent {
+  const ClientPostProjectSubmitted();
+}

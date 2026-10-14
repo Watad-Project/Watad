@@ -203,6 +203,45 @@ void main() {
       await bloc.close();
     });
 
+    test('handles project submission on review step', () async {
+      final bloc = ClientPostProjectBloc();
+
+      bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.repairs));
+      bloc.add(const ClientPostProjectScopeChanged('Repair pipe'));
+      bloc.add(const ClientPostProjectMinBudgetChanged(500));
+      bloc.add(const ClientPostProjectMaxBudgetChanged(1500));
+      bloc.add(const ClientPostProjectLocationChanged('Riyadh'));
+      bloc.add(const ClientPostProjectStepAdvanced()); // step 2
+      bloc.add(const ClientPostProjectStepAdvanced()); // step 3 (review)
+
+      await expectLater(
+        bloc.stream,
+        emitsThrough(
+          predicate<ClientPostProjectState>((s) {
+            return s.currentStep == 3 &&
+                s.isReviewStep == true &&
+                s.canPublish == true;
+          }),
+        ),
+      );
+
+      bloc.add(const ClientPostProjectSubmitted());
+
+      await expectLater(
+        bloc.stream,
+        emitsInOrder([
+          predicate<ClientPostProjectState>(
+            (s) => s.status == ClientPostProjectStatus.submitting,
+          ),
+          predicate<ClientPostProjectState>(
+            (s) => s.status == ClientPostProjectStatus.success,
+          ),
+        ]),
+      );
+
+      await bloc.close();
+    });
+
     test('resets back to initial state', () async {
       final bloc = ClientPostProjectBloc();
 

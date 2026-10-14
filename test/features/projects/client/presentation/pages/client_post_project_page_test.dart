@@ -386,4 +386,98 @@ void main() {
       expect(find.text('Next — Review & Publish'), findsOneWidget);
     });
   });
+
+  group('ClientPostProjectPage - Review & Publish', () {
+    testWidgets('renders review step for repairs (Step 3 of 3) and publishes', (
+      tester,
+    ) async {
+      final bloc = ClientPostProjectBloc()
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
+        ..add(const ClientPostProjectScopeChanged('Repair kitchen sink'))
+        ..add(const ClientPostProjectMinBudgetChanged(500))
+        ..add(const ClientPostProjectMaxBudgetChanged(1500))
+        ..add(const ClientPostProjectLocationChanged('الرياض · حي النرجس'))
+        ..add(const ClientPostProjectStepAdvanced()) // step 2
+        ..add(const ClientPostProjectStepAdvanced()); // step 3 (review)
+
+      await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+      await tester.pumpAndSettle();
+
+      expect(find.text('الخطوة 3 من 3'), findsOneWidget);
+      expect(find.text('مراجعة تفاصيل المشروع'), findsOneWidget);
+      expect(
+        find.text(
+          'راجع بيانات المشروع قبل النشر. بعد النشر ستصلك عروض الأسعار من المقاولين المعتمدين.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('إصلاحات داخل المنزل'), findsOneWidget);
+      expect(find.text('Repair kitchen sink'), findsOneWidget);
+      expect(find.text('500 — 1500 ر.س'), findsOneWidget);
+      expect(find.text('الرياض · حي النرجس'), findsOneWidget);
+      expect(find.text('لا يلزم صك'), findsOneWidget);
+      expect(find.text('نشر المشروع'), findsOneWidget);
+
+      final publishButton = tester.widget<AppButton>(find.byType(AppButton));
+      expect(publishButton.onPressed, isNotNull);
+
+      // Tap publish
+      await tester.tap(find.text('نشر المشروع'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('تم نشر المشروع بنجاح'), findsOneWidget);
+    });
+
+    testWidgets('renders review step for deed project (Step 4 of 4)', (
+      tester,
+    ) async {
+      final bloc = ClientPostProjectBloc()
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectScopeChanged('Build modern villa'))
+        ..add(const ClientPostProjectMinBudgetChanged(300000))
+        ..add(const ClientPostProjectMaxBudgetChanged(600000))
+        ..add(const ClientPostProjectLocationChanged('الرياض · حي المروج'))
+        ..add(
+          const ClientPostProjectDeedSelected(
+            filePath: 'deed.pdf',
+            fileName: 'deed.pdf',
+          ),
+        )
+        ..add(const ClientPostProjectStepAdvanced()) // step 2
+        ..add(const ClientPostProjectStepAdvanced()) // step 3
+        ..add(const ClientPostProjectStepAdvanced()); // step 4 (review)
+
+      await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+      await tester.pumpAndSettle();
+
+      expect(find.text('الخطوة 4 من 4'), findsOneWidget);
+      expect(find.text('تأسيس منزل'), findsOneWidget);
+      expect(find.text('300000 — 600000 ر.س'), findsOneWidget);
+      expect(find.text('قيد مراجعة الصك'), findsOneWidget);
+      expect(find.text('نشر المشروع'), findsOneWidget);
+    });
+
+    testWidgets('renders English strings for review step', (tester) async {
+      final bloc = ClientPostProjectBloc()
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
+        ..add(const ClientPostProjectScopeChanged('Plumbing'))
+        ..add(const ClientPostProjectMinBudgetChanged(200))
+        ..add(const ClientPostProjectMaxBudgetChanged(400))
+        ..add(const ClientPostProjectLocationChanged('Riyadh'))
+        ..add(const ClientPostProjectStepAdvanced())
+        ..add(const ClientPostProjectStepAdvanced());
+
+      await pumpLocalizedApp(
+        tester,
+        buildPage(bloc: bloc),
+        locale: AppLocalization.english,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Step 3 of 3'), findsOneWidget);
+      expect(find.text('Review Project Details'), findsOneWidget);
+      expect(find.text('Publish Project'), findsOneWidget);
+    });
+  });
 }

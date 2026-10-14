@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
@@ -11,24 +12,40 @@ import 'package:watad/features/projects/client/presentation/bloc/client_post_pro
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step1.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step2.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step3.dart';
+import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step_review.dart';
 
 /// The client's main flow for posting a construction project.
 class ClientPostProjectPage extends StatelessWidget {
   const ClientPostProjectPage({super.key});
+
+  void _safeNavigateHome(BuildContext context) {
+    try {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.goNamed(ClientNavigationRoutes.navigationName);
+      }
+    } catch (_) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
 
   void _onBack(BuildContext context, ClientPostProjectState state) {
     if (state.currentStep > 1) {
       context.read<ClientPostProjectBloc>().add(
         const ClientPostProjectStepRetreated(),
       );
-    } else if (context.canPop()) {
-      context.pop();
     } else {
-      context.goNamed(ClientNavigationRoutes.navigationName);
+      _safeNavigateHome(context);
     }
   }
 
   String _nextButtonLabel(BuildContext context, ClientPostProjectState state) {
+    if (state.isReviewStep) {
+      return context.tr('projects.client.publish_project_button');
+    }
     if (state.currentStep == 1) {
       return context.tr('projects.client.next_button');
     }
@@ -42,6 +59,9 @@ class ClientPostProjectPage extends StatelessWidget {
   }
 
   bool _canProceed(ClientPostProjectState state) {
+    if (state.isReviewStep) {
+      return state.canPublish;
+    }
     if (state.currentStep == 1) {
       return state.canProceedFromStep1;
     }
@@ -63,7 +83,15 @@ class ClientPostProjectPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ClientPostProjectBloc, ClientPostProjectState>(
+    return BlocConsumer<ClientPostProjectBloc, ClientPostProjectState>(
+      listener: (context, state) {
+        if (state.status == ClientPostProjectStatus.success) {
+          context.showSuccessSnackBar(
+            context.tr('projects.client.publish_success_message'),
+          );
+          _safeNavigateHome(context);
+        }
+      },
       builder: (context, state) {
         final canPop = state.currentStep == 1;
 
@@ -148,18 +176,26 @@ class ClientPostProjectPage extends StatelessWidget {
                             );
                           },
                         )
-                      : const SizedBox.shrink(),
+                      : ClientPostProjectStepReview(state: state),
+                4 => ClientPostProjectStepReview(state: state),
                 _ => const SizedBox.shrink(),
               },
             ),
             bottomNavigationBar: AppActionBar(
               primary: AppButton(
                 label: _nextButtonLabel(context, state),
+                isLoading: state.status == ClientPostProjectStatus.submitting,
                 onPressed: _canProceed(state)
                     ? () {
-                        context.read<ClientPostProjectBloc>().add(
-                          const ClientPostProjectStepAdvanced(),
-                        );
+                        if (state.isReviewStep) {
+                          context.read<ClientPostProjectBloc>().add(
+                            const ClientPostProjectSubmitted(),
+                          );
+                        } else {
+                          context.read<ClientPostProjectBloc>().add(
+                            const ClientPostProjectStepAdvanced(),
+                          );
+                        }
                       }
                     : null,
               ),

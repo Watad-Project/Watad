@@ -39,6 +39,20 @@
     "deed_status_verified_title": "٣ · موثّق",
     "deed_status_verified_desc": "المشروع منشور، والعروض مفتوحة. تظهر علامة «ملكية موثّقة» للمقاولين.",
     "deed_status_rejected_default_title": "مرفوض — اسم المالك لا يطابق الهوية",
-    "deed_reupload": "إعادة الرفع"
+    "deed_reupload": "إعادة الرفع",
+    "review_title": "مراجعة تفاصيل المشروع",
+    "review_subtitle": "راجع بيانات المشروع قبل النشر. بعد النشر ستصلك عروض الأسعار من المقاولين المعتمدين.",
+    "review_project_type": "نوع المشروع",
+    "review_scope": "نطاق العمل",
+    "review_budget": "الميزانية المتوقعة",
+    "review_budget_range": "{} — {} ر.س",
+    "review_location": "موقع المشروع",
+    "review_deed_status": "صك الملكية",
+    "review_deed_verified": "ملكية موثّقة",
+    "review_deed_under_review": "قيد مراجعة الصك",
+    "review_deed_none": "لم يُرفع صك",
+    "review_deed_not_required": "لا يلزم صك",
+    "publish_project_button": "نشر المشروع",
+    "publish_success_message": "تم نشر المشروع بنجاح"
   }
 }

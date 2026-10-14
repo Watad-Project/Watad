@@ -89,6 +89,18 @@ final class ClientPostProjectState {
       deedStatus == ClientDeedVerificationStatus.underReview ||
       deedStatus == ClientDeedVerificationStatus.verified;
 
+  /// Whether the user is currently on the final review & publish step.
+  bool get isReviewStep => currentStep == totalSteps;
+
+  /// Whether the project is ready to be published.
+  bool get canPublish {
+    final validStep2 = canProceedFromStep2;
+    if (requiresDeed) {
+      return validStep2 && canProceedFromStep3;
+    }
+    return validStep2;
+  }
+
   /// Whether the current budget fields satisfy min <= max.
   bool get isBudgetValid {
     if (minBudget == null || maxBudget == null) return true;

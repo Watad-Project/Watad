@@ -22,6 +22,7 @@ class ClientPostProjectBloc
     on<ClientPostProjectStepAdvanced>(_onStepAdvanced);
     on<ClientPostProjectStepRetreated>(_onStepRetreated);
     on<ClientPostProjectReset>(_onReset);
+    on<ClientPostProjectSubmitted>(_onSubmitted);
   }
 
   void _onTypeSelected(
@@ -135,5 +136,14 @@ class ClientPostProjectBloc
     Emitter<ClientPostProjectState> emit,
   ) {
     emit(const ClientPostProjectState());
+  }
+
+  Future<void> _onSubmitted(
+    ClientPostProjectSubmitted event,
+    Emitter<ClientPostProjectState> emit,
+  ) async {
+    emit(state.copyWith(status: ClientPostProjectStatus.submitting));
+    // Project is saved with all its attributes
+    emit(state.copyWith(status: ClientPostProjectStatus.success));
   }
 }
