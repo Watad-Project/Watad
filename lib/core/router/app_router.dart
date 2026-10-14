@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
+import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
 import 'package:watad/features/navigation/admin/presentation/admin_navigation_routes.dart';
@@ -15,7 +16,10 @@ final GoRouter appRouter = createAppRouter();
 
 /// Where the app opens, and where "Back to start" on the not-found page
 /// leads.
-const String appStartPath = SplashRoutes.splashPath;
+const String appStartPath =
+    bool.fromEnvironment('START_POST_PROJECT', defaultValue: false)
+    ? ClientProjectsRoutes.postProjectPath
+    : SplashRoutes.splashPath;
 
 /// Builds the router. The app builds it once ([appRouter]); tests build a
 /// fresh one each, so one test's navigation doesn't leak into the next.
