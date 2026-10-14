@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
+import 'package:watad/core/router/routes/contractor_dashboard_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
 import 'package:watad/features/dashboard/contractor/presentation/contractor_dashboard_routes.dart';
@@ -47,4 +48,10 @@ GoRouter createAppRouter({String? initialLocation}) {
 /// session: signed out goes to login, a role without access goes to its
 /// own home. Return a path to redirect, or null to let the navigation
 /// through.
-String? _guard(BuildContext context, GoRouterState state) => null;
+String? _guard(BuildContext context, GoRouterState state) {
+  final path = state.uri.path;
+  if (path == '/contractor' || path == '/contractor/') {
+    return ContractorDashboardRoutes.dashboardPath;
+  }
+  return null;
+}

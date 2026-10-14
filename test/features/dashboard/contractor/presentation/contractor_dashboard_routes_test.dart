@@ -60,4 +60,28 @@ void main() {
     expect(currentPath(router), ContractorDashboardRoutes.dashboardPath);
     expect(find.byType(ContractorDashboardPage), findsOneWidget);
   });
+
+  testWidgets('opens directly at dashboardPath when set as initialLocation', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      initialLocation: ContractorDashboardRoutes.dashboardPath,
+    );
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), ContractorDashboardRoutes.dashboardPath);
+    expect(find.byType(ContractorDashboardPage), findsOneWidget);
+  });
+
+  testWidgets('handles route without leading slash', (tester) async {
+    final router = await pumpAppRouter(
+      tester,
+      initialLocation: 'contractor/dashboard',
+    );
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), ContractorDashboardRoutes.dashboardPath);
+    expect(find.byType(ContractorDashboardPage), findsOneWidget);
+  });
 }
