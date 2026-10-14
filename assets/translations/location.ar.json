@@ -1,0 +1,17 @@
+{
+  "address_name_hint": "مثال: المنزل، المكتب",
+  "address_name_label": "اسم العنوان",
+  "address_section_subtitle": "يُعبأ تلقائياً من الخريطة",
+  "address_section_title": "العنوان",
+  "building_number_label": "رقم المبنى",
+  "city_label": "المدينة",
+  "confirm_location": "تأكيد الموقع",
+  "current_location": "موقعي الحالي",
+  "district_label": "الحي",
+  "google_maps_attribution": "Google Maps",
+  "page_title": "تحديد الموقع",
+  "postal_code_label": "الرمز البريدي",
+  "save_to_my_addresses": "حفظ في عناويني",
+  "search_hint": "ابحث عن حي أو شارع",
+  "street_label": "الشارع"
+}

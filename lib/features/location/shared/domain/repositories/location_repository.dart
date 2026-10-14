@@ -1,0 +1,14 @@
+import 'package:watad/core/error/result.dart';
+import 'package:watad/features/location/shared/domain/entities/location_address.dart';
+
+/// Repository interface for managing user saved addresses and location data.
+abstract interface class LocationRepository {
+  /// Retrieves the list of saved addresses for the current user.
+  Future<Result<List<LocationAddress>>> getSavedAddresses();
+
+  /// Saves a new address or updates an existing address in the user's saved list.
+  Future<Result<void>> saveAddress(LocationAddress address);
+
+  /// Deletes a saved address by its [id].
+  Future<Result<void>> deleteAddress(String id);
+}

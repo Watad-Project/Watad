@@ -54,6 +54,16 @@
     "review_deed_none": "لم يُرفع صك",
     "review_deed_not_required": "لا يلزم صك",
     "publish_project_button": "نشر المشروع",
-    "publish_success_message": "تم نشر المشروع بنجاح"
+    "publish_success_message": "تم نشر المشروع بنجاح",
+    "address_title": "أين موقع المشروع؟",
+    "address_subtitle": "اختر أحد عناوينك أو حدّد موقعاً جديداً.",
+    "address_back_label": "تفاصيل المشروع",
+    "address_new_on_map": "تحديد موقع جديد على الخريطة",
+    "address_new_on_map_desc": "Google Maps — يعبّئ العنوان تلقائياً",
+    "address_saved_title": "عناويني المحفوظة",
+    "address_deed_hint": "لمشاريع التأسيس والترميم يجب أن يطابق العنوان صك الملكية.",
+    "address_use_selected": "استخدام هذا العنوان",
+    "address_empty_title": "لا توجد عناوين محفوظة بعد",
+    "address_empty_desc": "حدّد موقعاً جديداً على الخريطة لاستخدامه في مشروعك."
   }
 }

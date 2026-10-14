@@ -1,0 +1,50 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/error/result.dart';
+import 'package:watad/core/router/routes/location_routes.dart';
+import 'package:watad/features/location/shared/domain/entities/location_address.dart';
+import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
+import 'package:watad/features/location/shared/domain/usecases/save_address_use_case.dart';
+import 'package:watad/features/location/shared/presentation/bloc/location_bloc.dart';
+import 'package:watad/features/location/shared/presentation/pages/location_page.dart';
+
+import '../../../../helpers/fake_auth_repository.dart';
+import '../../../../helpers/pump_router.dart';
+
+class _FakeLocationRepository implements LocationRepository {
+  @override
+  Future<Result<List<LocationAddress>>> getSavedAddresses() async =>
+      const Success([]);
+
+  @override
+  Future<Result<void>> saveAddress(LocationAddress address) async =>
+      const Success(null);
+
+  @override
+  Future<Result<void>> deleteAddress(String id) async => const Success(null);
+}
+
+void main() {
+  setUp(() {
+    registerFakeAuthBloc(FakeAuthRepository());
+    final repo = _FakeLocationRepository();
+    getIt.registerFactory(() => LocationBloc(SaveAddressUseCase(repo)));
+  });
+
+  tearDown(getIt.reset);
+
+  testWidgets('every location route opens its page at its path', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      initialLocation: LocationRoutes.locationPath,
+    );
+
+    router.goNamed(LocationRoutes.locationName);
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), LocationRoutes.locationPath);
+    expect(find.byType(LocationPage), findsOneWidget);
+  });
+}
