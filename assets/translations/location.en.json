@@ -13,5 +13,10 @@
   "postal_code_label": "Postal Code",
   "save_to_my_addresses": "Save to my addresses",
   "search_hint": "Search district or street",
-  "street_label": "Street"
+  "street_label": "Street",
+  "mock_current_city": "Riyadh",
+  "mock_current_district": "An Narjis",
+  "mock_current_street": "Anas Ibn Malik Rd",
+  "mock_current_building": "4210",
+  "mock_current_postal_code": "13324"
 }

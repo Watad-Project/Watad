@@ -18,15 +18,22 @@ abstract interface class LocationLocalDataSource {
 /// Implementation of [LocationLocalDataSource] using [SharedPreferences].
 class LocationLocalDataSourceImpl implements LocationLocalDataSource {
   /// Creates an instance of [LocationLocalDataSourceImpl].
-  const LocationLocalDataSourceImpl(this._preferences);
+  const LocationLocalDataSourceImpl([this._preferences]);
 
   static const String _storageKey = 'watad_saved_addresses_v1';
 
-  final SharedPreferences _preferences;
+  final SharedPreferences? _preferences;
+
+  Future<SharedPreferences> _getPrefs() async {
+    final prefs = _preferences;
+    if (prefs != null) return prefs;
+    return SharedPreferences.getInstance();
+  }
 
   @override
   Future<List<LocationAddressModel>> getSavedAddresses() async {
-    final raw = _preferences.getString(_storageKey);
+    final prefs = await _getPrefs();
+    final raw = prefs.getString(_storageKey);
     if (raw == null || raw.isEmpty) {
       return const [];
     }
@@ -65,7 +72,8 @@ class LocationLocalDataSourceImpl implements LocationLocalDataSource {
   }
 
   Future<void> _persistList(List<LocationAddressModel> list) async {
+    final prefs = await _getPrefs();
     final encoded = jsonEncode(list.map((m) => m.toJson()).toList());
-    await _preferences.setString(_storageKey, encoded);
+    await prefs.setString(_storageKey, encoded);
   }
 }

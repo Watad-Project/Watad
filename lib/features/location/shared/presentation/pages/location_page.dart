@@ -149,7 +149,19 @@ class _LocationPageState extends State<LocationPage> {
                       },
                       onCurrentLocationTap: () {
                         context.read<LocationBloc>().add(
-                          const LocationCurrentPositionRequested(),
+                          LocationCurrentPositionRequested(
+                            city: context.tr('location.mock_current_city'),
+                            district: context.tr(
+                              'location.mock_current_district',
+                            ),
+                            street: context.tr('location.mock_current_street'),
+                            buildingNumber: context.tr(
+                              'location.mock_current_building',
+                            ),
+                            postalCode: context.tr(
+                              'location.mock_current_postal_code',
+                            ),
+                          ),
                         );
                       },
                       onDragEnd: (lat, lng) {

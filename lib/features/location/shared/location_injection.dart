@@ -10,7 +10,7 @@ import 'package:watad/features/location/shared/presentation/bloc/location_bloc.d
 void registerLocationDependencies(GetIt getIt) {
   getIt
     ..registerLazySingleton<LocationLocalDataSource>(
-      () => LocationLocalDataSourceImpl(getIt()),
+      () => const LocationLocalDataSourceImpl(),
     )
     ..registerLazySingleton<LocationRepository>(
       () => LocationRepositoryImpl(getIt()),
