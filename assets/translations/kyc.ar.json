@@ -12,6 +12,9 @@
     "status_title": "حالة التوثيق",
     "status_pending_title": "قيد المراجعة",
     "status_pending_subtitle": "طلبك قيد المراجعة وسيتم الرد خلال ٢٤ ساعة.",
-    "file_selected_prefix": "تم اختيار الملف: {fileName}"
+    "file_selected_prefix": "تم اختيار الملف: {fileName}",
+    "upload_success": "تم إرسال الرخصة بنجاح للمراجعة.",
+    "camera_permission_required": "يرجى منح إذن استخدام الكاميرا لالتقاط صورة الرخصة.",
+    "storage_permission_required": "يرجى منح إذن الوصول إلى الملفات لاختيار المستند."
   }
 }

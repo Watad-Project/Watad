@@ -4,7 +4,6 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
 import 'package:watad/features/kyc/contractor/presentation/bloc/contractor_license_bloc.dart';
 import 'package:watad/features/kyc/contractor/presentation/pages/contractor_license_page.dart';
-import 'package:watad/features/kyc/contractor/presentation/pages/contractor_status_page.dart';
 
 final List<RouteBase> contractorKycRoutes = [
   GoRoute(
@@ -14,10 +13,5 @@ final List<RouteBase> contractorKycRoutes = [
       create: (_) => getIt<ContractorLicenseBloc>(),
       child: const ContractorLicensePage(),
     ),
-  ),
-  GoRoute(
-    name: ContractorKycRoutes.statusName,
-    path: ContractorKycRoutes.statusPath,
-    builder: (context, state) => const ContractorStatusPage(),
   ),
 ];

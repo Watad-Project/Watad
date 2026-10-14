@@ -1,42 +1,87 @@
-import 'dart:typed_data';
-
 import 'package:easy_localization/easy_localization.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_upload_zone.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
-import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/features/kyc/contractor/presentation/bloc/contractor_license_bloc.dart';
 
 class ContractorLicensePage extends StatelessWidget {
-  const ContractorLicensePage({super.key});
+  const ContractorLicensePage({super.key, this.onPickCamera, this.onPickFiles});
 
-  void _onPickCamera(BuildContext context) {
-    // Generates sample JPEG image bytes for camera capture in tests/dev
-    final dummyBytes = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10]);
-    context.read<ContractorLicenseBloc>().add(
-      ContractorLicenseFileSelected(
-        bytes: dummyBytes,
-        fileName: 'contractor_license_camera.jpg',
-      ),
-    );
+  final Future<void> Function(BuildContext context)? onPickCamera;
+  final Future<void> Function(BuildContext context)? onPickFiles;
+
+  Future<void> _defaultPickCamera(BuildContext context) async {
+    final status = await Permission.camera.request();
+    if (!status.isGranted) {
+      if (context.mounted) {
+        context.showErrorSnackBar(
+          context.tr('kyc.contractor.camera_permission_required'),
+        );
+      }
+      return;
+    }
+
+    try {
+      final picker = ImagePicker();
+      final photo = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        maxWidth: 1920,
+        maxHeight: 1920,
+      );
+      if (photo != null) {
+        final bytes = await photo.readAsBytes();
+        final fileName = photo.name.isNotEmpty
+            ? photo.name
+            : 'license_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        if (context.mounted) {
+          context.read<ContractorLicenseBloc>().add(
+            ContractorLicenseFileSelected(bytes: bytes, fileName: fileName),
+          );
+        }
+      }
+    } catch (_) {
+      if (context.mounted) {
+        context.showErrorSnackBar(context.tr('errors.unknown'));
+      }
+    }
   }
 
-  void _onPickFiles(BuildContext context) {
-    // Generates sample PDF bytes for file upload in tests/dev
-    final dummyBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46, 0x2D]);
-    context.read<ContractorLicenseBloc>().add(
-      ContractorLicenseFileSelected(
-        bytes: dummyBytes,
-        fileName: 'contractor_license_document.pdf',
-      ),
-    );
+  Future<void> _defaultPickFiles(BuildContext context) async {
+    try {
+      final files = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        compressionQuality: 80,
+      );
+
+      if (files.isEmpty) {
+        return;
+      }
+
+      final file = files.first;
+      final bytes = await file.readAsBytes();
+
+      if (context.mounted) {
+        context.read<ContractorLicenseBloc>().add(
+          ContractorLicenseFileSelected(bytes: bytes, fileName: file.name),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        context.showErrorSnackBar(context.tr('errors.unknown'));
+      }
+    }
   }
 
   @override
@@ -44,7 +89,9 @@ class ContractorLicensePage extends StatelessWidget {
     return BlocConsumer<ContractorLicenseBloc, ContractorLicenseState>(
       listener: (context, state) {
         if (state is ContractorLicenseLoadSuccess) {
-          context.goNamed(ContractorKycRoutes.statusName);
+          context.showSuccessSnackBar(
+            context.tr('kyc.contractor.upload_success'),
+          );
         } else if (state is ContractorLicenseLoadFailure) {
           context.showErrorSnackBar(context.tr(state.failure.messageKey));
         }
@@ -101,7 +148,7 @@ class ContractorLicensePage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   AppUploadZone(
-                    onTap: () => _onPickFiles(context),
+                    onTap: () => (onPickFiles ?? _defaultPickFiles)(context),
                     label: context.tr('kyc.contractor.upload_zone_title'),
                     subtitle: context.tr('kyc.contractor.upload_zone_hint'),
                   ),
@@ -152,7 +199,8 @@ class ContractorLicensePage extends StatelessWidget {
                           label: context.tr('kyc.contractor.from_camera'),
                           icon: Icons.camera_alt,
                           variant: AppButtonVariant.primary,
-                          onPressed: () => _onPickCamera(context),
+                          onPressed: () =>
+                              (onPickCamera ?? _defaultPickCamera)(context),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
@@ -161,7 +209,8 @@ class ContractorLicensePage extends StatelessWidget {
                           label: context.tr('kyc.contractor.from_files'),
                           icon: Icons.folder_open,
                           variant: AppButtonVariant.secondary,
-                          onPressed: () => _onPickFiles(context),
+                          onPressed: () =>
+                              (onPickFiles ?? _defaultPickFiles)(context),
                         ),
                       ),
                     ],

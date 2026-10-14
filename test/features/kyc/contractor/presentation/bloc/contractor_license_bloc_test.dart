@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/kyc/contractor/domain/entities/contractor_license_submission.dart';
@@ -33,12 +32,7 @@ void main() {
 
   test('emits Ready when a file is selected', () async {
     final bloc = buildBloc(
-      const Success(
-        ContractorLicenseSubmission(
-          storagePath: 'storage/path',
-          status: VerificationStatus.pending,
-        ),
-      ),
+      const Success(ContractorLicenseSubmission(storagePath: 'storage/path')),
     );
 
     final states = expectLater(
@@ -64,10 +58,7 @@ void main() {
   });
 
   test('emits LoadInProgress then LoadSuccess on successful upload', () async {
-    const submission = ContractorLicenseSubmission(
-      storagePath: 'storage/path',
-      status: VerificationStatus.pending,
-    );
+    const submission = ContractorLicenseSubmission(storagePath: 'storage/path');
     final bloc = buildBloc(const Success(submission));
 
     bloc.add(
@@ -123,12 +114,7 @@ void main() {
 
   test('emits LoadFailure directly if submitted without a file', () async {
     final bloc = buildBloc(
-      const Success(
-        ContractorLicenseSubmission(
-          storagePath: 'storage/path',
-          status: VerificationStatus.pending,
-        ),
-      ),
+      const Success(ContractorLicenseSubmission(storagePath: 'storage/path')),
     );
 
     final states = expectLater(

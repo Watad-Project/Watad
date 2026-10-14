@@ -12,6 +12,9 @@
     "status_title": "Verification status",
     "status_pending_title": "Under review",
     "status_pending_subtitle": "Your application is under review and will be processed within 24 hours.",
-    "file_selected_prefix": "Selected file: {fileName}"
+    "file_selected_prefix": "Selected file: {fileName}",
+    "upload_success": "License submitted successfully for review.",
+    "camera_permission_required": "Please grant camera permission to take a photo of the license.",
+    "storage_permission_required": "Please grant storage permission to select the document."
   }
 }
