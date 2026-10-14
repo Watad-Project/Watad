@@ -44,8 +44,9 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppButton`, `AppButtonVariant` | `buttons/app_button.dart` | Every button: primary (orange), secondary (outlined), dark (ink), link; full width except link; spinner while loading | `label`, `onPressed`, `variant`, `isLoading`, `icon`, `trailingIcon` | 2026-10-09 |
 | `AppIconButton`, `AppIconButtonVariant` | `buttons/app_icon_button.dart` | Icon-only button: plain (back arrow, toolbar) or filled orange square (add to cart); 48×48 tap target | `icon`, `tooltip`, `onPressed`, `variant` | 2026-10-09 |
 | `AppFieldLabel` | `inputs/app_field_label.dart` | The label above a field; required fields get a red "Required" | `label`, `isRequired` | 2026-10-09 |
-| `AppTextField` | `inputs/app_text_field.dart` | Text input with label, hint, helper, error and `Form` validation; mono left-to-right mode for CR numbers and IBANs | `label`, `isRequired`, `controller`, `hint`, `helperText`, `errorText`, `validator`, `isMonospace`, `maxLines` | 2026-10-09 |
+| `AppTextField` | `inputs/app_text_field.dart` | Text input with label, hint, helper, error and `Form` validation; mono left-to-right mode for CR numbers and IBANs | `label`, `isRequired`, `controller`, `hint`, `helperText`, `errorText`, `validator`, `onSubmitted`, `isMonospace`, `maxLines` | 2026-10-09 |
 | `AppPhoneField` | `inputs/app_phone_field.dart` | Saudi mobile number: fixed +966, digits grouped as 5x xxx xxxx, Arabic-Indic digits accepted; `AppPhoneField.fullNumber()` gives +9665xxxxxxxx | `label`, `controller`, `hint`, `errorText`, `validator` | 2026-10-09 |
+| `AppOtpInput` | `inputs/app_otp_input.dart` | OTP / PIN input with auto-advance and paste support, 6 boxes by default (Supabase's email code); wraps `pinput` | `length`, `controller`, `onCompleted`, `onChanged`, `errorText` | 2026-10-10 |
 | `AppDropdown`, `AppDropdownOption` | `inputs/app_dropdown.dart` | Select field whose list opens under it; options with a toned subtitle, and a tag badge shown next to the chosen value | `options`, `value`, `onChanged`, `label`, `hint`, `errorText` | 2026-10-09 |
 | `AppQuantityStepper` | `inputs/app_quantity_stepper.dart` | A number with − and + buttons (market, cart) | `value`, `onChanged`, `min`, `max`, `step`, `valueLabel`; tooltips default to "Decrease" / "Increase" | 2026-10-09 |
 | `AppSwitch` | `inputs/app_switch.dart` | On/off switch, alone or as a full-width settings row with a label | `value`, `onChanged`, `label`, `semanticLabel` | 2026-10-09 |
@@ -57,9 +58,10 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppCameraTile` | `inputs/app_camera_tile.dart` | Dark square that opens the camera, before the photo thumbnails; reports the tap only | `onTap`, `label` (default "Camera"), `size` | 2026-10-09 |
 | `AppRejectReasonForm` | `inputs/app_reject_reason_form.dart` | Reject something: pick a reason, write the required details, send (task update, receipt, refund, document) | `reasons`, `onSubmit`, `isSubmitting`; `title`, `detailsHint`, `submitLabel` default to "Reason for rejecting", "Write the reason...", "Send rejection" | 2026-10-09 |
 | `AppLogo` | `display/app_logo.dart` | The Watad logo, for light or dark surfaces | `height`, `onDark`, `semanticLabel` | 2026-10-09 |
-| `AppCard` | `display/app_card.dart` | White outlined card, tappable, clips a photo at the top | `child`, `onTap`, `padding`, `color` | 2026-10-09 |
+| `AppCard` | `display/app_card.dart` | White outlined card, tappable, clips a photo at the top | `child`, `onTap`, `padding`, `color`, `borderColor`, `borderWidth` | 2026-10-09 |
 | `AppImagePlaceholder` | `display/app_image_placeholder.dart` | The striped box where a photo is missing or loading | `label` | 2026-10-09 |
 | `AppNetworkImage` | `display/app_network_image.dart` | Network image with the striped placeholder while loading, on error and without a URL | `url`, `width`, `height`, `fit`, `borderRadius`, `semanticLabel` | 2026-10-09 |
+| `AppLottie` | `display/app_lottie.dart` | A Lottie animation from `assets/animations/` (onboarding illustrations); loops by default; the only place that imports `lottie` | `asset`, `width`, `height`, `fit`, `repeat`, `semanticLabel` | 2026-10-12 |
 | `AppPhotoTile` | `display/app_photo_tile.dart` | Square photo thumbnail, numbered placeholder until there is a photo (task evidence, receipts) | `image`, `placeholderLabel`, `onTap`, `size` | 2026-10-09 |
 | `AppStatusBadge` | `display/app_status_badge.dart` | Round status label in a tone (orange waiting, green done, red rejected, gray neutral); white on photos | `label`, `tone`, `onImage` | 2026-10-09 |
 | `AppIconTag` | `display/app_icon_tag.dart` | Tinted tag with a square mark (✓ ! ?); trust marks with the ledger hash; timeline notes | `label`, `icon`, `tone`, `detail` | 2026-10-09 |
@@ -80,8 +82,9 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppActionBar` | `layout/app_action_bar.dart` | The bottom bar of actions; with two, the primary takes 2/3 of the width | `primary`, `secondary` | 2026-10-09 |
 | `AppTopBar` | `layout/app_top_bar.dart` | The top bar of sub-screens: back arrow (flips in RTL) and a quiet title | `title`, `onBack`, `actions` | 2026-10-09 |
 | `AppStepProgress` | `layout/app_step_progress.dart` | "Step 2 of 4" with one bar per step (multi-step flows) | `current`, `total`, `label` (default "Step 2 of 4") | 2026-10-09 |
+| `AppPageDots` | `layout/app_page_dots.dart` | One dot per page under swipeable pages (onboarding); the current page is an orange pill; follows the reading direction | `count`, `currentIndex`, `semanticLabel` | 2026-10-12 |
 | `AppTabBar` | `layout/app_tab_bar.dart` | Underlined tabs of equal width (business profile) | `labels`, `controller`, `onTap` | 2026-10-09 |
-| `AppBottomNav`, `AppBottomNavItem` | `layout/app_bottom_nav.dart` | The main tabs at the bottom; the shell passes the tabs of the signed-in role | `items`, `currentIndex`, `onTap` | 2026-10-09 |
+| `AppBottomNav`, `AppBottomNavItem` | `layout/app_bottom_nav.dart` | The main tabs at the bottom: a rounded bar floating above the bottom edge, the selected tab in an orange pill, optional count badges; the navigation feature passes the tabs of the role | `items` (`icon`, `activeIcon`, `label`, `badgeCount`), `currentIndex`, `onTap` | 2026-10-09 |
 
 Components translate their own generic words (Required, Copy, Try again, Camera, Delete…) from the `common` group (`assets/translations/common.ar.json` and `common.en.json`), with `context.tr()`. Screens pass only the text that is specific to them. Where a label has a default, passing your own text replaces it.
 

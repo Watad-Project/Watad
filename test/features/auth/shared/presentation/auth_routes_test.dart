@@ -1,61 +1,57 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/di/injection.dart';
-import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
-import 'package:watad/features/auth/shared/domain/entities/business_sign_up.dart';
-import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:watad/features/auth/shared/domain/usecases/check_email_registered_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_business_sign_up_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/business_sign_up_bloc.dart';
+import 'package:watad/features/auth/shared/presentation/bloc/role_bloc.dart';
+import 'package:watad/features/auth/shared/presentation/pages/login_page.dart';
+import 'package:watad/features/auth/shared/presentation/pages/role_page.dart';
 import 'package:watad/features/auth/shared/presentation/pages/sign_up_business_page.dart';
-import 'package:watad/features/splash/shared/domain/entities/splash_destination.dart';
-import 'package:watad/features/splash/shared/domain/repositories/splash_repository.dart';
-import 'package:watad/features/splash/shared/domain/usecases/get_initial_destination_use_case.dart';
-import 'package:watad/features/splash/shared/presentation/bloc/splash_bloc.dart';
 
+import '../../../../helpers/fake_auth_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
-class FakeAuthRepository implements AuthRepository {
-  const FakeAuthRepository();
-
-  @override
-  Future<Result<bool>> isEmailRegistered(String email) async =>
-      const Success(false);
-
-  @override
-  Future<Result<void>> saveBusinessSignUp(BusinessSignUp data) async =>
-      const Success(null);
-}
-
-class FakeSplashRepository implements SplashRepository {
-  const FakeSplashRepository();
-
-  @override
-  Future<Result<SplashDestination>> determineInitialDestination() async =>
-      const Success(SplashDestination.login);
-}
-
 void main() {
-  testWidgets('every auth route opens its page at its path', (tester) async {
-    const authRepository = FakeAuthRepository();
-    const splashRepository = FakeSplashRepository();
-
+  setUp(() {
+    final authRepository = FakeAuthRepository();
+    registerFakeAuthBloc(authRepository);
     getIt
-      ..registerFactory(
-        () => SplashBloc(const GetInitialDestinationUseCase(splashRepository)),
-      )
+      ..registerFactory(RoleBloc.new)
       ..registerFactory(
         () => BusinessSignUpBloc(
-          const CheckEmailRegisteredUseCase(authRepository),
-          const SaveBusinessSignUpUseCase(authRepository),
+          CheckEmailRegisteredUseCase(authRepository),
+          SaveBusinessSignUpUseCase(authRepository),
         ),
       );
-    addTearDown(getIt.reset);
+  });
+  tearDown(getIt.reset);
 
-    final router = await pumpAppRouter(tester);
+  testWidgets('every auth route opens its page at its path', (tester) async {
+    final router = await pumpAppRouter(
+      tester,
+      initialLocation: AuthRoutes.loginPath,
+    );
 
-    router.goNamed(AuthRoutes.signUpBusinessName);
+    router.goNamed(AuthRoutes.loginName);
     await tester.pumpAndSettle();
+
+    expect(currentPath(router), AuthRoutes.loginPath);
+    expect(find.byType(LoginPage), findsOneWidget);
+
+    router.goNamed(AuthRoutes.roleName);
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), AuthRoutes.rolePath);
+    expect(find.byType(RolePage), findsOneWidget);
+
+    // Selecting contractor and continuing routes to business signup
+    await tester.tap(find.text('مقاول'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(AppButton, 'متابعة'));
+    await tester.pumpAndSettle();
+
     expect(currentPath(router), AuthRoutes.signUpBusinessPath);
     expect(find.byType(SignUpBusinessPage), findsOneWidget);
   });

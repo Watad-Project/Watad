@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
 import 'package:watad/features/auth/shared/domain/entities/business_sign_up.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:watad/features/auth/shared/domain/usecases/check_email_registered_use_case.dart';
@@ -15,6 +16,16 @@ class FakeAuthRepository implements AuthRepository {
 
   Result<bool> emailRegisteredResult;
   Result<void> saveResult;
+
+  @override
+  Future<Result<void>> sendOtp({required String email}) async =>
+      const Success(null);
+
+  @override
+  Future<Result<AuthSession>> verifyOtp({
+    required String email,
+    required String token,
+  }) async => const Success(AuthSession(userId: 'u', email: 'e'));
 
   @override
   Future<Result<bool>> isEmailRegistered(String email) async =>
