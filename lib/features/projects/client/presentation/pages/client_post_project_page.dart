@@ -91,6 +91,12 @@ class ClientPostProjectPage extends StatelessWidget {
           );
           _safeNavigateHome(context);
         }
+        if (state.status == ClientPostProjectStatus.failure) {
+          final messageKey = state.failure?.messageKey;
+          if (messageKey != null) {
+            context.showErrorSnackBar(context.tr(messageKey));
+          }
+        }
       },
       builder: (context, state) {
         final canPop = state.currentStep == 1;
@@ -198,6 +204,7 @@ class ClientPostProjectPage extends StatelessWidget {
             ),
             bottomNavigationBar: AppActionBar(
               primary: AppButton(
+                key: const Key('client_post_project_next_button'),
                 label: _nextButtonLabel(context, state),
                 isLoading: state.status == ClientPostProjectStatus.submitting,
                 onPressed: _canProceed(state)

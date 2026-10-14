@@ -13,6 +13,7 @@ import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/core/theme/app_tone.dart';
+import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 
@@ -33,8 +34,8 @@ class ClientPostProjectStep2 extends StatefulWidget {
   final ClientPostProjectState state;
   final ValueChanged<ClientProjectType> onTypeChanged;
   final ValueChanged<String> onScopeChanged;
-  final ValueChanged<int?> onMinBudgetChanged;
-  final ValueChanged<int?> onMaxBudgetChanged;
+  final ValueChanged<Money?> onMinBudgetChanged;
+  final ValueChanged<Money?> onMaxBudgetChanged;
   final ValueChanged<String> onLocationChanged;
   final ValueChanged<String> onPhotoAdded;
   final ValueChanged<int> onPhotoRemoved;
@@ -83,8 +84,8 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
     super.dispose();
   }
 
-  String _formatNumber(int value) {
-    return value.toString().replaceAllMapped(
+  String _formatNumber(Money value) {
+    return value.sar.toInt().toString().replaceAllMapped(
       RegExp(r'\B(?=(\d{3})+(?!\d))'),
       (m) => ',',
     );
@@ -182,7 +183,9 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   onChanged: (val) {
                     final parsed = _parseNumber(val);
-                    widget.onMinBudgetChanged(parsed);
+                    widget.onMinBudgetChanged(
+                      parsed != null ? Money.fromSar(parsed) : null,
+                    );
                   },
                 ),
               ),
@@ -195,7 +198,9 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   onChanged: (val) {
                     final parsed = _parseNumber(val);
-                    widget.onMaxBudgetChanged(parsed);
+                    widget.onMaxBudgetChanged(
+                      parsed != null ? Money.fromSar(parsed) : null,
+                    );
                   },
                 ),
               ),
