@@ -4,14 +4,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/app.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/splash/shared/presentation/pages/splash_page.dart';
 
+import 'helpers/fake_app_session.dart';
 import 'helpers/fake_splash_repository.dart';
 import 'helpers/pump_component.dart';
 
 void main() {
   // The splash fake never answers, so the app stays on the splash page.
-  setUp(() => registerFakeSplashBloc(FakeSplashRepository()));
+  setUp(() {
+    registerFakeSplashBloc(FakeSplashRepository());
+    // The app's router reads the session from getIt; signed out here.
+    getIt.registerSingleton<AppSession>(FakeAppSession());
+  });
 
   tearDown(getIt.reset);
 

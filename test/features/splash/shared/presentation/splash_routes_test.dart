@@ -2,14 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/router/routes/onboarding_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
+import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/presentation/pages/login_page.dart';
+import 'package:watad/features/navigation/client/presentation/pages/client_navigation_page.dart';
 import 'package:watad/features/onboarding/shared/presentation/pages/onboarding_page.dart';
 import 'package:watad/features/splash/shared/domain/entities/splash_destination.dart';
 import 'package:watad/features/splash/shared/presentation/bloc/splash_bloc.dart';
 import 'package:watad/features/splash/shared/presentation/pages/splash_page.dart';
 
+import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_auth_repository.dart';
 import '../../../../helpers/fake_onboarding_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
@@ -66,16 +70,20 @@ void main() {
     expect(router.canPop(), isFalse);
   });
 
-  testWidgets('a signed-in user goes to the login page until home exists', (
+  testWidgets('a signed-in user goes on to their role\'s navigation', (
     tester,
   ) async {
-    final router = await pumpAppRouter(tester);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
 
     splash.answer(const Success(SplashDestination.home));
     await waitForSplash(tester);
     await tester.pumpAndSettle();
-    expect(currentPath(router), AuthRoutes.loginPath);
-    expect(find.byType(LoginPage), findsOneWidget);
+    expect(currentPath(router), ClientNavigationRoutes.navigationPath);
+    expect(find.byType(ClientNavigationPage), findsOneWidget);
+    expect(router.canPop(), isFalse);
   });
 
   testWidgets('stays on screen for its minimum duration', (tester) async {
