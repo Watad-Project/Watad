@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/auth/shared/auth_injection.dart';
+import 'package:watad/features/dashboard/contractor/contractor_dashboard_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
 
@@ -16,6 +17,7 @@ void configureDependencies() {
 
   // Features: one line per role folder, in alphabetical order.
   registerAuthDependencies(getIt);
+  registerContractorDashboardDependencies(getIt);
   registerOnboardingDependencies(getIt);
   registerSplashDependencies(getIt);
 }

@@ -1,0 +1,28 @@
+{
+  "contractor": {
+    "active_projects_title": "قيد التنفيذ",
+    "browse_opportunities": "تصفّح",
+    "client_name": "العميل: {name}",
+    "currency": "ر.س",
+    "default_company": "منشأة مقاولات",
+    "earnings_pending_transfers": "قيد التحويل",
+    "earnings_this_month": "أرباح هذا الشهر",
+    "my_offers_title": "عروضي المقدّمة",
+    "no_active_projects": "لا توجد مشاريع قيد التنفيذ حالياً",
+    "no_offers": "لم تقدّم أي عروض بعد",
+    "offer_status_accepted": "مقبول",
+    "offer_status_pending": "قيد الانتظار",
+    "offer_status_rejected": "لم يُقبل",
+    "offer_status_withdrawn": "مسحوب",
+    "opportunities_banner": "{count} فرص جديدة قريبة منك",
+    "project_status_waiting": "بانتظار اعتماد العميل",
+    "see_all": "الكل",
+    "tasks_progress": "{approved} من {total} مهام",
+    "title": "اللوحة",
+    "verification_pending": "قيد المراجعة",
+    "verification_rejected": "مرفوضة",
+    "verification_unverified": "غير موثّق",
+    "verification_verified": "رخصة موثّقة",
+    "your_offer": "عرضك {amount} {currency}"
+  }
+}
