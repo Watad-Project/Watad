@@ -25,6 +25,7 @@ Approved and merged only by Ameer (@73azn) or Omar Mulla (@Om4rMu). Never merge 
 
 - [ ] I read `AGENTS.md`, `docs/APP_ARCHITECTURE.md` and `docs/ARCHITECTURE.md`
 - [ ] `flutter --version` shows Flutter 3.47.6
+- [ ] I ran the feature in the app against Supabase, and every item of the issue works with real data: no demo data, no success that nothing produced (AGENTS.md §8)
 - [ ] The branch is `feature/gra-<n>-<feature>-<role>` (or `fix/`, `docs/`, `chore/`) and starts from the latest `main`
 - [ ] `dart format .`, `flutter analyze --fatal-infos`, `flutter test` and `dart run tool/check_architecture.dart` all pass
 - [ ] I ran `flutter clean` before pushing, and no `.env`, `build/` or IDE files are in the diff
@@ -43,7 +44,7 @@ Approved and merged only by Ameer (@73azn) or Omar Mulla (@Om4rMu). Never merge 
 
 ## Screenshots (UI changes)
 
-<!-- Before / after, in Arabic and English, or a short screen recording. -->
+<!-- Required for UI changes: the working feature, in Arabic and English, or a short screen recording. -->
 
 ## AI assistance
 
