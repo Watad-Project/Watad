@@ -5,9 +5,12 @@ sealed class KycStatusEvent {
 }
 
 final class KycStatusStarted extends KycStatusEvent {
-  const KycStatusStarted({required this.documentType, this.initialStatus});
+  const KycStatusStarted({
+    this.documentType = BusinessDocumentType.commercialRegistration,
+    this.initialStatus,
+  });
 
-  final KycDocumentType documentType;
+  final BusinessDocumentType documentType;
   final VerificationStatus? initialStatus;
 }
 

@@ -23,6 +23,7 @@ class AppTextField extends StatelessWidget {
     this.errorText,
     this.validator,
     this.onChanged,
+    this.onSubmitted,
     this.keyboardType,
     this.textInputAction,
     this.inputFormatters,
@@ -49,6 +50,9 @@ class AppTextField extends StatelessWidget {
   final String? errorText;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
+
+  /// Called when the keyboard's action button is pressed, e.g. to send.
+  final ValueChanged<String>? onSubmitted;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final List<TextInputFormatter>? inputFormatters;
@@ -78,6 +82,7 @@ class AppTextField extends StatelessWidget {
       maxLines: obscureText ? 1 : maxLines,
       validator: validator,
       onChanged: onChanged,
+      onFieldSubmitted: onSubmitted,
       style: isMonospace ? AppTextStyles.mono : null,
       textDirection: isMonospace ? TextDirection.ltr : null,
       textAlign: isMonospace ? monoAlign : TextAlign.start,

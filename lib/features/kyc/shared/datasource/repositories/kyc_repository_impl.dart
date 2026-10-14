@@ -1,3 +1,4 @@
+import 'package:watad/core/enums/business_document_type.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/supabase/supabase_guard.dart';
 import 'package:watad/features/kyc/shared/datasource/remote/kyc_remote_data_source.dart';
@@ -10,12 +11,18 @@ class KycRepositoryImpl implements KycRepository {
   final KycRemoteDataSource _remoteDataSource;
 
   @override
-  Future<Result<KycDocument>> getDocument(KycDocumentType documentType) {
+  Future<Result<KycDocument>> getDocument([
+    BusinessDocumentType documentType =
+        BusinessDocumentType.commercialRegistration,
+  ]) {
     return guardSupabaseCall(() => _remoteDataSource.getDocument(documentType));
   }
 
   @override
-  Stream<Result<KycDocument>> watchDocument(KycDocumentType documentType) {
+  Stream<Result<KycDocument>> watchDocument([
+    BusinessDocumentType documentType =
+        BusinessDocumentType.commercialRegistration,
+  ]) {
     return guardSupabaseStream(_remoteDataSource.watchDocument(documentType));
   }
 }

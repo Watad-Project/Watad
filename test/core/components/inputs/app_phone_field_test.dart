@@ -31,13 +31,13 @@ void main() {
     expect(find.text(AppPhoneField.countryCode), findsOneWidget);
   });
 
-  testWidgets('puts the country code on the right in Arabic', (tester) async {
+  testWidgets('puts the country code on the left in Arabic', (tester) async {
     await pumpComponent(tester, const AppPhoneField());
 
     final width = tester.getSize(find.byType(Scaffold)).width;
     expect(
       tester.getCenter(find.text(AppPhoneField.countryCode)).dx,
-      greaterThan(width / 2),
+      lessThan(width / 2),
     );
   });
 

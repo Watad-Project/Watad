@@ -1,6 +1,17 @@
 {
   "title": "حالة التوثيق",
+  "commercial_registration": {
+    "unverified_title": "غير موثّق",
+    "unverified_subtitle": "لم يتم رفع مستندات التوثيق بعد.",
+    "pending_title": "قيد المراجعة",
+    "pending_subtitle": "استلمنا الرخصة. المراجعة خلال ٢٤ ساعة. يمكنك التصفّح والمحادثة الآن.",
+    "rejected_title": "مرفوض",
+    "verified_title": "موثّق",
+    "verified_subtitle": "ظهرت شارة التوثيق على ملف المنشأة. يمكنك تقديم العروض."
+  },
   "license": {
+    "unverified_title": "غير موثّق",
+    "unverified_subtitle": "لم يتم رفع مستندات التوثيق بعد.",
     "pending_title": "قيد المراجعة",
     "pending_subtitle": "استلمنا الرخصة. المراجعة خلال ٢٤ ساعة. يمكنك التصفّح والمحادثة الآن.",
     "rejected_title": "مرفوض",
@@ -8,6 +19,8 @@
     "verified_subtitle": "ظهرت شارة التوثيق على ملف المنشأة. يمكنك تقديم العروض."
   },
   "deed": {
+    "unverified_title": "غير موثّق",
+    "unverified_subtitle": "لم يتم توثيق الصك بعد.",
     "pending_title": "قيد المراجعة",
     "pending_subtitle": "استلمنا صك الملكية. المراجعة خلال ٢٤ ساعة. يمكنك التصفّح والمحادثة الآن.",
     "rejected_title": "مرفوض",

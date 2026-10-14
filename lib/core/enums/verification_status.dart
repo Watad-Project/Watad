@@ -9,4 +9,13 @@ enum VerificationStatus {
   const VerificationStatus(this.value);
 
   final String value;
+
+  static VerificationStatus fromJson(String value) {
+    return VerificationStatus.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => VerificationStatus.unverified,
+    );
+  }
+
+  String toJson() => value;
 }

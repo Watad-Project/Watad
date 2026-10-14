@@ -1,6 +1,17 @@
 {
   "title": "Verification status",
+  "commercial_registration": {
+    "unverified_title": "Unverified",
+    "unverified_subtitle": "Verification documents have not been uploaded yet.",
+    "pending_title": "Under review",
+    "pending_subtitle": "We received the license. Review takes up to 24 hours. You can browse and chat now.",
+    "rejected_title": "Rejected",
+    "verified_title": "Verified",
+    "verified_subtitle": "The verified badge now appears on your business profile. You can submit offers."
+  },
   "license": {
+    "unverified_title": "Unverified",
+    "unverified_subtitle": "Verification documents have not been uploaded yet.",
     "pending_title": "Under review",
     "pending_subtitle": "We received the license. Review takes up to 24 hours. You can browse and chat now.",
     "rejected_title": "Rejected",
@@ -8,6 +19,8 @@
     "verified_subtitle": "The verified badge now appears on your business profile. You can submit offers."
   },
   "deed": {
+    "unverified_title": "Unverified",
+    "unverified_subtitle": "Title deed is not verified yet.",
     "pending_title": "Under review",
     "pending_subtitle": "We received the property deed. Review takes up to 24 hours. You can browse and chat now.",
     "rejected_title": "Rejected",

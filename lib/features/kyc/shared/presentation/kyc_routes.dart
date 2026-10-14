@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/enums/business_document_type.dart';
 import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/router/routes/kyc_routes.dart';
-import 'package:watad/features/kyc/shared/domain/entities/kyc_document.dart';
 import 'package:watad/features/kyc/shared/presentation/bloc/kyc_status_bloc.dart';
 import 'package:watad/features/kyc/shared/presentation/pages/status_page.dart';
 
@@ -16,14 +16,18 @@ final List<RouteBase> kycRoutes = [
       final statusParam = state.uri.queryParameters['status'];
 
       final documentType = switch (typeParam) {
-        'deed' => KycDocumentType.deed,
-        _ => KycDocumentType.license,
+        'vat_certificate' => BusinessDocumentType.vatCertificate,
+        'national_address' => BusinessDocumentType.nationalAddress,
+        'other' => BusinessDocumentType.other,
+        _ => BusinessDocumentType.commercialRegistration,
       };
 
       final initialStatus = switch (statusParam) {
         'verified' => VerificationStatus.verified,
         'rejected' => VerificationStatus.rejected,
         'pending' => VerificationStatus.pending,
+        'suspended' => VerificationStatus.suspended,
+        'unverified' => VerificationStatus.unverified,
         _ => null,
       };
 

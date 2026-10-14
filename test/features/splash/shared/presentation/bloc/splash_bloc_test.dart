@@ -16,8 +16,13 @@ class FakeSplashRepository implements SplashRepository {
       result;
 }
 
-SplashBloc buildBloc(Result<SplashDestination> result) =>
-    SplashBloc(GetInitialDestinationUseCase(FakeSplashRepository(result)));
+SplashBloc buildBloc(
+  Result<SplashDestination> result, {
+  Duration minimumDuration = Duration.zero,
+}) => SplashBloc(
+  GetInitialDestinationUseCase(FakeSplashRepository(result)),
+  minimumDuration: minimumDuration,
+);
 
 void main() {
   test('emits LoadInProgress then LoadSuccess on success', () async {
@@ -50,6 +55,20 @@ void main() {
 
     bloc.add(const SplashStarted());
     await states;
+    await bloc.close();
+  });
+
+  test('answers only after the minimum duration', () async {
+    final bloc = buildBloc(
+      const Success(SplashDestination.login),
+      minimumDuration: const Duration(milliseconds: 300),
+    );
+
+    bloc.add(const SplashStarted());
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    expect(bloc.state, isA<SplashLoadInProgress>());
+
+    await expectLater(bloc.stream, emits(isA<SplashLoadSuccess>()));
     await bloc.close();
   });
 }

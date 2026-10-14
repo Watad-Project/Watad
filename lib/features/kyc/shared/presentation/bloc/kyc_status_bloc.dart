@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:watad/core/enums/business_document_type.dart';
 import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';

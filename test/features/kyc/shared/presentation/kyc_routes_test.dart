@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/enums/business_document_type.dart';
 import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/kyc_routes.dart';
@@ -18,18 +19,22 @@ import '../../../../helpers/pump_router.dart';
 
 class FakeKycRepository implements KycRepository {
   @override
-  Future<Result<KycDocument>> getDocument(KycDocumentType documentType) async =>
-      const Success(
-        KycDocument(
-          id: 'doc-1',
-          documentType: KycDocumentType.license,
-          status: VerificationStatus.pending,
-        ),
-      );
+  Future<Result<KycDocument>> getDocument([
+    BusinessDocumentType documentType =
+        BusinessDocumentType.commercialRegistration,
+  ]) async => const Success(
+    KycDocument(
+      id: 'doc-1',
+      documentType: BusinessDocumentType.commercialRegistration,
+      status: VerificationStatus.pending,
+    ),
+  );
 
   @override
-  Stream<Result<KycDocument>> watchDocument(KycDocumentType documentType) =>
-      const Stream.empty();
+  Stream<Result<KycDocument>> watchDocument([
+    BusinessDocumentType documentType =
+        BusinessDocumentType.commercialRegistration,
+  ]) => const Stream.empty();
 }
 
 class FakeSplashRepository implements SplashRepository {

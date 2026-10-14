@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/enums/business_document_type.dart';
 import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
@@ -20,12 +21,16 @@ class FakeKycRepository implements KycRepository {
   final Stream<Result<KycDocument>> stream;
 
   @override
-  Future<Result<KycDocument>> getDocument(KycDocumentType documentType) async =>
-      documentResult;
+  Future<Result<KycDocument>> getDocument([
+    BusinessDocumentType documentType =
+        BusinessDocumentType.commercialRegistration,
+  ]) async => documentResult;
 
   @override
-  Stream<Result<KycDocument>> watchDocument(KycDocumentType documentType) =>
-      stream;
+  Stream<Result<KycDocument>> watchDocument([
+    BusinessDocumentType documentType =
+        BusinessDocumentType.commercialRegistration,
+  ]) => stream;
 }
 
 KycStatusBloc buildBloc({
@@ -42,7 +47,7 @@ KycStatusBloc buildBloc({
 void main() {
   const sampleDocument = KycDocument(
     id: 'doc-1',
-    documentType: KycDocumentType.license,
+    documentType: BusinessDocumentType.commercialRegistration,
     status: VerificationStatus.pending,
   );
 
@@ -63,7 +68,11 @@ void main() {
         ]),
       );
 
-      bloc.add(const KycStatusStarted(documentType: KycDocumentType.license));
+      bloc.add(
+        const KycStatusStarted(
+          documentType: BusinessDocumentType.commercialRegistration,
+        ),
+      );
 
       await states;
       await bloc.close();
@@ -88,7 +97,7 @@ void main() {
 
       bloc.add(
         const KycStatusStarted(
-          documentType: KycDocumentType.license,
+          documentType: BusinessDocumentType.commercialRegistration,
           initialStatus: VerificationStatus.verified,
         ),
       );
@@ -109,7 +118,11 @@ void main() {
       ]),
     );
 
-    bloc.add(const KycStatusStarted(documentType: KycDocumentType.license));
+    bloc.add(
+      const KycStatusStarted(
+        documentType: BusinessDocumentType.commercialRegistration,
+      ),
+    );
 
     await states;
     await bloc.close();
@@ -124,7 +137,7 @@ void main() {
 
     const updatedDocument = KycDocument(
       id: 'doc-1',
-      documentType: KycDocumentType.license,
+      documentType: BusinessDocumentType.commercialRegistration,
       status: VerificationStatus.verified,
     );
 
@@ -145,7 +158,11 @@ void main() {
       ]),
     );
 
-    bloc.add(const KycStatusStarted(documentType: KycDocumentType.license));
+    bloc.add(
+      const KycStatusStarted(
+        documentType: BusinessDocumentType.commercialRegistration,
+      ),
+    );
     await pumpEventQueue();
 
     controller.add(const Success(updatedDocument));
