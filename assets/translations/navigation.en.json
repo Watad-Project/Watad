@@ -1,3 +1,8 @@
 {
-  "coming_soon": "Coming soon"
+  "coming_soon": "Coming soon",
+  "home": "Home",
+  "projects": "My Projects",
+  "marketplace": "Marketplace",
+  "chats": "Chats",
+  "account": "My Account"
 }
