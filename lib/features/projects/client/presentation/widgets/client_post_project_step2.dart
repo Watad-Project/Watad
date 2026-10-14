@@ -101,6 +101,7 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
     final isDeedRequired = state.requiresDeed;
 
     return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,

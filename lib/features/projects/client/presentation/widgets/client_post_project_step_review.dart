@@ -55,6 +55,7 @@ class ClientPostProjectStepReview extends StatelessWidget {
         : context.tr('projects.client.budget_unspecified');
 
     return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
