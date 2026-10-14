@@ -47,6 +47,7 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
 7. **Schema changes go through numbered migrations, reviewed in a PR.** Agents never run DDL (`apply_migration`, `CREATE`, `ALTER`, `DROP`) or data-changing SQL against the live Supabase project. Reading is fine (`list_tables`, `SELECT`).
 8. **Money is SAR:** `numeric` with at most 2 decimals, handled only through `Money` (`lib/core/utils/money.dart`).
 9. **Dates:** timestamps are `timestamptz` (UTC). Task `start_date` / `finish_date` are Riyadh calendar days.
+10. **Open a pull request only for a feature that works.** It runs in the app with real data from Supabase and does everything its issue describes (§8). If it doesn't, don't open the PR.
 
 ## 5. App rules (summary; the details are in `docs/APP_ARCHITECTURE.md`)
 
@@ -122,7 +123,17 @@ git switch -c feature/gra-12-projects-client
 
 ## 8. Before you push (definition of done)
 
-1. Run the four checks and fix every problem in the code:
+1. **Make sure the feature works.** Run the app (`flutter run`) against the Supabase project in your `.env`. Sign in as the role the issue is for, and go through every checklist item of the issue:
+   - what the screens show comes from Supabase, never from demo, sample or hard-coded data;
+   - what the feature saves or uploads is really there afterwards (open the row in Supabase);
+   - nothing shows a success, a status or a number that the backend didn't produce.
+
+   Green checks are not enough. The tests run on fakes, and the checker doesn't know view columns, so a wrong column or a save that never happens shows up only in the running app.
+
+   **If the feature doesn't work as the issue describes, don't open the pull request.** Fix it first. If you're blocked (a missing backend piece, an open question), ask in the Linear issue instead.
+
+   Agents: if you can't run the app, say so in your report. The person runs it before the PR is opened.
+2. Run the four checks and fix every problem in the code:
 
    ```bash
    dart format .
@@ -132,9 +143,10 @@ git switch -c feature/gra-12-projects-client
    ```
 
    CI runs the same four on every PR, and a PR that fails any of them is not merged. The architecture check is the strict one: each problem names its rule, file, line and the section to read. Fix every one; there are no exceptions, and a maintainer rejects a PR that works around it.
-2. Run **`flutter clean`**, so that only source files leave your machine and the project stays small. Run `flutter pub get` afterwards if you keep working.
-3. Check `git status`. Only your task's files may be in the commit: no `.env`, `build/`, `.dart_tool/` or IDE files.
-4. Done also means:
+3. Run **`flutter clean`**, so that only source files leave your machine and the project stays small. Run `flutter pub get` afterwards if you keep working.
+4. Check `git status`. Only your task's files may be in the commit: no `.env`, `build/`, `.dart_tool/` or IDE files.
+5. Done also means:
+   - for a UI change, the PR shows the working feature: screenshots in Arabic and English, or a short screen recording;
    - new components are in `docs/APP_COMPONENTS.md` and new packages in `docs/APP_PACKAGES.md`;
    - new translation keys are in every language file;
    - `docs/ARCHITECTURE.md` is updated if the backend changed;
@@ -161,6 +173,7 @@ git switch -c feature/gra-12-projects-client
 ## 11. Stop and ask when
 
 - the Linear workspace name is not exactly `Graduation Project Taibah`;
+- the feature doesn't work as its issue describes and you can't fix it: ask in the Linear issue, and don't open the pull request;
 - the task needs a new table, column, view, RPC, bucket or on-chain field;
 - a foundation file is missing;
 - you would need to change `lib/core/` beyond the allowed edits, or change a component in a way that breaks its callers;
