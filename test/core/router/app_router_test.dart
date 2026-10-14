@@ -48,6 +48,16 @@ void main() {
     expect(currentPath(router), appStartPath);
   });
 
+  testWidgets('a route the guard does not watch opens in the same frame', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(tester);
+
+    router.go('/no-such-page');
+    await tester.pump();
+    expect(find.byType(AppNotFoundView), findsOneWidget);
+  });
+
   group('the guard', () {
     const navigationOf = {
       AppRole.client: ClientNavigationRoutes.navigationPath,

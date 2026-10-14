@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
@@ -61,12 +63,18 @@ GoRouter createAppRouter({
 ///
 /// Everything else is open. Returns a path to redirect to, or null to let the
 /// navigation through.
-Future<String?> _guard(AppSession session, GoRouterState state) async {
+FutureOr<String?> _guard(AppSession session, GoRouterState state) {
   final location = state.matchedLocation;
   final isNavigation = _navigationPaths.containsValue(location);
+  // Answered right away, so most navigations finish in the same frame. Only
+  // reading the role waits.
   if (location != AuthRoutes.loginPath && !isNavigation) return null;
   if (!session.isSignedIn) return isNavigation ? AuthRoutes.loginPath : null;
+  return _homeOf(session, location);
+}
 
+/// The signed-in user's navigation, or null when [location] is already it.
+Future<String?> _homeOf(AppSession session, String location) async {
   final AppRole role;
   try {
     role = await session.role();
