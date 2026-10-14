@@ -8,6 +8,7 @@ import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
+import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step1.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step2.dart';
@@ -185,6 +186,29 @@ class ClientPostProjectPage extends StatelessWidget {
                                 onRetryDeed: () {
                                   context.read<ClientPostProjectBloc>().add(
                                     const ClientPostProjectDeedRetry(),
+                                  );
+                                },
+                                onCycleStatus: () {
+                                  final nextStatus = switch (state.deedStatus) {
+                                    ClientDeedVerificationStatus.underReview =>
+                                      ClientDeedVerificationStatus.verified,
+                                    ClientDeedVerificationStatus.verified =>
+                                      ClientDeedVerificationStatus.rejected,
+                                    _ =>
+                                      ClientDeedVerificationStatus.underReview,
+                                  };
+                                  context.read<ClientPostProjectBloc>().add(
+                                    ClientPostProjectDeedStatusChanged(
+                                      nextStatus,
+                                      rejectionReason:
+                                          nextStatus ==
+                                              ClientDeedVerificationStatus
+                                                  .rejected
+                                          ? context.tr(
+                                              'projects.client.deed_status_rejected_default_title',
+                                            )
+                                          : null,
+                                    ),
                                   );
                                 },
                               )
