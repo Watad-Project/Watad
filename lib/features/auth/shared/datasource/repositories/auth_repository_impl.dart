@@ -2,6 +2,8 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/core/supabase/supabase_guard.dart';
 import 'package:watad/features/auth/shared/datasource/remote/auth_remote_data_source.dart';
 import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
+import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart';
+import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -18,4 +20,19 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String token,
   }) => guardSupabaseCall(() => _remote.verifyOtp(email: email, token: token));
+
+  @override
+  Future<Result<void>> sendSignUpOtp(String email) =>
+      guardSupabaseCall(() => _remote.sendSignUpOtp(email));
+
+  @override
+  Future<Result<AuthSession>> verifySignUpOtp(VerifyOtpParams params) =>
+      guardSupabaseCall(() => _remote.verifySignUpOtp(params));
+
+  @override
+  Future<Result<String>> saveProfile(SignUpProfile profile) =>
+      guardSupabaseCall(() => _remote.saveProfile(profile));
+
+  @override
+  Future<Result<void>> signOut() => guardSupabaseCall(_remote.signOut);
 }

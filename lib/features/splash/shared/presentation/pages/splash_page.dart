@@ -20,8 +20,8 @@ class SplashPage extends StatelessWidget {
     switch (destination) {
       case SplashDestination.onboarding:
         context.goNamed(OnboardingRoutes.onboardingName);
-      // No home route exists yet, so a signed-in user lands on the login page
-      // too. The home task points this at its route.
+      // A signed-in user goes to the login page too: the router's guard sends
+      // them on to their role's navigation.
       case SplashDestination.login || SplashDestination.home:
         context.goNamed(AuthRoutes.loginName);
     }

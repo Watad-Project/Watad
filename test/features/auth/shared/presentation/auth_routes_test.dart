@@ -4,13 +4,18 @@ import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/role_bloc.dart';
 import 'package:watad/features/auth/shared/presentation/pages/login_page.dart';
 import 'package:watad/features/auth/shared/presentation/pages/role_page.dart';
+import 'package:watad/features/auth/shared/presentation/pages/sign_up_client_page.dart';
 
 import '../../../../helpers/fake_auth_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
 void main() {
+  late FakeAuthRepository repository;
+
   setUp(() {
-    registerFakeAuthBloc(FakeAuthRepository());
+    repository = FakeAuthRepository();
+    registerFakeAuthBloc(repository);
+    registerFakeSignUpClientBloc(repository);
     getIt.registerFactory(RoleBloc.new);
   });
   tearDown(getIt.reset);
@@ -32,5 +37,11 @@ void main() {
 
     expect(currentPath(router), AuthRoutes.rolePath);
     expect(find.byType(RolePage), findsOneWidget);
+
+    router.goNamed(AuthRoutes.signUpClientName);
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), AuthRoutes.signUpClientPath);
+    expect(find.byType(SignUpClientPage), findsOneWidget);
   });
 }

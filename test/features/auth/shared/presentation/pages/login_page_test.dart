@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/inputs/app_otp_input.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/di/injection.dart';
@@ -21,6 +22,7 @@ void main() {
   setUp(() {
     repository = FakeAuthRepository();
     registerFakeAuthBloc(repository);
+    registerFakeSignUpClientBloc(repository);
     getIt.registerFactory(RoleBloc.new);
   });
 
@@ -133,15 +135,26 @@ void main() {
     expect(repository.checked, isEmpty);
   });
 
-  testWidgets('tapping create account navigates to role selection screen', (
-    tester,
-  ) async {
-    final router = await openLogin(tester);
+  testWidgets(
+    'tapping create account pushes role selection screen so back works',
+    (tester) async {
+      await openLogin(tester);
 
-    await tester.tap(find.text('أنشئ حساباً'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('أنشئ حساباً'));
+      await tester.pumpAndSettle();
 
-    expect(currentPath(router), AuthRoutes.rolePath);
-    expect(find.byType(RolePage), findsOneWidget);
-  });
+      expect(find.byType(RolePage), findsOneWidget);
+
+      // Verify back button pops back to login screen
+      final backButton = find.descendant(
+        of: find.byType(RolePage),
+        matching: find.byType(AppIconButton),
+      );
+      await tester.tap(backButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LoginPage), findsOneWidget);
+      expect(find.byType(RolePage), findsNothing);
+    },
+  );
 }
