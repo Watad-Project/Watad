@@ -52,15 +52,16 @@ class AppPhoneField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    // Saudi phone numbers are formatted and read left-to-right.
+    // The country code is strictly on the left, followed by the divider and
+    // the national number. Wrapping the field in LTR keeps the prefix on the
+    // left even when the surrounding screen is RTL (Arabic).
     final code = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         textDirection: TextDirection.ltr,
         children: [
-          if (isRtl) const _Divider(),
-          if (isRtl) const SizedBox(width: AppSpacing.sm),
           Text(
             countryCode,
             textDirection: TextDirection.ltr,
@@ -69,36 +70,35 @@ class AppPhoneField extends StatelessWidget {
               fontWeight: FontWeight.w400,
             ),
           ),
-          if (!isRtl) const SizedBox(width: AppSpacing.sm),
-          if (!isRtl) const _Divider(),
+          const SizedBox(width: AppSpacing.sm),
+          const _Divider(),
         ],
       ),
     );
-    // The number is always typed left to right, at the left of the field.
-    // The country code is the field's prefix, which follows the screen's
-    // direction: on the right in Arabic (as in the design), on the left in
-    // English.
-    final field = TextFormField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: TextInputType.phone,
-      textInputAction: textInputAction,
-      autofillHints: const [AutofillHints.telephoneNumberNational],
-      inputFormatters: [_SaudiMobileFormatter()],
-      validator: validator,
-      onChanged: onChanged,
-      style: AppTextStyles.mono,
+    final field = Directionality(
       textDirection: TextDirection.ltr,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintTextDirection: TextDirection.ltr,
-        hintStyle: AppTextStyles.mono.copyWith(
-          color: AppColors.textSecondary,
-          fontWeight: FontWeight.w400,
+      child: TextFormField(
+        controller: controller,
+        enabled: enabled,
+        keyboardType: TextInputType.phone,
+        textInputAction: textInputAction,
+        autofillHints: const [AutofillHints.telephoneNumberNational],
+        inputFormatters: [_SaudiMobileFormatter()],
+        validator: validator,
+        onChanged: onChanged,
+        style: AppTextStyles.mono,
+        textDirection: TextDirection.ltr,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintTextDirection: TextDirection.ltr,
+          hintStyle: AppTextStyles.mono.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w400,
+          ),
+          helperText: helperText,
+          errorText: errorText,
+          prefixIcon: code,
         ),
-        helperText: helperText,
-        errorText: errorText,
-        prefixIcon: code,
       ),
     );
     if (label == null) return field;
