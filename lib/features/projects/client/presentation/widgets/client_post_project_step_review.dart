@@ -45,12 +45,15 @@ class ClientPostProjectStepReview extends StatelessWidget {
         ? context.tr(state.projectType!.titleKey)
         : '';
     final hasBudget =
-        (state.minBudget != null && state.minBudget! > 0) ||
-        (state.maxBudget != null && state.maxBudget! > 0);
+        (state.minBudget != null && state.minBudget!.halalas > 0) ||
+        (state.maxBudget != null && state.maxBudget!.halalas > 0);
     final budgetText = hasBudget
         ? context.tr(
             'projects.client.review_budget_range',
-            args: ['${state.minBudget ?? 0}', '${state.maxBudget ?? 0}'],
+            args: [
+              '${state.minBudget?.sar.toInt() ?? 0}',
+              '${state.maxBudget?.sar.toInt() ?? 0}',
+            ],
           )
         : context.tr('projects.client.budget_unspecified');
 

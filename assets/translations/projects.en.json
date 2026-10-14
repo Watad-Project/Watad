@@ -39,6 +39,8 @@
     "deed_status_verified_title": "3 · Verified",
     "deed_status_verified_desc": "The project is published and offers are open. \"Verified Ownership\" badge is shown to contractors.",
     "deed_status_rejected_default_title": "Rejected — Owner name does not match ID",
+    "deed_selected_pending_title": "File selected: {}",
+    "deed_selected_pending_desc": "Pending deed backend verification — project will be saved as draft.",
     "deed_reupload": "Re-upload",
     "review_title": "Review Project Details",
     "review_subtitle": "Review project details before publishing. After publishing you will receive price quotes from verified contractors.",

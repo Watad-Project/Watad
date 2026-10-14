@@ -22,14 +22,14 @@ final class ClientPostProjectScopeChanged extends ClientPostProjectEvent {
 final class ClientPostProjectMinBudgetChanged extends ClientPostProjectEvent {
   const ClientPostProjectMinBudgetChanged(this.minBudget);
 
-  final int? minBudget;
+  final Money? minBudget;
 }
 
 /// The user changed the maximum budget (step 2).
 final class ClientPostProjectMaxBudgetChanged extends ClientPostProjectEvent {
   const ClientPostProjectMaxBudgetChanged(this.maxBudget);
 
-  final int? maxBudget;
+  final Money? maxBudget;
 }
 
 /// The user selected or changed the location address (step 2).
@@ -61,7 +61,7 @@ final class ClientPostProjectDeedSelected extends ClientPostProjectEvent {
   final String? fileName;
 }
 
-/// The deed verification status changed (step 3).
+/// Status changed for the deed verification process (step 3).
 final class ClientPostProjectDeedStatusChanged extends ClientPostProjectEvent {
   const ClientPostProjectDeedStatusChanged(this.status, {this.rejectionReason});
 
@@ -69,27 +69,27 @@ final class ClientPostProjectDeedStatusChanged extends ClientPostProjectEvent {
   final String? rejectionReason;
 }
 
-/// The user tapped re-upload after a deed was rejected (step 3).
+/// The user retries uploading the deed document (step 3).
 final class ClientPostProjectDeedRetry extends ClientPostProjectEvent {
   const ClientPostProjectDeedRetry();
 }
 
-/// The user advanced to the next step.
+/// The user requests to advance to the next step.
 final class ClientPostProjectStepAdvanced extends ClientPostProjectEvent {
   const ClientPostProjectStepAdvanced();
 }
 
-/// The user moved back to the previous step.
+/// The user requests to go back to the previous step.
 final class ClientPostProjectStepRetreated extends ClientPostProjectEvent {
   const ClientPostProjectStepRetreated();
 }
 
-/// Resets the post-project flow back to step 1.
+/// Reset the entire post-project flow.
 final class ClientPostProjectReset extends ClientPostProjectEvent {
   const ClientPostProjectReset();
 }
 
-/// The user confirmed and submitted the project for publishing (review step).
+/// Final submit of the project to backend.
 final class ClientPostProjectSubmitted extends ClientPostProjectEvent {
   const ClientPostProjectSubmitted();
 }

@@ -6,6 +6,7 @@ import 'package:watad/core/components/feedback/app_status_card.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/inputs/app_upload_zone.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
@@ -267,33 +268,32 @@ void main() {
       expect(nextButton.onPressed, isNull);
     });
 
-    testWidgets(
-      'tapping upload zone uploads deed and transitions to under review',
-      (tester) async {
-        final bloc = ClientPostProjectBloc()
-          ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
-          ..add(const ClientPostProjectStepAdvanced())
-          ..add(const ClientPostProjectStepAdvanced());
+    testWidgets('tapping upload zone uploads deed and shows pending notice', (
+      tester,
+    ) async {
+      final bloc = ClientPostProjectBloc()
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectStepAdvanced())
+        ..add(const ClientPostProjectStepAdvanced());
 
-        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
-        await tester.pumpAndSettle();
+      await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(AppUploadZone));
-        await tester.pumpAndSettle();
+      await tester.tap(find.byType(AppUploadZone));
+      await tester.pumpAndSettle();
 
-        expect(bloc.state.deedStatus, ClientDeedVerificationStatus.underReview);
-        expect(find.text('٢ · قيد المراجعة'), findsOneWidget);
-        expect(
-          find.text(
-            'حُفظ المشروع كمسودة وهو غير مرئي للمقاولين حتى اعتماد الصك.',
-          ),
-          findsOneWidget,
-        );
+      expect(bloc.state.deedFileName, 'deed.pdf');
+      expect(
+        find.byKey(const Key('client_post_project_deed_pending_notice')),
+        findsOneWidget,
+      );
+      expect(find.text('تم اختيار الملف: deed.pdf'), findsOneWidget);
 
-        final nextButton = tester.widget<AppButton>(find.byType(AppButton));
-        expect(nextButton.onPressed, isNotNull);
-      },
-    );
+      final nextButton = tester.widget<AppButton>(
+        find.byKey(const Key('client_post_project_next_button')),
+      );
+      expect(nextButton.onPressed, isNotNull);
+    });
 
     testWidgets('renders verified deed state and enables next button', (
       tester,
@@ -319,7 +319,9 @@ void main() {
         findsOneWidget,
       );
 
-      final nextButton = tester.widget<AppButton>(find.byType(AppButton));
+      final nextButton = tester.widget<AppButton>(
+        find.byKey(const Key('client_post_project_next_button')),
+      );
       expect(nextButton.onPressed, isNotNull);
     });
 
@@ -394,8 +396,8 @@ void main() {
       final bloc = ClientPostProjectBloc()
         ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
         ..add(const ClientPostProjectScopeChanged('Repair kitchen sink'))
-        ..add(const ClientPostProjectMinBudgetChanged(500))
-        ..add(const ClientPostProjectMaxBudgetChanged(1500))
+        ..add(ClientPostProjectMinBudgetChanged(Money.fromSar(500)))
+        ..add(ClientPostProjectMaxBudgetChanged(Money.fromSar(1500)))
         ..add(const ClientPostProjectLocationChanged('الرياض · حي النرجس'))
         ..add(const ClientPostProjectStepAdvanced()) // step 2
         ..add(const ClientPostProjectStepAdvanced()); // step 3 (review)
@@ -435,13 +437,18 @@ void main() {
       final bloc = ClientPostProjectBloc()
         ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
         ..add(const ClientPostProjectScopeChanged('Build modern villa'))
-        ..add(const ClientPostProjectMinBudgetChanged(300000))
-        ..add(const ClientPostProjectMaxBudgetChanged(600000))
+        ..add(ClientPostProjectMinBudgetChanged(Money.fromSar(300000)))
+        ..add(ClientPostProjectMaxBudgetChanged(Money.fromSar(600000)))
         ..add(const ClientPostProjectLocationChanged('الرياض · حي المروج'))
         ..add(
           const ClientPostProjectDeedSelected(
             filePath: 'deed.pdf',
             fileName: 'deed.pdf',
+          ),
+        )
+        ..add(
+          const ClientPostProjectDeedStatusChanged(
+            ClientDeedVerificationStatus.underReview,
           ),
         )
         ..add(const ClientPostProjectStepAdvanced()) // step 2
@@ -462,8 +469,8 @@ void main() {
       final bloc = ClientPostProjectBloc()
         ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
         ..add(const ClientPostProjectScopeChanged('Plumbing'))
-        ..add(const ClientPostProjectMinBudgetChanged(200))
-        ..add(const ClientPostProjectMaxBudgetChanged(400))
+        ..add(ClientPostProjectMinBudgetChanged(Money.fromSar(200)))
+        ..add(ClientPostProjectMaxBudgetChanged(Money.fromSar(400)))
         ..add(const ClientPostProjectLocationChanged('Riyadh'))
         ..add(const ClientPostProjectStepAdvanced())
         ..add(const ClientPostProjectStepAdvanced());

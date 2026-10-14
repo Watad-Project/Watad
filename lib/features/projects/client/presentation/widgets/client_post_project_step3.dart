@@ -47,43 +47,64 @@ class ClientPostProjectStep3 extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          switch (state.deedStatus) {
-            ClientDeedVerificationStatus.none => AppUploadZone(
-              key: const Key('client_post_project_deed_upload_zone'),
-              label: context.tr('projects.client.deed_upload_label'),
-              onTap: onUploadDeed,
-            ),
-            ClientDeedVerificationStatus.underReview => AppStatusCard(
-              key: const Key('client_post_project_deed_under_review'),
+          if (state.deedFileName != null || state.deedFilePath != null) ...[
+            AppStatusCard(
+              key: const Key('client_post_project_deed_pending_notice'),
               tone: AppTone.attention,
               title: context.tr(
-                'projects.client.deed_status_under_review_title',
+                'projects.client.deed_selected_pending_title',
+                args: [state.deedFileName ?? 'deed.pdf'],
               ),
               subtitle: context.tr(
-                'projects.client.deed_status_under_review_desc',
+                'projects.client.deed_selected_pending_desc',
               ),
-            ),
-            ClientDeedVerificationStatus.verified => AppStatusCard(
-              key: const Key('client_post_project_deed_verified'),
-              tone: AppTone.success,
-              title: context.tr('projects.client.deed_status_verified_title'),
-              subtitle: context.tr('projects.client.deed_status_verified_desc'),
-            ),
-            ClientDeedVerificationStatus.rejected => AppStatusCard(
-              key: const Key('client_post_project_deed_rejected'),
-              tone: AppTone.danger,
-              title:
-                  state.deedRejectionReason ??
-                  context.tr(
-                    'projects.client.deed_status_rejected_default_title',
-                  ),
               action: AppButton(
                 key: const Key('client_post_project_deed_retry_button'),
                 label: context.tr('projects.client.deed_reupload'),
                 onPressed: onRetryDeed,
               ),
             ),
-          },
+          ] else ...[
+            switch (state.deedStatus) {
+              ClientDeedVerificationStatus.none => AppUploadZone(
+                key: const Key('client_post_project_deed_upload_zone'),
+                label: context.tr('projects.client.deed_upload_label'),
+                onTap: onUploadDeed,
+              ),
+              ClientDeedVerificationStatus.underReview => AppStatusCard(
+                key: const Key('client_post_project_deed_under_review'),
+                tone: AppTone.attention,
+                title: context.tr(
+                  'projects.client.deed_status_under_review_title',
+                ),
+                subtitle: context.tr(
+                  'projects.client.deed_status_under_review_desc',
+                ),
+              ),
+              ClientDeedVerificationStatus.verified => AppStatusCard(
+                key: const Key('client_post_project_deed_verified'),
+                tone: AppTone.success,
+                title: context.tr('projects.client.deed_status_verified_title'),
+                subtitle: context.tr(
+                  'projects.client.deed_status_verified_desc',
+                ),
+              ),
+              ClientDeedVerificationStatus.rejected => AppStatusCard(
+                key: const Key('client_post_project_deed_rejected'),
+                tone: AppTone.danger,
+                title:
+                    state.deedRejectionReason ??
+                    context.tr(
+                      'projects.client.deed_status_rejected_default_title',
+                    ),
+                action: AppButton(
+                  key: const Key('client_post_project_deed_retry_button'),
+                  label: context.tr('projects.client.deed_reupload'),
+                  onPressed: onRetryDeed,
+                ),
+              ),
+            },
+          ],
         ],
       ),
     );

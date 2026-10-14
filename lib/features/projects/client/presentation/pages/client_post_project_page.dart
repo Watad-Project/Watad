@@ -198,6 +198,7 @@ class ClientPostProjectPage extends StatelessWidget {
             ),
             bottomNavigationBar: AppActionBar(
               primary: AppButton(
+                key: const Key('client_post_project_next_button'),
                 label: _nextButtonLabel(context, state),
                 isLoading: state.status == ClientPostProjectStatus.submitting,
                 onPressed: _canProceed(state)

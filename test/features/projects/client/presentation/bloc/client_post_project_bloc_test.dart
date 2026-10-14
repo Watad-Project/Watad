@@ -1,6 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/error/failure.dart';
+import 'package:watad/core/error/result.dart';
+import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
+import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
+import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_create_project_use_case.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 
 void main() {
@@ -58,8 +64,8 @@ void main() {
 
       bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse));
       bloc.add(const ClientPostProjectScopeChanged('House foundation work'));
-      bloc.add(const ClientPostProjectMinBudgetChanged(50000));
-      bloc.add(const ClientPostProjectMaxBudgetChanged(100000));
+      bloc.add(ClientPostProjectMinBudgetChanged(Money.fromSar(50000)));
+      bloc.add(ClientPostProjectMaxBudgetChanged(Money.fromSar(100000)));
       bloc.add(const ClientPostProjectLocationChanged('Riyadh Al-Morouj'));
       bloc.add(const ClientPostProjectPhotoAdded('photo1.jpg'));
 
@@ -68,8 +74,8 @@ void main() {
         emitsThrough(
           predicate<ClientPostProjectState>((s) {
             return s.scopeOfWork == 'House foundation work' &&
-                s.minBudget == 50000 &&
-                s.maxBudget == 100000 &&
+                s.minBudget == Money.fromSar(50000) &&
+                s.maxBudget == Money.fromSar(100000) &&
                 s.locationAddress == 'Riyadh Al-Morouj' &&
                 s.photos.length == 1 &&
                 s.canProceedFromStep2 == true &&
@@ -90,8 +96,8 @@ void main() {
     test('invalidates budget when max is less than min', () async {
       final bloc = ClientPostProjectBloc();
 
-      bloc.add(const ClientPostProjectMinBudgetChanged(100000));
-      bloc.add(const ClientPostProjectMaxBudgetChanged(50000));
+      bloc.add(ClientPostProjectMinBudgetChanged(Money.fromSar(100000)));
+      bloc.add(ClientPostProjectMaxBudgetChanged(Money.fromSar(50000)));
 
       await expectLater(
         bloc.stream,
@@ -146,8 +152,23 @@ void main() {
           predicate<ClientPostProjectState>((s) {
             return s.deedFilePath == 'path/to/deed.pdf' &&
                 s.deedFileName == 'my_deed.pdf' &&
-                s.deedStatus == ClientDeedVerificationStatus.underReview &&
+                s.deedStatus == ClientDeedVerificationStatus.none &&
                 s.canProceedFromStep3 == true;
+          }),
+        ),
+      );
+
+      bloc.add(
+        const ClientPostProjectDeedStatusChanged(
+          ClientDeedVerificationStatus.underReview,
+        ),
+      );
+
+      await expectLater(
+        bloc.stream,
+        emits(
+          predicate<ClientPostProjectState>((s) {
+            return s.deedStatus == ClientDeedVerificationStatus.underReview;
           }),
         ),
       );
@@ -208,8 +229,8 @@ void main() {
 
       bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.repairs));
       bloc.add(const ClientPostProjectScopeChanged('Repair pipe'));
-      bloc.add(const ClientPostProjectMinBudgetChanged(500));
-      bloc.add(const ClientPostProjectMaxBudgetChanged(1500));
+      bloc.add(ClientPostProjectMinBudgetChanged(Money.fromSar(500)));
+      bloc.add(ClientPostProjectMaxBudgetChanged(Money.fromSar(1500)));
       bloc.add(const ClientPostProjectLocationChanged('Riyadh'));
       bloc.add(const ClientPostProjectStepAdvanced()); // step 2
       bloc.add(const ClientPostProjectStepAdvanced()); // step 3 (review)
@@ -242,6 +263,68 @@ void main() {
       await bloc.close();
     });
 
+    test(
+      'calls createProjectUseCase and emits success on Success result',
+      () async {
+        final repo = _FakeClientProjectsRepository();
+        repo.result = const Success(null);
+        final useCase = ClientCreateProjectUseCase(repo);
+        final bloc = ClientPostProjectBloc(useCase);
+
+        bloc.add(
+          const ClientPostProjectTypeSelected(ClientProjectType.repairs),
+        );
+        bloc.add(const ClientPostProjectScopeChanged('Fix kitchen sink'));
+        bloc.add(ClientPostProjectMinBudgetChanged(Money.fromSar(500)));
+        bloc.add(ClientPostProjectMaxBudgetChanged(Money.fromSar(1500)));
+        bloc.add(const ClientPostProjectLocationChanged('Riyadh · An-Narjis'));
+        bloc.add(const ClientPostProjectSubmitted());
+
+        await expectLater(
+          bloc.stream,
+          emitsThrough(
+            predicate<ClientPostProjectState>(
+              (s) => s.status == ClientPostProjectStatus.success,
+            ),
+          ),
+        );
+
+        await bloc.close();
+      },
+    );
+
+    test(
+      'calls createProjectUseCase and emits failure on Failed result',
+      () async {
+        final repo = _FakeClientProjectsRepository();
+        repo.result = const Failed(ServerFailure('Database error'));
+        final useCase = ClientCreateProjectUseCase(repo);
+        final bloc = ClientPostProjectBloc(useCase);
+
+        bloc.add(
+          const ClientPostProjectTypeSelected(ClientProjectType.repairs),
+        );
+        bloc.add(const ClientPostProjectScopeChanged('Fix kitchen sink'));
+        bloc.add(ClientPostProjectMinBudgetChanged(Money.fromSar(500)));
+        bloc.add(ClientPostProjectMaxBudgetChanged(Money.fromSar(1500)));
+        bloc.add(const ClientPostProjectLocationChanged('Riyadh · An-Narjis'));
+        bloc.add(const ClientPostProjectSubmitted());
+
+        await expectLater(
+          bloc.stream,
+          emitsThrough(
+            predicate<ClientPostProjectState>(
+              (s) =>
+                  s.status == ClientPostProjectStatus.failure &&
+                  s.failure is ServerFailure,
+            ),
+          ),
+        );
+
+        await bloc.close();
+      },
+    );
+
     test('resets back to initial state', () async {
       final bloc = ClientPostProjectBloc();
 
@@ -263,4 +346,11 @@ void main() {
       await bloc.close();
     });
   });
+}
+
+class _FakeClientProjectsRepository implements ClientProjectsRepository {
+  Result<void> result = const Success(null);
+
+  @override
+  Future<Result<void>> createProject(ClientNewProject project) async => result;
 }

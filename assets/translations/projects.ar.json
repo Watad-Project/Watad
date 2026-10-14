@@ -39,6 +39,8 @@
     "deed_status_verified_title": "٣ · موثّق",
     "deed_status_verified_desc": "المشروع منشور، والعروض مفتوحة. تظهر علامة «ملكية موثّقة» للمقاولين.",
     "deed_status_rejected_default_title": "مرفوض — اسم المالك لا يطابق الهوية",
+    "deed_selected_pending_title": "تم اختيار الملف: {}",
+    "deed_selected_pending_desc": "بانتظار توثيق الصك في النظام — يُحفظ المشروع كمسودة.",
     "deed_reupload": "إعادة الرفع",
     "review_title": "مراجعة تفاصيل المشروع",
     "review_subtitle": "راجع بيانات المشروع قبل النشر. بعد النشر ستصلك عروض الأسعار من المقاولين المعتمدين.",

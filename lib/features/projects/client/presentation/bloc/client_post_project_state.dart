@@ -30,11 +30,14 @@ final class ClientPostProjectState {
   /// The entered scope of work (step 2).
   final String scopeOfWork;
 
-  /// The minimum budget in SAR (step 2).
-  final int? minBudget;
+  /// The minimum budget (step 2).
+  final Money? minBudget;
 
-  /// The maximum budget in SAR (step 2).
-  final int? maxBudget;
+  /// The maximum budget (step 2).
+  final Money? maxBudget;
+
+  /// Settles budget for saving to Supabase (uses maxBudget, or minBudget).
+  Money? get settledBudget => maxBudget ?? minBudget;
 
   /// The chosen project location / address string (step 2).
   final String? locationAddress;
@@ -60,13 +63,15 @@ final class ClientPostProjectState {
   /// Any failure that occurred.
   final Failure? failure;
 
-  /// Total steps in the flow based on the chosen type, or 4 by default.
-  int get totalSteps => projectType?.totalSteps ?? 4;
+  /// Total number of steps based on project type.
+  /// 4 steps for New House & Renovation (requires property deed).
+  /// 3 steps for Home Repairs (no deed required).
+  int get totalSteps => (projectType?.requiresDeed ?? true) ? 4 : 3;
 
-  /// Whether the project type requires an ownership deed.
+  /// Whether current project type requires property ownership deed upload.
   bool get requiresDeed => projectType?.requiresDeed ?? true;
 
-  /// Whether step 1 is valid to proceed to step 2.
+  /// Whether step 1 has a valid selection to proceed.
   bool get canProceedFromStep1 => projectType != null;
 
   /// Whether step 2 is valid to proceed to step 3 (or review).
@@ -74,17 +79,18 @@ final class ClientPostProjectState {
     final validScope = scopeOfWork.trim().isNotEmpty;
     final validBudget =
         isBudgetValid &&
-        (minBudget == null || minBudget! > 0) &&
-        (maxBudget == null || maxBudget! > 0);
+        (minBudget == null || minBudget!.halalas > 0) &&
+        (maxBudget == null || maxBudget!.halalas > 0);
     final validLocation =
         locationAddress == null || locationAddress!.trim().isNotEmpty;
     return validScope && validBudget && validLocation;
   }
 
   /// Whether step 3 is valid to proceed to step 4 (review).
-  /// For deed projects, requires deed to be uploaded (underReview or verified).
+  /// For deed projects, requires deed to be picked or uploaded.
   bool get canProceedFromStep3 =>
       deedFilePath != null ||
+      deedFileName != null ||
       deedStatus == ClientDeedVerificationStatus.underReview ||
       deedStatus == ClientDeedVerificationStatus.verified;
 
@@ -103,15 +109,15 @@ final class ClientPostProjectState {
   /// Whether the current budget fields satisfy min <= max.
   bool get isBudgetValid {
     if (minBudget == null || maxBudget == null) return true;
-    return maxBudget! >= minBudget!;
+    return maxBudget!.halalas >= minBudget!.halalas;
   }
 
   ClientPostProjectState copyWith({
     int? currentStep,
     ClientProjectType? projectType,
     String? scopeOfWork,
-    int? minBudget,
-    int? maxBudget,
+    Money? minBudget,
+    Money? maxBudget,
     String? locationAddress,
     List<String>? photos,
     String? deedFilePath,

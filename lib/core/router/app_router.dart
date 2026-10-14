@@ -7,7 +7,6 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
-import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
