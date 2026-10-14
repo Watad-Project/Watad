@@ -5,18 +5,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/app_router.dart';
+import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/theme/app_theme.dart';
 
+import 'fake_app_session.dart';
 import 'pump_component.dart';
 
 /// Shows a fresh app router in a localized app, set up like `WatadApp`, and
 /// returns it. Route tests navigate with it, e.g.
 /// `router.goNamed(AuthRoutes.loginName)`.
+///
+/// The user is signed out unless [session] says otherwise, e.g.
+/// `FakeAppSession()..signIn(AppRole.client)`.
 Future<GoRouter> pumpAppRouter(
   WidgetTester tester, {
   String? initialLocation,
+  AppSession? session,
 }) async {
-  final router = createAppRouter(initialLocation: initialLocation);
+  final router = createAppRouter(
+    session: session ?? FakeAppSession(),
+    initialLocation: initialLocation,
+  );
   addTearDown(router.dispose);
   await tester.pumpWidget(
     AppLocalization.scope(

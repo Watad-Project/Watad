@@ -40,7 +40,7 @@ The Flutter version the whole team uses, and the registry of every package the a
 
 | Package | Type | Purpose | May be imported in | Added |
 |---------|------|---------|--------------------|-------|
-| `flutter` | SDK | The framework | `presentation/`, the non-pure `lib/core/` folders, `lib/main.dart`, `lib/app.dart` | 2026-10-06 |
+| `flutter` | SDK | The framework | `presentation/`, the non-pure `lib/core/` folders, `lib/main.dart`, `lib/app.dart`; `*_injection.dart` files only for `Widget`, to register a tab's first page (`ClientNavigationPage.tabs`) | 2026-10-06 |
 | `cupertino_icons` | runtime | iOS-style icons | `presentation/` (not blocs), `lib/core/components/` | 2026-10-06 |
 | `easy_localization` | runtime | Translations (`ar`, `en`), locale switching, RTL | `presentation/` (not blocs), `lib/core/components/`, `lib/core/localization/`, `lib/main.dart`, `lib/app.dart` | 2026-10-06 |
 | `flutter_bloc` | runtime | State management: `Bloc`, `Cubit`, `BlocProvider`, `BlocBuilder`, … | `presentation/`, `lib/core/router/`, `lib/app.dart` | 2026-10-06 |
