@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -27,6 +28,7 @@ class _SignUpClientPageState extends State<SignUpClientPage> {
   late final TextEditingController _nationalIdController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
+  late final TapGestureRecognizer _termsRecognizer;
 
   @override
   void initState() {
@@ -35,10 +37,15 @@ class _SignUpClientPageState extends State<SignUpClientPage> {
     _nationalIdController = TextEditingController();
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
+    _termsRecognizer = TapGestureRecognizer()
+      ..onTap = () {
+        context.showSnackBar(context.tr('auth.coming_soon'));
+      };
   }
 
   @override
   void dispose() {
+    _termsRecognizer.dispose();
     _nameController.dispose();
     _nationalIdController.dispose();
     _emailController.dispose();
@@ -94,6 +101,7 @@ class _SignUpClientPageState extends State<SignUpClientPage> {
                       nationalIdController: _nationalIdController,
                       emailController: _emailController,
                       phoneController: _phoneController,
+                      termsRecognizer: _termsRecognizer,
                     ),
             ),
           ),
@@ -111,6 +119,7 @@ class _FormSection extends StatelessWidget {
     required this.nationalIdController,
     required this.emailController,
     required this.phoneController,
+    required this.termsRecognizer,
   });
 
   final SignUpClientState state;
@@ -119,6 +128,7 @@ class _FormSection extends StatelessWidget {
   final TextEditingController nationalIdController;
   final TextEditingController emailController;
   final TextEditingController phoneController;
+  final TapGestureRecognizer termsRecognizer;
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +199,28 @@ class _FormSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         AppCheckbox(
           value: state.termsAgreed,
-          label: context.tr('auth.accept_terms'),
+          labelWidget: RichText(
+            text: TextSpan(
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.ink,
+                height: 1.4,
+              ),
+              children: [
+                TextSpan(text: context.tr('auth.accept_terms_prefix')),
+                TextSpan(
+                  text: context.tr('auth.terms_and_privacy'),
+                  recognizer: termsRecognizer,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                    decorationColor: AppColors.primary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
           onChanged: (val) => bloc.add(SignUpClientTermsToggled(val)),
         ),
         if (state.termsError != null) ...[

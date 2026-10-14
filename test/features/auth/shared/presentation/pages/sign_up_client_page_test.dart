@@ -1,3 +1,5 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/di/injection.dart';
@@ -47,4 +49,27 @@ void main() {
 
     expect(currentPath(router), AuthRoutes.loginPath);
   });
+
+  testWidgets(
+    'tapping terms and privacy policy link shows coming soon snackbar',
+    (tester) async {
+      await openSignUp(tester);
+
+      final richTextFinder = find.byWidgetPredicate(
+        (w) =>
+            w is RichText &&
+            w.text.toPlainText().contains('الشروط وسياسة الخصوصية'),
+      );
+      await tester.ensureVisible(richTextFinder);
+
+      final richText = tester.widget<RichText>(richTextFinder);
+      final textSpan = richText.text as TextSpan;
+      final linkSpan = textSpan.children![1] as TextSpan;
+      final recognizer = linkSpan.recognizer! as TapGestureRecognizer;
+      recognizer.onTap!();
+      await tester.pump();
+
+      expect(find.text('قريباً'), findsOneWidget);
+    },
+  );
 }

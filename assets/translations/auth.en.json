@@ -1,9 +1,11 @@
 {
   "accept_terms": "I agree to the terms and privacy policy",
+  "accept_terms_prefix": "I agree to the ",
   "already_have_account": "Already have an account?",
   "client_signup_header": "Client Account",
   "client_signup_subtitle": "You will receive a verification code on your email after signing up.",
   "client_signup_title": "Create your account",
+  "coming_soon": "Coming soon",
   "confirm": "Confirm",
   "continue": "Continue",
   "create_account": "Create an account",
@@ -41,5 +43,6 @@
   "role_subtitle": "Your choice determines which screens you access after verification.",
   "role_title": "How do you use Watad?",
   "signed_in": "You're signed in",
-  "signup_success": "Account created successfully"
+  "signup_success": "Account created successfully",
+  "terms_and_privacy": "terms and privacy policy"
 }

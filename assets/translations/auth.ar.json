@@ -1,9 +1,11 @@
 {
   "accept_terms": "أوافق على الشروط وسياسة الخصوصية",
+  "accept_terms_prefix": "أوافق على ",
   "already_have_account": "لديك حساب بالفعل؟",
   "client_signup_header": "حساب عميل",
   "client_signup_subtitle": "يصلك رمز التحقق على بريدك بعد التسجيل.",
   "client_signup_title": "أنشئ حسابك",
+  "coming_soon": "قريباً",
   "confirm": "تأكيد",
   "continue": "متابعة",
   "create_account": "أنشئ حساباً",
@@ -41,5 +43,6 @@
   "role_subtitle": "يحدّد اختيارك الشاشات التي تدخل إليها بعد التحقق.",
   "role_title": "كيف تستخدم وتد؟",
   "signed_in": "تم تسجيل الدخول",
-  "signup_success": "تم إنشاء الحساب بنجاح"
+  "signup_success": "تم إنشاء الحساب بنجاح",
+  "terms_and_privacy": "الشروط وسياسة الخصوصية"
 }
