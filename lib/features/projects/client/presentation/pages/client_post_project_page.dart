@@ -91,6 +91,12 @@ class ClientPostProjectPage extends StatelessWidget {
           );
           _safeNavigateHome(context);
         }
+        if (state.status == ClientPostProjectStatus.failure) {
+          final messageKey = state.failure?.messageKey;
+          if (messageKey != null) {
+            context.showErrorSnackBar(context.tr(messageKey));
+          }
+        }
       },
       builder: (context, state) {
         final canPop = state.currentStep == 1;

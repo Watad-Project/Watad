@@ -23,6 +23,9 @@ class ClientPostProjectStepReview extends StatelessWidget {
     if (!state.requiresDeed) {
       return context.tr('projects.client.review_deed_not_required');
     }
+    if (state.deedFileName != null || state.deedFilePath != null) {
+      return context.tr('projects.client.review_deed_under_review');
+    }
     return switch (state.deedStatus) {
       ClientDeedVerificationStatus.verified => context.tr(
         'projects.client.review_deed_verified',
