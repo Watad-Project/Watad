@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/features/auth/shared/presentation/pages/sign_up_client_page.dart';
@@ -72,4 +73,21 @@ void main() {
       expect(find.text('قريباً'), findsOneWidget);
     },
   );
+
+  testWidgets('allows both Arabic and English characters in full name field', (
+    tester,
+  ) async {
+    await openSignUp(tester);
+
+    final nameField = find.widgetWithText(AppTextField, 'الاسم الكامل');
+    expect(nameField, findsOneWidget);
+
+    await tester.enterText(
+      find.descendant(of: nameField, matching: find.byType(TextFormField)),
+      'محمد John Doe',
+    );
+    await tester.pump();
+
+    expect(find.text('محمد John Doe'), findsOneWidget);
+  });
 }

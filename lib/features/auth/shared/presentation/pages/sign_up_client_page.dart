@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
@@ -151,6 +152,11 @@ class _FormSection extends StatelessWidget {
           isRequired: true,
           controller: nameController,
           hint: context.tr('auth.full_name_hint'),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(
+              RegExp(r'[\u0600-\u06FFa-zA-Z\s]'),
+            ),
+          ],
           errorText: state.fullNameError != null
               ? context.tr(state.fullNameError!)
               : null,
