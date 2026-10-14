@@ -1,0 +1,32 @@
+{
+  "client": {
+    "list_title": "My projects",
+    "empty_title": "No projects yet",
+    "empty": "You have not created any projects yet. Post your first project to receive offers from verified contractors.",
+    "create_project_action": "Post a project",
+    "offers_count": "{count} offers",
+    "no_offers_yet": "No offers yet",
+    "status_verified": "Verified",
+    "status_under_review": "Under review",
+    "status_rejected": "Rejected",
+    "under_review_desc": "The project is under review and hidden from contractors",
+    "deed_rejected_hint": "Rejected — owner name does not match ID",
+    "reupload_deed": "Re-upload",
+    "budget_range_format": "Budget {min} – {max} SAR",
+    "budget_single_format": "Budget {amount} SAR",
+    "incoming_offers": "Incoming offers",
+    "offers_count_title": "{count} offers",
+    "declared_budget_range": "Declared budget {min} – {max} SAR",
+    "declared_budget_single": "Declared budget {amount} SAR",
+    "budget_unspecified": "Budget unspecified",
+    "no_offers_title": "No incoming offers",
+    "no_offers_desc": "No contractors have submitted offers for this project yet.",
+    "price_sar_format": "{amount} SAR",
+    "duration_months": "{count} months",
+    "accept_offer": "Accept offer",
+    "message_contractor": "Message",
+    "offer_accepted": "Offer accepted",
+    "offer_accepted_success": "Offer accepted successfully",
+    "messaging_upcoming": "Messaging coming soon"
+  }
+}

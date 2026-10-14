@@ -1,0 +1,32 @@
+{
+  "client": {
+    "list_title": "مشاريعي",
+    "empty_title": "لا توجد مشاريع حتى الآن",
+    "empty": "لم تقم بإنشاء أي مشروع بعد. أنشئ مشروعك الأول واستقبل عروض المقاولين المعتمدين.",
+    "create_project_action": "إنشاء مشروع جديد",
+    "offers_count": "{count} عروض",
+    "no_offers_yet": "لا توجد عروض بعد",
+    "status_verified": "موثّق",
+    "status_under_review": "قيد المراجعة",
+    "status_rejected": "مرفوض",
+    "under_review_desc": "المشروع قيد المراجعة وهو غير مرئي للمقاولين",
+    "deed_rejected_hint": "مرفوض — اسم المالك لا يطابق الهوية",
+    "reupload_deed": "إعادة الرفع",
+    "budget_range_format": "الميزانية {min} – {max} ر.س",
+    "budget_single_format": "الميزانية {amount} ر.س",
+    "incoming_offers": "العروض الواردة",
+    "offers_count_title": "{count} عروض",
+    "declared_budget_range": "الميزانية المعلنة {min} – {max} ر.س",
+    "declared_budget_single": "الميزانية المعلنة {amount} ر.س",
+    "budget_unspecified": "الميزانية غير محددة",
+    "no_offers_title": "لا توجد عروض واردة",
+    "no_offers_desc": "لم يرسل المقاولون أي عروض لهذا المشروع بعد.",
+    "price_sar_format": "{amount} ر.س",
+    "duration_months": "{count} أشهر",
+    "accept_offer": "قبول العرض",
+    "message_contractor": "مراسلة",
+    "offer_accepted": "تم قبول العرض",
+    "offer_accepted_success": "تم قبول العرض بنجاح",
+    "messaging_upcoming": "ستتوفر المراسلة قريباً"
+  }
+}

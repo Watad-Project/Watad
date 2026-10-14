@@ -79,6 +79,9 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppStatusCard` | `feedback/app_status_card.dart` | Where a submission stands: pending, rejected with reason and retry, accepted (receipts, task updates, refunds, verification) | `tone`, `title`, `subtitle`, `reasonTitle`, `reasonText`, `action` | 2026-10-09 |
 | `AppSnackBar`, `AppSnackBarContext` | `feedback/app_snack_bar.dart` | Short messages at the bottom: `context.showSnackBar()`, `showSuccessSnackBar()`, `showErrorSnackBar()` (6 s; `onRetry` adds "Try again"), `hideSnackBar()`. A new one replaces the one on screen. The doc comment says how to write the message | `message`, `tone`, `actionLabel`, `onAction`, `duration`, `onRetry` | 2026-10-09 |
 | `AppNotFoundView` | `feedback/app_not_found_view.dart` | The router's page for an address that doesn't exist: "We couldn't find this page" and a button back to the start | `onBackToStart` | 2026-10-09 |
+| `AppLoadingIndicator` | `feedback/app_loading_indicator.dart` | Centered spinner using the brand primary color | `size` | 2026-10-14 |
+| `AppErrorView` | `feedback/app_error_view.dart` | Error message with an icon and a retry button | `message`, `onRetry`, `retryLabel` | 2026-10-14 |
+| `AppEmptyView` | `feedback/app_empty_view.dart` | Empty-list state showing an icon, a title, a message and an optional action | `message`, `title`, `icon`, `actionLabel`, `onAction` | 2026-10-14 |
 | `AppActionBar` | `layout/app_action_bar.dart` | The bottom bar of actions; with two, the primary takes 2/3 of the width | `primary`, `secondary` | 2026-10-09 |
 | `AppTopBar` | `layout/app_top_bar.dart` | The top bar of sub-screens: back arrow (flips in RTL) and a quiet title | `title`, `onBack`, `actions` | 2026-10-09 |
 | `AppStepProgress` | `layout/app_step_progress.dart` | "Step 2 of 4" with one bar per step (multi-step flows) | `current`, `total`, `label` (default "Step 2 of 4") | 2026-10-09 |
