@@ -7,6 +7,7 @@ import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dar
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_user_profile_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
+import 'package:watad/features/auth/shared/domain/usecases/sign_out_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_sign_up_otp_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/sign_up_client_bloc.dart';
 
@@ -16,12 +17,15 @@ class FakeAuthRepository implements AuthRepository {
     this.verifyOtpResult = const Success(
       AuthSession(userId: 'user-1', email: 'test@example.com'),
     ),
-    this.saveProfileResult = const Success(null),
+    this.saveProfileResult = const Success('created'),
+    this.signOutResult = const Success(null),
   });
 
   Result<void> sendOtpResult;
   Result<AuthSession> verifyOtpResult;
-  Result<void> saveProfileResult;
+  Result<String> saveProfileResult;
+  Result<void> signOutResult;
+  int signOutCount = 0;
 
   @override
   Future<Result<void>> sendOtp({required String email}) async =>
@@ -41,8 +45,14 @@ class FakeAuthRepository implements AuthRepository {
       verifyOtpResult;
 
   @override
-  Future<Result<void>> saveProfile(SignUpProfile profile) async =>
+  Future<Result<String>> saveProfile(SignUpProfile profile) async =>
       saveProfileResult;
+
+  @override
+  Future<Result<void>> signOut() async {
+    signOutCount++;
+    return signOutResult;
+  }
 }
 
 SignUpClientBloc buildBloc(FakeAuthRepository repository) {
@@ -50,6 +60,7 @@ SignUpClientBloc buildBloc(FakeAuthRepository repository) {
     sendSignUpOtp: SendSignUpOtpUseCase(repository),
     verifySignUpOtp: VerifySignUpOtpUseCase(repository),
     saveUserProfile: SaveUserProfileUseCase(repository),
+    signOut: SignOutUseCase(repository),
   );
 }
 
@@ -176,7 +187,7 @@ void main() {
         verifyOtpResult: const Success(
           AuthSession(userId: 'uid-1', email: 'test@example.com'),
         ),
-        saveProfileResult: const Success(null),
+        saveProfileResult: const Success('created'),
       );
       final bloc = buildBloc(repo);
 
@@ -191,6 +202,33 @@ void main() {
 
       expect(bloc.state.status, SignUpClientStatus.success);
       expect(bloc.state.successMessage, 'auth.signup_success');
+
+      await bloc.close();
+    });
+
+    test('handles already_registered from complete_client_profile by signing out and showing error', () async {
+      final repo = FakeAuthRepository(
+        verifyOtpResult: const Success(
+          AuthSession(userId: 'uid-1', email: 'test@example.com'),
+        ),
+        saveProfileResult: const Success('already_registered'),
+      );
+      final bloc = buildBloc(repo);
+
+      bloc.add(const SignUpClientFullNameChanged('Ahmad Ali'));
+      bloc.add(const SignUpClientNationalIdChanged('1098765432'));
+      bloc.add(const SignUpClientEmailChanged('test@example.com'));
+      bloc.add(const SignUpClientPhoneChanged('512345678'));
+      bloc.add(const SignUpClientOtpChanged('123456'));
+
+      bloc.add(const SignUpClientOtpSubmitted());
+      await pumpEventQueue();
+
+      expect(repo.signOutCount, 1);
+      expect(bloc.state.status, SignUpClientStatus.failure);
+      expect(bloc.state.generalError, 'validation.email_already_registered');
+      expect(bloc.state.otpError, 'validation.email_already_registered');
+      expect(bloc.state.emailError, 'validation.email_already_registered');
 
       await bloc.close();
     });

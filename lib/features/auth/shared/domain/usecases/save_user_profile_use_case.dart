@@ -4,13 +4,13 @@ import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 
-class SaveUserProfileUseCase implements UseCase<void, SignUpProfile> {
+class SaveUserProfileUseCase implements UseCase<String, SignUpProfile> {
   const SaveUserProfileUseCase(this._repository);
 
   final AuthRepository _repository;
 
   @override
-  Future<Result<void>> call(SignUpProfile params) async {
+  Future<Result<String>> call(SignUpProfile params) async {
     if (params.fullName.trim().isEmpty) {
       return const Failed(ValidationFailure('validation.name_required'));
     }

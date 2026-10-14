@@ -19,5 +19,7 @@ abstract interface class AuthRepository {
 
   Future<Result<AuthSession>> verifySignUpOtp(VerifyOtpParams params);
 
-  Future<Result<void>> saveProfile(SignUpProfile profile);
+  Future<Result<String>> saveProfile(SignUpProfile profile);
+
+  Future<Result<void>> signOut();
 }

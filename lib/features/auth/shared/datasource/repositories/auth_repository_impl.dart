@@ -30,6 +30,9 @@ class AuthRepositoryImpl implements AuthRepository {
       guardSupabaseCall(() => _remote.verifySignUpOtp(params));
 
   @override
-  Future<Result<void>> saveProfile(SignUpProfile profile) =>
+  Future<Result<String>> saveProfile(SignUpProfile profile) =>
       guardSupabaseCall(() => _remote.saveProfile(profile));
+
+  @override
+  Future<Result<void>> signOut() => guardSupabaseCall(_remote.signOut);
 }

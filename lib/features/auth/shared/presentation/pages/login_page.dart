@@ -260,7 +260,7 @@ class _NewUserHint extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.xs),
         GestureDetector(
-          onTap: () => context.pushNamed(AuthRoutes.roleName),
+          onTap: () => context.goNamed(AuthRoutes.roleName),
           child: Text(
             context.tr('auth.create_account'),
             style: AppTextStyles.caption.copyWith(

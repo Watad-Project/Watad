@@ -17,7 +17,9 @@ abstract interface class AuthRemoteDataSource {
 
   Future<AuthSessionModel> verifySignUpOtp(VerifyOtpParams params);
 
-  Future<void> saveProfile(SignUpProfile profile);
+  Future<String> saveProfile(SignUpProfile profile);
+
+  Future<void> signOut();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -71,12 +73,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> saveProfile(SignUpProfile profile) async {
+  Future<String> saveProfile(SignUpProfile profile) async {
     final phoneWithout966 = profile.phone
         .replaceAll(RegExp(r'\s+'), '')
         .replaceAll('+966', '');
 
-    await _client.rpc<String>(
+    final result = await _client.rpc<String>(
       'complete_client_profile',
       params: {
         'p_full_name': profile.fullName,
@@ -84,5 +86,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'p_phone': phoneWithout966,
       },
     );
+    return result;
+  }
+
+  @override
+  Future<void> signOut() async {
+    await _client.auth.signOut();
   }
 }

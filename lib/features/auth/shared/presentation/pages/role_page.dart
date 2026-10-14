@@ -54,7 +54,7 @@ class RolePage extends StatelessWidget {
                 if (onContinue != null) {
                   onContinue!(context, selectedRole);
                 } else if (selectedRole == AuthRole.client) {
-                  context.pushNamed(AuthRoutes.signUpClientName);
+                  context.goNamed(AuthRoutes.signUpClientName);
                 }
               },
             ),

@@ -7,6 +7,7 @@ import 'package:watad/features/auth/shared/domain/repositories/auth_repository.d
 import 'package:watad/features/auth/shared/domain/usecases/save_user_profile_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
+import 'package:watad/features/auth/shared/domain/usecases/sign_out_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_sign_up_otp_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/auth_bloc.dart';
@@ -25,7 +26,8 @@ class FakeAuthRepository implements AuthRepository {
   Result<AuthSession> verifySignUpOtpResult = const Success(
     AuthSession(userId: 'user-1', email: 'user@watad.sa'),
   );
-  Result<void> saveProfileResult = const Success(null);
+  Result<String> saveProfileResult = const Success('created');
+  Result<void> signOutResult = const Success(null);
 
   /// The emails a code was sent to.
   final List<String> sentTo = [];
@@ -56,8 +58,11 @@ class FakeAuthRepository implements AuthRepository {
       verifySignUpOtpResult;
 
   @override
-  Future<Result<void>> saveProfile(SignUpProfile profile) async =>
+  Future<Result<String>> saveProfile(SignUpProfile profile) async =>
       saveProfileResult;
+
+  @override
+  Future<Result<void>> signOut() async => signOutResult;
 }
 
 /// For tests that open the login route: the route builder takes its
@@ -78,6 +83,7 @@ void registerFakeSignUpClientBloc(FakeAuthRepository repository) {
       sendSignUpOtp: SendSignUpOtpUseCase(repository),
       verifySignUpOtp: VerifySignUpOtpUseCase(repository),
       saveUserProfile: SaveUserProfileUseCase(repository),
+      signOut: SignOutUseCase(repository),
     ),
   );
 }

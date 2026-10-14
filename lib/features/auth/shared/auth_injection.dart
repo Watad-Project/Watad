@@ -5,6 +5,7 @@ import 'package:watad/features/auth/shared/domain/repositories/auth_repository.d
 import 'package:watad/features/auth/shared/domain/usecases/save_user_profile_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
+import 'package:watad/features/auth/shared/domain/usecases/sign_out_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_sign_up_otp_use_case.dart';
 import 'package:watad/features/auth/shared/presentation/bloc/auth_bloc.dart';
@@ -21,6 +22,7 @@ void registerAuthDependencies(GetIt getIt) {
     ..registerLazySingleton(() => SaveUserProfileUseCase(getIt()))
     ..registerLazySingleton(() => SendOtpUseCase(getIt()))
     ..registerLazySingleton(() => SendSignUpOtpUseCase(getIt()))
+    ..registerLazySingleton(() => SignOutUseCase(getIt()))
     ..registerLazySingleton(() => VerifyOtpUseCase(getIt()))
     ..registerLazySingleton(() => VerifySignUpOtpUseCase(getIt()))
     ..registerFactory(() => AuthBloc(getIt(), getIt()))
@@ -32,6 +34,7 @@ void registerAuthDependencies(GetIt getIt) {
         sendSignUpOtp: getIt(),
         verifySignUpOtp: getIt(),
         saveUserProfile: getIt(),
+        signOut: getIt(),
       ),
     );
 }

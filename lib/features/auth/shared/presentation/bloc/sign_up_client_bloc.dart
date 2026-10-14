@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart';
 import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_user_profile_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
+import 'package:watad/features/auth/shared/domain/usecases/sign_out_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_sign_up_otp_use_case.dart';
 
 part 'sign_up_client_event.dart';
@@ -16,6 +18,7 @@ class SignUpClientBloc extends Bloc<SignUpClientEvent, SignUpClientState> {
     required this.sendSignUpOtp,
     required this.verifySignUpOtp,
     required this.saveUserProfile,
+    this.signOut,
   }) : super(const SignUpClientState()) {
     on<SignUpClientFullNameChanged>(_onFullNameChanged);
     on<SignUpClientNationalIdChanged>(_onNationalIdChanged);
@@ -33,6 +36,7 @@ class SignUpClientBloc extends Bloc<SignUpClientEvent, SignUpClientState> {
   final SendSignUpOtpUseCase sendSignUpOtp;
   final VerifySignUpOtpUseCase verifySignUpOtp;
   final SaveUserProfileUseCase saveUserProfile;
+  final SignOutUseCase? signOut;
 
   Timer? _resendTimer;
 
@@ -257,13 +261,36 @@ class SignUpClientBloc extends Bloc<SignUpClientEvent, SignUpClientState> {
 
     final saveResult = await saveUserProfile(profile);
     switch (saveResult) {
-      case Success():
-        _resendTimer?.cancel();
+      case Success(:final data):
+        if (data == 'already_registered') {
+          if (signOut != null) {
+            await signOut!(const NoParams());
+          }
+          emit(
+            state.copyWith(
+              status: SignUpClientStatus.failure,
+              generalError: () => 'validation.email_already_registered',
+              otpError: () => 'validation.email_already_registered',
+              emailError: () => 'validation.email_already_registered',
+            ),
+          );
+          return;
+        }
+        if (data == 'created') {
+          _resendTimer?.cancel();
+          emit(
+            state.copyWith(
+              status: SignUpClientStatus.success,
+              successMessage: () => 'auth.signup_success',
+              generalError: () => null,
+            ),
+          );
+          return;
+        }
         emit(
           state.copyWith(
-            status: SignUpClientStatus.success,
-            successMessage: () => 'auth.signup_success',
-            generalError: () => null,
+            status: SignUpClientStatus.failure,
+            generalError: () => 'errors.unknown',
           ),
         );
       case Failed(:final failure):

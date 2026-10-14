@@ -6,10 +6,10 @@ import 'package:watad/features/auth/shared/domain/usecases/save_user_profile_use
 
 class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository(this.result);
-  final Result<void> result;
+  final Result<String> result;
 
   @override
-  Future<Result<void>> saveProfile(SignUpProfile profile) async => result;
+  Future<Result<String>> saveProfile(SignUpProfile profile) async => result;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -17,7 +17,7 @@ class FakeAuthRepository implements AuthRepository {
 
 void main() {
   test('returns success when user profile is saved', () async {
-    final repo = FakeAuthRepository(const Success(null));
+    final repo = FakeAuthRepository(const Success('created'));
     final useCase = SaveUserProfileUseCase(repo);
 
     final result = await useCase(
@@ -29,6 +29,6 @@ void main() {
       ),
     );
 
-    expect(result, isA<Success<void>>());
+    expect(result, isA<Success<String>>());
   });
 }

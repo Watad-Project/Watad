@@ -12,6 +12,7 @@ import 'package:watad/core/components/inputs/app_phone_field.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -68,6 +69,7 @@ class _SignUpClientPageState extends State<SignUpClientPage> {
           context.showSuccessSnackBar(
             context.tr(state.successMessage ?? 'auth.signup_success'),
           );
+          context.goNamed(ClientNavigationRoutes.navigationName);
         }
       },
       builder: (context, state) {
