@@ -4,7 +4,6 @@ import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
 import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart';
 import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
-import 'package:watad/features/auth/shared/domain/usecases/check_email_registered_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_user_profile_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
@@ -22,7 +21,6 @@ class FakeAuthRepository implements AuthRepository {
     AuthSession(userId: 'user-1', email: 'user@watad.sa'),
   );
 
-  Result<bool> isEmailRegisteredResult = const Success(false);
   Result<void> sendSignUpOtpResult = const Success(null);
   Result<AuthSession> verifySignUpOtpResult = const Success(
     AuthSession(userId: 'user-1', email: 'user@watad.sa'),
@@ -51,10 +49,6 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Result<bool>> isEmailRegistered(String email) async =>
-      isEmailRegisteredResult;
-
-  @override
   Future<Result<void>> sendSignUpOtp(String email) async => sendSignUpOtpResult;
 
   @override
@@ -81,7 +75,6 @@ void registerFakeAuthBloc(FakeAuthRepository repository) {
 void registerFakeSignUpClientBloc(FakeAuthRepository repository) {
   getIt.registerFactory(
     () => SignUpClientBloc(
-      checkEmailRegistered: CheckEmailRegisteredUseCase(repository),
       sendSignUpOtp: SendSignUpOtpUseCase(repository),
       verifySignUpOtp: VerifySignUpOtpUseCase(repository),
       saveUserProfile: SaveUserProfileUseCase(repository),

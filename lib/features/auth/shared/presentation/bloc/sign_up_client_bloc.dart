@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart';
 import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dart';
-import 'package:watad/features/auth/shared/domain/usecases/check_email_registered_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_user_profile_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_sign_up_otp_use_case.dart';
@@ -14,7 +13,6 @@ part 'sign_up_client_state.dart';
 
 class SignUpClientBloc extends Bloc<SignUpClientEvent, SignUpClientState> {
   SignUpClientBloc({
-    required this.checkEmailRegistered,
     required this.sendSignUpOtp,
     required this.verifySignUpOtp,
     required this.saveUserProfile,
@@ -32,7 +30,6 @@ class SignUpClientBloc extends Bloc<SignUpClientEvent, SignUpClientState> {
     on<SignUpClientResendTick>(_onResendTick);
   }
 
-  final CheckEmailRegisteredUseCase checkEmailRegistered;
   final SendSignUpOtpUseCase sendSignUpOtp;
   final VerifySignUpOtpUseCase verifySignUpOtp;
   final SaveUserProfileUseCase saveUserProfile;
@@ -191,28 +188,6 @@ class SignUpClientBloc extends Bloc<SignUpClientEvent, SignUpClientState> {
         emailError: () => null,
       ),
     );
-
-    final emailResult = await checkEmailRegistered(email);
-    switch (emailResult) {
-      case Success(:final data):
-        if (data) {
-          emit(
-            state.copyWith(
-              status: SignUpClientStatus.failure,
-              emailError: () => 'validation.email_already_registered',
-            ),
-          );
-          return;
-        }
-      case Failed(:final failure):
-        emit(
-          state.copyWith(
-            status: SignUpClientStatus.failure,
-            generalError: () => failure.messageKey,
-          ),
-        );
-        return;
-    }
 
     final otpResult = await sendSignUpOtp(email);
     switch (otpResult) {

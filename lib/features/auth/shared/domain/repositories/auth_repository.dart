@@ -15,8 +15,6 @@ abstract interface class AuthRepository {
     required String token,
   });
 
-  Future<Result<bool>> isEmailRegistered(String email);
-
   Future<Result<void>> sendSignUpOtp(String email);
 
   Future<Result<AuthSession>> verifySignUpOtp(VerifyOtpParams params);

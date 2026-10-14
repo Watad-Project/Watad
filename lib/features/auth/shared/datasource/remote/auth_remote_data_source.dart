@@ -13,8 +13,6 @@ abstract interface class AuthRemoteDataSource {
     required String token,
   });
 
-  Future<bool> isEmailRegistered(String email);
-
   Future<void> sendSignUpOtp(String email);
 
   Future<AuthSessionModel> verifySignUpOtp(VerifyOtpParams params);
@@ -51,16 +49,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<bool> isEmailRegistered(String email) async {
-    final rows = await _client
-        .from('v_public_profiles')
-        .select('id')
-        .eq('email', email.trim().toLowerCase())
-        .limit(1);
-    return rows.isNotEmpty;
-  }
-
-  @override
   Future<void> sendSignUpOtp(String email) async {
     await _client.auth.signInWithOtp(
       email: email.trim().toLowerCase(),
@@ -84,16 +72,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> saveProfile(SignUpProfile profile) async {
-    await _client.auth.updateUser(
-      UserAttributes(
-        data: {
-          'full_name': profile.fullName,
-          'national_id': profile.nationalId,
-          'phone': profile.phone,
-          'role': profile.role,
-        },
-      ),
+    final phoneWithoutPrefix = profile.phone
+        .replaceAll(RegExp(r'\s+'), '')
+        .replaceAll('+966', '');
+
+    await _client.rpc<dynamic>(
+      'complete_client_profile',
+      params: {
+        'p_full_name': profile.fullName.trim(),
+        'p_national_id': profile.nationalId.trim(),
+        'p_phone': phoneWithoutPrefix.trim(),
+      },
     );
-    await _client.from('users').update({'full_name': profile.fullName});
   }
 }

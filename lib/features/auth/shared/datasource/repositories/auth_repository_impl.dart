@@ -22,10 +22,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }) => guardSupabaseCall(() => _remote.verifyOtp(email: email, token: token));
 
   @override
-  Future<Result<bool>> isEmailRegistered(String email) =>
-      guardSupabaseCall(() => _remote.isEmailRegistered(email));
-
-  @override
   Future<Result<void>> sendSignUpOtp(String email) =>
       guardSupabaseCall(() => _remote.sendSignUpOtp(email));
 
