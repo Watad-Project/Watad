@@ -114,75 +114,86 @@ class ClientPostProjectPage extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               onTap: () => FocusScope.of(context).unfocus(),
               child: SafeArea(
-                child: switch (state.currentStep) {
-                  1 => ClientPostProjectStep1(
-                    selectedType: state.projectType,
-                    onTypeChanged: (type) {
-                      context.read<ClientPostProjectBloc>().add(
-                        ClientPostProjectTypeSelected(type),
-                      );
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  switchInCurve: Curves.easeInOut,
+                  switchOutCurve: Curves.easeInOut,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(state.currentStep),
+                    child: switch (state.currentStep) {
+                      1 => ClientPostProjectStep1(
+                        selectedType: state.projectType,
+                        onTypeChanged: (type) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectTypeSelected(type),
+                          );
+                        },
+                      ),
+                      2 => ClientPostProjectStep2(
+                        state: state,
+                        onTypeChanged: (type) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectTypeSelected(type),
+                          );
+                        },
+                        onScopeChanged: (scope) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectScopeChanged(scope),
+                          );
+                        },
+                        onMinBudgetChanged: (minBudget) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectMinBudgetChanged(minBudget),
+                          );
+                        },
+                        onMaxBudgetChanged: (maxBudget) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectMaxBudgetChanged(maxBudget),
+                          );
+                        },
+                        onLocationChanged: (location) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectLocationChanged(location),
+                          );
+                        },
+                        onPhotoAdded: (photo) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectPhotoAdded(photo),
+                          );
+                        },
+                        onPhotoRemoved: (index) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectPhotoRemoved(index),
+                          );
+                        },
+                      ),
+                      3 =>
+                        state.requiresDeed
+                            ? ClientPostProjectStep3(
+                                state: state,
+                                onUploadDeed: () {
+                                  context.read<ClientPostProjectBloc>().add(
+                                    const ClientPostProjectDeedSelected(
+                                      filePath: 'mock/path/deed.pdf',
+                                      fileName: 'deed.pdf',
+                                    ),
+                                  );
+                                },
+                                onRetryDeed: () {
+                                  context.read<ClientPostProjectBloc>().add(
+                                    const ClientPostProjectDeedRetry(),
+                                  );
+                                },
+                              )
+                            : ClientPostProjectStepReview(state: state),
+                      4 => ClientPostProjectStepReview(state: state),
+                      _ => const SizedBox.shrink(),
                     },
                   ),
-                  2 => ClientPostProjectStep2(
-                    state: state,
-                    onTypeChanged: (type) {
-                      context.read<ClientPostProjectBloc>().add(
-                        ClientPostProjectTypeSelected(type),
-                      );
-                    },
-                    onScopeChanged: (scope) {
-                      context.read<ClientPostProjectBloc>().add(
-                        ClientPostProjectScopeChanged(scope),
-                      );
-                    },
-                    onMinBudgetChanged: (minBudget) {
-                      context.read<ClientPostProjectBloc>().add(
-                        ClientPostProjectMinBudgetChanged(minBudget),
-                      );
-                    },
-                    onMaxBudgetChanged: (maxBudget) {
-                      context.read<ClientPostProjectBloc>().add(
-                        ClientPostProjectMaxBudgetChanged(maxBudget),
-                      );
-                    },
-                    onLocationChanged: (location) {
-                      context.read<ClientPostProjectBloc>().add(
-                        ClientPostProjectLocationChanged(location),
-                      );
-                    },
-                    onPhotoAdded: (photo) {
-                      context.read<ClientPostProjectBloc>().add(
-                        ClientPostProjectPhotoAdded(photo),
-                      );
-                    },
-                    onPhotoRemoved: (index) {
-                      context.read<ClientPostProjectBloc>().add(
-                        ClientPostProjectPhotoRemoved(index),
-                      );
-                    },
-                  ),
-                  3 =>
-                    state.requiresDeed
-                        ? ClientPostProjectStep3(
-                            state: state,
-                            onUploadDeed: () {
-                              context.read<ClientPostProjectBloc>().add(
-                                const ClientPostProjectDeedSelected(
-                                  filePath: 'mock/path/deed.pdf',
-                                  fileName: 'deed.pdf',
-                                ),
-                              );
-                            },
-                            onRetryDeed: () {
-                              context.read<ClientPostProjectBloc>().add(
-                                const ClientPostProjectDeedRetry(),
-                              );
-                            },
-                          )
-                        : ClientPostProjectStepReview(state: state),
-                  4 => ClientPostProjectStepReview(state: state),
-                  _ => const SizedBox.shrink(),
-                },
+                ),
               ),
             ),
             bottomNavigationBar: AppActionBar(
