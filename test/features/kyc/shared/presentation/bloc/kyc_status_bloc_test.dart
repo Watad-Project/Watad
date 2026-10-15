@@ -17,7 +17,7 @@ class FakeKycRepository implements KycRepository {
     Stream<Result<KycDocument>>? stream,
   }) : stream = stream ?? const Stream.empty();
 
-  final Result<KycDocument> documentResult;
+  Result<KycDocument> documentResult;
   final Stream<Result<KycDocument>> stream;
 
   @override
@@ -128,47 +128,59 @@ void main() {
     await bloc.close();
   });
 
-  test('updates state when realtime stream yields new document', () async {
-    final controller = StreamController<Result<KycDocument>>();
-    final bloc = buildBloc(
-      result: const Success(sampleDocument),
-      stream: controller.stream,
-    );
+  test(
+    'refreshes status and completes completer on KycStatusRefreshed',
+    () async {
+      final repository = FakeKycRepository(
+        documentResult: const Success(sampleDocument),
+      );
+      final bloc = KycStatusBloc(GetKycDocumentUseCase(repository));
 
-    const updatedDocument = KycDocument(
-      id: 'doc-1',
-      documentType: BusinessDocumentType.commercialRegistration,
-      status: VerificationStatus.verified,
-    );
-
-    final states = expectLater(
-      bloc.stream,
-      emitsInOrder([
-        isA<KycStatusLoadInProgress>(),
-        isA<KycStatusLoadSuccess>().having(
-          (s) => s.document.status,
-          'status',
-          VerificationStatus.pending,
-        ),
-        isA<KycStatusLoadSuccess>().having(
-          (s) => s.document.status,
-          'status',
-          VerificationStatus.verified,
-        ),
-      ]),
-    );
-
-    bloc.add(
-      const KycStatusStarted(
+      const updatedDocument = KycDocument(
+        id: 'doc-1',
         documentType: BusinessDocumentType.commercialRegistration,
-      ),
-    );
-    await pumpEventQueue();
+        status: VerificationStatus.verified,
+      );
 
-    controller.add(const Success(updatedDocument));
+      final states = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<KycStatusLoadInProgress>(),
+          isA<KycStatusLoadSuccess>().having(
+            (s) => s.document.status,
+            'status',
+            VerificationStatus.pending,
+          ),
+          isA<KycStatusLoadSuccess>().having(
+            (s) => s.document.status,
+            'status',
+            VerificationStatus.verified,
+          ),
+        ]),
+      );
 
-    await states;
-    await controller.close();
-    await bloc.close();
-  });
+      bloc.add(
+        const KycStatusStarted(
+          documentType: BusinessDocumentType.commercialRegistration,
+        ),
+      );
+      await pumpEventQueue();
+
+      repository.documentResult = const Success(updatedDocument);
+
+      final completer = Completer<void>();
+      bloc.add(
+        KycStatusRefreshed(
+          documentType: BusinessDocumentType.commercialRegistration,
+          completer: completer,
+        ),
+      );
+
+      await completer.future;
+      expect(completer.isCompleted, isTrue);
+
+      await states;
+      await bloc.close();
+    },
+  );
 }

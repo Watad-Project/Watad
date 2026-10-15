@@ -10,7 +10,7 @@ import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_upload_zone.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
-import 'package:watad/core/router/routes/contractor_onboarding_routes.dart';
+import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -103,7 +103,7 @@ class ContractorLicensePage extends StatelessWidget {
           if (onSuccess != null) {
             onSuccess!(context);
           } else {
-            context.pushNamed(ContractorOnboardingRoutes.specialtyName);
+            context.pushNamed(KycRoutes.statusName);
           }
         } else if (state is ContractorLicenseLoadFailure) {
           context.showErrorSnackBar(context.tr(state.failure.messageKey));

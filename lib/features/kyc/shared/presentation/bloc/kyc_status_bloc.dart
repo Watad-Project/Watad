@@ -13,16 +13,14 @@ part 'kyc_status_event.dart';
 part 'kyc_status_state.dart';
 
 class KycStatusBloc extends Bloc<KycStatusEvent, KycStatusState> {
-  KycStatusBloc(this._getDocument, this._watchDocument)
+  KycStatusBloc(this._getDocument, [WatchKycDocumentUseCase? watchDocument])
     : super(const KycStatusInitial()) {
     on<KycStatusStarted>(_onStarted);
+    on<KycStatusRefreshed>(_onRefreshed);
     on<KycStatusUpdated>(_onUpdated);
   }
 
   final GetKycDocumentUseCase _getDocument;
-  final WatchKycDocumentUseCase _watchDocument;
-
-  StreamSubscription<Result<KycDocument>>? _subscription;
 
   Future<void> _onStarted(
     KycStatusStarted event,
@@ -48,25 +46,23 @@ class KycStatusBloc extends Bloc<KycStatusEvent, KycStatusState> {
           emit(KycStatusLoadFailure(failure));
       }
     }
+  }
 
-    await _subscription?.cancel();
-    final streamResult = await _watchDocument(event.documentType);
-    if (streamResult case Success(:final data)) {
-      _subscription = data.listen((result) {
-        if (result case Success(:final data)) {
-          add(KycStatusUpdated(data));
-        }
-      });
+  Future<void> _onRefreshed(
+    KycStatusRefreshed event,
+    Emitter<KycStatusState> emit,
+  ) async {
+    final result = await _getDocument(event.documentType);
+    switch (result) {
+      case Success(:final data):
+        emit(KycStatusLoadSuccess(data));
+      case Failed(:final failure):
+        emit(KycStatusLoadFailure(failure));
     }
+    event.completer?.complete();
   }
 
   void _onUpdated(KycStatusUpdated event, Emitter<KycStatusState> emit) {
     emit(KycStatusLoadSuccess(event.document));
-  }
-
-  @override
-  Future<void> close() {
-    _subscription?.cancel();
-    return super.close();
   }
 }

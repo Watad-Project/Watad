@@ -8,7 +8,7 @@ import 'package:watad/core/components/feedback/app_status_card.dart';
 import 'package:watad/core/components/inputs/app_field_label.dart';
 import 'package:watad/core/components/inputs/app_filter_chips.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
-import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
+import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
 import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -28,7 +28,7 @@ class ContractorSpecialtyPage extends StatelessWidget {
         title: context.tr('onboarding.contractor_profile_completion_title'),
         onBack: () => context.canPop()
             ? context.pop()
-            : context.goNamed(ContractorKycRoutes.licenseName),
+            : context.goNamed(KycRoutes.statusName),
       ),
       body: BlocConsumer<ContractorSpecialtyBloc, ContractorSpecialtyState>(
         listener: (context, state) {
@@ -37,7 +37,7 @@ class ContractorSpecialtyPage extends StatelessWidget {
             if (onSaved != null) {
               onSaved!(context);
             } else {
-              context.goNamed(KycRoutes.statusName);
+              context.goNamed(ContractorNavigationRoutes.navigationName);
             }
           } else if (state is ContractorSpecialtySaveFailure) {
             final specialty = state.selectedSpecialty;

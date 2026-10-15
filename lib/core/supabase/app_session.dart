@@ -74,6 +74,37 @@ class SupabaseAppSession extends ChangeNotifier implements AppSession {
     return role;
   }
 
+  /// Resolves the onboarding destination for a contractor based on registration status.
+  static String resolveContractorDestination({
+    required bool isBusiness,
+    required Map<String, dynamic>? business,
+    String? profileStatus,
+    String? profileSpecializedField,
+  }) {
+    if (!isBusiness || business == null) {
+      return AuthRoutes.signUpBusinessPath;
+    }
+
+    final statusStr =
+        (business['verification_status'] ?? profileStatus) as String? ??
+        'unverified';
+    final specializedField =
+        (business['specialized_field'] ?? profileSpecializedField) as String?;
+
+    if (statusStr == 'unverified') {
+      return ContractorKycRoutes.licensePath;
+    }
+    if (statusStr != 'verified') {
+      return KycRoutes.statusPath;
+    }
+    if (specializedField == null ||
+        specializedField.trim().isEmpty ||
+        specializedField == 'contractor') {
+      return ContractorOnboardingRoutes.specialtyPath;
+    }
+    return ContractorNavigationRoutes.navigationPath;
+  }
+
   @override
   Future<String> contractorDestination() async {
     if (_contractorDestination case final dest?) return dest;
@@ -87,33 +118,23 @@ class SupabaseAppSession extends ChangeNotifier implements AppSession {
           .maybeSingle();
 
       final isBusiness = profile?['is_business'] as bool? ?? false;
-      if (!isBusiness) {
-        return AuthRoutes.signUpBusinessPath;
-      }
 
       final business = await _client
           .from('businesses')
           .select('verification_status, specialized_field')
           .maybeSingle();
 
-      final statusStr =
-          (business?['verification_status'] ?? profile?['verification_status'])
-              as String? ??
-          'unverified';
-      final specializedField = business?['specialized_field'] as String?;
+      final dest = resolveContractorDestination(
+        isBusiness: isBusiness,
+        business: business,
+        profileStatus: profile?['verification_status'] as String?,
+        profileSpecializedField: profile?['specialized_field'] as String?,
+      );
 
-      final String dest;
-      if (statusStr == 'unverified') {
-        dest = ContractorKycRoutes.licensePath;
-      } else if (specializedField == null || specializedField.trim().isEmpty) {
-        dest = ContractorOnboardingRoutes.specialtyPath;
-      } else if (statusStr != 'verified') {
-        dest = KycRoutes.statusPath;
-      } else {
-        dest = ContractorNavigationRoutes.navigationPath;
+      if (userId == _userId &&
+          dest == ContractorNavigationRoutes.navigationPath) {
+        _contractorDestination = dest;
       }
-
-      if (userId == _userId) _contractorDestination = dest;
       return dest;
     } catch (_) {
       return ContractorNavigationRoutes.navigationPath;

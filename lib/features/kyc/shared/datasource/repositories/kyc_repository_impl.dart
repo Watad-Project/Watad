@@ -23,6 +23,6 @@ class KycRepositoryImpl implements KycRepository {
     BusinessDocumentType documentType =
         BusinessDocumentType.commercialRegistration,
   ]) {
-    return guardSupabaseStream(_remoteDataSource.watchDocument(documentType));
+    return guardSupabaseStream(const Stream.empty());
   }
 }

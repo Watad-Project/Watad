@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,8 +38,11 @@ class StatusPage extends StatelessWidget {
           final doc = state.document;
           if (doc.status == VerificationStatus.verified &&
               doc.documentType == BusinessDocumentType.commercialRegistration) {
-            if (doc.specializedField == null ||
-                doc.specializedField!.trim().isEmpty) {
+            final hasSpecialty =
+                doc.specializedField != null &&
+                doc.specializedField!.trim().isNotEmpty &&
+                doc.specializedField != 'contractor';
+            if (!hasSpecialty) {
               context.goNamed(ContractorOnboardingRoutes.specialtyName);
             } else {
               context.goNamed(ContractorNavigationRoutes.navigationName);
@@ -94,7 +99,15 @@ class StatusPage extends StatelessWidget {
             action: AppButton(
               label: context.tr('auth.continue'),
               onPressed: () {
-                context.goNamed(ContractorNavigationRoutes.navigationName);
+                final hasSpecialty =
+                    document?.specializedField != null &&
+                    document!.specializedField!.trim().isNotEmpty &&
+                    document.specializedField != 'contractor';
+                if (!hasSpecialty) {
+                  context.goNamed(ContractorOnboardingRoutes.specialtyName);
+                } else {
+                  context.goNamed(ContractorNavigationRoutes.navigationName);
+                }
               },
             ),
           ),
@@ -122,22 +135,46 @@ class StatusPage extends StatelessWidget {
             },
           ),
           body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  statusCard,
-                  const Spacer(),
-                  Text(
-                    context.tr('kyc.footnote'),
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
+            child: RefreshIndicator(
+              onRefresh: () async {
+                final completer = Completer<void>();
+                context.read<KycStatusBloc>().add(
+                  KycStatusRefreshed(
+                    documentType: documentType,
+                    completer: completer,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
+                );
+                await completer.future;
+              },
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            statusCard,
+                            const Spacer(),
+                            Text(
+                              context.tr('kyc.footnote'),
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

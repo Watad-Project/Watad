@@ -8,10 +8,6 @@ abstract interface class KycRemoteDataSource {
     BusinessDocumentType documentType =
         BusinessDocumentType.commercialRegistration,
   ]);
-  Stream<KycDocumentModel> watchDocument([
-    BusinessDocumentType documentType =
-        BusinessDocumentType.commercialRegistration,
-  ]);
 }
 
 class KycRemoteDataSourceImpl implements KycRemoteDataSource {
@@ -38,28 +34,5 @@ class KycRemoteDataSourceImpl implements KycRemoteDataSource {
       documentType: documentType,
       status: VerificationStatus.unverified,
     );
-  }
-
-  @override
-  Stream<KycDocumentModel> watchDocument([
-    BusinessDocumentType documentType =
-        BusinessDocumentType.commercialRegistration,
-  ]) {
-    final userId = _supabase.auth.currentUser?.id;
-    var stream = _supabase.from('businesses').stream(primaryKey: ['id']);
-    if (userId != null) {
-      stream = stream.eq('id', userId);
-    }
-
-    return stream.map((rows) {
-      if (rows.isNotEmpty) {
-        return KycDocumentModel.fromJson(rows.first);
-      }
-      return KycDocumentModel(
-        id: userId ?? '',
-        documentType: documentType,
-        status: VerificationStatus.unverified,
-      );
-    });
   }
 }
