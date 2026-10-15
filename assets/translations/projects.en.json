@@ -1,0 +1,31 @@
+{
+  "client": {
+    "list_title": "My Projects",
+    "status_open": "Open",
+    "status_in_progress": "In Progress",
+    "status_completed": "Completed",
+    "status_cancelled": "Cancelled",
+    "status_draft": "Draft",
+    "budget_amount": "{amount} SAR",
+    "budget_unspecified": "Budget unspecified",
+    "offers_count": "{count} offers",
+    "offers_label": "Offers",
+    "budget_title": "Declared Budget",
+    "empty_title": "No projects yet",
+    "empty_message": "Post your first project to receive quotes from verified contractors.",
+    "empty_action": "Post a New Project",
+    "offers_title": "Incoming Offers",
+    "no_offers_title": "No offers yet",
+    "no_offers_message": "No offers have been submitted for this project yet. You'll be notified when a quote arrives.",
+    "incoming_offers_title": "Received Offers",
+    "offer_status_accepted": "Accepted",
+    "offer_status_rejected": "Rejected",
+    "offer_status_withdrawn": "Withdrawn",
+    "duration_months": "{count} months",
+    "offer_price_label": "Offer Price",
+    "offer_amount": "{amount} SAR",
+    "accept_offer": "Accept Offer",
+    "message_contractor": "Message",
+    "offer_accepted_success": "Offer accepted successfully"
+  }
+}

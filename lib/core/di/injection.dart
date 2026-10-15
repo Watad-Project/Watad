@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/auth_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
+import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
 
 /// The app's only service locator. Use it only in *_injection.dart and
@@ -20,6 +21,7 @@ void configureDependencies() {
 
   // Features: one line per role folder, in alphabetical order.
   registerAuthDependencies(getIt);
+  registerClientProjectsDependencies(getIt);
   registerOnboardingDependencies(getIt);
   registerSplashDependencies(getIt);
 }

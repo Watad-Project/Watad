@@ -1,0 +1,31 @@
+{
+  "client": {
+    "list_title": "مشاريعي",
+    "status_open": "مفتوح",
+    "status_in_progress": "قيد التنفيذ",
+    "status_completed": "مكتمل",
+    "status_cancelled": "ملغي",
+    "status_draft": "مسودة",
+    "budget_amount": "{amount} ر.س",
+    "budget_unspecified": "الميزانية غير محددة",
+    "offers_count": "{count} عروض",
+    "offers_label": "العروض",
+    "budget_title": "الميزانية المحددة",
+    "empty_title": "لا توجد مشاريع حتى الآن",
+    "empty_message": "ابدأ بنشر مشروعك الأول لتلقي عروض الأسعار من المقاولين المعتمدين.",
+    "empty_action": "نشر مشروع جديد",
+    "offers_title": "العروض المقدمة",
+    "no_offers_title": "لا توجد عروض حتى الآن",
+    "no_offers_message": "لم يتم تقديم أي عروض لهذا المشروع بعد. سيتم إشعارك فور وصول عرض جديد.",
+    "incoming_offers_title": "العروض المستلمة",
+    "offer_status_accepted": "مقبول",
+    "offer_status_rejected": "مرفوض",
+    "offer_status_withdrawn": "مسحوب",
+    "duration_months": "{count} أشهر",
+    "offer_price_label": "قيمة العرض",
+    "offer_amount": "{amount} ر.س",
+    "accept_offer": "قبول العرض",
+    "message_contractor": "مراسلة",
+    "offer_accepted_success": "تم قبول العرض بنجاح"
+  }
+}
