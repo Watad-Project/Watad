@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/display/app_image_placeholder.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
 import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
@@ -17,8 +18,8 @@ class _FakeLocationRepository implements LocationRepository {
       const Success([]);
 
   @override
-  Future<Result<void>> saveAddress(LocationAddress address) async =>
-      const Success(null);
+  Future<Result<LocationAddress>> saveAddress(LocationAddress address) async =>
+      Success(address);
 
   @override
   Future<Result<void>> deleteAddress(String id) async => const Success(null);
@@ -39,6 +40,7 @@ void main() {
       await pumpLocalizedApp(tester, buildPage());
 
       expect(find.byKey(const Key('location_search_input')), findsOneWidget);
+      expect(find.byType(AppImagePlaceholder), findsOneWidget);
       expect(find.byKey(const Key('location_confirm_button')), findsOneWidget);
 
       final button = tester.widget<AppButton>(

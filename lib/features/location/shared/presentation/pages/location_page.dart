@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/display/app_image_placeholder.dart';
+import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_field_label.dart';
 import 'package:watad/core/components/inputs/app_switch.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
@@ -106,6 +108,12 @@ class _LocationPageState extends State<LocationPage> {
         if (state.status == LocationStatus.success &&
             state.confirmedAddress != null) {
           context.pop(state.confirmedAddress!.formattedAddress);
+        }
+        if (state.status == LocationStatus.failure) {
+          final messageKey = state.failure?.messageKey ?? state.errorMessage;
+          if (messageKey != null) {
+            context.showErrorSnackBar(context.tr(messageKey));
+          }
         }
       },
       builder: (context, state) {
@@ -419,11 +427,8 @@ class _MapMockupSection extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Map Background Painter
-          CustomPaint(
-            painter: _MapCanvasPainter(),
-            child: const SizedBox.expand(),
-          ),
+          // Map Background Placeholder (ARCHITECTURE.md §3a)
+          const AppImagePlaceholder(),
 
           // Central Pin and pulsing target
           Center(
@@ -461,28 +466,6 @@ class _MapMockupSection extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-            ),
-          ),
-
-          // "Google Maps" attribution badge bottom-start
-          Positioned.directional(
-            textDirection: Directionality.of(context),
-            bottom: AppSpacing.sm,
-            start: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.white.withAlpha(220),
-                borderRadius: const BorderRadius.all(Radius.circular(4)),
-              ),
-              child: Text(
-                context.tr('location.google_maps_attribution'),
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 10,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
               ),
             ),
           ),
@@ -557,85 +540,4 @@ class _MapMockupSection extends StatelessWidget {
       ),
     );
   }
-}
-
-class _MapCanvasPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Map terrain base
-    final bgPaint = Paint()..color = AppColors.surfaceMuted;
-    canvas.drawRect(Offset.zero & size, bgPaint);
-
-    // Diagonal striped subtle grid
-    final gridPaint = Paint()
-      ..color = AppColors.placeholderStripe
-      ..strokeWidth = 1.0;
-
-    for (double i = -size.height; i < size.width + size.height; i += 28) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(i + size.height, size.height),
-        gridPaint,
-      );
-    }
-
-    // Road traces
-    final roadPaint = Paint()
-      ..color = AppColors.white
-      ..strokeWidth = 8.0
-      ..strokeCap = StrokeCap.round;
-
-    final roadBorderPaint = Paint()
-      ..color = AppColors.border
-      ..strokeWidth = 10.0
-      ..strokeCap = StrokeCap.round;
-
-    // Horizontal main boulevard
-    final path1 = Path()
-      ..moveTo(0, size.height * 0.45)
-      ..cubicTo(
-        size.width * 0.3,
-        size.height * 0.4,
-        size.width * 0.7,
-        size.height * 0.55,
-        size.width,
-        size.height * 0.5,
-      );
-    canvas.drawPath(path1, roadBorderPaint);
-    canvas.drawPath(path1, roadPaint);
-
-    // Vertical arterial road
-    final path2 = Path()
-      ..moveTo(size.width * 0.55, 0)
-      ..lineTo(size.width * 0.52, size.height);
-    canvas.drawPath(path2, roadBorderPaint);
-    canvas.drawPath(path2, roadPaint);
-
-    // Secondary connector road
-    final path3 = Path()
-      ..moveTo(size.width * 0.15, size.height)
-      ..lineTo(size.width * 0.45, 0);
-    final secondaryRoadPaint = Paint()
-      ..color = AppColors.white
-      ..strokeWidth = 5.0;
-    canvas.drawPath(path3, secondaryRoadPaint);
-
-    // Park / Green accent block
-    final parkPaint = Paint()..color = AppColors.successLight;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(
-          size.width * 0.65,
-          size.height * 0.1,
-          size.width * 0.28,
-          size.height * 0.28,
-        ),
-        const Radius.circular(8),
-      ),
-      parkPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

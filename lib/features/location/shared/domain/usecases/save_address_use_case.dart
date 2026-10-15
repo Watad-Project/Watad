@@ -4,14 +4,15 @@ import 'package:watad/features/location/shared/domain/entities/location_address.
 import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
 
 /// Saves an address to the user's saved addresses list.
-final class SaveAddressUseCase implements UseCase<void, LocationAddress> {
+final class SaveAddressUseCase
+    implements UseCase<LocationAddress, LocationAddress> {
   /// Creates an instance of [SaveAddressUseCase].
   const SaveAddressUseCase(this._repository);
 
   final LocationRepository _repository;
 
   @override
-  Future<Result<void>> call(LocationAddress params) {
+  Future<Result<LocationAddress>> call(LocationAddress params) {
     return _repository.saveAddress(params);
   }
 }

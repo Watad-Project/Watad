@@ -17,8 +17,8 @@ class _FakeLocationRepository implements LocationRepository {
       const Success([]);
 
   @override
-  Future<Result<void>> saveAddress(LocationAddress address) async =>
-      const Success(null);
+  Future<Result<LocationAddress>> saveAddress(LocationAddress address) async =>
+      Success(address);
 
   @override
   Future<Result<void>> deleteAddress(String id) async => const Success(null);

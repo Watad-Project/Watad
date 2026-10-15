@@ -37,6 +37,7 @@ final class LocationState {
     this.shouldSave = true,
     this.confirmedAddress,
     this.errorMessage,
+    this.failure,
   });
 
   /// Current lifecycle status.
@@ -60,6 +61,9 @@ final class LocationState {
   /// Error message if an error occurred.
   final String? errorMessage;
 
+  /// Failure object if an error occurred.
+  final Failure? failure;
+
   /// Whether the address has enough minimum data to confirm.
   bool get canConfirm =>
       address.city.trim().isNotEmpty && address.district.trim().isNotEmpty;
@@ -73,6 +77,7 @@ final class LocationState {
     bool? shouldSave,
     LocationAddress? confirmedAddress,
     String? errorMessage,
+    Failure? failure,
   }) {
     return LocationState(
       status: status ?? this.status,
@@ -82,6 +87,7 @@ final class LocationState {
       shouldSave: shouldSave ?? this.shouldSave,
       confirmedAddress: confirmedAddress ?? this.confirmedAddress,
       errorMessage: errorMessage ?? this.errorMessage,
+      failure: failure ?? this.failure,
     );
   }
 }

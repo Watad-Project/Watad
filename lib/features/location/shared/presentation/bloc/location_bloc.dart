@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:watad/core/error/failure.dart';
+import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
 import 'package:watad/features/location/shared/domain/usecases/save_address_use_case.dart';
 
@@ -153,17 +155,27 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   ) async {
     if (!state.canConfirm) return;
 
-    final resolvedId = state.address.id.isNotEmpty
-        ? state.address.id
-        : 'addr_${DateTime.now().millisecondsSinceEpoch}';
+    emit(state.copyWith(status: LocationStatus.loading));
 
-    final finalAddress = state.address.copyWith(
-      id: resolvedId,
+    LocationAddress finalAddress = state.address.copyWith(
       isSaved: state.shouldSave,
     );
 
     if (state.shouldSave) {
-      await _saveAddressUseCase(finalAddress);
+      final saveResult = await _saveAddressUseCase(finalAddress);
+      switch (saveResult) {
+        case Success(:final data):
+          finalAddress = data;
+        case Failed(:final failure):
+          emit(
+            state.copyWith(
+              status: LocationStatus.failure,
+              failure: failure,
+              errorMessage: failure.messageKey,
+            ),
+          );
+          return;
+      }
     }
 
     emit(

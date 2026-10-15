@@ -7,7 +7,7 @@ abstract interface class LocationRepository {
   Future<Result<List<LocationAddress>>> getSavedAddresses();
 
   /// Saves a new address or updates an existing address in the user's saved list.
-  Future<Result<void>> saveAddress(LocationAddress address);
+  Future<Result<LocationAddress>> saveAddress(LocationAddress address);
 
   /// Deletes a saved address by its [id].
   Future<Result<void>> deleteAddress(String id);

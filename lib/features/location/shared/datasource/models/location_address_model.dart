@@ -19,7 +19,7 @@ class LocationAddressModel extends LocationAddress {
   /// Creates a model from a JSON map.
   factory LocationAddressModel.fromJson(Map<String, dynamic> json) {
     return LocationAddressModel(
-      id: json['id'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
       name: json['name'] as String? ?? '',
       city: json['city'] as String? ?? '',
       district: json['district'] as String? ?? '',
@@ -28,7 +28,7 @@ class LocationAddressModel extends LocationAddress {
       postalCode: json['postal_code'] as String? ?? '',
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
-      isSaved: json['is_saved'] as bool? ?? false,
+      isSaved: json['is_saved'] as bool? ?? true,
     );
   }
 
@@ -46,6 +46,21 @@ class LocationAddressModel extends LocationAddress {
       longitude: entity.longitude,
       isSaved: entity.isSaved,
     );
+  }
+
+  /// Only the 6 allowed columns for Supabase `addresses` table writes (ARCHITECTURE.md §3a).
+  Map<String, dynamic> toSupabaseMap() {
+    final effectiveName = name.trim().isNotEmpty
+        ? name.trim()
+        : (district.trim().isNotEmpty ? district.trim() : city.trim());
+    return {
+      'name': effectiveName,
+      'city': city.trim(),
+      'district': district.trim(),
+      'street': street.trim(),
+      'building_number': buildingNumber.trim(),
+      'postal_code': postalCode.trim(),
+    };
   }
 
   /// Converts this model to a JSON map.

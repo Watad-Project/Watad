@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
 import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
@@ -13,9 +14,9 @@ class _FakeLocationRepository implements LocationRepository {
       const Success([]);
 
   @override
-  Future<Result<void>> saveAddress(LocationAddress address) async {
+  Future<Result<LocationAddress>> saveAddress(LocationAddress address) async {
     savedAddress = address;
-    return const Success(null);
+    return Success(address);
   }
 
   @override
@@ -100,11 +101,16 @@ void main() {
     bloc.add(const LocationConfirmed());
     await expectLater(
       bloc.stream,
-      emits(
+      emitsInOrder([
+        isA<LocationState>().having(
+          (s) => s.status,
+          'status',
+          LocationStatus.loading,
+        ),
         isA<LocationState>()
             .having((s) => s.status, 'status', LocationStatus.success)
             .having((s) => s.confirmedAddress, 'confirmedAddress', isNotNull),
-      ),
+      ]),
     );
 
     expect(repo.savedAddress, isNotNull);
@@ -119,4 +125,44 @@ void main() {
     expect(bloc.state.status, LocationStatus.initial);
     expect(repo.savedAddress, isNull);
   });
+
+  test('LocationConfirmed emits failure when saveAddress fails', () async {
+    final failingRepo = _FailingLocationRepository();
+    final failingBloc = LocationBloc(SaveAddressUseCase(failingRepo));
+
+    failingBloc.add(const LocationCityChanged('Riyadh'));
+    failingBloc.add(const LocationDistrictChanged('Al Nakheel'));
+    failingBloc.add(const LocationSaveToggled(true));
+    await pumpEventQueue();
+
+    failingBloc.add(const LocationConfirmed());
+    await expectLater(
+      failingBloc.stream,
+      emitsInOrder([
+        isA<LocationState>().having(
+          (s) => s.status,
+          'status',
+          LocationStatus.loading,
+        ),
+        isA<LocationState>()
+            .having((s) => s.status, 'status', LocationStatus.failure)
+            .having((s) => s.failure, 'failure', isNotNull),
+      ]),
+    );
+
+    await failingBloc.close();
+  });
+}
+
+class _FailingLocationRepository implements LocationRepository {
+  @override
+  Future<Result<List<LocationAddress>>> getSavedAddresses() async =>
+      const Success([]);
+
+  @override
+  Future<Result<LocationAddress>> saveAddress(LocationAddress address) async =>
+      const Failed(PermissionFailure('unauthorized'));
+
+  @override
+  Future<Result<void>> deleteAddress(String id) async => const Success(null);
 }

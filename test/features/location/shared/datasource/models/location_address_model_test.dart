@@ -87,4 +87,38 @@ void main() {
     expect(model.isSaved, entity.isSaved);
     expect(model.toEntity(), equals(entity));
   });
+
+  test('toSupabaseMap contains only the six §3a columns', () {
+    const model = LocationAddressModel(
+      id: 'addr_123',
+      name: 'Villa',
+      city: 'Riyadh',
+      district: 'Al Malqa',
+      street: 'King Salman',
+      buildingNumber: '12',
+      postalCode: '13521',
+      latitude: 24.8,
+      longitude: 46.6,
+      isSaved: true,
+    );
+
+    final map = model.toSupabaseMap();
+
+    expect(map, {
+      'name': 'Villa',
+      'city': 'Riyadh',
+      'district': 'Al Malqa',
+      'street': 'King Salman',
+      'building_number': '12',
+      'postal_code': '13521',
+    });
+    expect(map.keys.toSet(), {
+      'name',
+      'city',
+      'district',
+      'street',
+      'building_number',
+      'postal_code',
+    });
+  });
 }
