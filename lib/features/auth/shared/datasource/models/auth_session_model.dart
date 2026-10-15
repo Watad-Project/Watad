@@ -6,7 +6,7 @@ class AuthSessionModel extends AuthSession {
   /// Maps the auth user that `verifyOTP` returns (`User.toJson()`).
   factory AuthSessionModel.fromJson(Map<String, dynamic> json) {
     return AuthSessionModel(
-      userId: json['id'] as String,
+      userId: json['id'] as String? ?? json['user_id'] as String? ?? '',
       email: json['email'] as String?,
     );
   }
