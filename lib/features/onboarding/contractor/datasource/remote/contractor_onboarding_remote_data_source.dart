@@ -13,13 +13,12 @@ class ContractorOnboardingRemoteDataSourceImpl
   @override
   Future<void> saveSpecialty(String specialty) async {
     final userId = _client.auth.currentUser?.id;
-    if (userId != null) {
-      await _client
-          .from('businesses')
-          .update({'specialized_field': specialty})
-          .eq('user_id', userId);
-    } else {
-      await _client.from('businesses').update({'specialized_field': specialty});
+    if (userId == null) {
+      throw const AuthException('User not authenticated');
     }
+    await _client
+        .from('businesses')
+        .update({'specialized_field': specialty})
+        .eq('user_id', userId);
   }
 }
