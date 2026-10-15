@@ -1,12 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/feedback/app_status_card.dart';
 import 'package:watad/core/components/inputs/app_field_label.dart';
 import 'package:watad/core/components/inputs/app_filter_chips.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
+import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/core/theme/app_tone.dart';
@@ -23,7 +26,9 @@ class ContractorSpecialtyPage extends StatelessWidget {
     return Scaffold(
       appBar: AppTopBar(
         title: context.tr('onboarding.contractor_profile_completion_title'),
-        onBack: () => Navigator.of(context).maybePop(),
+        onBack: () => context.canPop()
+            ? context.pop()
+            : context.goNamed(ContractorKycRoutes.licenseName),
       ),
       body: BlocConsumer<ContractorSpecialtyBloc, ContractorSpecialtyState>(
         listener: (context, state) {
@@ -31,8 +36,8 @@ class ContractorSpecialtyPage extends StatelessWidget {
             context.showSuccessSnackBar(context.tr('onboarding.save_success'));
             if (onSaved != null) {
               onSaved!(context);
-            } else if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
+            } else {
+              context.goNamed(KycRoutes.statusName);
             }
           } else if (state is ContractorSpecialtySaveFailure) {
             final specialty = state.selectedSpecialty;

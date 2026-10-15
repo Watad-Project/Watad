@@ -1,11 +1,12 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/auth/shared/datasource/models/auth_session_model.dart';
+import 'package:watad/features/auth/shared/domain/entities/business_sign_up.dart';
 import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart';
 import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dart';
 
 abstract interface class AuthRemoteDataSource {
-  /// Emails a sign-in code to the account with this [email].
-  Future<void> sendOtp({required String email});
+  /// Emails a sign-in or sign-up code to the account with this [email].
+  Future<void> sendOtp({required String email, bool shouldCreateUser = false});
 
   /// Checks the [token] sent to [email] and signs the user in.
   Future<AuthSessionModel> verifyOtp({
@@ -20,6 +21,9 @@ abstract interface class AuthRemoteDataSource {
   Future<String> saveProfile(SignUpProfile profile);
 
   Future<void> signOut();
+
+  /// Saves the business signup data.
+  Future<void> saveBusinessSignUp(BusinessSignUp data);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -28,9 +32,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final SupabaseClient _client;
 
   @override
-  Future<void> sendOtp({required String email}) async {
-    // Login never creates an account; the sign-up screens do (GRA-10).
-    await _client.auth.signInWithOtp(email: email, shouldCreateUser: false);
+  Future<void> sendOtp({
+    required String email,
+    bool shouldCreateUser = false,
+  }) async {
+    await _client.auth.signInWithOtp(
+      email: email,
+      shouldCreateUser: shouldCreateUser,
+    );
   }
 
   @override
@@ -92,5 +101,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     await _client.auth.signOut();
+  }
+
+  @override
+  Future<void> saveBusinessSignUp(BusinessSignUp data) async {
+    await _client.from('businesses').insert({
+      'company_name': data.companyName,
+      'cr_number': data.crNumber,
+      'specialized_field': data.specializedField,
+    });
   }
 }

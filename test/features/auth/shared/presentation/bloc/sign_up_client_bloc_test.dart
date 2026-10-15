@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
+import 'package:watad/features/auth/shared/domain/entities/business_sign_up.dart';
 import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart';
 import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
@@ -28,8 +29,10 @@ class FakeAuthRepository implements AuthRepository {
   int signOutCount = 0;
 
   @override
-  Future<Result<void>> sendOtp({required String email}) async =>
-      const Success(null);
+  Future<Result<void>> sendOtp({
+    required String email,
+    bool shouldCreateUser = false,
+  }) async => sendOtpResult;
 
   @override
   Future<Result<AuthSession>> verifyOtp({
@@ -53,6 +56,10 @@ class FakeAuthRepository implements AuthRepository {
     signOutCount++;
     return signOutResult;
   }
+
+  @override
+  Future<Result<void>> saveBusinessSignUp(BusinessSignUp data) async =>
+      const Success(null);
 }
 
 SignUpClientBloc buildBloc(FakeAuthRepository repository) {

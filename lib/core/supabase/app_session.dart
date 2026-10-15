@@ -2,6 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
+import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
+import 'package:watad/core/router/routes/contractor_onboarding_routes.dart';
+import 'package:watad/core/router/routes/kyc_routes.dart';
 
 /// Which role's area a signed-in user opens (APP_ARCHITECTURE.md §3).
 enum AppRole {
@@ -29,6 +34,9 @@ abstract interface class AppSession implements Listenable {
 
   /// The signed-in user's role. Read once per user.
   Future<AppRole> role();
+
+  /// For a contractor, returns the destination path based on registration status.
+  Future<String> contractorDestination();
 }
 
 class SupabaseAppSession extends ChangeNotifier implements AppSession {
@@ -38,6 +46,7 @@ class SupabaseAppSession extends ChangeNotifier implements AppSession {
       if (userId == _userId) return; // e.g. a token refresh
       _userId = userId;
       _role = null;
+      _contractorDestination = null;
       notifyListeners();
     });
   }
@@ -46,6 +55,7 @@ class SupabaseAppSession extends ChangeNotifier implements AppSession {
   late final StreamSubscription<AuthState> _subscription;
   String? _userId;
   AppRole? _role;
+  String? _contractorDestination;
 
   @override
   bool get isSignedIn => _client.auth.currentSession != null;
@@ -62,6 +72,52 @@ class SupabaseAppSession extends ChangeNotifier implements AppSession {
     // Keep it only if the same user is still signed in.
     if (userId == _userId) _role = role;
     return role;
+  }
+
+  @override
+  Future<String> contractorDestination() async {
+    if (_contractorDestination case final dest?) return dest;
+    final userId = _userId;
+    if (userId == null) return ContractorNavigationRoutes.navigationPath;
+
+    try {
+      final profile = await _client
+          .from('v_my_profile')
+          .select('is_business, verification_status')
+          .maybeSingle();
+
+      final isBusiness = profile?['is_business'] as bool? ?? false;
+      if (!isBusiness) {
+        return AuthRoutes.signUpBusinessPath;
+      }
+
+      final business = await _client
+          .from('businesses')
+          .select('verification_status, specialized_field')
+          .maybeSingle();
+
+      final statusStr =
+          (business?['verification_status'] ?? profile?['verification_status'])
+              as String? ??
+          'unverified';
+      final specializedField = business?['specialized_field'] as String?;
+
+      final String dest;
+      if (statusStr == 'unverified') {
+        dest = ContractorKycRoutes.licensePath;
+      } else if (specializedField == null || specializedField.trim().isEmpty) {
+        dest = ContractorOnboardingRoutes.specialtyPath;
+      } else if (statusStr != 'verified') {
+        dest = KycRoutes.statusPath;
+      } else {
+        dest = ContractorNavigationRoutes.navigationPath;
+      }
+
+      if (userId == _userId) _contractorDestination = dest;
+      return dest;
+    } catch (_) {
+      return ContractorNavigationRoutes.navigationPath;
+    }
   }
 
   @override

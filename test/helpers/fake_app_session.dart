@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 
 /// A hand-written [AppSession] (APP_ARCHITECTURE.md §16): signed out until
@@ -6,14 +7,17 @@ import 'package:watad/core/supabase/app_session.dart';
 /// sign-in does.
 class FakeAppSession extends ChangeNotifier implements AppSession {
   AppRole? _role;
+  String? _contractorDestination;
 
-  void signIn(AppRole role) {
+  void signIn(AppRole role, [String? contractorDestination]) {
     _role = role;
+    _contractorDestination = contractorDestination;
     notifyListeners();
   }
 
   void signOut() {
     _role = null;
+    _contractorDestination = null;
     notifyListeners();
   }
 
@@ -22,4 +26,8 @@ class FakeAppSession extends ChangeNotifier implements AppSession {
 
   @override
   Future<AppRole> role() async => _role!;
+
+  @override
+  Future<String> contractorDestination() async =>
+      _contractorDestination ?? ContractorNavigationRoutes.navigationPath;
 }
