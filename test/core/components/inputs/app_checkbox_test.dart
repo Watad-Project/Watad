@@ -29,4 +29,22 @@ void main() {
     final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
     expect(checkbox.onChanged, isNull);
   });
+
+  testWidgets('renders custom labelWidget and toggles when tapped', (
+    tester,
+  ) async {
+    final values = <bool>[];
+    await pumpComponent(
+      tester,
+      AppCheckbox(
+        value: false,
+        labelWidget: const Text('Custom Label Widget'),
+        onChanged: values.add,
+      ),
+    );
+
+    expect(find.text('Custom Label Widget'), findsOneWidget);
+    await tester.tap(find.text('Custom Label Widget'));
+    expect(values, [true]);
+  });
 }

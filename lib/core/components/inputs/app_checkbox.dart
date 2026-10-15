@@ -27,33 +27,33 @@ class AppCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final toggle = onChanged == null ? null : () => onChanged!(!value);
-    return MergeSemantics(
-      child: InkWell(
-        onTap: toggle,
-        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.md)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
-          child: Row(
-            children: [
-              Checkbox(
-                value: value,
-                onChanged: toggle == null ? null : (_) => toggle(),
-              ),
-              const SizedBox(width: AppSpacing.xxs),
-              Expanded(
-                child:
-                    labelWidget ??
-                    Text(
-                      label!,
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.ink,
-                        height: 1.4,
-                      ),
-                    ),
-              ),
-            ],
+    final child =
+        labelWidget ??
+        Text(
+          label ?? '',
+          style: AppTextStyles.body.copyWith(color: AppColors.ink, height: 1.4),
+        );
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Checkbox(
+            value: value,
+            onChanged: toggle == null ? null : (_) => toggle(),
           ),
-        ),
+          const SizedBox(width: AppSpacing.xxs),
+          Expanded(
+            child: InkWell(
+              onTap: toggle,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(AppRadius.md),
+              ),
+              child: child,
+            ),
+          ),
+        ],
       ),
     );
   }

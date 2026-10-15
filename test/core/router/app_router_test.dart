@@ -1,12 +1,32 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/enums/business_document_type.dart';
+import 'package:watad/core/enums/verification_status.dart';
+import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/app_router.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
+import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
 import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
+import 'package:watad/core/router/routes/contractor_onboarding_routes.dart';
+import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/kyc/contractor/domain/entities/contractor_license_submission.dart';
+import 'package:watad/features/kyc/contractor/domain/repositories/contractor_kyc_repository.dart';
+import 'package:watad/features/kyc/contractor/domain/usecases/contractor_upload_license_use_case.dart';
+import 'package:watad/features/kyc/contractor/presentation/bloc/contractor_license_bloc.dart';
+import 'package:watad/features/kyc/shared/domain/entities/kyc_document.dart';
+import 'package:watad/features/kyc/shared/domain/repositories/kyc_repository.dart';
+import 'package:watad/features/kyc/shared/domain/usecases/get_kyc_document_use_case.dart';
+import 'package:watad/features/kyc/shared/domain/usecases/watch_kyc_document_use_case.dart';
+import 'package:watad/features/kyc/shared/presentation/bloc/kyc_status_bloc.dart';
+import 'package:watad/features/onboarding/contractor/domain/repositories/contractor_onboarding_repository.dart';
+import 'package:watad/features/onboarding/contractor/domain/usecases/contractor_save_specialty_use_case.dart';
+import 'package:watad/features/onboarding/contractor/presentation/bloc/contractor_specialty_bloc.dart';
 
 import '../../helpers/fake_app_session.dart';
 import '../../helpers/fake_auth_repository.dart';
@@ -19,6 +39,43 @@ class _UnreadableRoleSession extends FakeAppSession {
   Future<AppRole> role() async => throw Exception('offline');
 }
 
+class _FakeContractorKycRepository implements ContractorKycRepository {
+  @override
+  Future<Result<ContractorLicenseSubmission>> uploadLicense({
+    required Uint8List bytes,
+    required String fileName,
+  }) async => throw UnimplementedError();
+}
+
+class _FakeContractorOnboardingRepository
+    implements ContractorOnboardingRepository {
+  const _FakeContractorOnboardingRepository();
+
+  @override
+  Future<Result<void>> saveSpecialty(String specialty) async =>
+      const Success(null);
+}
+
+class _FakeKycRepository implements KycRepository {
+  @override
+  Future<Result<KycDocument>> getDocument([
+    BusinessDocumentType documentType =
+        BusinessDocumentType.commercialRegistration,
+  ]) async => const Success(
+    KycDocument(
+      id: 'doc-1',
+      documentType: BusinessDocumentType.commercialRegistration,
+      status: VerificationStatus.pending,
+    ),
+  );
+
+  @override
+  Stream<Result<KycDocument>> watchDocument([
+    BusinessDocumentType documentType =
+        BusinessDocumentType.commercialRegistration,
+  ]) => const Stream.empty();
+}
+
 // Each role folder tests its own routes in
 // test/features/<feature>/<role>/presentation/ (APP_ARCHITECTURE.md §11).
 void main() {
@@ -26,6 +83,24 @@ void main() {
     // The splash fake never answers, so the app stays at its start path.
     registerFakeSplashBloc(FakeSplashRepository());
     registerFakeAuthBloc(FakeAuthRepository());
+    getIt.registerFactory(
+      () => ContractorLicenseBloc(
+        ContractorUploadLicenseUseCase(_FakeContractorKycRepository()),
+      ),
+    );
+    getIt.registerFactory<ContractorSpecialtyBloc>(
+      () => ContractorSpecialtyBloc(
+        const ContractorSaveSpecialtyUseCase(
+          _FakeContractorOnboardingRepository(),
+        ),
+      ),
+    );
+    getIt.registerFactory(
+      () => KycStatusBloc(
+        GetKycDocumentUseCase(_FakeKycRepository()),
+        WatchKycDocumentUseCase(_FakeKycRepository()),
+      ),
+    );
   });
 
   tearDown(getIt.reset);
@@ -146,5 +221,59 @@ void main() {
       await tester.pumpAndSettle();
       expect(currentPath(router), AuthRoutes.loginPath);
     });
+
+    testWidgets(
+      'a contractor with missing license is redirected to license page',
+      (tester) async {
+        final session = FakeAppSession()
+          ..signIn(AppRole.contractor, ContractorKycRoutes.licensePath);
+        final router = await pumpAppRouter(
+          tester,
+          session: session,
+          initialLocation: AuthRoutes.loginPath,
+        );
+
+        router.goNamed(AuthRoutes.loginName);
+        await tester.pumpAndSettle();
+        expect(currentPath(router), ContractorKycRoutes.licensePath);
+      },
+    );
+
+    testWidgets(
+      'a contractor with missing specialty is redirected to specialty page',
+      (tester) async {
+        final session = FakeAppSession()
+          ..signIn(
+            AppRole.contractor,
+            ContractorOnboardingRoutes.specialtyPath,
+          );
+        final router = await pumpAppRouter(
+          tester,
+          session: session,
+          initialLocation: AuthRoutes.loginPath,
+        );
+
+        router.goNamed(AuthRoutes.loginName);
+        await tester.pumpAndSettle();
+        expect(currentPath(router), ContractorOnboardingRoutes.specialtyPath);
+      },
+    );
+
+    testWidgets(
+      'a contractor pending KYC verification is redirected to KYC status page',
+      (tester) async {
+        final session = FakeAppSession()
+          ..signIn(AppRole.contractor, KycRoutes.statusPath);
+        final router = await pumpAppRouter(
+          tester,
+          session: session,
+          initialLocation: AuthRoutes.loginPath,
+        );
+
+        router.goNamed(AuthRoutes.loginName);
+        await tester.pumpAndSettle();
+        expect(currentPath(router), KycRoutes.statusPath);
+      },
+    );
   });
 }
