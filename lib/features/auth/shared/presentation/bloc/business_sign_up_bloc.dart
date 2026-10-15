@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/auth/shared/domain/entities/business_sign_up.dart';
 import 'package:watad/features/auth/shared/domain/entities/email_otp.dart';
@@ -205,10 +206,15 @@ class BusinessSignUpBloc
           ),
         );
       case Failed(:final failure):
+        final isAccountExists =
+            failure is AuthFailure ||
+            failure.messageKey == 'auth.account_already_exists' ||
+            failure.messageKey == 'validation.email_already_registered';
         emit(
           state.copyWith(
             status: BusinessSignUpStatus.failure,
             generalError: () => failure.messageKey,
+            emailError: () => isAccountExists ? failure.messageKey : null,
           ),
         );
     }

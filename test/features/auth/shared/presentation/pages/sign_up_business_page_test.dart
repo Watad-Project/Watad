@@ -9,6 +9,7 @@ import 'package:watad/core/components/inputs/app_otp_input.dart';
 import 'package:watad/core/components/inputs/app_phone_field.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_business_sign_up_use_case.dart';
@@ -190,4 +191,45 @@ void main() {
     expect(find.text('بيانات المنشأة'), findsOneWidget);
     expect(find.widgetWithText(AppButton, 'التالي'), findsOneWidget);
   });
+
+  testWidgets(
+    'submitting form when account already exists shows error snackbar and stops navigation',
+    (tester) async {
+      repository.sendOtpResult = const Failed(
+        AuthFailure(null, 'auth.account_already_exists'),
+      );
+      repository.sendSignUpOtpResult = const Failed(
+        AuthFailure(null, 'auth.account_already_exists'),
+      );
+
+      await openSignUpBusiness(tester);
+
+      final textFields = find.descendant(
+        of: find.byType(AppTextField),
+        matching: find.byType(TextFormField),
+      );
+
+      await tester.enterText(textFields.at(0), 'شركة وتد');
+      await tester.enterText(textFields.at(1), '1010123456');
+      await tester.enterText(textFields.at(2), 'existing@watad.sa');
+      final phoneField = find.descendant(
+        of: find.byType(AppPhoneField),
+        matching: find.byType(TextFormField),
+      );
+      await tester.enterText(phoneField, '501234567');
+      await tester.tap(find.byType(Checkbox));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(AppButton, 'التالي'));
+      await tester.pumpAndSettle();
+
+      // Stays on the form section and does NOT show OTP section
+      expect(find.text('رمز التحقق'), findsNothing);
+      expect(find.text('بيانات المنشأة'), findsOneWidget);
+      expect(find.widgetWithText(AppButton, 'التالي'), findsOneWidget);
+
+      // Shows error message
+      expect(find.text('الحساب مسجل بالفعل. يرجى تسجيل الدخول.'), findsWidgets);
+    },
+  );
 }

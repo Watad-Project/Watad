@@ -27,6 +27,14 @@ class FakeAuthRepository implements AuthRepository {
   BusinessSignUp? savedBusiness;
 
   @override
+  Future<Result<AuthSession?>> signUp({
+    required String email,
+    String? password,
+    String? phone,
+    Map<String, dynamic>? data,
+  }) async => const Success(null);
+
+  @override
   Future<Result<void>> sendOtp({
     required String email,
     bool shouldCreateUser = false,
@@ -199,6 +207,43 @@ void main() {
             (s) =>
                 s.status == BusinessSignUpStatus.failure &&
                 s.generalError == 'errors.server',
+          ),
+        ]),
+      );
+
+      bloc.add(const BusinessSignUpSubmitted());
+      await expectation;
+      await bloc.close();
+    });
+
+    test('emits failure and sets emailError when email is already registered, staying on form step', () async {
+      final repository = FakeAuthRepository(
+        sendOtpResult: const Failed(
+          AuthFailure(null, 'auth.account_already_exists'),
+        ),
+      );
+      final bloc = buildBloc(repository);
+
+      bloc.add(const BusinessSignUpCompanyNameChanged('شركة وتد'));
+      bloc.add(const BusinessSignUpCrNumberChanged('1010123456'));
+      bloc.add(const BusinessSignUpEmailChanged('existing@watad.sa'));
+      bloc.add(const BusinessSignUpPhoneChanged('501234567'));
+      bloc.add(const BusinessSignUpTermsToggled(true));
+      await Future<void>.delayed(Duration.zero);
+
+      final expectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          predicate<BusinessSignUpState>(
+            (s) => s.status == BusinessSignUpStatus.inProgress,
+          ),
+          predicate<BusinessSignUpState>(
+            (s) =>
+                s.status == BusinessSignUpStatus.failure &&
+                s.generalError == 'auth.account_already_exists' &&
+                s.emailError == 'auth.account_already_exists' &&
+                s.step == BusinessSignUpStep.form &&
+                s.isOtpStep == false,
           ),
         ]),
       );

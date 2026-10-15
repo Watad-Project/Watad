@@ -5,6 +5,14 @@ import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart'
 import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dart';
 
 abstract interface class AuthRemoteDataSource {
+  /// Signs up a new user with [email] and optional [password], [phone], or [data].
+  Future<AuthSessionModel?> signUp({
+    required String email,
+    String? password,
+    String? phone,
+    Map<String, dynamic>? data,
+  });
+
   /// Emails a sign-in or sign-up code to the account with this [email].
   Future<void> sendOtp({required String email, bool shouldCreateUser = false});
 
@@ -30,6 +38,33 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   const AuthRemoteDataSourceImpl(this._client);
 
   final SupabaseClient _client;
+
+  @override
+  Future<AuthSessionModel?> signUp({
+    required String email,
+    String? password,
+    String? phone,
+    Map<String, dynamic>? data,
+  }) async {
+    final response = await _client.auth.signUp(
+      email: email.trim().toLowerCase(),
+      password: password ?? '',
+      phone: phone,
+      data: data,
+    );
+    final user = response.user;
+    if (user == null) {
+      return null;
+    }
+    if (user.identities != null && user.identities!.isEmpty) {
+      throw const AuthException(
+        'User already registered',
+        statusCode: '422',
+        code: 'user_already_exists',
+      );
+    }
+    return AuthSessionModel.fromJson(user.toJson());
+  }
 
   @override
   Future<void> sendOtp({

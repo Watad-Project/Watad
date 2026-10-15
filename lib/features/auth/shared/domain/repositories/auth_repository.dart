@@ -6,6 +6,14 @@ import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dar
 
 /// Signing in and registration operations.
 abstract interface class AuthRepository {
+  /// Signs up with [email] and optional [password], [phone], or [data].
+  Future<Result<AuthSession?>> signUp({
+    required String email,
+    String? password,
+    String? phone,
+    Map<String, dynamic>? data,
+  });
+
   /// Emails a sign-in or sign-up code to the account with this [email].
   Future<Result<void>> sendOtp({
     required String email,

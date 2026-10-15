@@ -29,6 +29,14 @@ class FakeAuthRepository implements AuthRepository {
   int signOutCount = 0;
 
   @override
+  Future<Result<AuthSession?>> signUp({
+    required String email,
+    String? password,
+    String? phone,
+    Map<String, dynamic>? data,
+  }) async => const Success(null);
+
+  @override
   Future<Result<void>> sendOtp({
     required String email,
     bool shouldCreateUser = false,

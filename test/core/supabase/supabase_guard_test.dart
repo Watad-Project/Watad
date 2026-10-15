@@ -61,9 +61,23 @@ void main() {
     );
     expect(
       await _failureFor(
-        const AuthApiException('Too many requests', statusCode: '429'),
+        const AuthException('Too many requests', statusCode: '429'),
       ),
       isA<RateLimitFailure>(),
+    );
+    expect(
+      await _failureFor(
+        const AuthException(
+          'User already registered',
+          statusCode: '422',
+          code: 'user_already_exists',
+        ),
+      ),
+      isA<AuthFailure>().having(
+        (f) => f.messageKey,
+        'messageKey',
+        'auth.account_already_exists',
+      ),
     );
     expect(
       await _failureFor(AuthRetryableFetchException()),

@@ -41,6 +41,18 @@ class FakeAuthRepository implements AuthRepository {
   /// The codes that were checked, as (email, token).
   final List<(String, String)> checked = [];
 
+  Result<AuthSession?> signUpResult = const Success(
+    AuthSession(userId: 'user-1', email: 'user@watad.sa'),
+  );
+
+  @override
+  Future<Result<AuthSession?>> signUp({
+    required String email,
+    String? password,
+    String? phone,
+    Map<String, dynamic>? data,
+  }) async => signUpResult;
+
   @override
   Future<Result<void>> sendOtp({
     required String email,

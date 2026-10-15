@@ -1,6 +1,7 @@
 {
   "accept_terms": "I agree to the terms and privacy policy",
   "accept_terms_prefix": "I agree to the ",
+  "account_already_exists": "Account already exists. Please sign in.",
   "already_have_account": "Already have an account?",
   "business_step_label": "Business Account · Step 1 of 2",
   "business_subtitle": "Next, you will upload the contractor license for review.",

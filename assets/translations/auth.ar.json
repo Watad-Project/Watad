@@ -1,6 +1,7 @@
 {
   "accept_terms": "أوافق على الشروط وسياسة الخصوصية",
   "accept_terms_prefix": "أوافق على ",
+  "account_already_exists": "الحساب مسجل بالفعل. يرجى تسجيل الدخول.",
   "already_have_account": "لديك حساب بالفعل؟",
   "business_step_label": "حساب منشأة · الخطوة ١ من ٢",
   "business_subtitle": "بعدها ترفع رخصة المقاول للمراجعة.",
