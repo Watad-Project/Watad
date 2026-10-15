@@ -16,7 +16,7 @@ class ClientHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surfaceMuted,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: BlocBuilder<ClientHomeBloc, ClientHomeState>(
           builder: (context, state) {

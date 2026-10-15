@@ -17,16 +17,23 @@ class ClientSuggestedContractorModel extends ClientSuggestedContractor {
       companyName: (json['company_name'] as String?)?.trim() ?? '',
       avatarPath: json['avatar_path'] as String?,
       specializedField: json['specialized_field'] as String?,
-      rating: ((json['rating'] ?? json['rating_average'] ?? 0.0) as num)
-          .toDouble(),
+      rating:
+          ((json['rating'] ??
+                      json['rating_avg'] ??
+                      json['rating_average'] ??
+                      0.0)
+                  as num)
+              .toDouble(),
       completedProjectsCount:
           ((json['completed_projects_count'] ??
                       json['project_count'] ??
                       json['projects_count'] ??
+                      json['rating_count'] ??
                       0)
                   as num)
               .toInt(),
       isVerified:
+          json['is_verified_business'] == true ||
           json['is_verified'] == true ||
           json['verification_status'] == 'verified',
     );

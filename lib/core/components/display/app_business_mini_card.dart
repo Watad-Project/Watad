@@ -40,7 +40,10 @@ class AppBusinessMiniCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(height: 80, child: AppNetworkImage(url: imageUrl)),
+          SizedBox(
+            height: 80,
+            child: AppNetworkImage(url: imageUrl, placeholderLabel: 'photo'),
+          ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.sm),
             child: Column(

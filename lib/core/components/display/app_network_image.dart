@@ -12,6 +12,7 @@ class AppNetworkImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.borderRadius,
     this.semanticLabel,
+    this.placeholderLabel,
   });
 
   final String? url;
@@ -23,11 +24,14 @@ class AppNetworkImage extends StatelessWidget {
   /// What screen readers say. Without it the image is treated as decoration.
   final String? semanticLabel;
 
+  /// Optional label in the center of the striped placeholder.
+  final String? placeholderLabel;
+
   @override
   Widget build(BuildContext context) {
     final source = url;
     final Widget image = source == null || source.isEmpty
-        ? const AppImagePlaceholder()
+        ? AppImagePlaceholder(label: placeholderLabel)
         : Image.network(
             source,
             fit: fit,
@@ -37,9 +41,11 @@ class AppNetworkImage extends StatelessWidget {
             excludeFromSemantics: semanticLabel == null,
             // Until the first frame is decoded there is nothing to show.
             frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
-                frame == null ? const AppImagePlaceholder() : child,
+                frame == null
+                ? AppImagePlaceholder(label: placeholderLabel)
+                : child,
             errorBuilder: (context, error, stackTrace) =>
-                const AppImagePlaceholder(),
+                AppImagePlaceholder(label: placeholderLabel),
           );
     return SizedBox(
       width: width,

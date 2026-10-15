@@ -15,11 +15,7 @@ class ClientPostProjectBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.primary, AppColors.primaryDark],
-            begin: AlignmentDirectional.topStart,
-            end: AlignmentDirectional.bottomEnd,
-          ),
+          color: AppColors.primary,
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.lg)),
         ),
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -28,31 +24,43 @@ class ClientPostProjectBanner extends StatelessWidget {
           children: [
             Text(
               'home.post_project_title'.tr(),
-              style: AppTextStyles.h2.copyWith(color: AppColors.white),
+              style: AppTextStyles.h1.copyWith(
+                color: AppColors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               'home.post_project_subtitle'.tr(),
-              style: AppTextStyles.body.copyWith(color: AppColors.white),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.white.withValues(alpha: 0.95),
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
-            ElevatedButton(
-              onPressed: onStartNowTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.white,
-                foregroundColor: AppColors.ink,
-                elevation: 0,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(AppRadius.sm)),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onStartNowTap ?? () {},
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.white,
+                  foregroundColor: AppColors.ink,
+                  elevation: 0,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(AppRadius.md),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.sm + 2,
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.sm,
+                child: Text(
+                  'home.start_now'.tr(),
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.ink,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              child: Text(
-                'home.start_now'.tr(),
-                style: AppTextStyles.label.copyWith(color: AppColors.ink),
               ),
             ),
           ],

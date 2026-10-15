@@ -14,19 +14,35 @@ class ClientHomeRemoteDataSourceImpl implements ClientHomeRemoteDataSource {
 
   @override
   Future<ClientHomeProfileModel> getClientHomeProfile() async {
-    final response = await _supabase
+    final profileRes = await _supabase
         .from('v_my_profile')
         .select('full_name, avatar_path')
         .maybeSingle();
 
-    return ClientHomeProfileModel.fromJson(response ?? <String, dynamic>{});
+    final identityRes = await _supabase
+        .from('v_my_identity')
+        .select('phone')
+        .maybeSingle();
+
+    final phone = identityRes?['phone'] as String?;
+    final isPhoneVerified = phone != null && phone.trim().isNotEmpty;
+
+    final data = Map<String, dynamic>.from(profileRes ?? <String, dynamic>{});
+    data['is_phone_verified'] = isPhoneVerified;
+
+    return ClientHomeProfileModel.fromJson(data);
   }
 
   @override
   Future<List<ClientSuggestedContractorModel>> getSuggestedContractors() async {
     final response = await _supabase
         .from('v_public_profiles')
-        .select('id, company_name, avatar_path, specialized_field')
+        .select(
+          'id, company_name, avatar_path, specialized_field, is_verified_business, rating_avg, rating_count',
+        )
+        .eq('is_business', true)
+        .order('is_verified_business', ascending: false)
+        .order('rating_avg', ascending: false, nullsFirst: false)
         .limit(10);
 
     return (response as List<dynamic>)

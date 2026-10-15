@@ -18,14 +18,19 @@ class ClientSearchBar extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(AppRadius.md)),
         child: Container(
           height: AppSizes.minTapTarget,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(AppRadius.md)),
-            border: Border.all(color: AppColors.border),
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceMuted,
+            borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: Row(
             children: [
+              const Icon(
+                Icons.search,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   'home.search_placeholder'.tr(),
@@ -34,11 +39,6 @@ class ClientSearchBar extends StatelessWidget {
                   ),
                   textAlign: TextAlign.start,
                 ),
-              ),
-              const Icon(
-                Icons.search,
-                color: AppColors.textSecondary,
-                size: 20,
               ),
             ],
           ),

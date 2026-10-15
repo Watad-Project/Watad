@@ -43,5 +43,27 @@ void main() {
       expect(model.completedProjectsCount, 7);
       expect(model.isVerified, isTrue);
     });
+
+    test('parses v_public_profiles schema columns correctly', () {
+      final json = {
+        'id': 'b-789',
+        'company_name': 'CCC',
+        'avatar_path': null,
+        'specialized_field': 'Contracting',
+        'is_verified_business': true,
+        'rating_avg': 4.8,
+        'rating_count': 64,
+      };
+
+      final model = ClientSuggestedContractorModel.fromJson(json);
+
+      expect(model.id, 'b-789');
+      expect(model.companyName, 'CCC');
+      expect(model.avatarPath, isNull);
+      expect(model.specializedField, 'Contracting');
+      expect(model.rating, 4.8);
+      expect(model.completedProjectsCount, 64);
+      expect(model.isVerified, isTrue);
+    });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
+import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/core/theme/app_tone.dart';
@@ -22,23 +23,38 @@ class ClientHomeGreetingHeader extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(greetingKey.tr(), style: AppTextStyles.caption),
-              if (profile?.isPhoneVerified ?? false) ...[
-                const SizedBox(width: AppSpacing.sm),
-                AppStatusBadge(
-                  label: 'home.verified_phone'.tr(),
-                  tone: AppTone.neutral,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greetingKey.tr(),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  displayName,
+                  style: AppTextStyles.h1,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(displayName, style: AppTextStyles.h1),
+          if (profile?.isPhoneVerified ?? false)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: AppStatusBadge(
+                label: 'home.verified_phone'.tr(),
+                tone: AppTone.neutral,
+              ),
+            ),
         ],
       ),
     );
