@@ -738,11 +738,10 @@ class _PhotosSection extends StatelessWidget {
           width: 72,
           height: 72,
           fit: BoxFit.cover,
-          errorBuilder: (_, _, _) =>
-              const AppPhotoTile(size: 72, placeholderLabel: 'photo'),
+          errorBuilder: (_, _, _) => const AppPhotoTile(size: 72),
         ),
       );
     }
-    return const AppPhotoTile(size: 72, placeholderLabel: 'photo');
+    return const AppPhotoTile(size: 72);
   }
 }

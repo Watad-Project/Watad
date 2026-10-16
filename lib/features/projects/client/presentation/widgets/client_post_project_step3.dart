@@ -53,7 +53,11 @@ class ClientPostProjectStep3 extends StatelessWidget {
               tone: AppTone.attention,
               title: context.tr(
                 'projects.client.deed_selected_pending_title',
-                args: [state.deedFileName ?? 'deed.pdf'],
+                args: [
+                  state.deedFileName ??
+                      state.deedFilePath?.split(RegExp(r'[\\/]')).last ??
+                      '',
+                ],
               ),
               subtitle: context.tr(
                 'projects.client.deed_selected_pending_desc',
