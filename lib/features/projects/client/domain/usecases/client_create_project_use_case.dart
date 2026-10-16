@@ -14,6 +14,9 @@ class ClientCreateProjectUseCase implements UseCase<void, ClientNewProject> {
     if (params.title.trim().isEmpty) {
       return const Failed(ValidationFailure('validation.title_required'));
     }
+    if (params.city.trim().isEmpty) {
+      return const Failed(ValidationFailure('validation.city_required'));
+    }
     return _repository.createProject(params);
   }
 }

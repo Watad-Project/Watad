@@ -268,7 +268,7 @@ class ClientPostProjectBloc
     final city =
         state.locationCity ??
         state.selectedAddress?.city ??
-        (parts.isNotEmpty && parts[0].isNotEmpty ? parts[0] : 'Riyadh');
+        (parts.isNotEmpty && parts[0].isNotEmpty ? parts[0] : '');
     final district =
         state.locationDistrict ??
         state.selectedAddress?.district ??
