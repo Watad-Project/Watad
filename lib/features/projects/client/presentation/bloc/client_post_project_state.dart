@@ -12,6 +12,12 @@ final class ClientPostProjectState {
     this.minBudget,
     this.maxBudget,
     this.locationAddress,
+    this.addressId,
+    this.locationCity,
+    this.locationDistrict,
+    this.savedAddresses = const [],
+    this.isLoadingAddresses = false,
+    this.selectedAddress,
     this.photos = const [],
     this.deedFilePath,
     this.deedFileName,
@@ -41,6 +47,24 @@ final class ClientPostProjectState {
 
   /// The chosen project location / address string (step 2).
   final String? locationAddress;
+
+  /// Foreign key id of the chosen address in Supabase `addresses` table.
+  final String? addressId;
+
+  /// City of the chosen address.
+  final String? locationCity;
+
+  /// District of the chosen address.
+  final String? locationDistrict;
+
+  /// The client's saved addresses loaded from Supabase `v_my_addresses`.
+  final List<ClientSavedAddress> savedAddresses;
+
+  /// Whether saved addresses are currently being loaded from Supabase.
+  final bool isLoadingAddresses;
+
+  /// The currently selected saved address.
+  final ClientSavedAddress? selectedAddress;
 
   /// Attached photo labels or file paths (step 2).
   final List<String> photos;
@@ -82,7 +106,7 @@ final class ClientPostProjectState {
         (minBudget == null || minBudget!.halalas > 0) &&
         (maxBudget == null || maxBudget!.halalas > 0);
     final validLocation =
-        locationAddress == null || locationAddress!.trim().isNotEmpty;
+        locationAddress != null && locationAddress!.trim().isNotEmpty;
     return validScope && validBudget && validLocation;
   }
 
@@ -119,6 +143,13 @@ final class ClientPostProjectState {
     Money? minBudget,
     Money? maxBudget,
     String? locationAddress,
+    String? addressId,
+    String? locationCity,
+    String? locationDistrict,
+    List<ClientSavedAddress>? savedAddresses,
+    bool? isLoadingAddresses,
+    ClientSavedAddress? selectedAddress,
+    bool clearSelectedAddress = false,
     List<String>? photos,
     String? deedFilePath,
     String? deedFileName,
@@ -135,6 +166,14 @@ final class ClientPostProjectState {
       minBudget: minBudget ?? this.minBudget,
       maxBudget: maxBudget ?? this.maxBudget,
       locationAddress: locationAddress ?? this.locationAddress,
+      addressId: addressId ?? this.addressId,
+      locationCity: locationCity ?? this.locationCity,
+      locationDistrict: locationDistrict ?? this.locationDistrict,
+      savedAddresses: savedAddresses ?? this.savedAddresses,
+      isLoadingAddresses: isLoadingAddresses ?? this.isLoadingAddresses,
+      selectedAddress: clearSelectedAddress
+          ? null
+          : (selectedAddress ?? this.selectedAddress),
       photos: photos ?? this.photos,
       deedFilePath: clearDeed ? null : (deedFilePath ?? this.deedFilePath),
       deedFileName: clearDeed ? null : (deedFileName ?? this.deedFileName),

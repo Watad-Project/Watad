@@ -9,16 +9,32 @@ import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
+import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_post_project_page.dart';
 
 import '../../../../../helpers/pump_component.dart';
 
+const _testAddress = ClientSavedAddress(
+  id: 'addr_1',
+  name: 'موقعي',
+  city: 'الرياض',
+  district: 'حي المروج',
+  formattedAddress: 'الرياض · حي المروج',
+);
+
 void main() {
-  Widget buildPage({ClientPostProjectBloc? bloc}) {
+  Widget buildPage({
+    ClientPostProjectBloc? bloc,
+    Future<void> Function(BuildContext context)? onPickDeed,
+    Future<void> Function(BuildContext context)? onPickPhoto,
+  }) {
     return BlocProvider(
       create: (_) => bloc ?? ClientPostProjectBloc(),
-      child: const ClientPostProjectPage(),
+      child: ClientPostProjectPage(
+        onPickDeed: onPickDeed,
+        onPickPhoto: onPickPhoto,
+      ),
     );
   }
 
@@ -119,6 +135,7 @@ void main() {
           ..add(
             const ClientPostProjectTypeSelected(ClientProjectType.renovation),
           )
+          ..add(const ClientPostProjectAddressSelected(_testAddress))
           ..add(const ClientPostProjectStepAdvanced());
 
         await pumpLocalizedApp(tester, buildPage(bloc: bloc));
@@ -132,9 +149,12 @@ void main() {
         expect(find.text('الميزانية (ر.س)'), findsOneWidget);
         expect(find.text('موقع المشروع'), findsOneWidget);
         expect(find.text('الرياض · حي المروج'), findsOneWidget);
-        expect(find.text('تغيير على الخريطة'), findsOneWidget);
+        expect(find.text('تغيير العنوان'), findsOneWidget);
         expect(find.text('التالي — توثيق الملكية'), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(
+          find.byKey(const Key('client_post_project_add_photo_button')),
+          findsOneWidget,
+        );
 
         final nextButton = tester.widget<AppButton>(find.byType(AppButton));
         expect(nextButton.onPressed, isNull);
@@ -146,6 +166,7 @@ void main() {
       (tester) async {
         final bloc = ClientPostProjectBloc()
           ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
+          ..add(const ClientPostProjectAddressSelected(_testAddress))
           ..add(const ClientPostProjectStepAdvanced());
 
         await pumpLocalizedApp(tester, buildPage(bloc: bloc));
@@ -170,6 +191,7 @@ void main() {
       (tester) async {
         final bloc = ClientPostProjectBloc()
           ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
+          ..add(const ClientPostProjectAddressSelected(_testAddress))
           ..add(const ClientPostProjectStepAdvanced());
 
         await pumpLocalizedApp(tester, buildPage(bloc: bloc));
@@ -273,10 +295,24 @@ void main() {
     ) async {
       final bloc = ClientPostProjectBloc()
         ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectAddressSelected(_testAddress))
         ..add(const ClientPostProjectStepAdvanced())
         ..add(const ClientPostProjectStepAdvanced());
 
-      await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+      await pumpLocalizedApp(
+        tester,
+        buildPage(
+          bloc: bloc,
+          onPickDeed: (context) async {
+            context.read<ClientPostProjectBloc>().add(
+              const ClientPostProjectDeedSelected(
+                filePath: '/path/to/deed.pdf',
+                fileName: 'deed.pdf',
+              ),
+            );
+          },
+        ),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byType(AppUploadZone));
