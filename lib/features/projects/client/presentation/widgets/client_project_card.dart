@@ -86,24 +86,32 @@ class ClientProjectCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (project.budget != null)
-                Text(
-                  'projects.client.budget_amount'.tr(
-                    namedArgs: {
-                      'amount': (project.budget!.halalas / 100).toStringAsFixed(
-                        2,
-                      ),
-                    },
-                  ),
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    'projects.client.budget_amount'.tr(
+                      namedArgs: {
+                        'amount': (project.budget!.halalas / 100)
+                            .toStringAsFixed(2),
+                      },
+                    ),
+                    style: AppTextStyles.label.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 )
               else
-                Text(
-                  'projects.client.budget_unspecified'.tr(),
-                  style: AppTextStyles.caption,
+                Expanded(
+                  child: Text(
+                    'projects.client.budget_unspecified'.tr(),
+                    style: AppTextStyles.caption,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+              const SizedBox(width: AppSpacing.sm),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.sm,

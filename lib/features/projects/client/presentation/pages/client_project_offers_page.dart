@@ -139,37 +139,49 @@ class _OffersContent extends StatelessWidget {
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: AppSpacing.xxs),
-                    Text(location, style: AppTextStyles.caption),
+                    Expanded(
+                      child: Text(
+                        location,
+                        style: AppTextStyles.caption,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
                 const Divider(height: AppSpacing.lg),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'projects.client.budget_title'.tr(),
-                          style: AppTextStyles.caption,
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          project.budget != null
-                              ? 'projects.client.budget_amount'.tr(
-                                  namedArgs: {
-                                    'amount': (project.budget!.halalas / 100)
-                                        .toStringAsFixed(2),
-                                  },
-                                )
-                              : 'projects.client.budget_unspecified'.tr(),
-                          style: AppTextStyles.label.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.ink,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'projects.client.budget_title'.tr(),
+                            style: AppTextStyles.caption,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            project.budget != null
+                                ? 'projects.client.budget_amount'.tr(
+                                    namedArgs: {
+                                      'amount': (project.budget!.halalas / 100)
+                                          .toStringAsFixed(2),
+                                    },
+                                  )
+                                : 'projects.client.budget_unspecified'.tr(),
+                            style: AppTextStyles.label.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.ink,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: AppSpacing.sm),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [

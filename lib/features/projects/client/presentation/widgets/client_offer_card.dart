@@ -115,10 +115,15 @@ class ClientOfferCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'projects.client.offer_price_label'.tr(),
-                style: AppTextStyles.caption,
+              Expanded(
+                child: Text(
+                  'projects.client.offer_price_label'.tr(),
+                  style: AppTextStyles.caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 'projects.client.offer_amount'.tr(
                   namedArgs: {'amount': amountString},
