@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/layout/app_bottom_nav.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
+import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/navigation/client/presentation/pages/client_navigation_page.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_placeholder.dart';
@@ -18,6 +19,10 @@ void main() {
     //
     // The router opens at the splash page first. Its fake never answers.
     registerFakeSplashBloc(FakeSplashRepository());
+    getIt.registerFactory<Widget>(
+      () => const SizedBox(),
+      instanceName: ClientProjectsRoutes.projectsName,
+    );
   });
 
   tearDown(getIt.reset);

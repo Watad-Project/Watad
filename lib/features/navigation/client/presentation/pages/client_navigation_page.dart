@@ -1,4 +1,5 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -33,7 +34,12 @@ class ClientNavigationPage extends StatelessWidget {
   ///    folder's routes test.
   static const List<NavigationTab> tabs = [
     NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'projects.client.list_title',
+      icon: Icons.assignment_outlined,
+      selectedIcon: Icons.assignment,
+      routeName: ClientProjectsRoutes.projectsName,
+    ),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
