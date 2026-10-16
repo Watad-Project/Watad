@@ -32,11 +32,50 @@ final class ClientPostProjectMaxBudgetChanged extends ClientPostProjectEvent {
   final Money? maxBudget;
 }
 
+/// Load client's saved addresses from Supabase `v_my_addresses`.
+final class ClientPostProjectAddressesRequested extends ClientPostProjectEvent {
+  const ClientPostProjectAddressesRequested();
+}
+
+/// The user selected an address from their saved Supabase addresses.
+final class ClientPostProjectAddressSelected extends ClientPostProjectEvent {
+  const ClientPostProjectAddressSelected(this.address);
+
+  final ClientSavedAddress address;
+}
+
+/// The user created a new address to save to Supabase `addresses`.
+final class ClientPostProjectAddressCreated extends ClientPostProjectEvent {
+  const ClientPostProjectAddressCreated({
+    required this.name,
+    required this.city,
+    required this.district,
+    required this.street,
+    required this.buildingNumber,
+    required this.postalCode,
+  });
+
+  final String name;
+  final String city;
+  final String district;
+  final String street;
+  final String buildingNumber;
+  final String postalCode;
+}
+
 /// The user selected or changed the location address (step 2).
 final class ClientPostProjectLocationChanged extends ClientPostProjectEvent {
-  const ClientPostProjectLocationChanged(this.location);
+  const ClientPostProjectLocationChanged(
+    this.location, {
+    this.addressId,
+    this.city,
+    this.district,
+  });
 
   final String location;
+  final String? addressId;
+  final String? city;
+  final String? district;
 }
 
 /// The user added a photo (step 2).

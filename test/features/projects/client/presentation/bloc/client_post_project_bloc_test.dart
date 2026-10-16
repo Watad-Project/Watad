@@ -5,8 +5,11 @@ import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
+import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_create_address_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_create_project_use_case.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_get_saved_addresses_use_case.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 
 void main() {
@@ -269,7 +272,7 @@ void main() {
         final repo = _FakeClientProjectsRepository();
         repo.result = const Success(null);
         final useCase = ClientCreateProjectUseCase(repo);
-        final bloc = ClientPostProjectBloc(useCase);
+        final bloc = ClientPostProjectBloc(createProjectUseCase: useCase);
 
         bloc.add(
           const ClientPostProjectTypeSelected(ClientProjectType.repairs),
@@ -299,7 +302,7 @@ void main() {
         final repo = _FakeClientProjectsRepository();
         repo.result = const Failed(ServerFailure('Database error'));
         final useCase = ClientCreateProjectUseCase(repo);
-        final bloc = ClientPostProjectBloc(useCase);
+        final bloc = ClientPostProjectBloc(createProjectUseCase: useCase);
 
         bloc.add(
           const ClientPostProjectTypeSelected(ClientProjectType.repairs),
@@ -324,6 +327,83 @@ void main() {
         await bloc.close();
       },
     );
+
+    test('loads saved addresses on init and selects the first one', () async {
+      final repo = _FakeClientProjectsRepository();
+      const testAddr = ClientSavedAddress(
+        id: 'addr_1',
+        name: 'Home',
+        city: 'Riyadh',
+        district: 'An-Narjis',
+        street: 'Anas Ibn Malik',
+        buildingNumber: '4210',
+        postalCode: '13324',
+        formattedAddress: 'Riyadh · An-Narjis',
+      );
+      repo.addressesResult = const Success([testAddr]);
+      final getAddressesUseCase = ClientGetSavedAddressesUseCase(repo);
+      final bloc = ClientPostProjectBloc(
+        getSavedAddressesUseCase: getAddressesUseCase,
+      );
+
+      await expectLater(
+        bloc.stream,
+        emitsThrough(
+          predicate<ClientPostProjectState>(
+            (s) =>
+                s.savedAddresses.length == 1 &&
+                s.selectedAddress?.id == 'addr_1' &&
+                s.addressId == 'addr_1',
+          ),
+        ),
+      );
+
+      await bloc.close();
+    });
+
+    test('creates address and adds it to savedAddresses', () async {
+      final repo = _FakeClientProjectsRepository();
+      const newAddr = ClientSavedAddress(
+        id: 'addr_2',
+        name: 'Office',
+        city: 'Jeddah',
+        district: 'Al-Rawdah',
+        street: 'Prince Sultan',
+        buildingNumber: '1122',
+        postalCode: '23432',
+        formattedAddress: 'Jeddah · Al-Rawdah',
+      );
+      repo.createAddressResult = const Success(newAddr);
+      final createAddressUseCase = ClientCreateAddressUseCase(repo);
+      final bloc = ClientPostProjectBloc(
+        createAddressUseCase: createAddressUseCase,
+      );
+
+      bloc.add(
+        const ClientPostProjectAddressCreated(
+          name: 'Office',
+          city: 'Jeddah',
+          district: 'Al-Rawdah',
+          street: 'Prince Sultan',
+          buildingNumber: '1122',
+          postalCode: '23432',
+        ),
+      );
+
+      await expectLater(
+        bloc.stream,
+        emitsThrough(
+          predicate<ClientPostProjectState>(
+            (s) =>
+                s.selectedAddress?.id == 'addr_2' &&
+                s.locationCity == 'Jeddah' &&
+                s.locationDistrict == 'Al-Rawdah',
+          ),
+        ),
+      );
+
+      await bloc.close();
+    });
 
     test('resets back to initial state', () async {
       final bloc = ClientPostProjectBloc();
@@ -350,7 +430,34 @@ void main() {
 
 class _FakeClientProjectsRepository implements ClientProjectsRepository {
   Result<void> result = const Success(null);
+  Result<List<ClientSavedAddress>> addressesResult = const Success([]);
+  Result<ClientSavedAddress> createAddressResult = const Success(
+    ClientSavedAddress(
+      id: 'addr_1',
+      name: 'Home',
+      city: 'Riyadh',
+      district: 'An-Narjis',
+      street: 'Anas Ibn Malik',
+      buildingNumber: '4210',
+      postalCode: '13324',
+      formattedAddress: 'Riyadh · An-Narjis',
+    ),
+  );
 
   @override
   Future<Result<void>> createProject(ClientNewProject project) async => result;
+
+  @override
+  Future<Result<List<ClientSavedAddress>>> getSavedAddresses() async =>
+      addressesResult;
+
+  @override
+  Future<Result<ClientSavedAddress>> createAddress({
+    required String name,
+    required String city,
+    required String district,
+    required String street,
+    required String buildingNumber,
+    required String postalCode,
+  }) async => createAddressResult;
 }

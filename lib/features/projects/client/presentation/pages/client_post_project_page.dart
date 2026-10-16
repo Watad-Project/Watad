@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -16,7 +17,13 @@ import 'package:watad/features/projects/client/presentation/widgets/client_post_
 
 /// The client's main flow for posting a construction project.
 class ClientPostProjectPage extends StatelessWidget {
-  const ClientPostProjectPage({super.key});
+  const ClientPostProjectPage({super.key, this.onPickDeed, this.onPickPhoto});
+
+  /// Injected callback for selecting a deed (e.g. for widget testing).
+  final Future<void> Function(BuildContext context)? onPickDeed;
+
+  /// Injected callback for selecting a photo (e.g. for widget testing).
+  final Future<void> Function(BuildContext context)? onPickPhoto;
 
   void _safeNavigateHome(BuildContext context) {
     try {
@@ -42,6 +49,32 @@ class ClientPostProjectPage extends StatelessWidget {
     }
   }
 
+  Future<void> _defaultPickDeed(BuildContext context) async {
+    try {
+      final file = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      );
+
+      if (file == null) {
+        return;
+      }
+
+      if (context.mounted) {
+        context.read<ClientPostProjectBloc>().add(
+          ClientPostProjectDeedSelected(
+            filePath: file.path ?? file.name,
+            fileName: file.name,
+          ),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        context.showErrorSnackBar(context.tr('errors.unknown'));
+      }
+    }
+  }
+
   String _nextButtonLabel(BuildContext context, ClientPostProjectState state) {
     if (state.isReviewStep) {
       return context.tr('projects.client.publish_project_button');
@@ -50,28 +83,20 @@ class ClientPostProjectPage extends StatelessWidget {
       return context.tr('projects.client.next_button');
     }
     if (state.currentStep == 2) {
-      if (state.requiresDeed) {
-        return context.tr('projects.client.next_deed_button');
-      }
-      return context.tr('projects.client.next_review_button');
+      return state.requiresDeed
+          ? context.tr('projects.client.next_deed_button')
+          : context.tr('projects.client.next_review_button');
     }
     return context.tr('projects.client.next_review_button');
   }
 
   bool _canProceed(ClientPostProjectState state) {
-    if (state.isReviewStep) {
-      return state.canPublish;
-    }
-    if (state.currentStep == 1) {
-      return state.canProceedFromStep1;
-    }
-    if (state.currentStep == 2) {
-      return state.canProceedFromStep2;
-    }
-    if (state.currentStep == 3 && state.requiresDeed) {
-      return state.canProceedFromStep3;
-    }
-    return false;
+    return switch (state.currentStep) {
+      1 => state.canProceedFromStep1,
+      2 => state.canProceedFromStep2,
+      3 => state.requiresDeed ? state.canProceedFromStep3 : true,
+      _ => state.canPublish,
+    };
   }
 
   String _stepTitle(BuildContext context, ClientPostProjectState state) {
@@ -140,6 +165,7 @@ class ClientPostProjectPage extends StatelessWidget {
                       ),
                       2 => ClientPostProjectStep2(
                         state: state,
+                        onPickPhoto: onPickPhoto,
                         onTypeChanged: (type) {
                           context.read<ClientPostProjectBloc>().add(
                             ClientPostProjectTypeSelected(type),
@@ -180,18 +206,13 @@ class ClientPostProjectPage extends StatelessWidget {
                         state.requiresDeed
                             ? ClientPostProjectStep3(
                                 state: state,
-                                onUploadDeed: () {
-                                  context.read<ClientPostProjectBloc>().add(
-                                    const ClientPostProjectDeedSelected(
-                                      filePath: 'mock/path/deed.pdf',
-                                      fileName: 'deed.pdf',
-                                    ),
-                                  );
-                                },
+                                onUploadDeed: () =>
+                                    (onPickDeed ?? _defaultPickDeed)(context),
                                 onRetryDeed: () {
                                   context.read<ClientPostProjectBloc>().add(
                                     const ClientPostProjectDeedRetry(),
                                   );
+                                  (onPickDeed ?? _defaultPickDeed)(context);
                                 },
                               )
                             : ClientPostProjectStepReview(state: state),
