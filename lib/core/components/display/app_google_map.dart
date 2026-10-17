@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+/// Reusable Google Map component following Clean Architecture (APP_ARCHITECTURE.md §6).
+///
+/// Features never import `google_maps_flutter` directly; they use `AppGoogleMap`.
+class AppGoogleMap extends StatefulWidget {
+  const AppGoogleMap({
+    super.key,
+    this.initialLatitude = 24.7136, // Riyadh coordinates by default
+    this.initialLongitude = 46.6753,
+    this.initialZoom = 14.0,
+    this.onTap,
+    this.onCameraMove,
+    this.markers = const {},
+    this.myLocationButtonEnabled = false,
+    this.zoomControlsEnabled = false,
+  });
+
+  final double initialLatitude;
+  final double initialLongitude;
+  final double initialZoom;
+  final void Function(LatLng)? onTap;
+  final void Function(CameraPosition)? onCameraMove;
+  final Set<Marker> markers;
+  final bool myLocationButtonEnabled;
+  final bool zoomControlsEnabled;
+
+  @override
+  State<AppGoogleMap> createState() => _AppGoogleMapState();
+}
+
+class _AppGoogleMapState extends State<AppGoogleMap> {
+  GoogleMapController? _controller;
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GoogleMap(
+      initialCameraPosition: CameraPosition(
+        target: LatLng(widget.initialLatitude, widget.initialLongitude),
+        zoom: widget.initialZoom,
+      ),
+      onMapCreated: (controller) => _controller = controller,
+      onTap: widget.onTap,
+      onCameraMove: widget.onCameraMove,
+      markers: widget.markers,
+      myLocationButtonEnabled: widget.myLocationButtonEnabled,
+      zoomControlsEnabled: widget.zoomControlsEnabled,
+      compassEnabled: false,
+      mapToolbarEnabled: false,
+    );
+  }
+}
