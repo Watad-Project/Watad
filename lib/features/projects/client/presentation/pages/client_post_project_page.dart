@@ -109,6 +109,7 @@ class ClientPostProjectPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ClientPostProjectBloc, ClientPostProjectState>(
+      listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == ClientPostProjectStatus.success) {
           context.showSuccessSnackBar(

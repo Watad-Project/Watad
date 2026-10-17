@@ -156,6 +156,7 @@ final class ClientPostProjectState {
     ClientDeedVerificationStatus? deedStatus,
     String? deedRejectionReason,
     bool clearDeed = false,
+    bool clearFailure = false,
     ClientPostProjectStatus? status,
     Failure? failure,
   }) {
@@ -182,7 +183,7 @@ final class ClientPostProjectState {
           ? null
           : (deedRejectionReason ?? this.deedRejectionReason),
       status: status ?? this.status,
-      failure: failure ?? this.failure,
+      failure: clearFailure ? null : (failure ?? this.failure),
     );
   }
 }
