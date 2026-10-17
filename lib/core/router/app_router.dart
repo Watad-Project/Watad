@@ -11,6 +11,7 @@ import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
+import 'package:watad/features/location/shared/presentation/location_routes.dart';
 import 'package:watad/features/navigation/admin/presentation/admin_navigation_routes.dart';
 import 'package:watad/features/navigation/client/presentation/client_navigation_routes.dart';
 import 'package:watad/features/navigation/contractor/presentation/contractor_navigation_routes.dart';
@@ -49,6 +50,7 @@ GoRouter createAppRouter({
       ...clientNavigationRoutes,
       ...clientProjectsRoutes,
       ...contractorNavigationRoutes,
+      ...locationRoutes,
       ...onboardingRoutes,
       ...splashRoutes,
     ],

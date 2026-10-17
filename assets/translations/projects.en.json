@@ -78,6 +78,16 @@
     "review_deed_none": "No Deed Uploaded",
     "review_deed_not_required": "No Deed Needed",
     "publish_project_button": "Publish Project",
-    "publish_success_message": "Project published successfully"
+    "publish_success_message": "Project published successfully",
+    "address_title": "Where is the project located?",
+    "address_subtitle": "Choose one of your saved addresses or set a new location.",
+    "address_back_label": "Project details",
+    "address_new_on_map": "Set a new location on the map",
+    "address_new_on_map_desc": "Google Maps — autofills address details",
+    "address_saved_title": "Saved addresses",
+    "address_deed_hint": "For construction and renovation projects, the address must match the ownership deed.",
+    "address_use_selected": "Use this address",
+    "address_empty_title": "No saved addresses yet",
+    "address_empty_desc": "Pick a new location on the map to use for your project."
   }
 }

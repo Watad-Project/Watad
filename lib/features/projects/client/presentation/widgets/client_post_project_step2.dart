@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_photo_tile.dart';
@@ -13,6 +14,7 @@ import 'package:watad/core/components/inputs/app_field_label.dart';
 import 'package:watad/core/components/inputs/app_radio_row.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/layout/app_step_progress.dart';
+import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -401,6 +403,21 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  label: context.tr('projects.client.location_change'),
+                  icon: Icons.map_outlined,
+                  variant: AppButtonVariant.primary,
+                  onPressed: () async {
+                    Navigator.of(bottomSheetContext).pop();
+                    final result = await context.pushNamed<dynamic>(
+                      ClientProjectsRoutes.postProjectAddressName,
+                    );
+                    if (result is String && result.trim().isNotEmpty) {
+                      widget.onLocationChanged(result);
+                    }
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sm),
                 AppButton(
                   label: context.tr('projects.client.add_address_button'),
                   icon: Icons.add_location_alt_outlined,
