@@ -232,7 +232,13 @@ class ClientPostProjectBloc
     Emitter<ClientPostProjectState> emit,
   ) {
     if (state.currentStep < state.totalSteps) {
-      emit(state.copyWith(currentStep: state.currentStep + 1));
+      emit(
+        state.copyWith(
+          currentStep: state.currentStep + 1,
+          status: ClientPostProjectStatus.initial,
+          clearFailure: true,
+        ),
+      );
     }
   }
 
@@ -241,7 +247,13 @@ class ClientPostProjectBloc
     Emitter<ClientPostProjectState> emit,
   ) {
     if (state.currentStep > 1) {
-      emit(state.copyWith(currentStep: state.currentStep - 1));
+      emit(
+        state.copyWith(
+          currentStep: state.currentStep - 1,
+          status: ClientPostProjectStatus.initial,
+          clearFailure: true,
+        ),
+      );
     }
   }
 
