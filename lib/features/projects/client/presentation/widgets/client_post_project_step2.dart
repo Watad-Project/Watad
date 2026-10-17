@@ -14,7 +14,6 @@ import 'package:watad/core/components/inputs/app_field_label.dart';
 import 'package:watad/core/components/inputs/app_radio_row.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/layout/app_step_progress.dart';
-import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/router/routes/location_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';

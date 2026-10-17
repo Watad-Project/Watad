@@ -14,6 +14,7 @@ class AppGoogleMap extends StatefulWidget {
     this.initialZoom = 14.0,
     this.onTap,
     this.onCameraMove,
+    this.onCameraIdle,
     this.markers = const {},
     this.myLocationButtonEnabled = false,
     this.zoomControlsEnabled = false,
@@ -24,6 +25,7 @@ class AppGoogleMap extends StatefulWidget {
   final double initialZoom;
   final void Function(LatLng)? onTap;
   final void Function(CameraPosition)? onCameraMove;
+  final void Function(LatLng)? onCameraIdle;
   final Set<Marker> markers;
   final bool myLocationButtonEnabled;
   final bool zoomControlsEnabled;
@@ -34,6 +36,7 @@ class AppGoogleMap extends StatefulWidget {
 
 class _AppGoogleMapState extends State<AppGoogleMap> {
   GoogleMapController? _controller;
+  LatLng? _lastTarget;
 
   @override
   void dispose() {
@@ -50,7 +53,15 @@ class _AppGoogleMapState extends State<AppGoogleMap> {
       ),
       onMapCreated: (controller) => _controller = controller,
       onTap: widget.onTap,
-      onCameraMove: widget.onCameraMove,
+      onCameraMove: (pos) {
+        _lastTarget = pos.target;
+        widget.onCameraMove?.call(pos);
+      },
+      onCameraIdle: () {
+        if (_lastTarget != null) {
+          widget.onCameraIdle?.call(_lastTarget!);
+        }
+      },
       markers: widget.markers,
       myLocationButtonEnabled: widget.myLocationButtonEnabled,
       zoomControlsEnabled: widget.zoomControlsEnabled,

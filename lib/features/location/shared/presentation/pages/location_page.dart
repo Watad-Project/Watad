@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_google_map.dart';
-import 'package:watad/core/components/display/app_image_placeholder.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_field_label.dart';
 import 'package:watad/core/components/inputs/app_switch.dart';
@@ -432,9 +431,9 @@ class _MapMockupSection extends StatelessWidget {
           AppGoogleMap(
             initialLatitude: 24.7136,
             initialLongitude: 46.6753,
-            onCameraMove: (pos) => onDragEnd(
-              pos.target.latitude,
-              pos.target.longitude,
+            onCameraIdle: (latLng) => onDragEnd(
+              latLng.latitude,
+              latLng.longitude,
             ),
             onTap: (latLng) => onDragEnd(
               latLng.latitude,
