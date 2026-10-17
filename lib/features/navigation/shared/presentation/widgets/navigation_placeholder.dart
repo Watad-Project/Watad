@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
-import 'package:watad/core/router/routes/location_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 
@@ -29,15 +28,6 @@ class NavigationPlaceholder extends StatelessWidget {
               icon: Icons.add_circle_outline,
               onPressed: () =>
                   context.pushNamed(ClientProjectsRoutes.postProjectName),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            AppButton(
-              key: const Key('navigation_placeholder_test_map_button'),
-              label: context.tr('navigation.test_map'),
-              variant: AppButtonVariant.secondary,
-              icon: Icons.map_outlined,
-              onPressed: () =>
-                  context.pushNamed(LocationRoutes.locationName),
             ),
           ],
         ),

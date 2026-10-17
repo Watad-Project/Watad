@@ -15,6 +15,7 @@ import 'package:watad/core/components/inputs/app_radio_row.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/layout/app_step_progress.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
+import 'package:watad/core/router/routes/location_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -199,6 +200,22 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
                   Text(
                     context.tr('projects.client.add_address_button'),
                     style: AppTextStyles.h2,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  AppButton(
+                    key: const Key('client_post_project_sheet_pick_map_button'),
+                    label: context.tr('projects.client.address_new_on_map'),
+                    icon: Icons.map_outlined,
+                    variant: AppButtonVariant.secondary,
+                    onPressed: () async {
+                      Navigator.of(bottomSheetContext).pop();
+                      final result = await context.pushNamed<dynamic>(
+                        LocationRoutes.locationName,
+                      );
+                      if (result is String && result.trim().isNotEmpty) {
+                        widget.onLocationChanged(result);
+                      }
+                    },
                   ),
                   const SizedBox(height: AppSpacing.md),
                   AppFieldLabel(
@@ -404,13 +421,13 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
-                  label: context.tr('projects.client.location_change'),
+                  label: context.tr('projects.client.address_new_on_map'),
                   icon: Icons.map_outlined,
                   variant: AppButtonVariant.primary,
                   onPressed: () async {
                     Navigator.of(bottomSheetContext).pop();
                     final result = await context.pushNamed<dynamic>(
-                      ClientProjectsRoutes.postProjectAddressName,
+                      LocationRoutes.locationName,
                     );
                     if (result is String && result.trim().isNotEmpty) {
                       widget.onLocationChanged(result);
