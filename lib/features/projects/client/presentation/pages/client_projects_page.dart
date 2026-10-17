@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_loading_indicator.dart';
+import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -20,10 +21,7 @@ class ClientProjectsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        title: Text('projects.client.list_title'.tr()),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: AppTopBar(title: 'projects.client.list_title'.tr()),
       body: BlocBuilder<ClientProjectsBloc, ClientProjectsState>(
         builder: (context, state) => switch (state) {
           ClientProjectsInitial() ||

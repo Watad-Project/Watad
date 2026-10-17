@@ -1,11 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:watad/core/components/display/app_card.dart';
-import 'package:watad/core/components/display/app_status_badge.dart';
+import 'package:watad/core/components/display/app_project_card.dart';
 import 'package:watad/core/enums/project_status.dart';
-import 'package:watad/core/theme/app_colors.dart';
-import 'package:watad/core/theme/app_spacing.dart';
-import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/core/theme/app_tone.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 
@@ -40,113 +36,31 @@ class ClientProjectCard extends StatelessWidget {
         : project.city;
     final dateString =
         '${project.createdAt.year}/${project.createdAt.month.toString().padLeft(2, '0')}/${project.createdAt.day.toString().padLeft(2, '0')}';
+    final amountString = project.budget != null
+        ? 'projects.client.budget_amount'.tr(
+            namedArgs: {
+              'amount': (project.budget!.halalas / 100).toStringAsFixed(2),
+            },
+          )
+        : 'projects.client.budget_unspecified'.tr();
+    final progress = project.status == ProjectStatus.completed ? 1.0 : 0.0;
+    final percentLabel = project.status == ProjectStatus.completed
+        ? '100%'
+        : '0%';
 
-    return AppCard(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  project.title,
-                  style: AppTextStyles.h2,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              AppStatusBadge(label: statusKey.tr(), tone: statusTone),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              const Icon(
-                Icons.location_on_outlined,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: AppSpacing.xxs),
-              Expanded(
-                child: Text(
-                  location,
-                  style: AppTextStyles.caption,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Text(dateString, style: AppTextStyles.caption),
-            ],
-          ),
-          const Divider(height: AppSpacing.lg),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (project.budget != null)
-                Expanded(
-                  child: Text(
-                    'projects.client.budget_amount'.tr(
-                      namedArgs: {
-                        'amount': (project.budget!.halalas / 100)
-                            .toStringAsFixed(2),
-                      },
-                    ),
-                    style: AppTextStyles.label.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                )
-              else
-                Expanded(
-                  child: Text(
-                    'projects.client.budget_unspecified'.tr(),
-                    style: AppTextStyles.caption,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              const SizedBox(width: AppSpacing.sm),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xxs,
-                ),
-                decoration: const BoxDecoration(
-                  color: AppColors.neutralLight,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(AppRadius.pill),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.local_offer_outlined,
-                      size: 14,
-                      color: AppColors.ink,
-                    ),
-                    const SizedBox(width: AppSpacing.xxs),
-                    Text(
-                      'projects.client.offers_count'.tr(
-                        namedArgs: {'count': '${project.pendingOfferCount}'},
-                      ),
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.ink,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+    return AppProjectCard(
+      title: project.title,
+      subtitle: location,
+      statusLabel: statusKey.tr(),
+      statusTone: statusTone,
+      progress: progress,
+      progressLabel: 'projects.client.offers_count'.tr(
+        namedArgs: {'count': '${project.pendingOfferCount}'},
       ),
+      percentLabel: percentLabel,
+      dateLabel: dateString,
+      amountLabel: amountString,
+      onTap: onTap,
     );
   }
 }
