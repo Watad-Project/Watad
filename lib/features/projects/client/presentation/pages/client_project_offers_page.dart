@@ -120,7 +120,17 @@ class _OffersContent extends StatelessWidget {
   final String? acceptingOfferId;
   final void Function(ClientProjectOffer offer)? onChat;
 
-  String _formatNumber(int value) {
+  static String _toArabicDigits(String input) {
+    final codeUnits = input.codeUnits.map((cp) {
+      if (cp >= 0x30 && cp <= 0x39) {
+        return cp - 0x30 + 0x0660;
+      }
+      return cp;
+    }).toList();
+    return String.fromCharCodes(codeUnits);
+  }
+
+  String _formatNumber(int value, {bool isArabic = false}) {
     final s = value.toString();
     final buffer = StringBuffer();
     for (var i = 0; i < s.length; i++) {
@@ -129,13 +139,21 @@ class _OffersContent extends StatelessWidget {
       }
       buffer.write(s[i]);
     }
-    return buffer.toString();
+    var res = buffer.toString();
+    if (isArabic) {
+      res = _toArabicDigits(res);
+    }
+    return res;
   }
 
   @override
   Widget build(BuildContext context) {
+    final isArabic = context.locale.languageCode == 'ar';
+    final countStr = isArabic
+        ? _toArabicDigits('${offers.length}')
+        : '${offers.length}';
     final budgetStr = project.budget != null
-        ? _formatNumber(project.budget!.halalas ~/ 100)
+        ? _formatNumber(project.budget!.halalas ~/ 100, isArabic: isArabic)
         : null;
 
     return RefreshIndicator(
@@ -153,9 +171,7 @@ class _OffersContent extends StatelessWidget {
         children: [
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'projects.client.offers_count'.tr(
-              namedArgs: {'count': '${offers.length}'},
-            ),
+            'projects.client.offers_count'.tr(namedArgs: {'count': countStr}),
             style: AppTextStyles.h1.copyWith(
               fontSize: 26,
               fontWeight: FontWeight.w800,
