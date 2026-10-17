@@ -431,14 +431,9 @@ class _MapMockupSection extends StatelessWidget {
           AppGoogleMap(
             initialLatitude: 24.7136,
             initialLongitude: 46.6753,
-            onCameraIdle: (latLng) => onDragEnd(
-              latLng.latitude,
-              latLng.longitude,
-            ),
-            onTap: (latLng) => onDragEnd(
-              latLng.latitude,
-              latLng.longitude,
-            ),
+            onCameraIdle: (latLng) =>
+                onDragEnd(latLng.latitude, latLng.longitude),
+            onTap: (latLng) => onDragEnd(latLng.latitude, latLng.longitude),
           ),
 
           // Central Pin and pulsing target (IgnorePointer so dragging the map works underneath)

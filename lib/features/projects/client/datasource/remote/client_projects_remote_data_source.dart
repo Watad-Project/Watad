@@ -49,11 +49,13 @@ class ClientProjectsRemoteDataSourceImpl
     final fileName =
         '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}';
     final storagePath = 'projects/$userId/$fileName';
-    await _client.storage.from('images').upload(
-      storagePath,
-      file,
-      fileOptions: FileOptions(contentType: 'image/$ext'),
-    );
+    await _client.storage
+        .from('images')
+        .upload(
+          storagePath,
+          file,
+          fileOptions: FileOptions(contentType: 'image/$ext'),
+        );
     return storagePath;
   }
 

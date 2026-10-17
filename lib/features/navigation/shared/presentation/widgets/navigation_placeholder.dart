@@ -35,4 +35,3 @@ class NavigationPlaceholder extends StatelessWidget {
     );
   }
 }
-

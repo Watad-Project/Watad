@@ -70,9 +70,7 @@ class _AppGoogleMapState extends State<AppGoogleMap> {
       tiltGesturesEnabled: true,
       rotateGesturesEnabled: true,
       gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{
-        Factory<OneSequenceGestureRecognizer>(
-          EagerGestureRecognizer.new,
-        ),
+        Factory<OneSequenceGestureRecognizer>(EagerGestureRecognizer.new),
       },
       compassEnabled: false,
       mapToolbarEnabled: false,
