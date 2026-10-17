@@ -63,10 +63,17 @@ class ClientOfferCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: AppVerifiedName(
-                  name: offer.contractorName,
-                  style: AppTextStyles.h2,
-                ),
+                child: offer.isContractorVerified
+                    ? AppVerifiedName(
+                        name: offer.contractorName,
+                        style: AppTextStyles.h2,
+                      )
+                    : Text(
+                        offer.contractorName,
+                        style: AppTextStyles.h2,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
               ),
               const SizedBox(width: AppSpacing.sm),
               if (offer.contractorRating != null)

@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_project_offers_bloc.dart';
@@ -26,7 +28,12 @@ final List<RouteBase> clientProjectsRoutes = [
         create: (_) =>
             getIt<ClientProjectOffersBloc>()
               ..add(ClientProjectOffersFetched(projectId)),
-        child: ClientProjectOffersPage(projectId: projectId),
+        child: ClientProjectOffersPage(
+          projectId: projectId,
+          onChat: (_) {
+            context.showSnackBar('navigation.coming_soon'.tr());
+          },
+        ),
       );
     },
   ),
