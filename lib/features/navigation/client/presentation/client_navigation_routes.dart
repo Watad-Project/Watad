@@ -14,7 +14,9 @@ final List<RouteBase> clientNavigationRoutes = [
       screens: [
         for (final tab in ClientNavigationPage.tabs)
           if (tab.routeName case final name?)
-            () => getIt<Widget>(instanceName: name)
+            () => getIt.isRegistered<Widget>(instanceName: name)
+                ? getIt<Widget>(instanceName: name)
+                : const SizedBox.shrink()
           else
             null,
       ],

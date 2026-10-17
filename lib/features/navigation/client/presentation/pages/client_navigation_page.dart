@@ -1,4 +1,5 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:watad/core/router/routes/client_home_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -11,32 +12,33 @@ class ClientNavigationPage extends StatelessWidget {
   });
 
   /// The client's tabs, in order; in Arabic the first one is on the right.
-  /// For now every tab is a placeholder.
-  ///
-  /// How a feature becomes a tab (the same for every role):
-  /// 1. Build the page as usual, with its own `GoRoute` and names file, and
-  ///    without a bottom bar: the navigation adds it.
-  /// 2. In the feature's injection file, register the page under its route
-  ///    name. A page with a bloc is registered through a small tab widget in
-  ///    `presentation/widgets/` that receives the bloc, provides it with
-  ///    `BlocProvider.value` and closes it in `dispose`:
-  ///    ```dart
-  ///    getIt.registerFactory<Widget>(
-  ///      () => const ClientProjectsPage(),
-  ///      instanceName: ClientProjectsRoutes.projectsName,
-  ///    );
-  ///    ```
-  /// 3. Replace one placeholder below with the feature's tab:
-  ///    `NavigationTab(labelKey: …, icon: …, selectedIcon: …, routeName: …)`,
-  ///    with that route name. Add the label's key to every language file,
-  ///    and the feature's `register…Dependencies(getIt)` to the setUp of this
-  ///    folder's routes test.
   static const List<NavigationTab> tabs = [
-    NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'navigation.home',
+      icon: Icons.home_outlined,
+      selectedIcon: Icons.home,
+      routeName: ClientHomeRoutes.homeName,
+    ),
+    NavigationTab(
+      labelKey: 'navigation.projects',
+      icon: Icons.assignment_outlined,
+      selectedIcon: Icons.assignment,
+    ),
+    NavigationTab(
+      labelKey: 'navigation.marketplace',
+      icon: Icons.storefront_outlined,
+      selectedIcon: Icons.storefront,
+    ),
+    NavigationTab(
+      labelKey: 'navigation.chats',
+      icon: Icons.chat_bubble_outline,
+      selectedIcon: Icons.chat_bubble,
+    ),
+    NavigationTab(
+      labelKey: 'navigation.account',
+      icon: Icons.person_outline,
+      selectedIcon: Icons.person,
+    ),
   ];
 
   /// Builds each tab's screen; the route takes them from getIt.

@@ -1,0 +1,14 @@
+{
+  "greeting_morning": "صباح الخير",
+  "greeting_evening": "مساء الخير",
+  "verified_phone": "جوال موثّق",
+  "search_placeholder": "ابحث عن مقاول أو مادة",
+  "post_project_title": "انشر مشروعاً",
+  "post_project_subtitle": "صف العمل واستقبل عروض المقاولين الموثّقين.",
+  "start_now": "ابدأ الآن",
+  "suggested_contractors": "مقاولون مقترحون",
+  "view_all": "الكل",
+  "no_contractors": "لا يوجد مقاولون مقترحون حالياً",
+  "projects_count": "{} مشروع",
+  "load_failed": "تعذر تحميل الصفحة الرئيسية. يرجى إعادة المحاولة."
+}

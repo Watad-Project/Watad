@@ -60,7 +60,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppLogo` | `display/app_logo.dart` | The Watad logo, for light or dark surfaces | `height`, `onDark`, `semanticLabel` | 2026-10-09 |
 | `AppCard` | `display/app_card.dart` | White outlined card, tappable, clips a photo at the top | `child`, `onTap`, `padding`, `color`, `borderColor`, `borderWidth` | 2026-10-09 |
 | `AppImagePlaceholder` | `display/app_image_placeholder.dart` | The striped box where a photo is missing or loading | `label` | 2026-10-09 |
-| `AppNetworkImage` | `display/app_network_image.dart` | Network image with the striped placeholder while loading, on error and without a URL | `url`, `width`, `height`, `fit`, `borderRadius`, `semanticLabel` | 2026-10-09 |
+| `AppNetworkImage` | `display/app_network_image.dart` | Network image with the striped placeholder while loading, on error and without a URL | `url`, `width`, `height`, `fit`, `borderRadius`, `semanticLabel`, `placeholderLabel` | 2026-10-09 |
 | `AppLottie` | `display/app_lottie.dart` | A Lottie animation from `assets/animations/` (onboarding illustrations); loops by default; the only place that imports `lottie` | `asset`, `width`, `height`, `fit`, `repeat`, `semanticLabel` | 2026-10-12 |
 | `AppPhotoTile` | `display/app_photo_tile.dart` | Square photo thumbnail, numbered placeholder until there is a photo (task evidence, receipts) | `image`, `placeholderLabel`, `onTap`, `size` | 2026-10-09 |
 | `AppStatusBadge` | `display/app_status_badge.dart` | Round status label in a tone (orange waiting, green done, red rejected, gray neutral); white on photos | `label`, `tone`, `onImage` | 2026-10-09 |

@@ -1,0 +1,14 @@
+{
+  "greeting_morning": "Good morning",
+  "greeting_evening": "Good evening",
+  "verified_phone": "Verified phone",
+  "search_placeholder": "Search for a contractor or material",
+  "post_project_title": "Post a project",
+  "post_project_subtitle": "Describe the work and receive offers from verified contractors.",
+  "start_now": "Start now",
+  "suggested_contractors": "Suggested contractors",
+  "view_all": "All",
+  "no_contractors": "No suggested contractors available at the moment",
+  "projects_count": "{} projects",
+  "load_failed": "Failed to load home page. Please try again."
+}
