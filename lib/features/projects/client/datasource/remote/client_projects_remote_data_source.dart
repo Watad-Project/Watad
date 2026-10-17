@@ -26,8 +26,59 @@ class ClientProjectsRemoteDataSourceImpl
 
   final SupabaseClient _client;
 
+  static String _resolveImageContentType(String filePath) {
+    final ext = filePath.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'gif':
+        return 'image/gif';
+      default:
+        return 'image/jpeg';
+    }
+  }
+
+  static String _resolveDeedContentType(String filePath) {
+    final ext = filePath.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      default:
+        return 'application/pdf';
+    }
+  }
+
   @override
   Future<void> createProject(ClientNewProject project) async {
+    final photoPaths = <String>[];
+    for (final photoPath in project.photos) {
+      if (File(photoPath).existsSync()) {
+        final remotePath = await uploadProjectPhoto(filePath: photoPath);
+        photoPaths.add(remotePath);
+      } else {
+        photoPaths.add(photoPath);
+      }
+    }
+
+    String? deedPath;
+    if (project.deedFilePath != null && project.deedFilePath!.isNotEmpty) {
+      if (File(project.deedFilePath!).existsSync()) {
+        deedPath = await uploadDeedDocument(filePath: project.deedFilePath!);
+      } else {
+        deedPath = project.deedFilePath;
+      }
+    }
+
     // Only the INSERT columns allowed on `projects` (ARCHITECTURE.md §3a).
     await _client.from('projects').insert({
       'title': project.title,
@@ -38,6 +89,8 @@ class ClientProjectsRemoteDataSourceImpl
       'address_id': project.addressId,
       'status': (project.publish ? ProjectStatus.open : ProjectStatus.draft)
           .toJson(),
+      'photo_paths': photoPaths,
+      'deed_storage_path': ?deedPath,
     });
   }
 
@@ -45,16 +98,18 @@ class ClientProjectsRemoteDataSourceImpl
   Future<String> uploadProjectPhoto({required String filePath}) async {
     final userId = _client.auth.currentUser?.id;
     final file = File(filePath);
-    final ext = file.path.split('.').last.toLowerCase();
+    final ext = filePath.split('.').last.toLowerCase();
     final fileName =
-        '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}';
-    final storagePath = 'projects/$userId/$fileName';
+        '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.isNotEmpty ? file.uri.pathSegments.last : 'photo.$ext'}';
+    final storagePath = '$userId/projects/$fileName';
     await _client.storage
         .from('images')
         .upload(
           storagePath,
           file,
-          fileOptions: FileOptions(contentType: 'image/$ext'),
+          fileOptions: FileOptions(
+            contentType: _resolveImageContentType(filePath),
+          ),
         );
     return storagePath;
   }
@@ -63,10 +118,19 @@ class ClientProjectsRemoteDataSourceImpl
   Future<String> uploadDeedDocument({required String filePath}) async {
     final userId = _client.auth.currentUser?.id;
     final file = File(filePath);
+    final ext = filePath.split('.').last.toLowerCase();
     final fileName =
-        '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}';
+        '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.isNotEmpty ? file.uri.pathSegments.last : 'deed.$ext'}';
     final storagePath = '$userId/$fileName';
-    await _client.storage.from('project-deeds').upload(storagePath, file);
+    await _client.storage
+        .from('project-deeds')
+        .upload(
+          storagePath,
+          file,
+          fileOptions: FileOptions(
+            contentType: _resolveDeedContentType(filePath),
+          ),
+        );
     return storagePath;
   }
 

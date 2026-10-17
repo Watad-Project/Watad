@@ -160,7 +160,7 @@ This file does not list view columns. Never guess a column name: read it from th
 | Bucket | Public | Contents | Path rule |
 |--------|--------|----------|-----------|
 | `avatars` | yes | profile pictures | `<user id>/<file name>`, saved in `users.avatar_path` (never an external URL) |
-| `images` | yes | general images (e.g. listings, project photos) | `projects/<user id>/<file name>` for project photos |
+| `images` | yes | general images (e.g. listings, project photos) | `<user id>/projects/<file name>` for project photos |
 | `project-deeds` | **no** | property ownership deeds | `<user id>/<file name>`, saved in `projects.deed_storage_path` |
 | `business-documents` | **no** | verification documents | path saved in `business_documents.storage_path` |
 | `bank-transfer-receipts` | **no** | transfer receipts | path saved in `bank_transfers.storage_path` |

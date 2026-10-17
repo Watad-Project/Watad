@@ -84,12 +84,3 @@ create policy "Users can read their own deed documents"
       or (select private.is_admin())
     )
   );
-
--- RLS for project photos in the public 'images' bucket (under projects/<user_id>/...)
-create policy "Authenticated users can upload project photos to images bucket"
-  on storage.objects for insert to authenticated
-  with check (
-    bucket_id = 'images'
-    and (storage.foldername(name))[1] = 'projects'
-    and (storage.foldername(name))[2] = (select auth.uid())::text
-  );
