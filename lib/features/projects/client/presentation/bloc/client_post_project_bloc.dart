@@ -288,6 +288,8 @@ class ClientPostProjectBloc
         description: state.scopeOfWork.isNotEmpty ? state.scopeOfWork : null,
         budget: state.settledBudget,
         publish: !state.requiresDeed,
+        photos: state.photos,
+        deedFilePath: state.deedFilePath,
       ),
     );
 

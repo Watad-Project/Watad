@@ -11,6 +11,8 @@ class ClientNewProject {
     this.budget,
     this.addressId,
     this.publish = false,
+    this.photos = const [],
+    this.deedFilePath,
   });
 
   final String title;
@@ -22,4 +24,10 @@ class ClientNewProject {
 
   /// true: the project starts as `open`; false: as `draft`.
   final bool publish;
+
+  /// Local file paths of picked photos to be uploaded to Supabase Storage.
+  final List<String> photos;
+
+  /// Local file path of picked ownership deed file.
+  final String? deedFilePath;
 }

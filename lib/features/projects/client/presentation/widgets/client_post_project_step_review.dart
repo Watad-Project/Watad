@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/display/app_key_value_list.dart';
@@ -117,7 +119,7 @@ class ClientPostProjectStepReview extends StatelessWidget {
                 separatorBuilder: (_, _) =>
                     const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, index) {
-                  return AppPhotoTile(placeholderLabel: '${index + 1}');
+                  return _buildPhotoThumbnail(state.photos[index]);
                 },
               ),
             ),
@@ -138,5 +140,22 @@ class ClientPostProjectStepReview extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildPhotoThumbnail(String path) {
+    final file = File(path);
+    if (file.existsSync()) {
+      return ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.lg)),
+        child: Image.file(
+          file,
+          width: 72,
+          height: 72,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => const AppPhotoTile(size: 72),
+        ),
+      );
+    }
+    return const AppPhotoTile(size: 72);
   }
 }

@@ -35,6 +35,14 @@ class _FakeClientProjectsRemoteDataSource
   }
 
   @override
+  Future<String> uploadProjectPhoto({required String filePath}) async =>
+      'projects/user_1/photo.jpg';
+
+  @override
+  Future<String> uploadDeedDocument({required String filePath}) async =>
+      'user_1/deed.pdf';
+
+  @override
   Future<ClientSavedAddressModel> createAddress({
     required String name,
     required String city,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/features/projects/client/datasource/models/client_saved_address_model.dart';
@@ -14,6 +16,8 @@ abstract interface class ClientProjectsRemoteDataSource {
     required String buildingNumber,
     required String postalCode,
   });
+  Future<String> uploadProjectPhoto({required String filePath});
+  Future<String> uploadDeedDocument({required String filePath});
 }
 
 class ClientProjectsRemoteDataSourceImpl
@@ -35,6 +39,33 @@ class ClientProjectsRemoteDataSourceImpl
       'status': (project.publish ? ProjectStatus.open : ProjectStatus.draft)
           .toJson(),
     });
+  }
+
+  @override
+  Future<String> uploadProjectPhoto({required String filePath}) async {
+    final userId = _client.auth.currentUser?.id;
+    final file = File(filePath);
+    final ext = file.path.split('.').last.toLowerCase();
+    final fileName =
+        '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}';
+    final storagePath = 'projects/$userId/$fileName';
+    await _client.storage.from('images').upload(
+      storagePath,
+      file,
+      fileOptions: FileOptions(contentType: 'image/$ext'),
+    );
+    return storagePath;
+  }
+
+  @override
+  Future<String> uploadDeedDocument({required String filePath}) async {
+    final userId = _client.auth.currentUser?.id;
+    final file = File(filePath);
+    final fileName =
+        '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}';
+    final storagePath = '$userId/$fileName';
+    await _client.storage.from('project-deeds').upload(storagePath, file);
+    return storagePath;
   }
 
   @override
