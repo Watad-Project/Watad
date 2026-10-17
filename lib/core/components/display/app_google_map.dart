@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -52,6 +54,15 @@ class _AppGoogleMapState extends State<AppGoogleMap> {
       markers: widget.markers,
       myLocationButtonEnabled: widget.myLocationButtonEnabled,
       zoomControlsEnabled: widget.zoomControlsEnabled,
+      scrollGesturesEnabled: true,
+      zoomGesturesEnabled: true,
+      tiltGesturesEnabled: true,
+      rotateGesturesEnabled: true,
+      gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{
+        Factory<OneSequenceGestureRecognizer>(
+          EagerGestureRecognizer.new,
+        ),
+      },
       compassEnabled: false,
       mapToolbarEnabled: false,
     );
