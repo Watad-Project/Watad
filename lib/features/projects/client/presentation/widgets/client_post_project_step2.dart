@@ -421,24 +421,9 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
-                  label: context.tr('projects.client.address_new_on_map'),
-                  icon: Icons.map_outlined,
-                  variant: AppButtonVariant.primary,
-                  onPressed: () async {
-                    Navigator.of(bottomSheetContext).pop();
-                    final result = await context.pushNamed<dynamic>(
-                      LocationRoutes.locationName,
-                    );
-                    if (result is String && result.trim().isNotEmpty) {
-                      widget.onLocationChanged(result);
-                    }
-                  },
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                AppButton(
                   label: context.tr('projects.client.add_address_button'),
                   icon: Icons.add_location_alt_outlined,
-                  variant: AppButtonVariant.secondary,
+                  variant: AppButtonVariant.primary,
                   onPressed: () {
                     Navigator.of(bottomSheetContext).pop();
                     _showAddAddressSheet(context);
