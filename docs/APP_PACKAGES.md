@@ -43,12 +43,16 @@ The Flutter version the whole team uses, and the registry of every package the a
 | `flutter` | SDK | The framework | `presentation/`, the non-pure `lib/core/` folders, `lib/main.dart`, `lib/app.dart`; `*_injection.dart` files only for `Widget`, to register a tab's first page (`ClientNavigationPage.tabs`) | 2026-10-06 |
 | `cupertino_icons` | runtime | iOS-style icons | `presentation/` (not blocs), `lib/core/components/` | 2026-10-06 |
 | `easy_localization` | runtime | Translations (`ar`, `en`), locale switching, RTL | `presentation/` (not blocs), `lib/core/components/`, `lib/core/localization/`, `lib/main.dart`, `lib/app.dart` | 2026-10-06 |
+| `file_picker` | runtime | Document and file selection (e.g. PDF licenses) | `presentation/`, `lib/core/components/` | 2026-10-14 |
 | `flutter_bloc` | runtime | State management: `Bloc`, `Cubit`, `BlocProvider`, `BlocBuilder`, … | `presentation/`, `lib/core/router/`, `lib/app.dart` | 2026-10-06 |
 | `flutter_dotenv` | runtime | Loads `.env` (Supabase URL, publishable key). `.env` is git-ignored but bundled into the app: public values only | `lib/main.dart` (load) and `lib/core/config/` (read) only | 2026-10-06 |
 | `get_it` | runtime | Dependency injection, registered by hand | `lib/core/di/` and `*_injection.dart` files only | 2026-10-06 |
 | `go_router` | runtime | Navigation by route name | `presentation/` (not blocs), `lib/core/router/` | 2026-10-06 |
+| `google_maps_flutter` | runtime | Google Maps interactive map display and pin placement | `lib/core/components/` only (the `AppGoogleMap` component) | 2026-10-17 |
+| `image_picker` | runtime | Camera capture and gallery image selection | `presentation/`, `lib/core/components/` | 2026-10-14 |
 | `material_ui` | runtime | The standalone Material library that `pinput` 7 is built on. `AppOtpInput` uses its `Material` and `MaterialLocalizations`, which are other types than Flutter's own | `lib/core/components/` only (the `AppOtpInput` component) | 2026-10-10 |
 | `lottie` | runtime | Lottie animations from `assets/animations/` (onboarding illustrations) | `lib/core/components/` only (the `AppLottie` component) | 2026-10-12 |
+| `permission_handler` | runtime | Requesting camera and storage runtime permissions | `presentation/`, `lib/core/components/` | 2026-10-14 |
 | `pinput` | runtime | OTP / PIN input. The package is `pinput`, not `pin_put` | `lib/core/components/` only (the `AppOtpInput` component) | 2026-10-06 |
 | `shared_preferences` | runtime | On-device key-value storage (e.g. remember onboarding seen) | `datasource/`, `lib/core/` | 2026-10-11 |
 | `supabase_flutter` | runtime | Backend: Auth, Postgres views and RPCs, Storage, Realtime | `datasource/`, `lib/core/supabase/`, `lib/core/di/`, `lib/main.dart` | 2026-10-06 |
