@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_loading_indicator.dart';
@@ -29,67 +28,79 @@ class ClientProjectOffersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppTopBar(
-        title: 'projects.client.offers_title'.tr(),
-        onBack: () {
-          if (context.canPop()) {
-            context.pop();
-          } else {
-            context.goNamed(ClientProjectsRoutes.projectsName);
-          }
-        },
-      ),
-      body: BlocConsumer<ClientProjectOffersBloc, ClientProjectOffersState>(
-        listener: (context, state) {
-          if (state is ClientProjectOfferAcceptSuccess) {
-            context.showSuccessSnackBar(
-              'projects.client.offer_accepted_success'.tr(),
-            );
-          } else if (state is ClientProjectOfferAcceptFailure) {
-            context.showErrorSnackBar(state.failure.messageKey.tr());
-          }
-        },
-        builder: (context, state) => switch (state) {
-          ClientProjectOffersInitial() ||
-          ClientProjectOffersLoadInProgress() => const AppLoadingIndicator(),
-          ClientProjectOffersLoadFailure(:final failure) => AppErrorView(
-            message: failure.messageKey.tr(),
-            onRetry: () => context.read<ClientProjectOffersBloc>().add(
-              ClientProjectOffersFetched(projectId),
-            ),
+    return BlocConsumer<ClientProjectOffersBloc, ClientProjectOffersState>(
+      listener: (context, state) {
+        if (state is ClientProjectOfferAcceptSuccess) {
+          context.showSuccessSnackBar(
+            'projects.client.offer_accepted_success'.tr(),
+          );
+        } else if (state is ClientProjectOfferAcceptFailure) {
+          context.showErrorSnackBar(state.failure.messageKey.tr());
+        }
+      },
+      builder: (context, state) {
+        final title = switch (state) {
+          ClientProjectOffersLoadSuccess(:final project) ||
+          ClientProjectOfferAcceptSuccess(:final project) ||
+          ClientProjectOfferAcceptFailure(:final project) =>
+            project.district != null
+                ? '${project.title} — ${project.district}'
+                : project.title,
+          _ => 'projects.client.offers_title'.tr(),
+        };
+
+        return Scaffold(
+          backgroundColor: AppColors.surface,
+          appBar: AppTopBar(
+            title: title,
+            onBack: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.goNamed(ClientProjectsRoutes.projectsName);
+              }
+            },
           ),
-          ClientProjectOffersLoadSuccess(
-            :final project,
-            :final offers,
-            :final acceptingOfferId,
-          ) =>
-            _OffersContent(
-              projectId: projectId,
-              project: project,
-              offers: offers,
-              acceptingOfferId: acceptingOfferId,
-              onChat: onChat,
+          body: switch (state) {
+            ClientProjectOffersInitial() ||
+            ClientProjectOffersLoadInProgress() => const AppLoadingIndicator(),
+            ClientProjectOffersLoadFailure(:final failure) => AppErrorView(
+              message: failure.messageKey.tr(),
+              onRetry: () => context.read<ClientProjectOffersBloc>().add(
+                ClientProjectOffersFetched(projectId),
+              ),
             ),
-          ClientProjectOfferAcceptSuccess(:final project, :final offers) =>
-            _OffersContent(
-              projectId: projectId,
-              project: project,
-              offers: offers,
-              acceptingOfferId: null,
-              onChat: onChat,
-            ),
-          ClientProjectOfferAcceptFailure(:final project, :final offers) =>
-            _OffersContent(
-              projectId: projectId,
-              project: project,
-              offers: offers,
-              acceptingOfferId: null,
-              onChat: onChat,
-            ),
-        },
-      ),
+            ClientProjectOffersLoadSuccess(
+              :final project,
+              :final offers,
+              :final acceptingOfferId,
+            ) =>
+              _OffersContent(
+                projectId: projectId,
+                project: project,
+                offers: offers,
+                acceptingOfferId: acceptingOfferId,
+                onChat: onChat,
+              ),
+            ClientProjectOfferAcceptSuccess(:final project, :final offers) =>
+              _OffersContent(
+                projectId: projectId,
+                project: project,
+                offers: offers,
+                acceptingOfferId: null,
+                onChat: onChat,
+              ),
+            ClientProjectOfferAcceptFailure(:final project, :final offers) =>
+              _OffersContent(
+                projectId: projectId,
+                project: project,
+                offers: offers,
+                acceptingOfferId: null,
+                onChat: onChat,
+              ),
+          },
+        );
+      },
     );
   }
 }
@@ -109,11 +120,23 @@ class _OffersContent extends StatelessWidget {
   final String? acceptingOfferId;
   final void Function(ClientProjectOffer offer)? onChat;
 
+  String _formatNumber(int value) {
+    final s = value.toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) {
+        buffer.write(',');
+      }
+      buffer.write(s[i]);
+    }
+    return buffer.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final location = project.district != null
-        ? '${project.city} - ${project.district}'
-        : project.city;
+    final budgetStr = project.budget != null
+        ? _formatNumber(project.budget!.halalas ~/ 100)
+        : null;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -123,89 +146,31 @@ class _OffersContent extends StatelessWidget {
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
         children: [
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(project.title, style: AppTextStyles.h1),
-                const SizedBox(height: AppSpacing.xs),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: AppSpacing.xxs),
-                    Expanded(
-                      child: Text(
-                        location,
-                        style: AppTextStyles.caption,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const Divider(height: AppSpacing.lg),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'projects.client.budget_title'.tr(),
-                            style: AppTextStyles.caption,
-                          ),
-                          const SizedBox(height: AppSpacing.xxs),
-                          Text(
-                            project.budget != null
-                                ? 'projects.client.budget_amount'.tr(
-                                    namedArgs: {
-                                      'amount': (project.budget!.halalas / 100)
-                                          .toStringAsFixed(2),
-                                    },
-                                  )
-                                : 'projects.client.budget_unspecified'.tr(),
-                            style: AppTextStyles.label.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.ink,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'projects.client.offers_label'.tr(),
-                          style: AppTextStyles.caption,
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          'projects.client.offers_count'.tr(
-                            namedArgs: {'count': '${offers.length}'},
-                          ),
-                          style: AppTextStyles.label.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'projects.client.offers_count'.tr(
+              namedArgs: {'count': '${offers.length}'},
+            ),
+            style: AppTextStyles.h1.copyWith(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
             ),
           ),
+          const SizedBox(height: AppSpacing.xxs),
+          if (budgetStr != null)
+            Text(
+              'projects.client.declared_budget'.tr(
+                namedArgs: {'amount': budgetStr},
+              ),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
           const SizedBox(height: AppSpacing.md),
           if (offers.isEmpty)
             SizedBox(
@@ -215,15 +180,10 @@ class _OffersContent extends StatelessWidget {
                 message: 'projects.client.no_offers_message'.tr(),
               ),
             )
-          else ...[
-            Text(
-              'projects.client.incoming_offers_title'.tr(),
-              style: AppTextStyles.h2,
-            ),
-            const SizedBox(height: AppSpacing.sm),
+          else
             ...offers.map(
               (offer) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: ClientOfferCard(
                   offer: offer,
                   isAccepting: acceptingOfferId == offer.id,
@@ -240,7 +200,6 @@ class _OffersContent extends StatelessWidget {
                 ),
               ),
             ),
-          ],
         ],
       ),
     );

@@ -52,9 +52,13 @@ class ClientProjectsRemoteDataSourceImpl
   ) async {
     final rows = await _client
         .from('v_project_offers')
-        .select('id, project_id, amount, status, created_at, message')
+        .select(
+          'id, project_id, amount, status, created_at, message, '
+          'contractor_name, contractor_rating, is_contractor_verified, '
+          'duration_months',
+        )
         .eq('project_id', projectId)
-        .order('created_at', ascending: false);
+        .order('amount', ascending: true);
     return rows.map(ClientProjectOfferModel.fromJson).toList();
   }
 

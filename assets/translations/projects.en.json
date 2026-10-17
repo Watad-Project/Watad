@@ -26,6 +26,8 @@
     "offer_amount": "{amount} SAR",
     "accept_offer": "Accept Offer",
     "message_contractor": "Message",
-    "offer_accepted_success": "Offer accepted successfully"
+    "offer_accepted_success": "Offer accepted successfully",
+    "currency_sar": "SAR",
+    "declared_budget": "Declared budget {amount} SAR"
   }
 }

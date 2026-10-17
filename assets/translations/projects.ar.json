@@ -26,6 +26,8 @@
     "offer_amount": "{amount} ر.س",
     "accept_offer": "قبول العرض",
     "message_contractor": "مراسلة",
-    "offer_accepted_success": "تم قبول العرض بنجاح"
+    "offer_accepted_success": "تم قبول العرض بنجاح",
+    "currency_sar": "ر.س",
+    "declared_budget": "الميزانية المعلنة {amount} ر.س"
   }
 }
