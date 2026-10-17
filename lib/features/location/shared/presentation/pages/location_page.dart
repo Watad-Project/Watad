@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/display/app_google_map.dart';
 import 'package:watad/core/components/display/app_image_placeholder.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_field_label.dart';
@@ -427,8 +428,19 @@ class _MapMockupSection extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Map Background Placeholder (ARCHITECTURE.md §3a)
-          const AppImagePlaceholder(),
+          // Google Map Background (ARCHITECTURE.md §3a)
+          AppGoogleMap(
+            initialLatitude: 24.7136,
+            initialLongitude: 46.6753,
+            onCameraMove: (pos) => onDragEnd(
+              pos.target.latitude,
+              pos.target.longitude,
+            ),
+            onTap: (latLng) => onDragEnd(
+              latLng.latitude,
+              latLng.longitude,
+            ),
+          ),
 
           // Central Pin and pulsing target
           Center(
