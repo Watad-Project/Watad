@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/display/app_google_map.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -9,6 +10,20 @@ import 'package:watad/core/theme/app_text_styles.dart';
 /// The screen of a tab no feature has taken yet.
 class NavigationPlaceholder extends StatelessWidget {
   const NavigationPlaceholder({super.key});
+
+  void _showMapSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => SizedBox(
+        height: MediaQuery.of(sheetContext).size.height * 0.7,
+        child: const AppGoogleMap(
+          initialLatitude: 24.7136,
+          initialLongitude: 46.6753,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +43,14 @@ class NavigationPlaceholder extends StatelessWidget {
               icon: Icons.add_circle_outline,
               onPressed: () =>
                   context.pushNamed(ClientProjectsRoutes.postProjectName),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppButton(
+              key: const Key('navigation_placeholder_test_map_button'),
+              label: context.tr('navigation.test_map'),
+              variant: AppButtonVariant.secondary,
+              icon: Icons.map_outlined,
+              onPressed: () => _showMapSheet(context),
             ),
           ],
         ),
