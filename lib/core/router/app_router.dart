@@ -11,10 +11,12 @@ import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
+import 'package:watad/features/location/shared/presentation/location_routes.dart';
 import 'package:watad/features/navigation/admin/presentation/admin_navigation_routes.dart';
 import 'package:watad/features/navigation/client/presentation/client_navigation_routes.dart';
 import 'package:watad/features/navigation/contractor/presentation/contractor_navigation_routes.dart';
 import 'package:watad/features/onboarding/shared/presentation/onboarding_routes.dart';
+import 'package:watad/features/projects/client/presentation/client_projects_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
 /// The app's only router, used by `WatadApp`.
@@ -46,7 +48,9 @@ GoRouter createAppRouter({
       ...adminNavigationRoutes,
       ...authRoutes,
       ...clientNavigationRoutes,
+      ...clientProjectsRoutes,
       ...contractorNavigationRoutes,
+      ...locationRoutes,
       ...onboardingRoutes,
       ...splashRoutes,
     ],

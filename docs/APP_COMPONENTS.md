@@ -58,6 +58,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppCameraTile` | `inputs/app_camera_tile.dart` | Dark square that opens the camera, before the photo thumbnails; reports the tap only | `onTap`, `label` (default "Camera"), `size` | 2026-10-09 |
 | `AppRejectReasonForm` | `inputs/app_reject_reason_form.dart` | Reject something: pick a reason, write the required details, send (task update, receipt, refund, document) | `reasons`, `onSubmit`, `isSubmitting`; `title`, `detailsHint`, `submitLabel` default to "Reason for rejecting", "Write the reason...", "Send rejection" | 2026-10-09 |
 | `AppLogo` | `display/app_logo.dart` | The Watad logo, for light or dark surfaces | `height`, `onDark`, `semanticLabel` | 2026-10-09 |
+| `AppGoogleMap` | `display/app_google_map.dart` | Interactive Google Map with pin placement and camera controls; wraps `google_maps_flutter` | `initialLatitude`, `initialLongitude`, `initialZoom`, `onTap`, `onCameraMove`, `markers` | 2026-10-17 |
 | `AppCard` | `display/app_card.dart` | White outlined card, tappable, clips a photo at the top | `child`, `onTap`, `padding`, `color`, `borderColor`, `borderWidth` | 2026-10-09 |
 | `AppImagePlaceholder` | `display/app_image_placeholder.dart` | The striped box where a photo is missing or loading | `label` | 2026-10-09 |
 | `AppNetworkImage` | `display/app_network_image.dart` | Network image with the striped placeholder while loading, on error and without a URL | `url`, `width`, `height`, `fit`, `borderRadius`, `semanticLabel` | 2026-10-09 |

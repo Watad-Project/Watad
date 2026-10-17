@@ -9,5 +9,7 @@
   "phone_required": "Phone number is required",
   "phone_invalid": "Phone number must start with 5 and be 9 digits",
   "terms_required": "You must agree to the terms and privacy policy to continue",
-  "otp_invalid": "Verification code must be 6 digits"
+  "otp_invalid": "Verification code must be 6 digits",
+  "title_required": "Project title is required",
+  "city_required": "Project city is required"
 }
