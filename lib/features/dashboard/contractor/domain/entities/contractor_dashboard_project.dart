@@ -6,18 +6,19 @@ class ContractorDashboardProject {
   const ContractorDashboardProject({
     required this.id,
     required this.title,
-    required this.clientName,
+    String? ownerName,
+    String? clientName,
     required this.status,
-    required this.approvedTasksCount,
-    required this.totalTasksCount,
+    this.approvedTasksCount = 0,
+    this.totalTasksCount = 0,
     required this.createdAt,
     this.budget,
     this.city,
-  });
+  }) : ownerName = ownerName ?? clientName ?? '';
 
   final String id;
   final String title;
-  final String clientName;
+  final String ownerName;
   final ProjectStatus status;
   final int approvedTasksCount;
   final int totalTasksCount;
@@ -25,7 +26,33 @@ class ContractorDashboardProject {
   final Money? budget;
   final String? city;
 
+  String get clientName => ownerName;
+
   double get progress => totalTasksCount > 0
       ? (approvedTasksCount / totalTasksCount).clamp(0.0, 1.0)
       : 0.0;
+
+  ContractorDashboardProject copyWith({
+    String? id,
+    String? title,
+    String? ownerName,
+    ProjectStatus? status,
+    int? approvedTasksCount,
+    int? totalTasksCount,
+    DateTime? createdAt,
+    Money? budget,
+    String? city,
+  }) {
+    return ContractorDashboardProject(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      ownerName: ownerName ?? this.ownerName,
+      status: status ?? this.status,
+      approvedTasksCount: approvedTasksCount ?? this.approvedTasksCount,
+      totalTasksCount: totalTasksCount ?? this.totalTasksCount,
+      createdAt: createdAt ?? this.createdAt,
+      budget: budget ?? this.budget,
+      city: city ?? this.city,
+    );
+  }
 }

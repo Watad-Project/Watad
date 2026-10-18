@@ -6,10 +6,11 @@ class ContractorDashboardProjectModel extends ContractorDashboardProject {
   const ContractorDashboardProjectModel({
     required super.id,
     required super.title,
-    required super.clientName,
+    super.ownerName,
+    super.clientName,
     required super.status,
-    required super.approvedTasksCount,
-    required super.totalTasksCount,
+    super.approvedTasksCount = 0,
+    super.totalTasksCount = 0,
     required super.createdAt,
     super.budget,
     super.city,
@@ -20,7 +21,7 @@ class ContractorDashboardProjectModel extends ContractorDashboardProject {
     return ContractorDashboardProjectModel(
       id: json['id'] as String,
       title: json['title'] as String,
-      clientName: json['client_name'] as String? ?? '',
+      ownerName: (json['owner_name'] ?? json['client_name']) as String? ?? '',
       status: ProjectStatus.fromJson(json['status'] as String),
       approvedTasksCount: json['approved_tasks_count'] as int? ?? 0,
       totalTasksCount: json['total_tasks_count'] as int? ?? 0,

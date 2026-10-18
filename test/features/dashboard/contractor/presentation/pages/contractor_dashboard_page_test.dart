@@ -6,17 +6,20 @@ import 'package:watad/core/components/display/app_project_card.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/enums/offer_status.dart';
+import 'package:watad/core/enums/payment_status.dart';
 import 'package:watad/core/enums/project_status.dart';
+import 'package:watad/core/enums/task_status.dart';
 import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/contractor_dashboard_routes.dart';
 import 'package:watad/core/utils/money.dart';
-import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_data.dart';
-import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_earnings.dart';
 import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_offer.dart';
+import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_payment.dart';
 import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_profile.dart';
 import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_project.dart';
+import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_raw_data.dart';
+import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_task.dart';
 import 'package:watad/features/dashboard/contractor/domain/repositories/contractor_dashboard_repository.dart';
 import 'package:watad/features/dashboard/contractor/domain/usecases/contractor_get_dashboard_data_use_case.dart';
 import 'package:watad/features/dashboard/contractor/presentation/bloc/contractor_dashboard_bloc.dart';
@@ -28,47 +31,80 @@ import '../../../../../helpers/pump_router.dart';
 class FakeAsyncDashboardRepository implements ContractorDashboardRepository {
   FakeAsyncDashboardRepository(this._completer);
 
-  final Completer<Result<ContractorDashboardData>> _completer;
+  final Completer<Result<ContractorDashboardRawData>> _completer;
 
   @override
-  Future<Result<ContractorDashboardData>> getDashboardData() =>
+  Future<Result<ContractorDashboardRawData>> getDashboardRawData() =>
       _completer.future;
 }
 
 class FakeSyncDashboardRepository implements ContractorDashboardRepository {
   FakeSyncDashboardRepository(this.result);
 
-  Result<ContractorDashboardData> result;
+  Result<ContractorDashboardRawData> result;
 
   @override
-  Future<Result<ContractorDashboardData>> getDashboardData() async => result;
+  Future<Result<ContractorDashboardRawData>> getDashboardRawData() async =>
+      result;
 }
 
 void main() {
-  final testData = ContractorDashboardData(
+  final testRawData = ContractorDashboardRawData(
     profile: const ContractorDashboardProfile(
       companyName: 'مؤسسة البناء المتين',
       verificationStatus: VerificationStatus.pending,
     ),
-    earnings: const ContractorDashboardEarnings(
-      thisMonthEarnings: Money.halalas(1250000),
-      pendingTransfers: Money.halalas(320000),
-    ),
+    payments: [
+      ContractorDashboardPayment(
+        amount: const Money.halalas(1250000),
+        status: PaymentStatus.paid,
+        paidAt: DateTime.utc(2026, 10, 10),
+      ),
+      const ContractorDashboardPayment(
+        amount: Money.halalas(320000),
+        status: PaymentStatus.processing,
+      ),
+    ],
     opportunitiesCount: 6,
-    activeProjects: [
+    projects: [
       ContractorDashboardProject(
         id: 'proj-1',
         title: 'ترميم فيلا سكنية',
-        clientName: 'أحمد العتيبي',
+        ownerName: 'أحمد العتيبي',
         status: ProjectStatus.inProgress,
-        approvedTasksCount: 3,
-        totalTasksCount: 5,
         createdAt: DateTime.utc(2026, 10, 10),
         budget: const Money.halalas(5000000),
         city: 'المدينة المنورة',
       ),
     ],
-    myOffers: [
+    tasks: const [
+      ContractorDashboardTask(
+        id: 't-1',
+        projectId: 'proj-1',
+        status: TaskStatus.approved,
+      ),
+      ContractorDashboardTask(
+        id: 't-2',
+        projectId: 'proj-1',
+        status: TaskStatus.approved,
+      ),
+      ContractorDashboardTask(
+        id: 't-3',
+        projectId: 'proj-1',
+        status: TaskStatus.approved,
+      ),
+      ContractorDashboardTask(
+        id: 't-4',
+        projectId: 'proj-1',
+        status: TaskStatus.done,
+      ),
+      ContractorDashboardTask(
+        id: 't-5',
+        projectId: 'proj-1',
+        status: TaskStatus.done,
+      ),
+    ],
+    offers: [
       ContractorDashboardOffer(
         id: 'offer-1',
         projectId: 'proj-1',
@@ -89,12 +125,15 @@ void main() {
   testWidgets('displays loading indicator while waiting for data', (
     tester,
   ) async {
-    final completer = Completer<Result<ContractorDashboardData>>();
+    final completer = Completer<Result<ContractorDashboardRawData>>();
     final repository = FakeAsyncDashboardRepository(completer);
 
     getIt.registerFactory(
       () => ContractorDashboardBloc(
-        ContractorGetDashboardDataUseCase(repository),
+        ContractorGetDashboardDataUseCase(
+          repository,
+          now: () => DateTime.utc(2026, 10, 15),
+        ),
       ),
     );
 
@@ -104,7 +143,7 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    completer.complete(Success(testData));
+    completer.complete(Success(testRawData));
     await tester.pumpAndSettle();
 
     expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -118,7 +157,10 @@ void main() {
 
     getIt.registerFactory(
       () => ContractorDashboardBloc(
-        ContractorGetDashboardDataUseCase(repository),
+        ContractorGetDashboardDataUseCase(
+          repository,
+          now: () => DateTime.utc(2026, 10, 15),
+        ),
       ),
     );
 
@@ -128,7 +170,7 @@ void main() {
 
     expect(find.text('إعادة المحاولة'), findsOneWidget);
 
-    repository.result = Success(testData);
+    repository.result = Success(testRawData);
     await tester.tap(find.text('إعادة المحاولة'));
     await tester.pumpAndSettle();
 
@@ -136,11 +178,14 @@ void main() {
   });
 
   testWidgets('displays complete dashboard content on success', (tester) async {
-    final repository = FakeSyncDashboardRepository(Success(testData));
+    final repository = FakeSyncDashboardRepository(Success(testRawData));
 
     getIt.registerFactory(
       () => ContractorDashboardBloc(
-        ContractorGetDashboardDataUseCase(repository),
+        ContractorGetDashboardDataUseCase(
+          repository,
+          now: () => DateTime.utc(2026, 10, 15),
+        ),
       ),
     );
 

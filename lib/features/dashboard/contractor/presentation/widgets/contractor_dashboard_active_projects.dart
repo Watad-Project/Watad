@@ -64,7 +64,7 @@ class ContractorDashboardActiveProjects extends StatelessWidget {
                 title: project.title,
                 subtitle: context.tr(
                   'dashboard.contractor.client_name',
-                  namedArgs: {'name': project.clientName},
+                  namedArgs: {'name': project.ownerName},
                 ),
                 statusLabel: context.tr(
                   'dashboard.contractor.project_status_waiting',

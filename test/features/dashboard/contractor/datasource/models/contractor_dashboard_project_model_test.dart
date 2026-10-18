@@ -3,11 +3,11 @@ import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/features/dashboard/contractor/datasource/models/contractor_dashboard_project_model.dart';
 
 void main() {
-  test('fromJson maps v_my_projects row correctly', () {
+  test('fromJson maps v_my_projects row correctly with owner_name', () {
     final json = {
       'id': 'proj-123',
       'title': 'ترميم فيلا سكنية',
-      'client_name': 'أحمد العتيبي',
+      'owner_name': 'أحمد العتيبي',
       'status': 'in_progress',
       'approved_tasks_count': 3,
       'total_tasks_count': 5,
@@ -20,6 +20,7 @@ void main() {
 
     expect(model.id, 'proj-123');
     expect(model.title, 'ترميم فيلا سكنية');
+    expect(model.ownerName, 'أحمد العتيبي');
     expect(model.clientName, 'أحمد العتيبي');
     expect(model.status, ProjectStatus.inProgress);
     expect(model.approvedTasksCount, 3);
@@ -33,7 +34,7 @@ void main() {
     final json = {
       'id': 'proj-456',
       'title': 'بناء مستودع',
-      'client_name': null,
+      'owner_name': null,
       'status': 'in_progress',
       'approved_tasks_count': 0,
       'total_tasks_count': 0,
@@ -44,6 +45,7 @@ void main() {
 
     final model = ContractorDashboardProjectModel.fromJson(json);
 
+    expect(model.ownerName, isEmpty);
     expect(model.clientName, isEmpty);
     expect(model.progress, 0.0);
     expect(model.budget, isNull);

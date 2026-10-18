@@ -2,23 +2,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/core/utils/money.dart';
-import 'package:watad/features/dashboard/contractor/datasource/models/contractor_dashboard_data_model.dart';
-import 'package:watad/features/dashboard/contractor/datasource/models/contractor_dashboard_earnings_model.dart';
 import 'package:watad/features/dashboard/contractor/datasource/models/contractor_dashboard_profile_model.dart';
+import 'package:watad/features/dashboard/contractor/datasource/models/contractor_dashboard_raw_data_model.dart';
 import 'package:watad/features/dashboard/contractor/datasource/remote/contractor_dashboard_remote_data_source.dart';
 import 'package:watad/features/dashboard/contractor/datasource/repositories/contractor_dashboard_repository_impl.dart';
-import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_data.dart';
+import 'package:watad/features/dashboard/contractor/domain/entities/contractor_dashboard_raw_data.dart';
 
 class FakeContractorDashboardRemoteDataSource
     implements ContractorDashboardRemoteDataSource {
   FakeContractorDashboardRemoteDataSource({this.data, this.error});
 
-  final ContractorDashboardDataModel? data;
+  final ContractorDashboardRawDataModel? data;
   final Object? error;
 
   @override
-  Future<ContractorDashboardDataModel> getDashboardData() async {
+  Future<ContractorDashboardRawDataModel> getDashboardRawData() async {
     final error = this.error;
     if (error != null) throw error;
     return data!;
@@ -28,26 +26,24 @@ class FakeContractorDashboardRemoteDataSource
 void main() {
   test('returns data on remote success', () async {
     final remote = FakeContractorDashboardRemoteDataSource(
-      data: const ContractorDashboardDataModel(
+      data: const ContractorDashboardRawDataModel(
         profile: ContractorDashboardProfileModel(
           companyName: 'مؤسسة البناء',
           verificationStatus: VerificationStatus.verified,
         ),
-        earnings: ContractorDashboardEarningsModel(
-          thisMonthEarnings: Money.zero(),
-          pendingTransfers: Money.zero(),
-        ),
+        payments: [],
         opportunitiesCount: 2,
-        activeProjects: [],
-        myOffers: [],
+        projects: [],
+        tasks: [],
+        offers: [],
       ),
     );
 
     final repository = ContractorDashboardRepositoryImpl(remote);
-    final result = await repository.getDashboardData();
+    final result = await repository.getDashboardRawData();
 
-    expect(result, isA<Success<ContractorDashboardData>>());
-    final success = result as Success<ContractorDashboardData>;
+    expect(result, isA<Success<ContractorDashboardRawData>>());
+    final success = result as Success<ContractorDashboardRawData>;
     expect(success.data.profile.companyName, 'مؤسسة البناء');
   });
 
@@ -57,10 +53,10 @@ void main() {
     );
 
     final repository = ContractorDashboardRepositoryImpl(remote);
-    final result = await repository.getDashboardData();
+    final result = await repository.getDashboardRawData();
 
-    expect(result, isA<Failed<ContractorDashboardData>>());
-    final failed = result as Failed<ContractorDashboardData>;
+    expect(result, isA<Failed<ContractorDashboardRawData>>());
+    final failed = result as Failed<ContractorDashboardRawData>;
     expect(failed.failure, isA<UnknownFailure>());
   });
 }

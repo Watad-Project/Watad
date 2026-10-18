@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -90,7 +92,12 @@ class ContractorDashboardPage extends StatelessWidget {
                       const SizedBox(height: AppSpacing.sm),
                       ContractorDashboardOpportunitiesBanner(
                         opportunitiesCount: data.opportunitiesCount,
-                        onBrowse: onBrowseOpportunities,
+                        onBrowse:
+                            onBrowseOpportunities ??
+                            () => context.goNamed(
+                              ContractorNavigationRoutes.navigationName,
+                              queryParameters: {'tab': 'contractor-work'},
+                            ),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       ContractorDashboardActiveProjects(
