@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/components/display/app_network_image.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/home/client/domain/entities/client_home_profile.dart';
@@ -124,5 +125,59 @@ void main() {
 
       expect(find.byType(ElevatedButton), findsOneWidget);
     });
+
+    testWidgets('renders user initial in avatar when avatarPath is null', (
+      tester,
+    ) async {
+      const profile = ClientHomeProfile(
+        fullName: 'Omar Al-Ghamdi',
+        isPhoneVerified: false,
+      );
+      repository.profileResult = const Success(profile);
+      repository.contractorsResult = const Success([]);
+
+      await tester.runAsync(() async {
+        bloc.add(const ClientHomeStarted());
+        await bloc.stream.firstWhere(
+          (s) => s.status == ClientHomeStatus.success,
+        );
+      });
+
+      await pumpPage(tester);
+      await tester.pump();
+
+      expect(find.text('O'), findsOneWidget);
+      expect(find.text('Omar Al-Ghamdi'), findsOneWidget);
+    });
+
+    testWidgets(
+      'renders AppNetworkImage in avatar when avatarPath is provided',
+      (tester) async {
+        const profile = ClientHomeProfile(
+          fullName: 'Omar Al-Ghamdi',
+          isPhoneVerified: false,
+          avatarPath: 'https://example.com/avatar.jpg',
+        );
+        repository.profileResult = const Success(profile);
+        repository.contractorsResult = const Success([]);
+
+        await tester.runAsync(() async {
+          bloc.add(const ClientHomeStarted());
+          await bloc.stream.firstWhere(
+            (s) => s.status == ClientHomeStatus.success,
+          );
+        });
+
+        await pumpPage(tester);
+        await tester.pump();
+
+        final avatarFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is AppNetworkImage &&
+              widget.url == 'https://example.com/avatar.jpg',
+        );
+        expect(avatarFinder, findsOneWidget);
+      },
+    );
   });
 }
