@@ -54,6 +54,10 @@ Failure _failureOf(Object error, StackTrace stackTrace) {
     PostgrestException(:final code) => _postgrestFailure(code, error),
     AuthRetryableFetchException() => NetworkFailure(error),
     AuthException(statusCode: '429') => RateLimitFailure(error),
+    AuthException() when _isUserAlreadyExists(error) => AuthFailure(
+      error,
+      'auth.account_already_exists',
+    ),
     AuthException() => AuthFailure(error),
     StorageException(:final statusCode) => _storageFailure(statusCode, error),
     TimeoutException() => NetworkFailure(error),
@@ -107,3 +111,12 @@ Failure _storageFailure(String? statusCode, StorageException error) {
 /// always starts with its name.
 bool _isConnectionError(Object error) =>
     error.toString().startsWith('ClientException');
+
+bool _isUserAlreadyExists(AuthException error) {
+  final code = error.code?.toLowerCase();
+  final message = error.message.toLowerCase();
+  return code == 'user_already_exists' ||
+      message.contains('already registered') ||
+      message.contains('already exists') ||
+      message.contains('user already exists');
+}

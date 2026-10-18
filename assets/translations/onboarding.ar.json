@@ -1,11 +1,24 @@
 {
+  "contractor_profile_completion_title": "إكمال ملف المنشأة",
   "get_started": "ابدأ الآن",
   "next": "التالي",
+  "save_button": "حفظ",
+  "save_error": "تعذر حفظ التخصص، يرجى المحاولة مرة أخرى.",
+  "save_success": "تم حفظ التخصص بنجاح",
   "skip": "تخطّي",
   "slide_1_description": "ابحث عن مقاول، واستقبل العروض، وتواصل معه، واشترِ مواد البناء من تطبيق واحد.",
   "slide_1_title": "كل مشروعك في مكان واحد",
   "slide_2_description": "كل اتفاق وكل تعديل يُسجَّل ولا يمكن تغييره بعد التوقيع، ويبقى سجلّه كاملًا إثباتًا لك.",
   "slide_2_title": "عقود موثّقة لا تتغيّر",
   "slide_3_description": "ادفع بالريال لكل مرحلة تُنجَز، عبر المحفظة أو تحويل بنكي موثّق، وتابع كل دفعة.",
-  "slide_3_title": "دفعات واضحة على مراحل"
+  "slide_3_title": "دفعات واضحة على مراحل",
+  "specialty_electrical_plumbing": "كهرباء وسباكة",
+  "specialty_finishes": "تشطيبات",
+  "specialty_general_contracting": "مقاولات عامة",
+  "specialty_insulation": "عزل",
+  "specialty_label": "التخصص",
+  "specialty_renovation": "ترميم",
+  "specialty_required": "يرجى اختيار تخصص المنشأة",
+  "specialty_subtitle": "يظهر للعملاء على ملف منشأتك ويحدد المشاريع المقترحة لك.",
+  "specialty_title": "تخصص المنشأة"
 }
