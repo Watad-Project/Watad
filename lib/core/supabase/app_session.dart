@@ -122,6 +122,7 @@ class SupabaseAppSession extends ChangeNotifier implements AppSession {
       final business = await _client
           .from('businesses')
           .select('verification_status, specialized_field')
+          .eq('user_id', userId)
           .maybeSingle();
 
       final dest = resolveContractorDestination(

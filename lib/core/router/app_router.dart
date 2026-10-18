@@ -8,6 +8,7 @@ import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
+import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
@@ -66,15 +67,20 @@ GoRouter createAppRouter({
 ///   right after the code is verified, and when the splash finds a session.
 /// - A role's navigation is only for that role: signed out goes to the login
 ///   page, another role goes to its own navigation.
+/// - A signed-in contractor on the KYC status page goes to their navigation
+///   if already verified.
 ///
 /// Everything else is open. Returns a path to redirect to, or null to let the
 /// navigation through.
 FutureOr<String?> _guard(AppSession session, GoRouterState state) {
   final location = state.matchedLocation;
   final isNavigation = _navigationPaths.containsValue(location);
+  final isKycStatus = location == KycRoutes.statusPath;
   // Answered right away, so most navigations finish in the same frame. Only
   // reading the role waits.
-  if (location != AuthRoutes.loginPath && !isNavigation) return null;
+  if (location != AuthRoutes.loginPath && !isNavigation && !isKycStatus) {
+    return null;
+  }
   if (!session.isSignedIn) return isNavigation ? AuthRoutes.loginPath : null;
   return _homeOf(session, location);
 }

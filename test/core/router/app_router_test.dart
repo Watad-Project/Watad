@@ -275,5 +275,42 @@ void main() {
         expect(currentPath(router), KycRoutes.statusPath);
       },
     );
+
+    testWidgets(
+      'a verified contractor navigating to KYC status page is redirected to contractor navigation',
+      (tester) async {
+        final session = FakeAppSession()
+          ..signIn(
+            AppRole.contractor,
+            ContractorNavigationRoutes.navigationPath,
+          );
+        final router = await pumpAppRouter(
+          tester,
+          session: session,
+          initialLocation: KycRoutes.statusPath,
+        );
+
+        router.goNamed(KycRoutes.statusName);
+        await tester.pumpAndSettle();
+        expect(currentPath(router), ContractorNavigationRoutes.navigationPath);
+      },
+    );
+
+    testWidgets(
+      'a pending contractor navigating to contractor navigation is redirected to KYC status page',
+      (tester) async {
+        final session = FakeAppSession()
+          ..signIn(AppRole.contractor, KycRoutes.statusPath);
+        final router = await pumpAppRouter(
+          tester,
+          session: session,
+          initialLocation: ContractorNavigationRoutes.navigationPath,
+        );
+
+        router.goNamed(ContractorNavigationRoutes.navigationName);
+        await tester.pumpAndSettle();
+        expect(currentPath(router), KycRoutes.statusPath);
+      },
+    );
   });
 }
