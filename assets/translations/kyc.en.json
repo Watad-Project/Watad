@@ -1,0 +1,51 @@
+{
+  "commercial_registration": {
+    "pending_subtitle": "We received the license. Review takes up to 24 hours. You can browse and chat now.",
+    "pending_title": "Under review",
+    "rejected_title": "Rejected",
+    "unverified_subtitle": "Verification documents have not been uploaded yet.",
+    "unverified_title": "Unverified",
+    "verified_subtitle": "The verified badge now appears on your business profile. You can submit offers.",
+    "verified_title": "Verified"
+  },
+  "contractor": {
+    "camera_permission_required": "Please grant camera permission to capture your license.",
+    "file_selected_prefix": "File selected: {fileName}",
+    "from_camera": "Camera",
+    "from_files": "From Files",
+    "license_footnote": "We will not ask for any other document now. Project documents will be requested later when needed.",
+    "license_step_label": "Contractor Registration — The Only Document",
+    "license_subtitle": "Only one document. Reviewed within 24 hours. Once approved, the verification badge appears and you can submit offers.",
+    "license_title": "Contractor License",
+    "status_pending_subtitle": "Your application is under review and will be answered within 24 hours.",
+    "status_pending_title": "Under review",
+    "status_title": "Verification Status",
+    "storage_permission_required": "Please grant storage permission to choose the document.",
+    "submit_button": "Submit for review",
+    "upload_success": "License submitted successfully for review.",
+    "upload_zone_hint": "JPG or PDF · up to 10MB",
+    "upload_zone_title": "Capture or upload license"
+  },
+  "deed": {
+    "pending_subtitle": "We received the property deed. Review takes up to 24 hours. You can browse and chat now.",
+    "pending_title": "Under review",
+    "rejected_title": "Rejected",
+    "unverified_subtitle": "Title deed is not verified yet.",
+    "unverified_title": "Unverified",
+    "verified_subtitle": "Property deed verified successfully. You can proceed and publish your project.",
+    "verified_title": "Verified"
+  },
+  "footnote": "The same component serves two documents only: the contractor license upon registration, and the title deed upon project publishing.",
+  "license": {
+    "pending_subtitle": "We received the license. Review takes up to 24 hours. You can browse and chat now.",
+    "pending_title": "Under review",
+    "rejected_title": "Rejected",
+    "unverified_subtitle": "Verification documents have not been uploaded yet.",
+    "unverified_title": "Unverified",
+    "verified_subtitle": "The verified badge now appears on your business profile. You can submit offers.",
+    "verified_title": "Verified"
+  },
+  "rejection_reason_prefix": "Rejection reason: {reason}",
+  "retry_button": "Re-upload",
+  "title": "Verification status"
+}

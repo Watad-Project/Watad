@@ -1,26 +1,59 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
 
-class FakeAuthRepository implements AuthRepository {
-  FakeAuthRepository(this.result);
-  final Result<void> result;
-
-  @override
-  Future<Result<void>> sendSignUpOtp(String email) async => result;
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
+import '../../../../../helpers/fake_auth_repository.dart';
 
 void main() {
-  test('returns success when OTP is sent', () async {
-    final repo = FakeAuthRepository(const Success(null));
-    final useCase = SendSignUpOtpUseCase(repo);
+  late FakeAuthRepository repository;
+  late SendSignUpOtpUseCase sendSignUpOtp;
 
-    final result = await useCase('user@example.com');
+  setUp(() {
+    repository = FakeAuthRepository();
+    sendSignUpOtp = SendSignUpOtpUseCase(repository);
+  });
 
-    expect(result, isA<Success<void>>());
+  Matcher validationFailure(String key) => isA<Failed<void>>().having(
+    (result) => result.failure,
+    'failure',
+    isA<ValidationFailure>().having((f) => f.messageKey, 'messageKey', key),
+  );
+
+  test('an empty email is required, and nothing is sent', () async {
+    expect(
+      await sendSignUpOtp('  '),
+      validationFailure('auth.email_required_error'),
+    );
+    expect(repository.sentTo, isEmpty);
+  });
+
+  test('an invalid email is rejected, and nothing is sent', () async {
+    expect(
+      await sendSignUpOtp('not-an-email'),
+      validationFailure('auth.invalid_email_error'),
+    );
+    expect(repository.sentTo, isEmpty);
+  });
+
+  test('a valid email sends a code with shouldCreateUser: true', () async {
+    expect(await sendSignUpOtp(' user@watad.sa '), isA<Success<void>>());
+    expect(repository.sentTo, ['user@watad.sa']);
+    expect(repository.sentToWithCreateUser, [('user@watad.sa', true)]);
+  });
+
+  test("passes the repository's failure on", () async {
+    repository.sendOtpResult = const Failed(RateLimitFailure());
+
+    final result = await sendSignUpOtp('user@watad.sa');
+
+    expect(
+      result,
+      isA<Failed<void>>().having(
+        (r) => r.failure,
+        'failure',
+        isA<RateLimitFailure>(),
+      ),
+    );
   });
 }
