@@ -50,7 +50,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppDropdown`, `AppDropdownOption` | `inputs/app_dropdown.dart` | Select field whose list opens under it; options with a toned subtitle, and a tag badge shown next to the chosen value | `options`, `value`, `onChanged`, `label`, `hint`, `errorText` | 2026-10-09 |
 | `AppQuantityStepper` | `inputs/app_quantity_stepper.dart` | A number with − and + buttons (market, cart) | `value`, `onChanged`, `min`, `max`, `step`, `valueLabel`; tooltips default to "Decrease" / "Increase" | 2026-10-09 |
 | `AppSwitch` | `inputs/app_switch.dart` | On/off switch, alone or as a full-width settings row with a label | `value`, `onChanged`, `label`, `semanticLabel` | 2026-10-09 |
-| `AppCheckbox` | `inputs/app_checkbox.dart` | Checkbox with a tappable label (accepting the terms) | `value`, `onChanged`, `label` | 2026-10-09 |
+| `AppCheckbox` | `inputs/app_checkbox.dart` | Checkbox with a tappable label (accepting the terms) | `value`, `onChanged`, `label`, `labelWidget` | 2026-10-09 |
 | `AppRadioRow`, `AppRadioRowAccent` | `inputs/app_radio_row.dart` | One bordered choice in a list (payment method, address, task, rejection reason); orange or ink when selected | `title`, `subtitle`, `subtitleTone`, `selected`, `onTap`, `accent` | 2026-10-09 |
 | `AppFilterChips` | `inputs/app_filter_chips.dart` | Scrollable row of round filter chips, one selected (market, work, projects) | `labels`, `selectedIndex`, `onSelected` | 2026-10-09 |
 | `AppSegmentedTabs` | `inputs/app_segmented_tabs.dart` | Two or three equal boxes switching a list between views; the selected one is ink | `labels`, `selectedIndex`, `onChanged` | 2026-10-09 |

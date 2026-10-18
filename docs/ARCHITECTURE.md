@@ -1,6 +1,6 @@
 # Watad architecture
 
-This document describes the backend the Flutter app depends on. It was written from the live Supabase project (21 tables, 32 RPC functions, 20 views, 4 storage buckets, 1 Edge Function) on 2026-10-06. If the database changes, update this file in the same PR.
+This document describes the backend the Flutter app depends on. It was written from the live Supabase project (21 tables, 32 RPC functions, 20 views, 4 storage buckets, 1 Edge Function) on 2026-10-06, and updated for migrations `56`–`58` (client identity: 22 tables, 33 RPC functions, 21 views) on 2026-10-14. If the database changes, update this file in the same PR.
 
 How the Flutter app itself is organised (folders, layers, BLoC, naming) is in [`APP_ARCHITECTURE.md`](APP_ARCHITECTURE.md). This file is the contract between that app and the backend.
 
@@ -36,6 +36,7 @@ How the Flutter app itself is organised (folders, layers, BLoC, naming) is in [`
   - **Owner:** any user who creates a project (`projects.owner_id`).
   - **Contractor / taker:** a user with a row in `businesses`. The business must be `verified` to be trusted. `projects.taker_id` points to `businesses.user_id`.
 - `businesses.verification_status`: `unverified → pending → verified | rejected | suspended`. Only admins change it (`admin_set_business_verification()`); the business asks with `request_business_verification()` after uploading `business_documents`.
+- A client's ID/iqama number and phone are in `user_identity` (one row per user, owner-only). The app writes them once, after email OTP verification, with `complete_client_profile()`, and reads them back through `v_my_identity`. A signed-in user with no `user_identity` row has not finished sign-up. The row is deleted when the account is closed.
 - Suspensions are tracked in `user_suspensions` (at most one open row per user) via `admin_set_user_suspension()`.
 - In the app these map to the role folders: owner → `client/`, contractor / taker → `contractor/`, `users.role = 'admin'` → `admin/` (see `APP_ARCHITECTURE.md` §3). `v_my_projects.my_role` says which side the signed-in user is on for each project: `owner` or `taker`.
 
@@ -48,6 +49,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | Identity | `users` | update `full_name`, `avatar_path` only | `role` locked. Anonymised, never deleted. |
 | | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. |
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
+| | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
 | | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
 | Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. |
@@ -129,15 +131,17 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Marketplace | `checkout(p_items jsonb, p_payment_method)`, `cancel_order(p_order_id)`, `mark_order_shipped(p_order_id)`, `confirm_order_delivered(p_order_id)`, `expire_stale_orders(p_older_than)` |
 | Chat | `start_chat(p_other_user_id, p_project_id)`, `add_chat_member(p_chat_id, p_user_id)`, `remove_chat_member(p_chat_id, p_user_id)`, `mark_chat_read(p_chat_id)` |
 | Business | `request_business_verification()` |
-| Account | `delete_my_account()` |
+| Account | `complete_client_profile(p_full_name, p_national_id, p_phone)`, `delete_my_account()` |
 | Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing` |
 | Blockchain sync (server only) | `blockchain_sync_claim`, `blockchain_sync_snapshot`, `blockchain_sync_complete`. They need the shared secret. **The app never calls these.** |
+
+`complete_client_profile()` finishes client sign-up. Call it once, after email OTP verification (before that there is no session). `p_phone` is the 9 digits starting with 5, without `+966`. It sets `users.full_name`, saves the `user_identity` row and returns `'created'`, or `'already_registered'` (and changes nothing) when the account already finished sign-up. Use that result, not `v_my_profile`, to tell a new account from an existing one: the sign-up trigger always creates the `users` row. Errors: `22023` for invalid input (`ValidationFailure`), `23505` when the ID/iqama number belongs to another account (`ConflictFailure`).
 
 ## 7. Views (what the app reads)
 
 | Domain | Views |
 |--------|-------|
-| Profile | `v_my_profile`, `v_public_profiles`, `v_my_addresses` |
+| Profile | `v_my_profile`, `v_public_profiles`, `v_my_addresses`, `v_my_identity` |
 | Business | `v_business_documents`, `v_admin_verification_queue` |
 | Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_reports`, `v_project_payments`, `v_bank_transfers` |
 | Marketplace | `v_marketplace_items`, `v_my_orders`, `v_order_items` |
@@ -194,7 +198,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Applied migrations are numbered in order (`00_setup` … `55_images_bucket`; the next is `56_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
+- Applied migrations are numbered in order (`00_setup` … `58_v_my_identity_security_invoker`; the next is `59_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
 
