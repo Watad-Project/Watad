@@ -121,9 +121,9 @@ class ClientProjectsRemoteDataSourceImpl
     final ext = filePath.split('.').last.toLowerCase();
     final fileName =
         '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.isNotEmpty ? file.uri.pathSegments.last : 'deed.$ext'}';
-    final storagePath = '$userId/$fileName';
+    final storagePath = '$userId/projects/$fileName';
     await _client.storage
-        .from('project-deeds')
+        .from('images')
         .upload(
           storagePath,
           file,
