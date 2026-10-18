@@ -20,7 +20,8 @@ final class NetworkFailure extends Failure {
 
 /// Not signed in, the session expired, or the code was wrong.
 final class AuthFailure extends Failure {
-  const AuthFailure([Object? cause]) : super('errors.auth', cause);
+  const AuthFailure([Object? cause, String messageKey = 'errors.auth'])
+    : super(messageKey, cause);
 }
 
 /// Row-level security or an RPC rejected the caller.

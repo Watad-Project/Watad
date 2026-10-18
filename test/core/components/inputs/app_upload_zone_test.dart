@@ -13,4 +13,18 @@ void main() {
     await tester.tap(find.text('صورة أو PDF'));
     expect(taps, 1);
   });
+
+  testWidgets('shows custom label and subtitle when provided', (tester) async {
+    await pumpComponent(
+      tester,
+      AppUploadZone(
+        onTap: () {},
+        label: 'تصوير أو رفع الرخصة',
+        subtitle: 'JPG أو PDF · حتى ١٠ ميغابايت',
+      ),
+    );
+
+    expect(find.text('تصوير أو رفع الرخصة'), findsOneWidget);
+    expect(find.text('JPG أو PDF · حتى ١٠ ميغابايت'), findsOneWidget);
+  });
 }

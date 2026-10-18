@@ -31,4 +31,20 @@ void main() {
 
     expect(tester.getSize(find.byType(AppFilterChips)).height, 48);
   });
+
+  testWidgets('renders Wrap when isWrapped is true', (tester) async {
+    int? selected;
+    await pumpComponent(
+      tester,
+      AppFilterChips(
+        labels: const ['مقاولات عامة', 'تشطيبات'],
+        selectedIndex: 1,
+        isWrapped: true,
+        onSelected: (i) => selected = i,
+      ),
+    );
+
+    await tester.tap(find.text('مقاولات عامة'));
+    expect(selected, 0);
+  });
 }

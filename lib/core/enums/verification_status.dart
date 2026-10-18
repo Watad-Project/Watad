@@ -10,8 +10,12 @@ enum VerificationStatus {
 
   final String value;
 
-  static VerificationStatus fromJson(String value) =>
-      values.firstWhere((status) => status.value == value);
+  static VerificationStatus fromJson(String value) {
+    return VerificationStatus.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => VerificationStatus.unverified,
+    );
+  }
 
   String toJson() => value;
 }

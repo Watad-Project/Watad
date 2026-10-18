@@ -53,6 +53,8 @@ class RolePage extends StatelessWidget {
               onPressed: () {
                 if (onContinue != null) {
                   onContinue!(context, selectedRole);
+                } else if (selectedRole == AuthRole.contractor) {
+                  context.goNamed(AuthRoutes.signUpBusinessName);
                 } else if (selectedRole == AuthRole.client) {
                   context.goNamed(AuthRoutes.signUpClientName);
                 }
