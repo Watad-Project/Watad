@@ -1,0 +1,51 @@
+{
+  "commercial_registration": {
+    "pending_subtitle": "استلمنا الرخصة. المراجعة خلال ٢٤ ساعة. يمكنك التصفّح والمحادثة الآن.",
+    "pending_title": "قيد المراجعة",
+    "rejected_title": "مرفوض",
+    "unverified_subtitle": "لم يتم رفع مستندات التوثيق بعد.",
+    "unverified_title": "غير موثّق",
+    "verified_subtitle": "ظهرت شارة التوثيق على ملف المنشأة. يمكنك تقديم العروض.",
+    "verified_title": "موثّق"
+  },
+  "contractor": {
+    "camera_permission_required": "يرجى منح إذن استخدام الكاميرا لالتقاط صورة الرخصة.",
+    "file_selected_prefix": "تم اختيار الملف: {fileName}",
+    "from_camera": "الكاميرا",
+    "from_files": "من الملفات",
+    "license_footnote": "لن نطلب أي مستند آخر الآن. مستندات المشروع تُطلب لاحقاً عند الحاجة.",
+    "license_step_label": "تسجيل مقاول — المستند الوحيد",
+    "license_subtitle": "مستند واحد فقط. تُراجَع خلال ٢٤ ساعة، وبعد الاعتماد يظهر شارة التوثيق ويمكنك تقديم العروض.",
+    "license_title": "رخصة مقاول",
+    "status_pending_subtitle": "طلبك قيد المراجعة وسيتم الرد خلال ٢٤ ساعة.",
+    "status_pending_title": "قيد المراجعة",
+    "status_title": "حالة التوثيق",
+    "storage_permission_required": "يرجى منح إذن الوصول إلى الملفات لاختيار المستند.",
+    "submit_button": "إرسال للمراجعة",
+    "upload_success": "تم إرسال الرخصة بنجاح للمراجعة.",
+    "upload_zone_hint": "JPG أو PDF · حتى ١٠ ميغابايت",
+    "upload_zone_title": "تصوير أو رفع الرخصة"
+  },
+  "deed": {
+    "pending_subtitle": "استلمنا صك الملكية. المراجعة خلال ٢٤ ساعة. يمكنك التصفّح والمحادثة الآن.",
+    "pending_title": "قيد المراجعة",
+    "rejected_title": "مرفوض",
+    "unverified_subtitle": "لم يتم توثيق الصك بعد.",
+    "unverified_title": "غير موثّق",
+    "verified_subtitle": "تم توثيق صك الملكية بنجاح. يمكنك المتابعة ونشر المشروع.",
+    "verified_title": "موثّق"
+  },
+  "footnote": "نفس المكوّن يخدم مستندين فقط: رخصة المقاول عند التسجيل، وصك الملكية عند نشر مشروع.",
+  "license": {
+    "pending_subtitle": "استلمنا الرخصة. المراجعة خلال ٢٤ ساعة. يمكنك التصفّح والمحادثة الآن.",
+    "pending_title": "قيد المراجعة",
+    "rejected_title": "مرفوض",
+    "unverified_subtitle": "لم يتم رفع مستندات التوثيق بعد.",
+    "unverified_title": "غير موثّق",
+    "verified_subtitle": "ظهرت شارة التوثيق على ملف المنشأة. يمكنك تقديم العروض.",
+    "verified_title": "موثّق"
+  },
+  "rejection_reason_prefix": "سبب الرفض: {reason}",
+  "retry_button": "إعادة الرفع",
+  "title": "حالة التوثيق"
+}

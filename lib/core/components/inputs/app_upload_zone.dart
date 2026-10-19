@@ -12,11 +12,16 @@ class AppUploadZone extends StatelessWidget {
     super.key,
     required this.onTap,
     this.label,
+    this.subtitle,
     this.icon = Icons.arrow_upward,
   });
 
   /// What can be uploaded. Defaults to "Image or PDF".
   final String? label;
+
+  /// Secondary hint under the label.
+  final String? subtitle;
+
   final VoidCallback? onTap;
   final IconData icon;
 
@@ -35,8 +40,11 @@ class AppUploadZone extends StatelessWidget {
           ),
           child: InkWell(
             onTap: onTap,
-            child: SizedBox(
-              height: 88,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.md,
+                horizontal: AppSpacing.md,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -53,12 +61,27 @@ class AppUploadZone extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Flexible(
-                    child: Text(
-                      label ?? context.tr('common.image_or_pdf'),
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondary,
-                        height: 1.4,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          label ?? context.tr('common.image_or_pdf'),
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.textSecondary,
+                            height: 1.4,
+                          ),
+                        ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            subtitle!,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],

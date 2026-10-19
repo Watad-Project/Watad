@@ -88,6 +88,7 @@ class AppPhoneField extends StatelessWidget {
         onChanged: onChanged,
         style: AppTextStyles.mono,
         textDirection: TextDirection.ltr,
+        textAlign: TextAlign.start,
         decoration: InputDecoration(
           hintText: hint,
           hintTextDirection: TextDirection.ltr,
