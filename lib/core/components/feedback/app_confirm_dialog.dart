@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/feedback/app_popup.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -49,8 +50,8 @@ class AppConfirmDialog extends StatefulWidget {
     required String confirmLabel,
     String? reasonLabel,
   }) {
-    return showDialog<String>(
-      context: context,
+    return AppPopup.dialog<String>(
+      context,
       builder: (_) => AppConfirmDialog(
         title: title,
         message: message,
