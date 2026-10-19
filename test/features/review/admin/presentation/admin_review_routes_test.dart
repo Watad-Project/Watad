@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
@@ -80,5 +81,25 @@ void main() {
     // Pushed over the queue, so back returns to it.
     expect(find.byType(AdminReviewDocumentsPage), findsOneWidget);
     expect(router.canPop(), isTrue);
+  });
+
+  testWidgets('rejecting with «أخرى» sends the details alone', (tester) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminReviewRoutes.reviewName);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('رفض بسبب'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('أخرى'));
+    await tester.pump();
+    await tester.enterText(find.byType(TextField), 'الختم غير ظاهر');
+    await tester.tap(find.text('إرسال الرفض'));
+    await tester.pumpAndSettle();
+
+    expect(repository.rejected, [('b-1', 'الختم غير ظاهر')]);
+    expect(find.byType(AdminReviewRequestCard), findsNothing);
   });
 }

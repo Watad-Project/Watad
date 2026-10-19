@@ -16,6 +16,7 @@
   "reason_expired": "The document has expired",
   "reason_mismatch": "The document doesn't match the business's details",
   "reason_wrong_document": "Not the requested document",
+  "reason_other": "Other",
   "documents_title": "Request documents",
   "no_documents": "No documents uploaded",
   "open_file": "Open the file",

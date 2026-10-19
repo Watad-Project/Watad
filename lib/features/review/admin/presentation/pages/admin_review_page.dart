@@ -20,12 +20,14 @@ import 'package:watad/features/review/admin/presentation/widgets/admin_review_re
 class AdminReviewPage extends StatelessWidget {
   const AdminReviewPage({super.key});
 
-  /// The rejection reasons, in order (GRA-30).
+  /// The rejection reasons, in order (GRA-30). The last one, «أخرى», sends
+  /// the details alone.
   static const _reasonKeys = [
     'review.reason_unclear',
     'review.reason_expired',
     'review.reason_mismatch',
     'review.reason_wrong_document',
+    'review.reason_other',
   ];
 
   @override
@@ -117,7 +119,8 @@ class AdminReviewPage extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (sheetContext) => Padding(
+      // Scrolls when the reasons and the keyboard don't fit.
+      builder: (sheetContext) => SingleChildScrollView(
         padding: EdgeInsetsDirectional.only(
           start: AppSpacing.md,
           end: AppSpacing.md,
@@ -130,7 +133,9 @@ class AdminReviewPage extends StatelessWidget {
               AdminReviewRejected(
                 AdminReviewRejection(
                   businessId: request.businessId,
-                  reason: reasons[reasonIndex],
+                  reason: reasonIndex == _reasonKeys.length - 1
+                      ? null
+                      : reasons[reasonIndex],
                   details: details,
                 ),
               ),

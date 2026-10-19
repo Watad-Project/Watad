@@ -16,6 +16,7 @@
   "reason_expired": "المستند منتهي الصلاحية",
   "reason_mismatch": "المستند لا يطابق بيانات المنشأة",
   "reason_wrong_document": "مستند غير المطلوب",
+  "reason_other": "أخرى",
   "documents_title": "مستندات الطلب",
   "no_documents": "لا توجد مستندات مرفوعة",
   "open_file": "فتح الملف",
