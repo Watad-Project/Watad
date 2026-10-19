@@ -250,8 +250,10 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
       child: CompositedTransformFollower(
         link: _link,
         showWhenUnlinked: false,
-        targetAnchor: openUp ? Alignment.topLeft : Alignment.bottomLeft,
-        followerAnchor: openUp ? Alignment.bottomLeft : Alignment.topLeft,
+        // The list is as wide as the field, so centring lines them up in
+        // both directions.
+        targetAnchor: openUp ? Alignment.topCenter : Alignment.bottomCenter,
+        followerAnchor: openUp ? Alignment.bottomCenter : Alignment.topCenter,
         offset: Offset(0, openUp ? -AppSpacing.xs : AppSpacing.xs),
         child: TapRegion(
           groupId: this,
