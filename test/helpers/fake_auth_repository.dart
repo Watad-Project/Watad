@@ -1,6 +1,7 @@
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/auth/shared/domain/entities/auth_session.dart';
+import 'package:watad/features/auth/shared/domain/entities/business_sign_up.dart';
 import 'package:watad/features/auth/shared/domain/entities/sign_up_profile.dart';
 import 'package:watad/features/auth/shared/domain/entities/verify_otp_params.dart';
 import 'package:watad/features/auth/shared/domain/repositories/auth_repository.dart';
@@ -28,16 +29,37 @@ class FakeAuthRepository implements AuthRepository {
   );
   Result<String> saveProfileResult = const Success('created');
   Result<void> signOutResult = const Success(null);
+  Result<void> saveBusinessSignUpResult = const Success(null);
+  BusinessSignUp? savedBusiness;
 
   /// The emails a code was sent to.
   final List<String> sentTo = [];
 
+  /// The emails and shouldCreateUser flags recorded.
+  final List<(String, bool)> sentToWithCreateUser = [];
+
   /// The codes that were checked, as (email, token).
   final List<(String, String)> checked = [];
 
+  Result<AuthSession?> signUpResult = const Success(
+    AuthSession(userId: 'user-1', email: 'user@watad.sa'),
+  );
+
   @override
-  Future<Result<void>> sendOtp({required String email}) async {
+  Future<Result<AuthSession?>> signUp({
+    required String email,
+    String? password,
+    String? phone,
+    Map<String, dynamic>? data,
+  }) async => signUpResult;
+
+  @override
+  Future<Result<void>> sendOtp({
+    required String email,
+    bool shouldCreateUser = false,
+  }) async {
     sentTo.add(email);
+    sentToWithCreateUser.add((email, shouldCreateUser));
     return sendOtpResult;
   }
 
@@ -51,7 +73,11 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Result<void>> sendSignUpOtp(String email) async => sendSignUpOtpResult;
+  Future<Result<void>> sendSignUpOtp(String email) async {
+    sentTo.add(email);
+    sentToWithCreateUser.add((email, true));
+    return sendSignUpOtpResult;
+  }
 
   @override
   Future<Result<AuthSession>> verifySignUpOtp(VerifyOtpParams params) async =>
@@ -63,6 +89,12 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<Result<void>> signOut() async => signOutResult;
+
+  @override
+  Future<Result<void>> saveBusinessSignUp(BusinessSignUp data) async {
+    savedBusiness = data;
+    return saveBusinessSignUpResult;
+  }
 }
 
 /// For tests that open the login route: the route builder takes its
