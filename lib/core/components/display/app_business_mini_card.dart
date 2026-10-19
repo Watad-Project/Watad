@@ -10,7 +10,8 @@ import 'package:watad/core/theme/app_text_styles.dart';
 
 /// A small business card for horizontal lists (home, saved, offers): the
 /// business's photo in a circle (the default avatar without one), name with
-/// the verified check, rating and number of projects.
+/// the verified check, rating and number of projects, and where it works
+/// when [location] is given.
 class AppBusinessMiniCard extends StatelessWidget {
   const AppBusinessMiniCard({
     super.key,
@@ -19,6 +20,7 @@ class AppBusinessMiniCard extends StatelessWidget {
     required this.projectsLabel,
     this.isVerified = false,
     this.imageUrl,
+    this.location,
     this.onTap,
   });
 
@@ -31,6 +33,9 @@ class AppBusinessMiniCard extends StatelessWidget {
   final String projectsLabel;
   final bool isVerified;
   final String? imageUrl;
+
+  /// Where the business works, e.g. its city, on its own line with a pin.
+  final String? location;
   final VoidCallback? onTap;
 
   static const double _photoHeight = 80;
@@ -43,12 +48,14 @@ class AppBusinessMiniCard extends StatelessWidget {
 
   /// The height a card needs at the phone's text size. Give it to the row or
   /// grid that holds the cards: with large text each line grows, and a
-  /// fixed height would overflow (APP_ARCHITECTURE.md §10).
-  static double heightOf(BuildContext context) {
+  /// fixed height would overflow (APP_ARCHITECTURE.md §10). Pass
+  /// [withLocation] when the cards show a [location].
+  static double heightOf(BuildContext context, {bool withLocation = false}) {
     final scaler = MediaQuery.textScalerOf(context);
     double lineHeight(TextStyle style) {
+      // A space: one line's height comes from the font, not the letters.
       final painter = TextPainter(
-        text: TextSpan(text: 'Ag', style: style),
+        text: TextSpan(text: ' ', style: style),
         textDirection: TextDirection.ltr,
         textScaler: scaler,
         maxLines: 1,
@@ -64,6 +71,7 @@ class AppBusinessMiniCard extends StatelessWidget {
         lineHeight(_nameStyle) +
         2 +
         ratingLine +
+        (withLocation ? 2 + ratingLine : 0) +
         // The card's border, and rounding.
         4;
   }
@@ -120,6 +128,27 @@ class AppBusinessMiniCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (location case final location?) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: _ratingStyle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

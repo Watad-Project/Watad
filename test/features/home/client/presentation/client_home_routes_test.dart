@@ -11,6 +11,7 @@ import 'package:watad/features/home/client/domain/entities/client_contractor_sor
 import 'package:watad/features/home/client/domain/entities/client_home_profile.dart';
 import 'package:watad/features/home/client/presentation/pages/client_contractors_page.dart';
 import 'package:watad/features/home/client/presentation/pages/client_home_page.dart';
+import 'package:watad/features/home/client/presentation/widgets/client_home_greeting_header.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_home_repository.dart';
@@ -29,6 +30,7 @@ void main() {
         ClientContractor(
           id: 'c-1',
           companyName: 'البناء المتين',
+          city: 'المدينة المنورة',
           ratingAvg: 4.8,
           ratingCount: 12,
           completedProjectCount: 64,
@@ -59,6 +61,14 @@ void main() {
 
     expect(find.byType(ClientHomePage), findsOneWidget);
     expect(find.text('عبدالله الحربي'), findsOneWidget);
+    // Their photo beside the name; the default avatar without one.
+    expect(
+      find.descendant(
+        of: find.byType(ClientHomeGreetingHeader),
+        matching: find.byIcon(Icons.person_rounded),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('ابحث عن مقاول أو مادة'), findsOneWidget);
     expect(find.text('انشر مشروعاً'), findsOneWidget);
   });
@@ -69,6 +79,9 @@ void main() {
     expect(find.byType(AppBusinessMiniCard), findsNWidgets(2));
     expect(find.text('٤٫٨ · ٦٤ مشروعًا'), findsOneWidget);
     expect(find.text('– · لا مشاريع بعد'), findsOneWidget);
+    // Each card says where the contractor works.
+    expect(find.text('المدينة المنورة'), findsOneWidget);
+    expect(find.text('لم تُحدَّد المدينة'), findsOneWidget);
   });
 
   testWidgets('«جوال موثّق» shows only for a confirmed phone', (tester) async {
@@ -141,20 +154,24 @@ void main() {
     await tester.tap(find.byTooltip('تصفية النتائج'));
     await tester.pumpAndSettle();
     // The sheet scrolls on a short screen.
-    Future<void> tapInSheet(String text) async {
-      await tester.ensureVisible(find.text(text));
+    Future<void> tapInSheet(Finder finder) async {
+      await tester.ensureVisible(finder);
       await tester.pumpAndSettle();
-      await tester.tap(find.text(text));
-      await tester.pump();
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
     }
 
-    await tapInSheet('المدينة المنورة');
-    await tapInSheet('١٠٠ مشروع فأكثر');
-    await tapInSheet('الأكثر مشاريع');
+    // Each filter is a dropdown: open it, pick an option.
+    await tapInSheet(find.byKey(const Key('contractors_filter_city')));
+    await tapInSheet(find.text('المدينة المنورة').last);
+    await tapInSheet(find.byKey(const Key('contractors_filter_projects')));
+    await tapInSheet(find.text('١٠٠ مشروع فأكثر').last);
+    await tapInSheet(find.byKey(const Key('contractors_filter_sort')));
+    await tapInSheet(find.text('الأكثر مشاريع').last);
     // Nothing is sent until «عرض النتائج».
     expect(repository.queries.last.filter.minProjects, isNull);
 
-    await tapInSheet('عرض النتائج');
+    await tapInSheet(find.text('عرض النتائج'));
     await tester.pumpAndSettle();
     final filter = repository.queries.last.filter;
     expect(filter.query, 'البناء');
@@ -166,12 +183,29 @@ void main() {
     expect(find.text('لا يوجد مقاولون يطابقون البحث'), findsOneWidget);
   });
 
+  testWidgets('the city filter shows even before any contractor has a city', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
+    router.goNamed(ClientHomeRoutes.contractorsName);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('تصفية النتائج'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('contractors_filter_city')), findsOneWidget);
+    expect(find.text('كل المدن'), findsOneWidget);
+  });
+
   testWidgets('home and every contractor fit large, bold text', (tester) async {
     repository
       ..contractorsPageResult = const Success([
         ClientContractor(
           id: 'c-1',
           companyName: 'مؤسسة البناء المتين للمقاولات العامة',
+          city: 'المدينة المنورة',
           ratingAvg: 4.8,
           ratingCount: 12,
           completedProjectCount: 64,

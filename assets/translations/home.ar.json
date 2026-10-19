@@ -41,5 +41,6 @@
   "sort_rating": "الأعلى تقييمًا",
   "sort_projects": "الأكثر مشاريع",
   "show_results": "عرض النتائج",
-  "clear_filters": "مسح الكل"
+  "clear_filters": "مسح الكل",
+  "city_unknown": "لم تُحدَّد المدينة"
 }
