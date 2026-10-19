@@ -81,6 +81,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppLoadingIndicator` | `feedback/app_loading_indicator.dart` | The spinner while a page loads its data, centred | none | 2026-10-19 |
 | `AppErrorView` | `feedback/app_error_view.dart` | A page's data couldn't load: the message and "Try again" | `message`, `onRetry` | 2026-10-19 |
 | `AppEmptyView` | `feedback/app_empty_view.dart` | A list with nothing to show: an icon and a message | `message`, `icon` | 2026-10-19 |
+| `AppConfirmDialog` | `feedback/app_confirm_dialog.dart` | Asks before a serious action (remove a listing, suspend a user): title, what will happen, confirm or cancel; optionally a required reason. `AppConfirmDialog.show()` returns the reason, or null when cancelled | `title`, `message`, `confirmLabel`, `reasonLabel` | 2026-10-19 |
 | `AppNotFoundView` | `feedback/app_not_found_view.dart` | The router's page for an address that doesn't exist: "We couldn't find this page" and a button back to the start | `onBackToStart` | 2026-10-09 |
 | `AppActionBar` | `layout/app_action_bar.dart` | The bottom bar of actions; with two, the primary takes 2/3 of the width | `primary`, `secondary` | 2026-10-09 |
 | `AppTopBar` | `layout/app_top_bar.dart` | The top bar of sub-screens: back arrow (flips in RTL) and a quiet title | `title`, `onBack`, `actions` | 2026-10-09 |

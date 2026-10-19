@@ -6,6 +6,7 @@ import 'package:watad/features/kyc/contractor/contractor_kyc_injection.dart';
 import 'package:watad/features/kyc/shared/kyc_injection.dart';
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
+import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
 
@@ -23,6 +24,7 @@ void configureDependencies() {
     ..registerLazySingleton<AppSession>(() => SupabaseAppSession(getIt()));
 
   // Features: one line per role folder, in alphabetical order.
+  registerAdminReportsDependencies(getIt);
   registerAdminReviewDependencies(getIt);
   registerAuthDependencies(getIt);
   registerContractorKycDependencies(getIt);
