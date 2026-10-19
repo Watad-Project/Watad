@@ -151,4 +151,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(AppImageViewer), findsOneWidget);
   });
+
+  testWidgets('with «أخرى», a tap elsewhere in the sheet closes the keyboard', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminReviewRoutes.reviewName);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('رفض'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('أخرى'));
+    await tester.pump();
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isTrue);
+
+    await tester.tap(find.text('سبب الرفض'));
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isFalse);
+    // The sheet stays open, with what was written.
+    expect(find.text('أخرى'), findsOneWidget);
+  });
 }
