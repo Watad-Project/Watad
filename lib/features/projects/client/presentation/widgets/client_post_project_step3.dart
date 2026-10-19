@@ -32,7 +32,7 @@ class ClientPostProjectStep3 extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppStepProgress(current: 2, total: state.totalSteps),
+          AppStepProgress(current: 3, total: state.totalSteps),
           const SizedBox(height: AppSpacing.lg),
           Text(
             context.tr('projects.client.deed_title'),

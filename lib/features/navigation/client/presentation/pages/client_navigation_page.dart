@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:watad/core/router/routes/client_home_routes.dart';
+import 'package:flutter/widgets.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -12,6 +11,7 @@ class ClientNavigationPage extends StatelessWidget {
   });
 
   /// The client's tabs, in order; in Arabic the first one is on the right.
+  /// For now every tab is a placeholder.
   ///
   /// How a feature becomes a tab (the same for every role):
   /// 1. Build the page as usual, with its own `GoRoute` and names file, and
@@ -32,12 +32,7 @@ class ClientNavigationPage extends StatelessWidget {
   ///    and the feature's `register…Dependencies(getIt)` to the setUp of this
   ///    folder's routes test.
   static const List<NavigationTab> tabs = [
-    NavigationTab(
-      labelKey: 'home.tab',
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home_rounded,
-      routeName: ClientHomeRoutes.homeName,
-    ),
+    NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),

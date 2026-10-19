@@ -12,11 +12,7 @@ final List<RouteBase> locationRoutes = [
     path: LocationRoutes.locationPath,
     builder: (context, state) => BlocProvider(
       create: (_) => getIt<LocationBloc>(),
-      // `?save=required` (project creation): the address is always saved,
-      // so the page can return its id; the save switch is hidden.
-      child: LocationPage(
-        showSaveToggle: state.uri.queryParameters['save'] != 'required',
-      ),
+      child: const LocationPage(),
     ),
   ),
 ];

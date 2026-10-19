@@ -19,11 +19,12 @@ void main() {
       expect(bloc.state.currentStep, 1);
       expect(bloc.state.projectType, isNull);
       expect(bloc.state.status, ClientPostProjectStatus.initial);
-      expect(bloc.state.canProceedFromDetails, isFalse);
+      expect(bloc.state.canProceedFromStep1, isFalse);
+      expect(bloc.state.canProceedFromStep2, isFalse);
       bloc.close();
     });
 
-    test('selects newHouse type with deed required and 3 steps', () async {
+    test('selects newHouse type with deed required and 4 steps', () async {
       final bloc = ClientPostProjectBloc();
 
       bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse));
@@ -33,7 +34,8 @@ void main() {
           predicate<ClientPostProjectState>((s) {
             return s.projectType == ClientProjectType.newHouse &&
                 s.requiresDeed == true &&
-                s.totalSteps == 3;
+                s.totalSteps == 4 &&
+                s.canProceedFromStep1 == true;
           }),
         ),
       );
@@ -41,7 +43,7 @@ void main() {
       await bloc.close();
     });
 
-    test('selects repairs type without deed and 2 steps', () async {
+    test('selects repairs type without deed and 3 steps', () async {
       final bloc = ClientPostProjectBloc();
 
       bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.repairs));
@@ -51,7 +53,8 @@ void main() {
           predicate<ClientPostProjectState>((s) {
             return s.projectType == ClientProjectType.repairs &&
                 s.requiresDeed == false &&
-                s.totalSteps == 2;
+                s.totalSteps == 3 &&
+                s.canProceedFromStep1 == true;
           }),
         ),
       );
@@ -78,7 +81,7 @@ void main() {
                 s.maxBudget == Money.fromSar(100000) &&
                 s.locationAddress == 'Riyadh Al-Morouj' &&
                 s.photos.length == 1 &&
-                s.canProceedFromDetails == true &&
+                s.canProceedFromStep2 == true &&
                 s.isBudgetValid == true;
           }),
         ),
@@ -103,7 +106,7 @@ void main() {
         bloc.stream,
         emitsThrough(
           predicate<ClientPostProjectState>((s) {
-            return s.isBudgetValid == false && s.canProceedFromDetails == false;
+            return s.isBudgetValid == false && s.canProceedFromStep2 == false;
           }),
         ),
       );
@@ -137,7 +140,7 @@ void main() {
 
       bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse));
       expect(bloc.state.deedStatus, ClientDeedVerificationStatus.none);
-      expect(bloc.state.canProceedFromDeed, isFalse);
+      expect(bloc.state.canProceedFromStep3, isFalse);
 
       bloc.add(
         const ClientPostProjectDeedSelected(
@@ -153,7 +156,7 @@ void main() {
             return s.deedFilePath == 'path/to/deed.pdf' &&
                 s.deedFileName == 'my_deed.pdf' &&
                 s.deedStatus == ClientDeedVerificationStatus.none &&
-                s.canProceedFromDeed == true;
+                s.canProceedFromStep3 == true;
           }),
         ),
       );
@@ -184,7 +187,7 @@ void main() {
         emits(
           predicate<ClientPostProjectState>((s) {
             return s.deedStatus == ClientDeedVerificationStatus.verified &&
-                s.canProceedFromDeed == true;
+                s.canProceedFromStep3 == true;
           }),
         ),
       );
@@ -216,7 +219,7 @@ void main() {
                 s.deedFileName == null &&
                 s.deedStatus == ClientDeedVerificationStatus.none &&
                 s.deedRejectionReason == null &&
-                s.canProceedFromDeed == false;
+                s.canProceedFromStep3 == false;
           }),
         ),
       );
@@ -232,13 +235,14 @@ void main() {
       bloc.add(ClientPostProjectMinBudgetChanged(Money.fromSar(500)));
       bloc.add(ClientPostProjectMaxBudgetChanged(Money.fromSar(1500)));
       bloc.add(const ClientPostProjectLocationChanged('Riyadh'));
-      bloc.add(const ClientPostProjectStepAdvanced()); // step 2 (review)
+      bloc.add(const ClientPostProjectStepAdvanced()); // step 2
+      bloc.add(const ClientPostProjectStepAdvanced()); // step 3 (review)
 
       await expectLater(
         bloc.stream,
         emitsThrough(
           predicate<ClientPostProjectState>((s) {
-            return s.currentStep == 2 &&
+            return s.currentStep == 3 &&
                 s.isReviewStep == true &&
                 s.canPublish == true;
           }),
@@ -356,52 +360,6 @@ void main() {
 
       await bloc.close();
     });
-
-    test(
-      'a new address saved on the map is reloaded and selected (GRA-34)',
-      () async {
-        final repo = _FakeClientProjectsRepository();
-        const home = ClientSavedAddress(
-          id: 'addr_1',
-          name: 'Home',
-          city: 'Riyadh',
-          district: 'An-Narjis',
-          street: 'Anas Ibn Malik',
-          buildingNumber: '4210',
-          postalCode: '13324',
-          formattedAddress: 'Riyadh · An-Narjis',
-        );
-        const site = ClientSavedAddress(
-          id: 'addr_2',
-          name: 'Site',
-          city: 'Madinah',
-          district: 'Al-Aziziyah',
-          street: 'King Abdullah Rd',
-          buildingNumber: '7310',
-          postalCode: '42311',
-          formattedAddress: 'Madinah · Al-Aziziyah',
-        );
-        repo.addressesResult = const Success([home]);
-        final bloc = ClientPostProjectBloc(
-          getSavedAddressesUseCase: ClientGetSavedAddressesUseCase(repo),
-        );
-        await bloc.stream.firstWhere((s) => s.selectedAddress?.id == 'addr_1');
-
-        // The map picker saved addr_2 and returned its id.
-        repo.addressesResult = const Success([site, home]);
-        bloc.add(const ClientPostProjectAddressesRequested(selectId: 'addr_2'));
-
-        final state = await bloc.stream.firstWhere(
-          (s) => !s.isLoadingAddresses && s.savedAddresses.length == 2,
-        );
-        expect(state.selectedAddress?.id, 'addr_2');
-        expect(state.addressId, 'addr_2');
-        expect(state.locationAddress, 'Madinah · Al-Aziziyah');
-        expect(state.locationCity, 'Madinah');
-
-        await bloc.close();
-      },
-    );
 
     test('creates address and adds it to savedAddresses', () async {
       final repo = _FakeClientProjectsRepository();

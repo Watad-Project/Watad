@@ -10,6 +10,7 @@ import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
+import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step1.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step2.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step3.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_post_project_step_review.dart';
@@ -74,19 +75,35 @@ class ClientPostProjectPage extends StatelessWidget {
     }
   }
 
-  /// «التالي» on every step, and publishing on the review.
   String _nextButtonLabel(BuildContext context, ClientPostProjectState state) {
-    return state.isReviewStep
-        ? context.tr('projects.client.publish_project_button')
-        : context.tr('projects.client.next_button');
+    if (state.isReviewStep) {
+      return context.tr('projects.client.publish_project_button');
+    }
+    if (state.currentStep == 1) {
+      return context.tr('projects.client.next_button');
+    }
+    if (state.currentStep == 2) {
+      return state.requiresDeed
+          ? context.tr('projects.client.next_deed_button')
+          : context.tr('projects.client.next_review_button');
+    }
+    return context.tr('projects.client.next_review_button');
   }
 
   bool _canProceed(ClientPostProjectState state) {
-    if (state.isReviewStep) return state.canPublish;
     return switch (state.currentStep) {
-      1 => state.canProceedFromDetails,
-      _ => state.canProceedFromDeed,
+      1 => state.canProceedFromStep1,
+      2 => state.canProceedFromStep2,
+      3 => state.requiresDeed ? state.canProceedFromStep3 : true,
+      _ => state.canPublish,
     };
+  }
+
+  String _stepTitle(BuildContext context, ClientPostProjectState state) {
+    if (state.currentStep == 1) {
+      return context.tr('projects.client.step_1');
+    }
+    return '';
   }
 
   @override
@@ -121,76 +138,89 @@ class ClientPostProjectPage extends StatelessWidget {
           },
           child: Scaffold(
             backgroundColor: AppColors.surface,
-            appBar: AppTopBar(title: '', onBack: () => _onBack(context, state)),
-            // The keyboard closes app-wide (AppKeyboardDismiss).
-            body: SafeArea(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                switchInCurve: Curves.easeInOut,
-                switchOutCurve: Curves.easeInOut,
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                child: KeyedSubtree(
-                  key: ValueKey<int>(state.currentStep),
-                  child: switch (state.currentStep) {
-                    // Details first: the type is chosen there.
-                    1 => ClientPostProjectStep2(
-                      state: state,
-                      onPickPhoto: onPickPhoto,
-                      onTypeChanged: (type) {
-                        context.read<ClientPostProjectBloc>().add(
-                          ClientPostProjectTypeSelected(type),
-                        );
-                      },
-                      onScopeChanged: (scope) {
-                        context.read<ClientPostProjectBloc>().add(
-                          ClientPostProjectScopeChanged(scope),
-                        );
-                      },
-                      onMinBudgetChanged: (minBudget) {
-                        context.read<ClientPostProjectBloc>().add(
-                          ClientPostProjectMinBudgetChanged(minBudget),
-                        );
-                      },
-                      onMaxBudgetChanged: (maxBudget) {
-                        context.read<ClientPostProjectBloc>().add(
-                          ClientPostProjectMaxBudgetChanged(maxBudget),
-                        );
-                      },
-                      onLocationChanged: (location) {
-                        context.read<ClientPostProjectBloc>().add(
-                          ClientPostProjectLocationChanged(location),
-                        );
-                      },
-                      onPhotoAdded: (photo) {
-                        context.read<ClientPostProjectBloc>().add(
-                          ClientPostProjectPhotoAdded(photo),
-                        );
-                      },
-                      onPhotoRemoved: (index) {
-                        context.read<ClientPostProjectBloc>().add(
-                          ClientPostProjectPhotoRemoved(index),
-                        );
-                      },
-                    ),
-                    2 =>
-                      state.requiresDeed
-                          ? ClientPostProjectStep3(
-                              state: state,
-                              onUploadDeed: () =>
-                                  (onPickDeed ?? _defaultPickDeed)(context),
-                              onRetryDeed: () {
-                                context.read<ClientPostProjectBloc>().add(
-                                  const ClientPostProjectDeedRetry(),
-                                );
-                                (onPickDeed ?? _defaultPickDeed)(context);
-                              },
-                            )
-                          : ClientPostProjectStepReview(state: state),
-                    3 => ClientPostProjectStepReview(state: state),
-                    _ => const SizedBox.shrink(),
+            appBar: AppTopBar(
+              title: _stepTitle(context, state),
+              onBack: () => _onBack(context, state),
+            ),
+            body: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SafeArea(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  switchInCurve: Curves.easeInOut,
+                  switchOutCurve: Curves.easeInOut,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(opacity: animation, child: child);
                   },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(state.currentStep),
+                    child: switch (state.currentStep) {
+                      1 => ClientPostProjectStep1(
+                        selectedType: state.projectType,
+                        onTypeChanged: (type) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectTypeSelected(type),
+                          );
+                        },
+                      ),
+                      2 => ClientPostProjectStep2(
+                        state: state,
+                        onPickPhoto: onPickPhoto,
+                        onTypeChanged: (type) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectTypeSelected(type),
+                          );
+                        },
+                        onScopeChanged: (scope) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectScopeChanged(scope),
+                          );
+                        },
+                        onMinBudgetChanged: (minBudget) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectMinBudgetChanged(minBudget),
+                          );
+                        },
+                        onMaxBudgetChanged: (maxBudget) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectMaxBudgetChanged(maxBudget),
+                          );
+                        },
+                        onLocationChanged: (location) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectLocationChanged(location),
+                          );
+                        },
+                        onPhotoAdded: (photo) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectPhotoAdded(photo),
+                          );
+                        },
+                        onPhotoRemoved: (index) {
+                          context.read<ClientPostProjectBloc>().add(
+                            ClientPostProjectPhotoRemoved(index),
+                          );
+                        },
+                      ),
+                      3 =>
+                        state.requiresDeed
+                            ? ClientPostProjectStep3(
+                                state: state,
+                                onUploadDeed: () =>
+                                    (onPickDeed ?? _defaultPickDeed)(context),
+                                onRetryDeed: () {
+                                  context.read<ClientPostProjectBloc>().add(
+                                    const ClientPostProjectDeedRetry(),
+                                  );
+                                  (onPickDeed ?? _defaultPickDeed)(context);
+                                },
+                              )
+                            : ClientPostProjectStepReview(state: state),
+                      4 => ClientPostProjectStepReview(state: state),
+                      _ => const SizedBox.shrink(),
+                    },
+                  ),
                 ),
               ),
             ),

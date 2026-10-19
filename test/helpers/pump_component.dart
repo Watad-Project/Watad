@@ -10,13 +10,10 @@ import 'package:watad/core/theme/app_theme.dart';
 
 /// Shows [child] on a scrollable page, with the app theme and the real
 /// translations. Arabic (right to left) unless [locale] says otherwise.
-/// [textScale] and [boldText] act like the phone's text settings.
 Future<void> pumpComponent(
   WidgetTester tester,
   Widget child, {
   Locale locale = AppLocalization.arabic,
-  double textScale = 1,
-  bool boldText = false,
 }) {
   return pumpLocalizedApp(
     tester,
@@ -27,23 +24,15 @@ Future<void> pumpComponent(
       ),
     ),
     locale: locale,
-    textScale: textScale,
-    boldText: boldText,
   );
 }
 
 /// Shows [home] in a `MaterialApp` set up like the real one: app theme,
 /// easy_localization with `assets/translations/`, and [locale].
-///
-/// [textScale] and [boldText] act like the phone's text settings: use
-/// `textScale: largeTextScale, boldText: true` to check a screen doesn't
-/// overflow with large, bold text (APP_ARCHITECTURE.md §10).
 Future<void> pumpLocalizedApp(
   WidgetTester tester,
   Widget home, {
   Locale locale = AppLocalization.arabic,
-  double textScale = 1,
-  bool boldText = false,
 }) async {
   EasyLocalization.logger.enableLevels = [];
   await tester.pumpWidget(
@@ -54,8 +43,6 @@ Future<void> pumpLocalizedApp(
       startLocale: locale,
       // No SharedPreferences in tests: the locale is set right here.
       saveLocale: false,
-      // As in AppLocalization.scope.
-      ignorePluralRules: false,
       assetLoader: const TestAssetLoader(),
       child: Builder(
         builder: (context) => MaterialApp(
@@ -63,12 +50,6 @@ Future<void> pumpLocalizedApp(
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,
           locale: context.locale,
-          builder: (context, child) => withTextSettings(
-            context,
-            child ?? const SizedBox.shrink(),
-            textScale: textScale,
-            boldText: boldText,
-          ),
           home: home,
         ),
       ),
@@ -99,23 +80,4 @@ class TestAssetLoader extends AssetLoader {
     }
     return translations;
   }
-}
-
-/// The largest text size screens must handle: 200%, the most phones offer
-/// (APP_ARCHITECTURE.md §10).
-const double largeTextScale = 2;
-
-/// [child] with the phone's text size and bold-text setting replaced.
-Widget withTextSettings(
-  BuildContext context,
-  Widget child, {
-  double textScale = 1,
-  bool boldText = false,
-}) {
-  if (textScale == 1 && !boldText) return child;
-  return MediaQuery(
-    data: MediaQuery.of(context)
-        .copyWith(textScaler: TextScaler.linear(textScale), boldText: boldText),
-    child: child,
-  );
 }

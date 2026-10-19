@@ -46,5 +46,3 @@ app.*.map.json
 
 # Local configuration for flutter_dotenv. Never commit it: copy .env.example.
 .env
-# Widget Preview related
-.widget_preview/

@@ -26,7 +26,6 @@ import 'package:watad/features/splash/shared/presentation/pages/splash_page.dart
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_auth_repository.dart';
-import '../../../../helpers/fake_client_home_repository.dart';
 import '../../../../helpers/fake_contractor_dashboard_repository.dart';
 import '../../../../helpers/fake_onboarding_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
@@ -56,8 +55,6 @@ void main() {
   late FakeSplashRepository splash;
 
   setUp(() {
-    // The client's navigation opens on its «الرئيسية» tab.
-    registerFakeClientHome();
     splash = FakeSplashRepository();
     registerFakeSplashBloc(splash);
     registerFakeOnboardingBloc();

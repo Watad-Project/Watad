@@ -90,16 +90,16 @@ final class ClientPostProjectState {
   /// Total number of steps based on project type.
   /// 4 steps for New House & Renovation (requires property deed).
   /// 3 steps for Home Repairs (no deed required).
-  /// Details, the deed when the type needs one, then the review.
-  int get totalSteps => requiresDeed ? 3 : 2;
+  int get totalSteps => (projectType?.requiresDeed ?? true) ? 4 : 3;
 
   /// Whether current project type requires property ownership deed upload.
   bool get requiresDeed => projectType?.requiresDeed ?? true;
 
-  /// Whether the details step (the first) is complete: type, scope, budget
-  /// and location.
-  bool get canProceedFromDetails {
-    if (projectType == null) return false;
+  /// Whether step 1 has a valid selection to proceed.
+  bool get canProceedFromStep1 => projectType != null;
+
+  /// Whether step 2 is valid to proceed to step 3 (or review).
+  bool get canProceedFromStep2 {
     final validScope = scopeOfWork.trim().isNotEmpty;
     final validBudget =
         isBudgetValid &&
@@ -110,8 +110,9 @@ final class ClientPostProjectState {
     return validScope && validBudget && validLocation;
   }
 
-  /// Whether the deed step is complete: a deed picked or uploaded.
-  bool get canProceedFromDeed =>
+  /// Whether step 3 is valid to proceed to step 4 (review).
+  /// For deed projects, requires deed to be picked or uploaded.
+  bool get canProceedFromStep3 =>
       deedFilePath != null ||
       deedFileName != null ||
       deedStatus == ClientDeedVerificationStatus.underReview ||
@@ -122,8 +123,11 @@ final class ClientPostProjectState {
 
   /// Whether the project is ready to be published.
   bool get canPublish {
-    if (requiresDeed) return canProceedFromDetails && canProceedFromDeed;
-    return canProceedFromDetails;
+    final validStep2 = canProceedFromStep2;
+    if (requiresDeed) {
+      return validStep2 && canProceedFromStep3;
+    }
+    return validStep2;
   }
 
   /// Whether the current budget fields satisfy min <= max.

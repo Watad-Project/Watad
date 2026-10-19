@@ -38,50 +38,96 @@ void main() {
     );
   }
 
-  group('ClientPostProjectPage - starts on the details', () {
-    testWidgets('the first step is the details, with the type to choose', (
+  group('ClientPostProjectPage - Step 1', () {
+    testWidgets('renders Arabic strings, dropdown, and disabled next button', (
       tester,
     ) async {
       await pumpLocalizedApp(tester, buildPage());
 
-      expect(find.text('الخطوة 1 من 3'), findsOneWidget);
-      expect(find.text('تفاصيل المشروع'), findsOneWidget);
+      expect(find.text('الخطوة ١'), findsOneWidget);
+      expect(find.text('ما نوع مشروعك؟'), findsOneWidget);
+      expect(
+        find.text('يحدد النوع إن كان صك الملكية مطلوباً قبل النشر.'),
+        findsOneWidget,
+      );
       expect(find.text('اختر النوع'), findsOneWidget);
       expect(find.text('التالي'), findsOneWidget);
-      final next = tester.widget<AppButton>(
-        find.byKey(const Key('client_post_project_next_button')),
-      );
-      expect(next.onPressed, isNull);
+
+      final nextButton = tester.widget<AppButton>(find.byType(AppButton));
+      expect(nextButton.onPressed, isNull);
     });
 
-    testWidgets('the type is chosen in the details step', (tester) async {
+    testWidgets('opens dropdown and displays the three options with hints', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(tester, buildPage());
+
+      await tester.tap(find.text('اختر النوع'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('تأسيس منزل'), findsOneWidget);
+      expect(find.text('ترميم منزل'), findsOneWidget);
+      expect(find.text('إصلاحات داخل المنزل'), findsOneWidget);
+      expect(find.text('يتطلب صك الملكية'), findsNWidgets(2));
+      expect(find.text('لا يلزم صك — يُنشر مباشرة'), findsOneWidget);
+    });
+
+    testWidgets('choosing an option enables the next button', (tester) async {
       final bloc = ClientPostProjectBloc();
       await pumpLocalizedApp(tester, buildPage(bloc: bloc));
 
       await tester.tap(find.text('اختر النوع'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('إصلاحات داخل المنزل').last);
+
+      await tester.tap(find.text('تأسيس منزل'));
       await tester.pumpAndSettle();
 
-      expect(bloc.state.projectType, ClientProjectType.repairs);
-      expect(bloc.state.currentStep, 1);
-      expect(find.text('الخطوة 1 من 2'), findsOneWidget);
+      expect(bloc.state.projectType, ClientProjectType.newHouse);
+      expect(bloc.state.canProceedFromStep1, isTrue);
+
+      final nextButton = tester.widget<AppButton>(find.byType(AppButton));
+      expect(nextButton.onPressed, isNotNull);
     });
 
-    testWidgets('renders English strings for the details step', (tester) async {
+    testWidgets('tapping next button advances to step 2', (tester) async {
+      final bloc = ClientPostProjectBloc();
+      await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+
+      await tester.tap(find.text('اختر النوع'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('إصلاحات داخل المنزل'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('التالي'));
+      await tester.pumpAndSettle();
+
+      expect(bloc.state.currentStep, 2);
+    });
+
+    testWidgets('renders English strings when locale is English', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildPage(),
         locale: AppLocalization.english,
       );
 
-      expect(find.text('Step 1 of 3'), findsOneWidget);
+      expect(find.text('Step 1'), findsOneWidget);
+      expect(find.text('What is your project type?'), findsOneWidget);
+      expect(
+        find.text(
+          'The type determines whether a property deed is required before publishing.',
+        ),
+        findsOneWidget,
+      );
       expect(find.text('Select type'), findsOneWidget);
       expect(find.text('Next'), findsOneWidget);
     });
   });
 
-  group('ClientPostProjectPage - Details', () {
+  group('ClientPostProjectPage - Step 2', () {
     testWidgets(
       'Variant A: renders deed-required fields, photo row, and deed next button',
       (tester) async {
@@ -89,12 +135,13 @@ void main() {
           ..add(
             const ClientPostProjectTypeSelected(ClientProjectType.renovation),
           )
-          ..add(const ClientPostProjectAddressSelected(_testAddress));
+          ..add(const ClientPostProjectAddressSelected(_testAddress))
+          ..add(const ClientPostProjectStepAdvanced());
 
         await pumpLocalizedApp(tester, buildPage(bloc: bloc));
         await tester.pumpAndSettle();
 
-        expect(find.text('الخطوة 1 من 3'), findsOneWidget);
+        expect(find.text('الخطوة 2 من 4'), findsOneWidget);
         expect(find.text('تفاصيل المشروع'), findsOneWidget);
         expect(find.text('ترميم منزل'), findsOneWidget);
         expect(find.text('يتطلب صك'), findsOneWidget);
@@ -103,7 +150,7 @@ void main() {
         expect(find.text('موقع المشروع'), findsOneWidget);
         expect(find.text('الرياض · حي المروج'), findsOneWidget);
         expect(find.text('تغيير العنوان'), findsOneWidget);
-        expect(find.text('التالي'), findsOneWidget);
+        expect(find.text('التالي — توثيق الملكية'), findsOneWidget);
         expect(
           find.byKey(const Key('client_post_project_add_photo_button')),
           findsOneWidget,
@@ -115,53 +162,17 @@ void main() {
     );
 
     testWidgets(
-      'the location field opens one sheet: saved addresses and the map (GRA-34)',
-      (tester) async {
-        final bloc = ClientPostProjectBloc()
-          ..add(
-            const ClientPostProjectTypeSelected(ClientProjectType.renovation),
-          )
-          ..add(const ClientPostProjectAddressSelected(_testAddress));
-
-        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
-        await tester.pumpAndSettle();
-
-        // Step 2 is taller than the test screen.
-        final field = find.byKey(
-          const Key('client_post_project_change_location_button'),
-        );
-        await tester.ensureVisible(field);
-        await tester.pumpAndSettle();
-        await tester.tap(field);
-        await tester.pumpAndSettle();
-
-        expect(
-          find.byKey(ValueKey('addr_radio_${_testAddress.id}')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const Key('client_post_project_sheet_pick_map_button')),
-          findsOneWidget,
-        );
-        // No manual address form any more.
-        expect(
-          find.byKey(const Key('submit_new_address_button')),
-          findsNothing,
-        );
-      },
-    );
-
-    testWidgets(
       'Variant B: renders repairs fields, info banner, and review next button',
       (tester) async {
         final bloc = ClientPostProjectBloc()
           ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
-          ..add(const ClientPostProjectAddressSelected(_testAddress));
+          ..add(const ClientPostProjectAddressSelected(_testAddress))
+          ..add(const ClientPostProjectStepAdvanced());
 
         await pumpLocalizedApp(tester, buildPage(bloc: bloc));
         await tester.pumpAndSettle();
 
-        expect(find.text('الخطوة 1 من 2'), findsOneWidget);
+        expect(find.text('الخطوة 2 من 3'), findsOneWidget);
         expect(find.text('تفاصيل المشروع'), findsOneWidget);
         expect(find.text('إصلاحات داخل المنزل'), findsOneWidget);
         expect(find.text('لا يلزم صك'), findsOneWidget);
@@ -171,7 +182,7 @@ void main() {
           findsOneWidget,
         );
         expect(find.byType(AppStatusCard), findsOneWidget);
-        expect(find.text('التالي'), findsOneWidget);
+        expect(find.text('التالي — المراجعة والنشر'), findsOneWidget);
       },
     );
 
@@ -180,7 +191,8 @@ void main() {
       (tester) async {
         final bloc = ClientPostProjectBloc()
           ..add(const ClientPostProjectTypeSelected(ClientProjectType.repairs))
-          ..add(const ClientPostProjectAddressSelected(_testAddress));
+          ..add(const ClientPostProjectAddressSelected(_testAddress))
+          ..add(const ClientPostProjectStepAdvanced());
 
         await pumpLocalizedApp(tester, buildPage(bloc: bloc));
         await tester.pumpAndSettle();
@@ -194,7 +206,7 @@ void main() {
         await tester.enterText(textFields.at(2), '4000');
         await tester.pumpAndSettle();
 
-        expect(bloc.state.canProceedFromDetails, isTrue);
+        expect(bloc.state.canProceedFromStep2, isTrue);
         final nextButton = tester.widget<AppButton>(find.byType(AppButton));
         expect(nextButton.onPressed, isNotNull);
       },
@@ -206,13 +218,14 @@ void main() {
         final bloc = ClientPostProjectBloc()
           ..add(
             const ClientPostProjectTypeSelected(ClientProjectType.renovation),
-          );
+          )
+          ..add(const ClientPostProjectStepAdvanced());
 
         await pumpLocalizedApp(tester, buildPage(bloc: bloc));
         await tester.pumpAndSettle();
 
-        expect(find.text('الخطوة 1 من 3'), findsOneWidget);
-        expect(find.text('التالي'), findsOneWidget);
+        expect(find.text('الخطوة 2 من 4'), findsOneWidget);
+        expect(find.text('التالي — توثيق الملكية'), findsOneWidget);
 
         // Open dropdown in Step 2
         await tester.tap(find.text('ترميم منزل'));
@@ -222,15 +235,16 @@ void main() {
         await tester.tap(find.text('إصلاحات داخل المنزل'));
         await tester.pumpAndSettle();
 
-        expect(find.text('الخطوة 1 من 2'), findsOneWidget);
-        expect(find.text('التالي'), findsOneWidget);
+        expect(find.text('الخطوة 2 من 3'), findsOneWidget);
+        expect(find.text('التالي — المراجعة والنشر'), findsOneWidget);
         expect(find.text('لا حاجة لصك الملكية'), findsOneWidget);
       },
     );
 
     testWidgets('renders English strings for step 2', (tester) async {
       final bloc = ClientPostProjectBloc()
-        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse));
+        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectStepAdvanced());
 
       await pumpLocalizedApp(
         tester,
@@ -239,27 +253,28 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Step 1 of 3'), findsOneWidget);
+      expect(find.text('Step 2 of 4'), findsOneWidget);
       expect(find.text('Project details'), findsOneWidget);
       expect(find.text('Scope of work'), findsOneWidget);
       expect(find.text('Budget (SAR)'), findsOneWidget);
       expect(find.text('Project location'), findsOneWidget);
-      expect(find.text('Next'), findsOneWidget);
+      expect(find.text('Next — Property Deed'), findsOneWidget);
     });
   });
 
-  group('ClientPostProjectPage - Deed', () {
+  group('ClientPostProjectPage - Step 3', () {
     testWidgets('renders Step 3 initial upload state when deed is required', (
       tester,
     ) async {
       final bloc = ClientPostProjectBloc()
         ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectStepAdvanced())
         ..add(const ClientPostProjectStepAdvanced());
 
       await pumpLocalizedApp(tester, buildPage(bloc: bloc));
       await tester.pumpAndSettle();
 
-      expect(find.text('الخطوة 2 من 3'), findsOneWidget);
+      expect(find.text('الخطوة 3 من 4'), findsOneWidget);
       expect(find.text('صك ملكية العقار أو الأرض'), findsOneWidget);
       expect(
         find.text(
@@ -269,7 +284,7 @@ void main() {
       );
       expect(find.text('١ · لم يُرفع بعد — تصوير أو رفع الصك'), findsOneWidget);
       expect(find.byType(AppUploadZone), findsOneWidget);
-      expect(find.text('التالي'), findsOneWidget);
+      expect(find.text('التالي — المراجعة والنشر'), findsOneWidget);
 
       final nextButton = tester.widget<AppButton>(find.byType(AppButton));
       expect(nextButton.onPressed, isNull);
@@ -281,6 +296,7 @@ void main() {
       final bloc = ClientPostProjectBloc()
         ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
         ..add(const ClientPostProjectAddressSelected(_testAddress))
+        ..add(const ClientPostProjectStepAdvanced())
         ..add(const ClientPostProjectStepAdvanced());
 
       await pumpLocalizedApp(
@@ -321,6 +337,7 @@ void main() {
       final bloc = ClientPostProjectBloc()
         ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
         ..add(const ClientPostProjectStepAdvanced())
+        ..add(const ClientPostProjectStepAdvanced())
         ..add(
           const ClientPostProjectDeedStatusChanged(
             ClientDeedVerificationStatus.verified,
@@ -350,6 +367,7 @@ void main() {
         final bloc = ClientPostProjectBloc()
           ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
           ..add(const ClientPostProjectStepAdvanced())
+          ..add(const ClientPostProjectStepAdvanced())
           ..add(
             const ClientPostProjectDeedStatusChanged(
               ClientDeedVerificationStatus.rejected,
@@ -365,7 +383,9 @@ void main() {
 
         // Next button is disabled
         final nextButton = tester.widget<AppButton>(
-          find.byWidgetPredicate((w) => w is AppButton && w.label == 'التالي'),
+          find.byWidgetPredicate(
+            (w) => w is AppButton && w.label == 'التالي — المراجعة والنشر',
+          ),
         );
         expect(nextButton.onPressed, isNull);
 
@@ -385,6 +405,7 @@ void main() {
     testWidgets('renders English strings for step 3', (tester) async {
       final bloc = ClientPostProjectBloc()
         ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
+        ..add(const ClientPostProjectStepAdvanced())
         ..add(const ClientPostProjectStepAdvanced());
 
       await pumpLocalizedApp(
@@ -394,18 +415,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Step 2 of 3'), findsOneWidget);
+      expect(find.text('Step 3 of 4'), findsOneWidget);
       expect(find.text('Property or Land Ownership Deed'), findsOneWidget);
       expect(
         find.text('1 · Not uploaded yet — Photograph or upload deed'),
         findsOneWidget,
       );
-      expect(find.text('Next'), findsOneWidget);
+      expect(find.text('Next — Review & Publish'), findsOneWidget);
     });
   });
 
   group('ClientPostProjectPage - Review & Publish', () {
-    testWidgets('renders review step for repairs (Step 2 of 2) and publishes', (
+    testWidgets('renders review step for repairs (Step 3 of 3) and publishes', (
       tester,
     ) async {
       final bloc = ClientPostProjectBloc()
@@ -414,12 +435,13 @@ void main() {
         ..add(ClientPostProjectMinBudgetChanged(Money.fromSar(500)))
         ..add(ClientPostProjectMaxBudgetChanged(Money.fromSar(1500)))
         ..add(const ClientPostProjectLocationChanged('الرياض · حي النرجس'))
+        ..add(const ClientPostProjectStepAdvanced()) // step 2
         ..add(const ClientPostProjectStepAdvanced()); // step 3 (review)
 
       await pumpLocalizedApp(tester, buildPage(bloc: bloc));
       await tester.pumpAndSettle();
 
-      expect(find.text('الخطوة 2 من 2'), findsOneWidget);
+      expect(find.text('الخطوة 3 من 3'), findsOneWidget);
       expect(find.text('مراجعة تفاصيل المشروع'), findsOneWidget);
       expect(
         find.text(
@@ -445,7 +467,7 @@ void main() {
       expect(find.text('تم نشر المشروع بنجاح'), findsOneWidget);
     });
 
-    testWidgets('renders review step for deed project (Step 3 of 3)', (
+    testWidgets('renders review step for deed project (Step 4 of 4)', (
       tester,
     ) async {
       final bloc = ClientPostProjectBloc()
@@ -465,13 +487,14 @@ void main() {
             ClientDeedVerificationStatus.underReview,
           ),
         )
+        ..add(const ClientPostProjectStepAdvanced()) // step 2
         ..add(const ClientPostProjectStepAdvanced()) // step 3
         ..add(const ClientPostProjectStepAdvanced()); // step 4 (review)
 
       await pumpLocalizedApp(tester, buildPage(bloc: bloc));
       await tester.pumpAndSettle();
 
-      expect(find.text('الخطوة 3 من 3'), findsOneWidget);
+      expect(find.text('الخطوة 4 من 4'), findsOneWidget);
       expect(find.text('تأسيس منزل'), findsOneWidget);
       expect(find.text('300000 — 600000 ر.س'), findsOneWidget);
       expect(find.text('قيد مراجعة الصك'), findsOneWidget);
@@ -485,6 +508,7 @@ void main() {
         ..add(ClientPostProjectMinBudgetChanged(Money.fromSar(200)))
         ..add(ClientPostProjectMaxBudgetChanged(Money.fromSar(400)))
         ..add(const ClientPostProjectLocationChanged('Riyadh'))
+        ..add(const ClientPostProjectStepAdvanced())
         ..add(const ClientPostProjectStepAdvanced());
 
       await pumpLocalizedApp(
@@ -494,56 +518,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Step 2 of 2'), findsOneWidget);
+      expect(find.text('Step 3 of 3'), findsOneWidget);
       expect(find.text('Review Project Details'), findsOneWidget);
       expect(find.text('Publish Project'), findsOneWidget);
-    });
-  });
-
-  group('ClientPostProjectPage - large, bold text', () {
-    Future<void> pumpLarge(WidgetTester tester, ClientPostProjectBloc bloc) =>
-        pumpLocalizedApp(
-          tester,
-          buildPage(bloc: bloc),
-          textScale: largeTextScale,
-          boldText: true,
-        );
-
-    for (final type in ClientProjectType.values) {
-      testWidgets('the details step fits (${type.name})', (tester) async {
-        await pumpLarge(
-          tester,
-          ClientPostProjectBloc()
-            ..add(ClientPostProjectTypeSelected(type))
-            ..add(const ClientPostProjectAddressSelected(_testAddress)),
-        );
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-      });
-    }
-
-    testWidgets('the deed and review steps fit', (tester) async {
-      final bloc = ClientPostProjectBloc()
-        ..add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse))
-        ..add(const ClientPostProjectScopeChanged('بناء فيلا من دورين'))
-        ..add(ClientPostProjectMinBudgetChanged(Money.fromSar(450000)))
-        ..add(ClientPostProjectMaxBudgetChanged(Money.fromSar(520000)))
-        ..add(const ClientPostProjectAddressSelected(_testAddress))
-        ..add(const ClientPostProjectStepAdvanced());
-      await pumpLarge(tester, bloc);
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-
-      bloc
-        ..add(
-          const ClientPostProjectDeedSelected(
-            filePath: '/tmp/deed.pdf',
-            fileName: 'deed.pdf',
-          ),
-        )
-        ..add(const ClientPostProjectStepAdvanced());
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
     });
   });
 }

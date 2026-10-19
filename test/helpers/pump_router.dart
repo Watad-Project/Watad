@@ -17,14 +17,11 @@ import 'pump_component.dart';
 /// `router.goNamed(AuthRoutes.loginName)`.
 ///
 /// The user is signed out unless [session] says otherwise, e.g.
-/// `FakeAppSession()..signIn(AppRole.client)`. [textScale] and [boldText]
-/// act like the phone's text settings.
+/// `FakeAppSession()..signIn(AppRole.client)`.
 Future<GoRouter> pumpAppRouter(
   WidgetTester tester, {
   String? initialLocation,
   AppSession? session,
-  double textScale = 1,
-  bool boldText = false,
 }) async {
   final router = createAppRouter(
     session: session ?? FakeAppSession(),
@@ -45,12 +42,8 @@ Future<GoRouter> pumpAppRouter(
           ],
           supportedLocales: context.supportedLocales,
           locale: context.locale,
-          builder: (context, child) => withTextSettings(
-            context,
-            AppKeyboardDismiss(child: child ?? const SizedBox.shrink()),
-            textScale: textScale,
-            boldText: boldText,
-          ),
+          builder: (context, child) =>
+              AppKeyboardDismiss(child: child ?? const SizedBox.shrink()),
         ),
       ),
     ),

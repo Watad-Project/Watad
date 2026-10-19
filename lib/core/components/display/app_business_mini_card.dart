@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/components/display/app_card.dart';
@@ -33,44 +31,9 @@ class AppBusinessMiniCard extends StatelessWidget {
   final String? imageUrl;
   final VoidCallback? onTap;
 
-  static const double _photoHeight = 80;
-  static final TextStyle _nameStyle = AppTextStyles.label.copyWith(
-    fontSize: 15,
-  );
-  static final TextStyle _ratingStyle = AppTextStyles.caption.copyWith(
-    fontSize: 13,
-  );
-
-  /// The height a card needs at the phone's text size. Give it to the row or
-  /// grid that holds the cards: with large text each line grows, and a
-  /// fixed height would overflow (APP_ARCHITECTURE.md §10).
-  static double heightOf(BuildContext context) {
-    final scaler = MediaQuery.textScalerOf(context);
-    double lineHeight(TextStyle style) {
-      final painter = TextPainter(
-        text: TextSpan(text: 'Ag', style: style),
-        textDirection: TextDirection.ltr,
-        textScaler: scaler,
-        maxLines: 1,
-      )..layout();
-      final height = painter.height;
-      painter.dispose();
-      return height;
-    }
-
-    final ratingLine = math.max(16, lineHeight(_ratingStyle));
-    return _photoHeight +
-        AppSpacing.sm * 2 +
-        lineHeight(_nameStyle) +
-        2 +
-        ratingLine +
-        // The card's border, and rounding.
-        4;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final nameStyle = _nameStyle;
+    final nameStyle = AppTextStyles.label.copyWith(fontSize: 15);
     return AppCard(
       padding: EdgeInsets.zero,
       onTap: onTap,
@@ -80,7 +43,7 @@ class AppBusinessMiniCard extends StatelessWidget {
         children: [
           // The business's photo, or the default avatar without one.
           SizedBox(
-            height: _photoHeight,
+            height: 80,
             child: ColoredBox(
               color: AppColors.surfaceMuted,
               child: Center(child: AppAvatar(url: imageUrl, size: 56)),
@@ -115,7 +78,7 @@ class AppBusinessMiniCard extends StatelessWidget {
                         '$ratingLabel · $projectsLabel',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: _ratingStyle,
+                        style: AppTextStyles.caption.copyWith(fontSize: 13),
                       ),
                     ),
                   ],
