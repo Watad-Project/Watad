@@ -100,32 +100,37 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
           address: state.address.copyWith(
             latitude: event.latitude,
             longitude: event.longitude,
-            city: state.address.city != cityBefore && state.address.city.isNotEmpty
+            city:
+                state.address.city != cityBefore &&
+                    state.address.city.isNotEmpty
                 ? state.address.city
                 : (data.city.isNotEmpty ? data.city : state.address.city),
-            district: state.address.district != districtBefore &&
+            district:
+                state.address.district != districtBefore &&
                     state.address.district.isNotEmpty
                 ? state.address.district
                 : (data.district.isNotEmpty
-                    ? data.district
-                    : state.address.district),
-            street: state.address.street != streetBefore &&
+                      ? data.district
+                      : state.address.district),
+            street:
+                state.address.street != streetBefore &&
                     state.address.street.isNotEmpty
                 ? state.address.street
                 : (data.street.isNotEmpty ? data.street : state.address.street),
             buildingNumber:
                 state.address.buildingNumber != buildingBefore &&
-                        state.address.buildingNumber.isNotEmpty
-                    ? state.address.buildingNumber
-                    : (data.buildingNumber.isNotEmpty
-                        ? data.buildingNumber
-                        : state.address.buildingNumber),
-            postalCode: state.address.postalCode != postalBefore &&
+                    state.address.buildingNumber.isNotEmpty
+                ? state.address.buildingNumber
+                : (data.buildingNumber.isNotEmpty
+                      ? data.buildingNumber
+                      : state.address.buildingNumber),
+            postalCode:
+                state.address.postalCode != postalBefore &&
                     state.address.postalCode.isNotEmpty
                 ? state.address.postalCode
                 : (data.postalCode.isNotEmpty
-                    ? data.postalCode
-                    : state.address.postalCode),
+                      ? data.postalCode
+                      : state.address.postalCode),
             additionalNumber: data.additionalNumber?.isNotEmpty == true
                 ? data.additionalNumber
                 : state.address.additionalNumber,

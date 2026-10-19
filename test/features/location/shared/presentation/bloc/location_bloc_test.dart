@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
@@ -207,82 +208,76 @@ void main() {
     await failingBloc.close();
   });
 
-  test(
-    'LocationCoordinatesChanged preserves user edits typed before geocoding responds',
-    () async {
-      final delayedRepo = _DelayedLocationRepository();
-      final delayedBloc = LocationBloc(
-        SaveAddressUseCase(delayedRepo),
-        GeocodeCoordinatesUseCase(delayedRepo),
-      );
+  test('LocationCoordinatesChanged preserves user edits typed before geocoding responds', () async {
+    final delayedRepo = _DelayedLocationRepository();
+    final delayedBloc = LocationBloc(
+      SaveAddressUseCase(delayedRepo),
+      GeocodeCoordinatesUseCase(delayedRepo),
+    );
 
-      delayedBloc.add(
-        const LocationCoordinatesChanged(latitude: 24.7136, longitude: 46.6753),
-      );
-      await pumpEventQueue();
+    delayedBloc.add(
+      const LocationCoordinatesChanged(latitude: 24.7136, longitude: 46.6753),
+    );
+    await pumpEventQueue();
 
-      // User starts typing before the response returns
-      delayedBloc.add(const LocationStreetChanged('شارع الملك عبدالعزيز'));
-      await pumpEventQueue();
+    // User starts typing before the response returns
+    delayedBloc.add(const LocationStreetChanged('شارع الملك عبدالعزيز'));
+    await pumpEventQueue();
 
-      // Server responds with geocode result
-      delayedRepo.completer.complete(
-        const Success(
-          LocationAddress(
-            id: '',
-            name: '',
-            city: 'الرياض',
-            district: 'النرجس',
-            street: 'طريق عثمان بن عفان',
-            buildingNumber: '1234',
-            postalCode: '13324',
-            additionalNumber: '3929',
-            shortAddress: 'RAYB6780',
-            latitude: 24.7136,
-            longitude: 46.6753,
-          ),
+    // Server responds with geocode result
+    delayedRepo.completer.complete(
+      const Success(
+        LocationAddress(
+          id: '',
+          name: '',
+          city: 'الرياض',
+          district: 'النرجس',
+          street: 'طريق عثمان بن عفان',
+          buildingNumber: '1234',
+          postalCode: '13324',
+          additionalNumber: '3929',
+          shortAddress: 'RAYB6780',
+          latitude: 24.7136,
+          longitude: 46.6753,
         ),
-      );
-      await pumpEventQueue();
+      ),
+    );
+    await pumpEventQueue();
 
-      // Street typed by user was preserved, city/district/national address from server were applied
-      expect(delayedBloc.state.address.street, 'شارع الملك عبدالعزيز');
-      expect(delayedBloc.state.address.city, 'الرياض');
-      expect(delayedBloc.state.address.district, 'النرجس');
-      expect(delayedBloc.state.address.buildingNumber, '1234');
-      expect(delayedBloc.state.address.additionalNumber, '3929');
-      expect(delayedBloc.state.address.shortAddress, 'RAYB6780');
+    // Street typed by user was preserved, city/district/national address from server were applied
+    expect(delayedBloc.state.address.street, 'شارع الملك عبدالعزيز');
+    expect(delayedBloc.state.address.city, 'الرياض');
+    expect(delayedBloc.state.address.district, 'النرجس');
+    expect(delayedBloc.state.address.buildingNumber, '1234');
+    expect(delayedBloc.state.address.additionalNumber, '3929');
+    expect(delayedBloc.state.address.shortAddress, 'RAYB6780');
 
-      await delayedBloc.close();
-    },
-  );
+    await delayedBloc.close();
+  });
 
-  test(
-    'LocationCoordinatesChanged emits failure if geocoding fails but leaves fields editable',
-    () async {
-      final failingRepo = _FailingLocationRepository();
-      final failingBloc = LocationBloc(
-        SaveAddressUseCase(failingRepo),
-        GeocodeCoordinatesUseCase(failingRepo),
-      );
+  test('LocationCoordinatesChanged emits failure if geocoding fails but leaves fields editable', () async {
+    final failingRepo = _FailingLocationRepository();
+    final failingBloc = LocationBloc(
+      SaveAddressUseCase(failingRepo),
+      GeocodeCoordinatesUseCase(failingRepo),
+    );
 
-      failingBloc.add(
-        const LocationCoordinatesChanged(latitude: 24.7136, longitude: 46.6753),
-      );
-      await pumpEventQueue();
+    failingBloc.add(
+      const LocationCoordinatesChanged(latitude: 24.7136, longitude: 46.6753),
+    );
+    await pumpEventQueue();
 
-      expect(failingBloc.state.status, LocationStatus.failure);
-      expect(failingBloc.state.errorMessage, isNotNull);
+    expect(failingBloc.state.status, LocationStatus.failure);
+    expect(failingBloc.state.errorMessage, isNotNull);
 
-      // User can still edit fields freely
-      failingBloc.add(const LocationCityChanged('المدينة المنورة'));
-      await pumpEventQueue();
-      expect(failingBloc.state.address.city, 'المدينة المنورة');
-      expect(failingBloc.state.status, LocationStatus.initial);
+    // User can still edit fields freely
+    failingBloc.add(const LocationCityChanged('المدينة المنورة'));
+    await pumpEventQueue();
+    expect(failingBloc.state.address.city, 'المدينة المنورة');
+    expect(failingBloc.state.status, LocationStatus.initial);
 
-      await failingBloc.close();
-    },
-  );
+    await failingBloc.close();
+  });
 }
 
 class _DelayedLocationRepository extends _FakeLocationRepository {

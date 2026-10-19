@@ -374,7 +374,10 @@ class _LocationPageState extends State<LocationPage> {
                                 ),
                                 child: Row(
                                   children: [
-                                    if (state.address.shortAddress?.isNotEmpty ??
+                                    if (state
+                                            .address
+                                            .shortAddress
+                                            ?.isNotEmpty ??
                                         false)
                                       Expanded(
                                         child: Column(
@@ -398,21 +401,26 @@ class _LocationPageState extends State<LocationPage> {
                                               state.address.shortAddress!,
                                               style: AppTextStyles.body
                                                   .copyWith(
-                                                    fontWeight:
-                                                        FontWeight.w600,
+                                                    fontWeight: FontWeight.w600,
                                                   ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    if ((state.address.shortAddress
+                                    if ((state
+                                                .address
+                                                .shortAddress
                                                 ?.isNotEmpty ??
                                             false) &&
-                                        (state.address.additionalNumber
+                                        (state
+                                                .address
+                                                .additionalNumber
                                                 ?.isNotEmpty ??
                                             false))
                                       const SizedBox(width: AppSpacing.md),
-                                    if (state.address.additionalNumber
+                                    if (state
+                                            .address
+                                            .additionalNumber
                                             ?.isNotEmpty ??
                                         false)
                                       Expanded(
@@ -437,8 +445,7 @@ class _LocationPageState extends State<LocationPage> {
                                               state.address.additionalNumber!,
                                               style: AppTextStyles.body
                                                   .copyWith(
-                                                    fontWeight:
-                                                        FontWeight.w600,
+                                                    fontWeight: FontWeight.w600,
                                                   ),
                                             ),
                                           ],

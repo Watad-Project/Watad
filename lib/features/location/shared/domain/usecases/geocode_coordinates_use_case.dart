@@ -24,8 +24,5 @@ class GeocodeCoordinatesUseCase
 
   @override
   Future<Result<LocationAddress>> call(GeocodeCoordinatesParams params) =>
-      _repository.addressAt(
-        lat: params.latitude,
-        lng: params.longitude,
-      );
+      _repository.addressAt(lat: params.latitude, lng: params.longitude);
 }

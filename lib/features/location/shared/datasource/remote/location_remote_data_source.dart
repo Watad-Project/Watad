@@ -106,11 +106,7 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
     final map = data is Map<String, dynamic>
         ? data
         : (data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{});
-    return LocationAddressModel.fromGeocode(
-      map,
-      lat: lat,
-      lng: lng,
-    );
+    return LocationAddressModel.fromGeocode(map, lat: lat, lng: lng);
   }
 
   @override
