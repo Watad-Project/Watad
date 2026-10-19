@@ -5,11 +5,14 @@ void main() {
   test('fromJson maps the v_my_profile row and the phone check', () {
     final model = ClientHomeProfileModel.fromJson({
       'full_name': ' عبدالله الحربي ',
+      'avatar_path': 'u-1/avatar.jpg',
+      'avatar_url': 'https://example.supabase.co/storage/v1/object/public/avatars/u-1/avatar.jpg',
       'is_phone_verified': true,
     });
 
     expect(model.fullName, 'عبدالله الحربي');
     expect(model.isPhoneVerified, isTrue);
+    expect(model.avatarUrl, endsWith('/avatars/u-1/avatar.jpg'));
   });
 
   test('no name and no confirmed phone', () {
@@ -17,5 +20,6 @@ void main() {
 
     expect(model.fullName, isEmpty);
     expect(model.isPhoneVerified, isFalse);
+    expect(model.avatarUrl, isNull);
   });
 }

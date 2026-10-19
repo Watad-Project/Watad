@@ -32,10 +32,11 @@ class ClientHomeRemoteDataSourceImpl implements ClientHomeRemoteDataSource {
   Future<ClientHomeProfileModel> getProfile() async {
     final row = await _client
         .from('v_my_profile')
-        .select('full_name')
+        .select('full_name, avatar_path')
         .maybeSingle();
     return ClientHomeProfileModel.fromJson({
       ...?row,
+      'avatar_url': _avatarUrl(row?['avatar_path'] as String?),
       // Confirmed with a code. A number saved at sign-up isn't verified.
       'is_phone_verified': _client.auth.currentUser?.phoneConfirmedAt != null,
     });
@@ -107,15 +108,16 @@ class ClientHomeRemoteDataSourceImpl implements ClientHomeRemoteDataSource {
   }
 
   ClientContractorModel _toModel(Map<String, dynamic> row) {
-    final path = row['avatar_path'] as String?;
     return ClientContractorModel.fromJson({
       ...row,
-      // Avatars live in the public `avatars` bucket.
-      'avatar_url': path == null || path.isEmpty
-          ? null
-          : _client.storage.from('avatars').getPublicUrl(path),
+      'avatar_url': _avatarUrl(row['avatar_path'] as String?),
     });
   }
+
+  /// Avatars live in the public `avatars` bucket.
+  String? _avatarUrl(String? path) => path == null || path.isEmpty
+      ? null
+      : _client.storage.from('avatars').getPublicUrl(path);
 
   /// Searches for [text] as typed: `%` and `_` aren't wildcards.
   static String _escapeLike(String text) =>

@@ -11,6 +11,7 @@ import 'package:watad/features/home/client/domain/entities/client_contractor_sor
 import 'package:watad/features/home/client/domain/entities/client_home_profile.dart';
 import 'package:watad/features/home/client/presentation/pages/client_contractors_page.dart';
 import 'package:watad/features/home/client/presentation/pages/client_home_page.dart';
+import 'package:watad/features/home/client/presentation/widgets/client_home_greeting_header.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_home_repository.dart';
@@ -59,6 +60,14 @@ void main() {
 
     expect(find.byType(ClientHomePage), findsOneWidget);
     expect(find.text('عبدالله الحربي'), findsOneWidget);
+    // Their photo beside the name; the default avatar without one.
+    expect(
+      find.descendant(
+        of: find.byType(ClientHomeGreetingHeader),
+        matching: find.byIcon(Icons.person_rounded),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('ابحث عن مقاول أو مادة'), findsOneWidget);
     expect(find.text('انشر مشروعاً'), findsOneWidget);
   });
