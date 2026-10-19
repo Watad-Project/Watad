@@ -21,5 +21,7 @@
   "send_rejection": "Send rejection",
   "step_of": "Step {current} of {total}",
   "verified": "Verified",
-  "write_reason": "Write the reason..."
+  "write_reason": "Write the reason...",
+  "sar": "SAR",
+  "sar_amount": "{} SAR"
 }

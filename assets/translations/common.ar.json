@@ -21,5 +21,7 @@
   "send_rejection": "إرسال الرفض",
   "step_of": "الخطوة {current} من {total}",
   "verified": "موثّقة",
-  "write_reason": "اكتب السبب..."
+  "write_reason": "اكتب السبب...",
+  "sar": "ر.س",
+  "sar_amount": "{} ر.س"
 }

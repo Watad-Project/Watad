@@ -4,7 +4,7 @@ import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/review/admin/domain/entities/admin_review_rejection.dart';
 import 'package:watad/features/review/admin/domain/repositories/admin_review_repository.dart';
 
-/// Rejects a license. The contractor reads the note: a reason from the list
+/// Rejects a license or a deed. The requester reads the note: a reason from the list
 /// (with the details, if any), or with «أخرى» (no reason) the details alone,
 /// which are then required.
 class AdminRejectRequestUseCase implements UseCase<void, AdminReviewRejection> {
@@ -24,6 +24,6 @@ class AdminRejectRequestUseCase implements UseCase<void, AdminReviewRejection> {
       (_, true) => reason,
       _ => '$reason: $details',
     };
-    return _repository.reject(params.businessId, note);
+    return _repository.reject(params.target, note);
   }
 }
