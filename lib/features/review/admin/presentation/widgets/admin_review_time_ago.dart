@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
+import 'package:watad/core/localization/app_localization.dart';
 
 /// «منذ ساعتين»: how long ago a request was sent, in the app's language.
 abstract final class AdminReviewTimeAgo {
@@ -7,11 +8,15 @@ abstract final class AdminReviewTimeAgo {
     final elapsed = now.difference(time);
     if (elapsed.inMinutes < 1) return context.tr('review.just_now');
     if (elapsed.inHours < 1) {
-      return context.plural('review.minutes_ago', elapsed.inMinutes);
+      return _plural(context, 'review.minutes_ago', elapsed.inMinutes);
     }
     if (elapsed.inDays < 1) {
-      return context.plural('review.hours_ago', elapsed.inHours);
+      return _plural(context, 'review.hours_ago', elapsed.inHours);
     }
-    return context.plural('review.days_ago', elapsed.inDays);
+    return _plural(context, 'review.days_ago', elapsed.inDays);
   }
+
+  /// The count in the app's digits: «منذ ٣ أيام».
+  static String _plural(BuildContext context, String key, int count) =>
+      context.plural(key, count, args: [context.formatNumber(count)]);
 }

@@ -1,41 +1,48 @@
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
-import 'package:watad/features/review/admin/domain/entities/admin_review_document.dart';
+import 'package:watad/features/review/admin/domain/entities/admin_review_details.dart';
 import 'package:watad/features/review/admin/domain/entities/admin_review_request.dart';
+import 'package:watad/features/review/admin/domain/entities/admin_review_target.dart';
 import 'package:watad/features/review/admin/domain/repositories/admin_review_repository.dart';
 
 /// A hand-written [AdminReviewRepository]: it answers with the results you
 /// set and records every decision (APP_ARCHITECTURE.md §16).
 class FakeAdminReviewRepository implements AdminReviewRepository {
   Result<List<AdminReviewRequest>> requestsResult = const Success([]);
-  Result<List<AdminReviewDocument>> documentsResult = const Success([]);
+
+  /// The details of each request; a request not in here is not found.
+  final Map<AdminReviewTarget, AdminReviewDetails> details = {};
   Result<void> decisionResult = const Success(null);
 
-  /// The businesses approved.
-  final List<String> approved = [];
+  /// The requests approved.
+  final List<AdminReviewTarget> approved = [];
 
-  /// The businesses rejected, as (businessId, note).
-  final List<(String, String)> rejected = [];
+  /// The requests rejected, as (target, note).
+  final List<(AdminReviewTarget, String)> rejected = [];
 
   @override
   Future<Result<List<AdminReviewRequest>>> getPendingRequests() async =>
       requestsResult;
 
   @override
-  Future<Result<List<AdminReviewDocument>>> getDocuments(
-    String businessId,
-  ) async => documentsResult;
+  Future<Result<AdminReviewDetails>> getDetails(
+    AdminReviewTarget target,
+  ) async {
+    final found = details[target];
+    return found == null ? const Failed(NotFoundFailure()) : Success(found);
+  }
 
   @override
-  Future<Result<void>> approve(String businessId) async {
-    approved.add(businessId);
+  Future<Result<void>> approve(AdminReviewTarget target) async {
+    approved.add(target);
     return decisionResult;
   }
 
   @override
-  Future<Result<void>> reject(String businessId, String note) async {
-    rejected.add((businessId, note));
+  Future<Result<void>> reject(AdminReviewTarget target, String note) async {
+    rejected.add((target, note));
     return decisionResult;
   }
 }

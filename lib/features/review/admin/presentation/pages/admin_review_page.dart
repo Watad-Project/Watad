@@ -4,51 +4,31 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
-import 'package:watad/core/components/feedback/app_popup.dart';
-import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_filter_chips.dart';
-import 'package:watad/core/components/inputs/app_reject_reason_form.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
-import 'package:watad/features/review/admin/domain/entities/admin_review_rejection.dart';
 import 'package:watad/features/review/admin/domain/entities/admin_review_request.dart';
 import 'package:watad/features/review/admin/presentation/bloc/admin_review_bloc.dart';
 import 'package:watad/features/review/admin/presentation/widgets/admin_review_request_card.dart';
 import 'package:watad/features/review/admin/presentation/widgets/admin_review_skeleton.dart';
 
-/// «طلبات التوثيق»: the licenses waiting for an admin, oldest first.
+/// «طلبات التوثيق»: the licenses and deeds waiting for an admin, oldest
+/// first, in two columns. «التفاصيل» on a card opens the request, where the
+/// admin decides.
 class AdminReviewPage extends StatelessWidget {
   const AdminReviewPage({super.key});
 
-  /// The rejection reasons, in order (GRA-30). Only the last one, «أخرى»,
-  /// asks the admin to write the reason.
-  static const _reasonKeys = [
-    'review.reason_unclear',
-    'review.reason_expired',
-    'review.reason_mismatch',
-    'review.reason_wrong_document',
-    'review.reason_other',
-  ];
-  static final _otherReasonIndex = _reasonKeys.length - 1;
+  static const int _columns = 2;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppTopBar(title: context.tr('review.title')),
-      body: BlocConsumer<AdminReviewBloc, AdminReviewState>(
-        listenWhen: (previous, current) =>
-            current.message != null && previous.message != current.message,
-        listener: (context, state) {
-          final message = state.message!;
-          if (message.isError) {
-            context.showErrorSnackBar(context.tr(message.key));
-          } else {
-            context.showSuccessSnackBar(context.tr(message.key));
-          }
-        },
-        // Loading, the list and errors fade into each other.
+      body: BlocBuilder<AdminReviewBloc, AdminReviewState>(
+        // Loading, the grid and errors fade into each other.
         builder: (context, state) => AnimatedSwitcher(
           duration: AppMotion.enter,
           reverseDuration: AppMotion.exit,
@@ -74,6 +54,7 @@ class AdminReviewPage extends StatelessWidget {
       }
     }
     final now = DateTime.now();
+    final visible = state.visible;
     return RefreshIndicator(
       key: const ValueKey('content'),
       onRefresh: () async => bloc.add(const AdminReviewFetched()),
@@ -82,10 +63,12 @@ class AdminReviewPage extends StatelessWidget {
         children: [
           AppFilterChips(
             labels: [
-              '${context.tr('review.filter_all')} ${state.allCount}',
+              '${context.tr('review.filter_all')} '
+                  '${context.formatNumber(state.allCount)}',
               '${context.tr('review.filter_license')} '
-                  '${state.licenseCount}',
-              '${context.tr('review.filter_deed')} 0',
+                  '${context.formatNumber(state.licenseCount)}',
+              '${context.tr('review.filter_deed')} '
+                  '${context.formatNumber(state.deedCount)}',
             ],
             selectedIndex: state.filter.index,
             onSelected: (index) => bloc.add(
@@ -93,27 +76,31 @@ class AdminReviewPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          if (state.visible.isEmpty)
-            AppEmptyView(
-              message: context.tr(
-                state.filter == AdminReviewFilter.deed
-                    ? 'review.deeds_soon'
-                    : 'review.empty',
-              ),
-            )
+          if (visible.isEmpty)
+            AppEmptyView(message: context.tr('review.empty'))
           else
-            for (final request in state.visible) ...[
-              AdminReviewRequestCard(
-                request: request,
-                now: now,
-                isBusy: state.busyBusinessId == request.businessId,
-                onOpen: () => context.pushNamed(
-                  AdminReviewRoutes.reviewDocumentsName,
-                  pathParameters: {'businessId': request.businessId},
+            // Rows of two cards; each row is as tall as its taller card, so
+            // large text grows the row instead of overflowing.
+            for (var i = 0; i < visible.length; i += _columns) ...[
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var j = i; j < i + _columns; j++) ...[
+                      if (j > i) const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: j < visible.length
+                            ? AdminReviewRequestCard(
+                                request: visible[j],
+                                now: now,
+                                onDetails: () =>
+                                    _openDetails(context, bloc, visible[j]),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ],
                 ),
-                onApprove: () =>
-                    bloc.add(AdminReviewApproved(request.businessId)),
-                onReject: () => _showRejectForm(context, bloc, request),
               ),
               const SizedBox(height: AppSpacing.sm),
             ],
@@ -122,40 +109,16 @@ class AdminReviewPage extends StatelessWidget {
     );
   }
 
-  void _showRejectForm(
+  /// Opens the request; when the admin decided there, it leaves the grid.
+  Future<void> _openDetails(
     BuildContext context,
     AdminReviewBloc bloc,
     AdminReviewRequest request,
-  ) {
-    final reasons = [for (final key in _reasonKeys) context.tr(key)];
-    AppPopup.sheet<void>(
-      context,
-      // Scrolls when the reasons and the keyboard don't fit.
-      builder: (sheetContext) => SingleChildScrollView(
-        padding: EdgeInsetsDirectional.only(
-          start: AppSpacing.md,
-          end: AppSpacing.md,
-          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom + AppSpacing.md,
-        ),
-        child: AppRejectReasonForm(
-          reasons: reasons,
-          otherReasonIndex: _otherReasonIndex,
-          onSubmit: (reasonIndex, details) {
-            bloc.add(
-              AdminReviewRejected(
-                AdminReviewRejection(
-                  businessId: request.businessId,
-                  reason: reasonIndex == _otherReasonIndex
-                      ? null
-                      : reasons[reasonIndex],
-                  details: details,
-                ),
-              ),
-            );
-            Navigator.of(sheetContext).pop();
-          },
-        ),
-      ),
+  ) async {
+    final decided = await context.pushNamed<bool>(
+      AdminReviewRoutes.reviewDetailsName,
+      pathParameters: {'kind': request.kind.name, 'id': request.id},
     );
+    if (decided ?? false) bloc.add(AdminReviewDecided(request.target));
   }
 }
