@@ -1,4 +1,5 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:watad/core/router/routes/admin_review_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -11,10 +12,15 @@ class AdminNavigationPage extends StatelessWidget {
   });
 
   /// The admin's tabs, in order; in Arabic the first one is on the right.
-  /// For now every tab is a placeholder. How a feature becomes a tab: see
+  /// How a feature becomes a tab: see
   /// `ClientNavigationPage.tabs`.
   static const List<NavigationTab> tabs = [
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'review.tab',
+      icon: Icons.verified_user_outlined,
+      selectedIcon: Icons.verified_user,
+      routeName: AdminReviewRoutes.reviewName,
+    ),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),

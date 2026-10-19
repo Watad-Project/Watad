@@ -1,0 +1,51 @@
+{
+  "tab": "التوثيق",
+  "title": "طلبات التوثيق",
+  "filter_all": "الكل",
+  "filter_license": "رخصة",
+  "filter_deed": "صك",
+  "license_document": "رخصة مقاول",
+  "for_contractor": "مقاول",
+  "approve": "اعتماد",
+  "reject": "رفض بسبب",
+  "approved": "تم اعتماد المنشأة",
+  "rejected": "تم رفض الطلب وإبلاغ المقاول بالسبب",
+  "empty": "لا توجد طلبات للمراجعة",
+  "deeds_soon": "مراجعة صكوك الملكية قريبًا",
+  "reason_unclear": "الصورة غير واضحة",
+  "reason_expired": "المستند منتهي الصلاحية",
+  "reason_mismatch": "المستند لا يطابق بيانات المنشأة",
+  "reason_wrong_document": "مستند غير المطلوب",
+  "documents_title": "مستندات الطلب",
+  "no_documents": "لا توجد مستندات مرفوعة",
+  "open_file": "فتح الملف",
+  "type_commercial_registration": "السجل التجاري",
+  "type_vat_certificate": "شهادة ضريبة القيمة المضافة",
+  "type_national_address": "العنوان الوطني",
+  "type_other": "مستند",
+  "just_now": "الآن",
+  "minutes_ago": {
+    "zero": "الآن",
+    "one": "منذ دقيقة",
+    "two": "منذ دقيقتين",
+    "few": "منذ {} دقائق",
+    "many": "منذ {} دقيقة",
+    "other": "منذ {} دقيقة"
+  },
+  "hours_ago": {
+    "zero": "الآن",
+    "one": "منذ ساعة",
+    "two": "منذ ساعتين",
+    "few": "منذ {} ساعات",
+    "many": "منذ {} ساعة",
+    "other": "منذ {} ساعة"
+  },
+  "days_ago": {
+    "zero": "اليوم",
+    "one": "منذ يوم",
+    "two": "منذ يومين",
+    "few": "منذ {} أيام",
+    "many": "منذ {} يومًا",
+    "other": "منذ {} يوم"
+  }
+}

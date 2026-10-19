@@ -19,6 +19,7 @@ import 'package:watad/features/navigation/client/presentation/client_navigation_
 import 'package:watad/features/navigation/contractor/presentation/contractor_navigation_routes.dart';
 import 'package:watad/features/onboarding/contractor/presentation/contractor_onboarding_routes.dart';
 import 'package:watad/features/onboarding/shared/presentation/onboarding_routes.dart';
+import 'package:watad/features/review/admin/presentation/admin_review_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
 /// The app's only router, used by `WatadApp`.
@@ -48,6 +49,7 @@ GoRouter createAppRouter({
       // One line per role folder, sorted by file name. Each folder's names
       // and paths live in lib/core/router/routes/.
       ...adminNavigationRoutes,
+      ...adminReviewRoutes,
       ...authRoutes,
       ...clientNavigationRoutes,
       ...contractorKycRoutes,
