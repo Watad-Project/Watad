@@ -9,10 +9,11 @@ import 'package:watad/core/components/display/app_image_viewer.dart';
 import 'package:watad/core/components/display/app_network_image.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
-import 'package:watad/core/components/feedback/app_loading_indicator.dart';
+import 'package:watad/core/components/feedback/app_shimmer.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/enums/business_document_type.dart';
 import 'package:watad/core/theme/app_colors.dart';
+import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/features/review/admin/domain/entities/admin_review_document.dart';
@@ -34,46 +35,60 @@ class AdminReviewDocumentsPage extends StatelessWidget {
         onBack: () => context.pop(),
       ),
       body: BlocBuilder<AdminReviewDocumentsBloc, AdminReviewDocumentsState>(
-        builder: (context, state) => switch (state) {
-          AdminReviewDocumentsInitial() ||
-          AdminReviewDocumentsLoadInProgress() => const AppLoadingIndicator(),
-          AdminReviewDocumentsLoadFailure(:final failure) => AppErrorView(
-            message: context.tr(failure.messageKey),
-            onRetry: () => context.read<AdminReviewDocumentsBloc>().add(
-              AdminReviewDocumentsFetched(businessId),
-            ),
+        // Loading, the files and errors fade into each other.
+        builder: (context, state) => AnimatedSwitcher(
+          duration: AppMotion.enter,
+          reverseDuration: AppMotion.exit,
+          switchInCurve: AppMotion.enterCurve,
+          switchOutCurve: AppMotion.exitCurve,
+          child: KeyedSubtree(
+            key: ValueKey(state.runtimeType),
+            child: _body(context, state),
           ),
-          AdminReviewDocumentsLoadSuccess(:final documents)
-              when documents.isEmpty =>
-            AppEmptyView(message: context.tr('review.no_documents')),
-          AdminReviewDocumentsLoadSuccess(:final documents) => ListView(
-            padding: const EdgeInsetsDirectional.all(AppSpacing.md),
-            children: [
-              for (final document in documents) ...[
-                Text(
-                  context.tr(_typeKey(document.documentType)),
-                  style: AppTextStyles.label,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                if (document.isPdf)
-                  AppButton(
-                    label: context.tr('review.open_file'),
-                    icon: Icons.picture_as_pdf_outlined,
-                    variant: AppButtonVariant.secondary,
-                    onPressed: () => _open(document),
-                  )
-                else
-                  _ImagePreview(
-                    url: document.url,
-                    title: context.tr(_typeKey(document.documentType)),
-                  ),
-                const SizedBox(height: AppSpacing.lg),
-              ],
-            ],
-          ),
-        },
+        ),
       ),
     );
+  }
+
+  Widget _body(BuildContext context, AdminReviewDocumentsState state) {
+    return switch (state) {
+      AdminReviewDocumentsInitial() ||
+      AdminReviewDocumentsLoadInProgress() => const _DocumentsSkeleton(),
+      AdminReviewDocumentsLoadFailure(:final failure) => AppErrorView(
+        message: context.tr(failure.messageKey),
+        onRetry: () => context.read<AdminReviewDocumentsBloc>().add(
+          AdminReviewDocumentsFetched(businessId),
+        ),
+      ),
+      AdminReviewDocumentsLoadSuccess(:final documents)
+          when documents.isEmpty =>
+        AppEmptyView(message: context.tr('review.no_documents')),
+      AdminReviewDocumentsLoadSuccess(:final documents) => ListView(
+        padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+        children: [
+          for (final document in documents) ...[
+            Text(
+              context.tr(_typeKey(document.documentType)),
+              style: AppTextStyles.label,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            if (document.isPdf)
+              AppButton(
+                label: context.tr('review.open_file'),
+                icon: Icons.picture_as_pdf_outlined,
+                variant: AppButtonVariant.secondary,
+                onPressed: () => _open(document),
+              )
+            else
+              _ImagePreview(
+                url: document.url,
+                title: context.tr(_typeKey(document.documentType)),
+              ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ],
+      ),
+    };
   }
 
   static String _typeKey(BusinessDocumentType type) => switch (type) {
@@ -125,6 +140,28 @@ class _ImagePreview extends StatelessWidget {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The files while they load: a shimmering title and image.
+class _DocumentsSkeleton extends StatelessWidget {
+  const _DocumentsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const AppShimmer(
+      child: Padding(
+        padding: EdgeInsetsDirectional.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppSkeletonBox(height: 16, width: 140),
+            SizedBox(height: AppSpacing.xs),
+            AppSkeletonBox(height: 360, radius: AppRadius.lg),
           ],
         ),
       ),

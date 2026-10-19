@@ -82,6 +82,8 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppLoadingIndicator` | `feedback/app_loading_indicator.dart` | The spinner while a page loads its data, centred | none | 2026-10-19 |
 | `AppErrorView` | `feedback/app_error_view.dart` | A page's data couldn't load: the message and "Try again" | `message`, `onRetry` | 2026-10-19 |
 | `AppEmptyView` | `feedback/app_empty_view.dart` | A list with nothing to show: an icon and a message | `message`, `icon` | 2026-10-19 |
+| `AppPopup` | `feedback/app_popup.dart` | Opens every dialog and bottom sheet with the app's motion (`AppMotion`): `AppPopup.dialog()` fades in growing from 94%, `AppPopup.sheet()` slides up. Use it instead of `showDialog` / `showModalBottomSheet` | `builder`; dialog: `barrierColor`, `barrierDismissible`, `useSafeArea` | 2026-10-19 |
+| `AppShimmer`, `AppSkeletonBox` | `feedback/app_shimmer.dart` | Loading skeletons: gray `AppSkeletonBox`es shaped like the coming content, with a light sweeping over them (start to end; still with reduce motion). `AppNetworkImage` shimmers while it loads | `child`; box: `height`, `width`, `radius` | 2026-10-19 |
 | `AppNotFoundView` | `feedback/app_not_found_view.dart` | The router's page for an address that doesn't exist: "We couldn't find this page" and a button back to the start | `onBackToStart` | 2026-10-09 |
 | `AppActionBar` | `layout/app_action_bar.dart` | The bottom bar of actions; with two, the primary takes 2/3 of the width | `primary`, `secondary` | 2026-10-09 |
 | `AppTopBar` | `layout/app_top_bar.dart` | The top bar of sub-screens: back arrow (flips in RTL) and a quiet title | `title`, `onBack`, `actions` | 2026-10-09 |
