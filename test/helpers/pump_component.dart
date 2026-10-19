@@ -43,6 +43,8 @@ Future<void> pumpLocalizedApp(
       startLocale: locale,
       // No SharedPreferences in tests: the locale is set right here.
       saveLocale: false,
+      // As in AppLocalization.scope.
+      ignorePluralRules: false,
       assetLoader: const TestAssetLoader(),
       child: Builder(
         builder: (context) => MaterialApp(
