@@ -118,22 +118,34 @@ class _ContractorBidPageState extends State<ContractorBidPage> {
           ContractorBidReady(:final details) when details.project != null =>
             details.hasPendingOffer
                 ? AppActionBar(
-                    primary: AppButton(
-                      label: context.tr('work.contractor.save_offer_button'),
-                      isLoading: state.isSubmitting,
-                      onPressed: details.isVerified && !state.isWithdrawing
-                          ? () => _onSubmit(context)
-                          : null,
-                    ),
-                    secondary: AppButton(
-                      label: context.tr(
-                        'work.contractor.withdraw_offer_button',
-                      ),
-                      variant: AppButtonVariant.secondary,
-                      isLoading: state.isWithdrawing,
-                      onPressed: !state.isSubmitting
-                          ? () => _onWithdraw(context)
-                          : null,
+                    primary: Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            label: context.tr(
+                              'work.contractor.save_offer_button',
+                            ),
+                            isLoading: state.isSubmitting,
+                            onPressed:
+                                details.isVerified && !state.isWithdrawing
+                                ? () => _onSubmit(context)
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: AppButton(
+                            label: context.tr(
+                              'work.contractor.withdraw_offer_button',
+                            ),
+                            variant: AppButtonVariant.secondary,
+                            isLoading: state.isWithdrawing,
+                            onPressed: !state.isSubmitting
+                                ? () => _onWithdraw(context)
+                                : null,
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 : AppActionBar(

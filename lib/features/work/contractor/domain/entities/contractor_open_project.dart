@@ -13,6 +13,7 @@ class ContractorOpenProject {
     required this.offerCount,
     this.budget,
     this.district,
+    this.imageUrl,
     this.myOfferId,
     this.myOfferAmount,
     this.myOfferStatus,
@@ -25,6 +26,7 @@ class ContractorOpenProject {
   final Money? budget;
   final String city;
   final String? district;
+  final String? imageUrl;
   final DateTime createdAt;
   final String ownerName;
   final int offerCount;

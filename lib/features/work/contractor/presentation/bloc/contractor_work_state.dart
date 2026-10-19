@@ -17,11 +17,13 @@ final class ContractorWorkLoadSuccess extends ContractorWorkState {
     required this.overview,
     this.selectedTabIndex = 0,
     this.selectedContractFilterIndex = 0,
+    this.filter = const ContractorWorkFilter(),
   });
 
   final ContractorWorkOverview overview;
   final int selectedTabIndex;
   final int selectedContractFilterIndex;
+  final ContractorWorkFilter filter;
 
   List<ContractorContractProject> get filteredContracts =>
       selectedContractFilterIndex == 0

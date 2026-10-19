@@ -3,9 +3,12 @@ import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/work/contractor/datasource/models/contractor_bid_details_model.dart';
 import 'package:watad/features/work/contractor/datasource/models/contractor_contract_project_model.dart';
 import 'package:watad/features/work/contractor/datasource/models/contractor_work_overview_model.dart';
+import 'package:watad/features/work/contractor/domain/entities/contractor_work_filter.dart';
 
 abstract interface class ContractorWorkRemoteDataSource {
-  Future<ContractorWorkOverviewModel> getWorkOverview();
+  Future<ContractorWorkOverviewModel> getWorkOverview({
+    ContractorWorkFilter filter = const ContractorWorkFilter(),
+  });
 
   Future<List<ContractorContractProjectModel>> getMyContracts();
 
@@ -33,16 +36,65 @@ class ContractorWorkRemoteDataSourceImpl
   final SupabaseClient _client;
 
   @override
-  Future<ContractorWorkOverviewModel> getWorkOverview() async {
-    final openProjectsResponse = await _client
+  Future<ContractorWorkOverviewModel> getWorkOverview({
+    ContractorWorkFilter filter = const ContractorWorkFilter(),
+  }) async {
+    var query = _client
         .from('v_open_projects')
         .select(
           'id, title, description, budget, city, district, created_at, '
           'owner_name, offer_count, my_offer_id, my_offer_amount, '
           'my_offer_status, is_mine',
         )
-        .eq('is_mine', false)
-        .order('created_at', ascending: false);
+        .eq('is_mine', false);
+
+    final trimmedCity = filter.city.trim();
+    if (trimmedCity.isNotEmpty) {
+      query = query.ilike('city', '%$trimmedCity%');
+    }
+
+    final trimmedDistrict = filter.district.trim();
+    if (trimmedDistrict.isNotEmpty) {
+      query = query.ilike('district', '%$trimmedDistrict%');
+    }
+
+    if (filter.minBudget case final minMoney?
+        when minMoney > const Money.zero()) {
+      query = query.gte('budget', minMoney.toJson());
+    }
+
+    if (filter.zeroOffersOnly) {
+      query = query.eq('offer_count', 0);
+    }
+
+    final sanitizedSearch = filter.searchQuery
+        .trim()
+        .replaceAll(',', ' ')
+        .replaceAll('%', '');
+    if (sanitizedSearch.isNotEmpty) {
+      query = query.or(
+        'title.ilike.%$sanitizedSearch%,'
+        'description.ilike.%$sanitizedSearch%,'
+        'city.ilike.%$sanitizedSearch%,'
+        'district.ilike.%$sanitizedSearch%',
+      );
+    }
+
+    final List<dynamic> openProjectsResponse = switch (filter.sortBy) {
+      ContractorWorkSortBy.highestBudget => await query.order(
+        'budget',
+        ascending: false,
+        nullsFirst: false,
+      ),
+      ContractorWorkSortBy.nearestDistance =>
+        await query
+            .order('city', ascending: true)
+            .order('created_at', ascending: false),
+      ContractorWorkSortBy.newest => await query.order(
+        'created_at',
+        ascending: false,
+      ),
+    };
 
     final contractsPayload = await _fetchContractsAndTasks();
 

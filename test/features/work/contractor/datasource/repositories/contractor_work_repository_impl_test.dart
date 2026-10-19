@@ -12,6 +12,7 @@ import 'package:watad/features/work/contractor/datasource/remote/contractor_work
 import 'package:watad/features/work/contractor/datasource/repositories/contractor_work_repository_impl.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_bid_details.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_contract_project.dart';
+import 'package:watad/features/work/contractor/domain/entities/contractor_work_filter.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_work_overview.dart';
 
 class _FakeRemoteDataSource implements ContractorWorkRemoteDataSource {
@@ -27,6 +28,8 @@ class _FakeRemoteDataSource implements ContractorWorkRemoteDataSource {
   final ContractorBidDetailsModel? bidModel;
   final Object? error;
 
+  ContractorWorkFilter? lastFilter;
+
   String? submittedProjectId;
   Money? submittedAmount;
   String? submittedMessage;
@@ -38,8 +41,11 @@ class _FakeRemoteDataSource implements ContractorWorkRemoteDataSource {
   String? withdrawnOfferId;
 
   @override
-  Future<ContractorWorkOverviewModel> getWorkOverview() async {
+  Future<ContractorWorkOverviewModel> getWorkOverview({
+    ContractorWorkFilter filter = const ContractorWorkFilter(),
+  }) async {
     if (error != null) throw error!;
+    lastFilter = filter;
     return model!;
   }
 
@@ -88,21 +94,26 @@ class _FakeRemoteDataSource implements ContractorWorkRemoteDataSource {
 
 void main() {
   group('ContractorWorkRepositoryImpl', () {
-    test('returns Success when remote getWorkOverview succeeds', () async {
+    test('returns Success and forwards filter when remote getWorkOverview succeeds', () async {
       const expected = ContractorWorkOverviewModel(
         openProjects: [],
         contractsCount: 2,
       );
-      final repository = ContractorWorkRepositoryImpl(
-        _FakeRemoteDataSource(model: expected),
+      final remote = _FakeRemoteDataSource(model: expected);
+      final repository = ContractorWorkRepositoryImpl(remote);
+      const filter = ContractorWorkFilter(
+        searchQuery: 'الرياض',
+        zeroOffersOnly: true,
       );
 
-      final result = await repository.getWorkOverview();
+      final result = await repository.getWorkOverview(filter: filter);
 
       expect(result, isA<Success<ContractorWorkOverview>>());
       final data = (result as Success<ContractorWorkOverview>).data;
       expect(data.contractsCount, 2);
       expect(data.openProjects, isEmpty);
+      expect(remote.lastFilter?.searchQuery, 'الرياض');
+      expect(remote.lastFilter?.zeroOffersOnly, isTrue);
     });
 
     test('getMyContracts returns Success when remote succeeds', () async {

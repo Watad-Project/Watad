@@ -3,23 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_loading_indicator.dart';
 import 'package:watad/core/components/inputs/app_filter_chips.dart';
 import 'package:watad/core/components/inputs/app_segmented_tabs.dart';
+import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/router/routes/contractor_work_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_contract_project.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_open_project.dart';
+import 'package:watad/features/work/contractor/domain/entities/contractor_work_filter.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_work_overview.dart';
 import 'package:watad/features/work/contractor/presentation/bloc/contractor_work_bloc.dart';
 import 'package:watad/features/work/contractor/presentation/widgets/contractor_contract_card.dart';
 import 'package:watad/features/work/contractor/presentation/widgets/contractor_open_project_card.dart';
+import 'package:watad/features/work/contractor/presentation/widgets/contractor_work_filter_sheet.dart';
 
-class ContractorWorkPage extends StatelessWidget {
+class ContractorWorkPage extends StatefulWidget {
   const ContractorWorkPage({
     this.onSubmitOffer,
     this.onPendingOfferTap,
@@ -30,6 +34,19 @@ class ContractorWorkPage extends StatelessWidget {
   final ValueChanged<ContractorOpenProject>? onSubmitOffer;
   final ValueChanged<ContractorOpenProject>? onPendingOfferTap;
   final ValueChanged<ContractorContractProject>? onContractTap;
+
+  @override
+  State<ContractorWorkPage> createState() => _ContractorWorkPageState();
+}
+
+class _ContractorWorkPageState extends State<ContractorWorkPage> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   Future<void> _openBidScreen(
     BuildContext context,
@@ -42,6 +59,26 @@ class ContractorWorkPage extends StatelessWidget {
     if ((changed ?? false) && context.mounted) {
       context.read<ContractorWorkBloc>().add(const ContractorWorkRefreshed());
     }
+  }
+
+  Future<void> _openFilterSheet(
+    BuildContext context,
+    ContractorWorkFilter currentFilter,
+  ) async {
+    final updatedFilter = await ContractorWorkFilterSheet.show(
+      context,
+      initialFilter: currentFilter,
+    );
+    if (updatedFilter != null && context.mounted) {
+      context.read<ContractorWorkBloc>().add(
+        ContractorWorkFilterUpdated(updatedFilter),
+      );
+    }
+  }
+
+  void _resetSearchAndFilter(BuildContext context) {
+    _searchController.clear();
+    context.read<ContractorWorkBloc>().add(const ContractorWorkFilterReset());
   }
 
   @override
@@ -65,6 +102,7 @@ class ContractorWorkPage extends StatelessWidget {
                 :final selectedTabIndex,
                 :final selectedContractFilterIndex,
                 :final filteredContracts,
+                :final filter,
               ) =>
                 RefreshIndicator(
                   color: AppColors.primary,
@@ -80,13 +118,20 @@ class ContractorWorkPage extends StatelessWidget {
                     selectedTabIndex: selectedTabIndex,
                     selectedContractFilterIndex: selectedContractFilterIndex,
                     filteredContracts: filteredContracts,
+                    filter: filter,
+                    searchController: _searchController,
+                    onSearchChanged: (query) => context
+                        .read<ContractorWorkBloc>()
+                        .add(ContractorWorkSearchQueryChanged(query)),
+                    onOpenFilterSheet: () => _openFilterSheet(context, filter),
+                    onResetFilter: () => _resetSearchAndFilter(context),
                     onSubmitOffer:
-                        onSubmitOffer ??
+                        widget.onSubmitOffer ??
                         (project) => _openBidScreen(context, project),
                     onPendingOfferTap:
-                        onPendingOfferTap ??
+                        widget.onPendingOfferTap ??
                         (project) => _openBidScreen(context, project),
-                    onContractTap: onContractTap,
+                    onContractTap: widget.onContractTap,
                   ),
                 ),
             };
@@ -103,6 +148,11 @@ class _WorkContent extends StatelessWidget {
     required this.selectedTabIndex,
     required this.selectedContractFilterIndex,
     required this.filteredContracts,
+    required this.filter,
+    required this.searchController,
+    required this.onSearchChanged,
+    required this.onOpenFilterSheet,
+    required this.onResetFilter,
     this.onSubmitOffer,
     this.onPendingOfferTap,
     this.onContractTap,
@@ -112,9 +162,38 @@ class _WorkContent extends StatelessWidget {
   final int selectedTabIndex;
   final int selectedContractFilterIndex;
   final List<ContractorContractProject> filteredContracts;
+  final ContractorWorkFilter filter;
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onOpenFilterSheet;
+  final VoidCallback onResetFilter;
   final ValueChanged<ContractorOpenProject>? onSubmitOffer;
   final ValueChanged<ContractorOpenProject>? onPendingOfferTap;
   final ValueChanged<ContractorContractProject>? onContractTap;
+
+  int get _projectTypeChipIndex => switch (filter.projectType) {
+    null => 0,
+    ContractorWorkType.construction => 1,
+    ContractorWorkType.renovation => 2,
+    ContractorWorkType.repairs => 3,
+  };
+
+  void _onProjectTypeSelected(BuildContext context, int index) {
+    final selectedType = switch (index) {
+      1 => ContractorWorkType.construction,
+      2 => ContractorWorkType.renovation,
+      3 => ContractorWorkType.repairs,
+      _ => null,
+    };
+    context.read<ContractorWorkBloc>().add(
+      ContractorWorkFilterUpdated(
+        filter.copyWith(
+          projectType: selectedType,
+          clearProjectType: selectedType == null,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +234,38 @@ class _WorkContent extends StatelessWidget {
           ),
         ),
         if (selectedTabIndex == 0) ...[
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: AppTextField(
+                  controller: searchController,
+                  hint: context.tr('work.contractor.search_hint'),
+                  textInputAction: TextInputAction.search,
+                  onChanged: onSearchChanged,
+                  onSubmitted: onSearchChanged,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              AppIconButton(
+                icon: Icons.tune,
+                variant: AppIconButtonVariant.filled,
+                tooltip: context.tr('work.contractor.filter_title'),
+                onPressed: onOpenFilterSheet,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppFilterChips(
+            labels: [
+              context.tr('work.contractor.filter_type_all'),
+              context.tr('work.contractor.filter_type_construction'),
+              context.tr('work.contractor.filter_type_renovation'),
+              context.tr('work.contractor.filter_type_repairs'),
+            ],
+            selectedIndex: _projectTypeChipIndex,
+            onSelected: (index) => _onProjectTypeSelected(context, index),
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             context.tr('work.contractor.deed_hint'),
@@ -163,26 +274,43 @@ class _WorkContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          if (overview.openProjects.isEmpty)
+          if (overview.openProjects.isEmpty) ...[
             AppEmptyView(
               message: context.tr('work.contractor.empty_opportunities'),
               icon: Icons.work_outline,
-            )
-          else
-            for (
-              var index = 0;
-              index < overview.openProjects.length;
-              index++
-            ) ...[
-              if (index > 0) const SizedBox(height: AppSpacing.md),
-              ContractorOpenProjectCard(
-                project: overview.openProjects[index],
-                onSubmitOfferTap: () =>
-                    onSubmitOffer?.call(overview.openProjects[index]),
-                onPendingOfferTap: () =>
-                    onPendingOfferTap?.call(overview.openProjects[index]),
+            ),
+            if (filter.hasActiveFilters ||
+                filter.searchQuery.trim().isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: context.tr('work.contractor.filter_reset_button'),
+                variant: AppButtonVariant.secondary,
+                onPressed: onResetFilter,
               ),
             ],
+          ] else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: overview.openProjects.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: AppSpacing.sm,
+                mainAxisSpacing: AppSpacing.sm,
+                mainAxisExtent:
+                    320 *
+                    MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.4),
+              ),
+              itemBuilder: (context, index) {
+                final project = overview.openProjects[index];
+                return ContractorOpenProjectCard(
+                  project: project,
+                  onSubmitOfferTap: () => onSubmitOffer?.call(project),
+                  onPendingOfferTap: () => onPendingOfferTap?.call(project),
+                );
+              },
+            ),
         ] else ...[
           const SizedBox(height: AppSpacing.md),
           AppFilterChips(
