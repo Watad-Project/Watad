@@ -3,18 +3,23 @@ import UIKit
 import GoogleMaps
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    if let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
-       let dict = NSDictionary(contentsOfFile: path) as? [String: Any],
-       let apiKey = dict["MAPS_API_KEY"] as? String, !apiKey.isEmpty {
+    // The Google Maps key comes from ios/Flutter/Secrets.xcconfig (git-ignored)
+    // through Info.plist's GMSApiKey. Without it, opening a map crashes.
+    if let apiKey = Bundle.main.object(forInfoDictionaryKey: "GMSApiKey") as? String,
+       !apiKey.isEmpty {
       GMSServices.provideAPIKey(apiKey)
+    } else {
+      NSLog("Watad: MAPS_API_KEY is missing. Copy ios/Flutter/Secrets.xcconfig.example to ios/Flutter/Secrets.xcconfig and set it.")
     }
-    GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-}
 
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+  }
+}
