@@ -47,8 +47,9 @@ class AppBusinessMiniCard extends StatelessWidget {
   static double heightOf(BuildContext context) {
     final scaler = MediaQuery.textScalerOf(context);
     double lineHeight(TextStyle style) {
+      // A space: one line's height comes from the font, not the letters.
       final painter = TextPainter(
-        text: TextSpan(text: 'Ag', style: style),
+        text: TextSpan(text: ' ', style: style),
         textDirection: TextDirection.ltr,
         textScaler: scaler,
         maxLines: 1,
