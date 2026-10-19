@@ -10,18 +10,36 @@
   "suggested_contractors": "مقاولون مقترحون",
   "view_all": "الكل",
   "no_contractors": "لا يوجد مقاولون موثّقون بعد",
-  "no_ratings": "لا تقييمات بعد",
-  "ratings_count": {
-    "zero": "لا تقييمات بعد",
-    "one": "تقييم واحد",
-    "two": "تقييمان",
-    "few": "{} تقييمات",
-    "many": "{} تقييمًا",
-    "other": "{} تقييم"
-  },
   "contractors_title": "المقاولون",
   "search_contractors": "ابحث باسم المنشأة",
   "rating_any": "كل التقييمات",
   "rating_at_least": "{} فأكثر",
-  "no_matching_contractors": "لا يوجد مقاولون يطابقون البحث"
+  "no_matching_contractors": "لا يوجد مقاولون يطابقون البحث",
+  "filters_title": "تصفية النتائج",
+  "city_title": "المدينة",
+  "city_any": "كل المدن",
+  "rating_title": "التقييم",
+  "projects_title": "المشاريع المنجزة",
+  "projects_any": "أي عدد",
+  "projects_at_least": {
+    "zero": "{} فأكثر",
+    "one": "مشروع فأكثر",
+    "two": "مشروعان فأكثر",
+    "few": "{} مشاريع فأكثر",
+    "many": "{} مشروعًا فأكثر",
+    "other": "{} مشروع فأكثر"
+  },
+  "projects_count": {
+    "zero": "لا مشاريع بعد",
+    "one": "مشروع واحد",
+    "two": "مشروعان",
+    "few": "{} مشاريع",
+    "many": "{} مشروعًا",
+    "other": "{} مشروع"
+  },
+  "sort_title": "الترتيب",
+  "sort_rating": "الأعلى تقييمًا",
+  "sort_projects": "الأكثر مشاريع",
+  "show_results": "عرض النتائج",
+  "clear_filters": "مسح الكل"
 }

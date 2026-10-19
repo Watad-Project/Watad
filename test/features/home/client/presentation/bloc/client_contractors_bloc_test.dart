@@ -3,6 +3,8 @@ import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractor_filter.dart';
+import 'package:watad/features/home/client/domain/entities/client_contractor_sort.dart';
+import 'package:watad/features/home/client/domain/usecases/client_get_contractor_cities_use_case.dart';
 import 'package:watad/features/home/client/domain/usecases/client_get_contractors_use_case.dart';
 import 'package:watad/features/home/client/presentation/bloc/client_contractors_bloc.dart';
 
@@ -16,8 +18,10 @@ void main() {
 
   late FakeClientHomeRepository repository;
 
-  ClientContractorsBloc buildBloc() =>
-      ClientContractorsBloc(ClientGetContractorsUseCase(repository));
+  ClientContractorsBloc buildBloc() => ClientContractorsBloc(
+    ClientGetContractorsUseCase(repository),
+    ClientGetContractorCitiesUseCase(repository),
+  );
 
   Future<ClientContractorsState> settled(ClientContractorsBloc bloc) =>
       bloc.stream.firstWhere(
@@ -26,14 +30,19 @@ void main() {
 
   setUp(() => repository = FakeClientHomeRepository());
 
-  test('loads the first page', () async {
-    repository.contractorsPageResult = Success(page(3));
+  test('loads the first page and the cities of the filter', () async {
+    repository
+      ..contractorsPageResult = Success(page(3))
+      ..citiesResult = const Success(['جدة', 'المدينة المنورة']);
     final bloc = buildBloc()..add(const ClientContractorsFetched());
 
-    final state = await settled(bloc);
-    expect(state.status, ClientContractorsStatus.success);
+    // The first page and the cities load together.
+    final state = await bloc.stream.firstWhere(
+      (s) => s.status == ClientContractorsStatus.success && s.cities.isNotEmpty,
+    );
     expect(state.contractors, hasLength(3));
     expect(state.hasMore, isFalse);
+    expect(state.cities, ['جدة', 'المدينة المنورة']);
     expect(repository.queries.single.offset, 0);
     expect(repository.queries.single.limit, ClientContractorsBloc.pageSize);
     await bloc.close();
@@ -74,7 +83,13 @@ void main() {
     final bloc = buildBloc()..add(const ClientContractorsFetched());
     await settled(bloc);
 
-    const filter = ClientContractorFilter(query: 'البناء', minRating: 4);
+    const filter = ClientContractorFilter(
+      query: 'البناء',
+      city: 'المدينة المنورة',
+      minRating: 4,
+      minProjects: 100,
+      sort: ClientContractorSort.projects,
+    );
     bloc.add(const ClientContractorsFilterChanged(filter));
     final state = await bloc.stream.firstWhere(
       (s) => s.filter == filter && s.status == ClientContractorsStatus.success,

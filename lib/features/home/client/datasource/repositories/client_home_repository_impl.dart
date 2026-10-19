@@ -23,4 +23,8 @@ class ClientHomeRepositoryImpl implements ClientHomeRepository {
   Future<Result<List<ClientContractor>>> getContractors(
     ClientContractorsQuery query,
   ) => guardSupabaseCall(() => _remote.getContractors(query));
+
+  @override
+  Future<Result<List<String>>> getContractorCities() =>
+      guardSupabaseCall(_remote.getContractorCities);
 }

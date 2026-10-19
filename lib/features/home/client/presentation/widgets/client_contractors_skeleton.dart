@@ -1,46 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/feedback/app_shimmer.dart';
 import 'package:watad/core/theme/app_spacing.dart';
+import 'package:watad/features/home/client/presentation/widgets/client_contractor_card.dart';
+import 'package:watad/features/home/client/presentation/widgets/client_contractor_card_skeleton.dart';
 
-/// Shimmering contractor rows while the «الكل» list loads.
+/// Shimmering cards, two per row, while the «الكل» grid loads.
 class ClientContractorsSkeleton extends StatelessWidget {
   const ClientContractorsSkeleton({super.key});
 
-  static const int _rows = 6;
+  static const int _cards = 6;
 
   @override
   Widget build(BuildContext context) {
     return AppShimmer(
-      child: ListView(
+      child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsetsDirectional.symmetric(
           horizontal: AppSpacing.md,
         ),
-        children: [
-          for (var i = 0; i < _rows; i++) ...[
-            const AppCard(
-              child: Row(
-                children: [
-                  AppSkeletonBox(height: 48, width: 48, radius: AppRadius.pill),
-                  SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppSkeletonBox(height: 14, width: 140),
-                        SizedBox(height: AppSpacing.xs),
-                        AppSkeletonBox(height: 12, width: 90),
-                      ],
-                    ),
-                  ),
-                  AppSkeletonBox(height: 14, width: 40),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-          ],
-        ],
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: AppSpacing.sm,
+          crossAxisSpacing: AppSpacing.sm,
+          mainAxisExtent: ClientContractorCard.height,
+        ),
+        itemCount: _cards,
+        itemBuilder: (_, _) => const ClientContractorCardSkeleton(),
       ),
     );
   }

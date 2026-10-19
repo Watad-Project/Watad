@@ -8,14 +8,13 @@ import 'package:watad/core/components/feedback/app_loading_indicator.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
-import 'package:watad/features/home/client/domain/entities/client_contractor_filter.dart';
 import 'package:watad/features/home/client/presentation/bloc/client_contractors_bloc.dart';
-import 'package:watad/features/home/client/presentation/widgets/client_contractor_tile.dart';
+import 'package:watad/features/home/client/presentation/widgets/client_contractor_card.dart';
 import 'package:watad/features/home/client/presentation/widgets/client_contractors_filters.dart';
 import 'package:watad/features/home/client/presentation/widgets/client_contractors_skeleton.dart';
 
-/// «المقاولون»: every verified contractor, best rated first, with filters.
-/// It opens from «الكل» on the home screen.
+/// «المقاولون»: every verified contractor as cards, two per row, best rated
+/// first, with filters. It opens from «الكل» on the home screen.
 class ClientContractorsPage extends StatelessWidget {
   const ClientContractorsPage({super.key});
 
@@ -40,19 +39,17 @@ class ClientContractorsPage extends StatelessWidget {
               AppSpacing.md,
               AppSpacing.sm,
             ),
-            child:
-                BlocSelector<
-                  ClientContractorsBloc,
-                  ClientContractorsState,
-                  ClientContractorFilter
-                >(
-                  selector: (state) => state.filter,
-                  builder: (context, filter) => ClientContractorsFilters(
-                    filter: filter,
-                    onChanged: (filter) =>
-                        bloc.add(ClientContractorsFilterChanged(filter)),
-                  ),
-                ),
+            child: BlocBuilder<ClientContractorsBloc, ClientContractorsState>(
+              buildWhen: (previous, current) =>
+                  previous.filter != current.filter ||
+                  previous.cities != current.cities,
+              builder: (context, state) => ClientContractorsFilters(
+                filter: state.filter,
+                cities: state.cities,
+                onChanged: (filter) =>
+                    bloc.add(ClientContractorsFilterChanged(filter)),
+              ),
+            ),
           ),
           Expanded(
             child: BlocBuilder<ClientContractorsBloc, ClientContractorsState>(
@@ -91,7 +88,7 @@ class ClientContractorsPage extends StatelessWidget {
       case ClientContractorsStatus.success:
         final contractors = state.contractors;
         return NotificationListener<ScrollNotification>(
-          key: const ValueKey('list'),
+          key: const ValueKey('grid'),
           onNotification: (notification) {
             if (notification.metrics.extentAfter < _loadMoreBefore) {
               bloc.add(const ClientContractorsMoreRequested());
@@ -100,21 +97,39 @@ class ClientContractorsPage extends StatelessWidget {
           },
           child: RefreshIndicator(
             onRefresh: () async => bloc.add(const ClientContractorsFetched()),
-            child: ListView.separated(
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                AppSpacing.md,
-                0,
-                AppSpacing.md,
-                AppSpacing.md,
-              ),
-              itemCount: contractors.length + (state.isLoadingMore ? 1 : 0),
-              separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, index) => index < contractors.length
-                  ? ClientContractorTile(contractor: contractors[index])
-                  : const Padding(
-                      padding: EdgeInsetsDirectional.all(AppSpacing.md),
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                  ),
+                  // Two cards per row.
+                  sliver: SliverGrid.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppSpacing.sm,
+                          crossAxisSpacing: AppSpacing.sm,
+                          mainAxisExtent: ClientContractorCard.height,
+                        ),
+                    itemCount: contractors.length,
+                    itemBuilder: (context, index) =>
+                        ClientContractorCard(contractor: contractors[index]),
+                  ),
+                ),
+                if (state.isLoadingMore)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.only(
+                        bottom: AppSpacing.md,
+                      ),
                       child: AppLoadingIndicator(),
                     ),
+                  ),
+              ],
             ),
           ),
         );

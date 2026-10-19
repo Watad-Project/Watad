@@ -9,7 +9,7 @@ final class ClientContractorsFetched extends ClientContractorsEvent {
   const ClientContractorsFetched();
 }
 
-/// The search text or a filter chip changed: start again from the first
+/// The search text or the filter sheet changed: start again from the first
 /// page.
 final class ClientContractorsFilterChanged extends ClientContractorsEvent {
   const ClientContractorsFilterChanged(this.filter);

@@ -6,12 +6,16 @@ import 'package:watad/features/home/client/domain/entities/client_home_profile.d
 abstract interface class ClientHomeRepository {
   Future<Result<ClientHomeProfile>> getProfile();
 
-  /// The five best rated verified contractors, highest first.
+  /// Five verified contractors: the client's city first, then the best
+  /// rated.
   Future<Result<List<ClientContractor>>> getSuggestedContractors();
 
   /// One page of the verified contractors that match the query's filter,
-  /// best rated first.
+  /// the client's city first, then in the filter's order.
   Future<Result<List<ClientContractor>>> getContractors(
     ClientContractorsQuery query,
   );
+
+  /// The cities verified contractors work in, for the city filter.
+  Future<Result<List<String>>> getContractorCities();
 }

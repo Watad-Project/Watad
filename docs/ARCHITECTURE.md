@@ -47,12 +47,12 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | Domain | Table | Access | Notes |
 |--------|-------|--------|-------|
 | Identity | `users` | update `full_name`, `avatar_path` only | `role` locked. Anonymised, never deleted. |
-| | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. |
+| | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. `city`: where the business works, set by the contractor from the location picker. |
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
 | | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
 | | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
-| Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. |
+| Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. `deed_storage_path`: the ownership deed in the private `project-deeds` bucket; it must be inside the owner's folder (`projects_deed_path_in_owner_folder`). |
 | | `project_offers` | insert/edit while `pending` | Decided by `accept_offer()`, `reject_offer()`, `withdraw_offer()`. |
 | | `project_tasks` | propose as taker | `status` only by `set_task_status()`. |
 | | `project_reports` | insert (taker, while project in progress) | "publishUpdate". |
@@ -74,10 +74,10 @@ Writes are limited twice: by RLS (which rows) and by column-level grants (which 
 | Table | INSERT columns | UPDATE columns | DELETE |
 |-------|----------------|----------------|--------|
 | `users` | none (trigger creates it) | `full_name`, `avatar_path` | no |
-| `businesses` | `company_name`, `cr_number`, `specialized_field` | same three | no |
+| `businesses` | `company_name`, `cr_number`, `specialized_field`, `city` | same four | no |
 | `business_documents` | `document_type`, `storage_path` | none | no |
 | `addresses` | `name`, `city`, `district`, `street`, `building_number`, `postal_code` | same six | yes |
-| `projects` | `title`, `description`, `budget`, `city`, `district`, `address_id`, `status` | `title`, `description`, `budget`, `city`, `district`, `address_id` | yes |
+| `projects` | `title`, `description`, `budget`, `city`, `district`, `address_id`, `status`, `deed_storage_path` | `title`, `description`, `budget`, `city`, `district`, `address_id`, `deed_storage_path` | yes |
 | `project_offers` | `project_id`, `amount`, `message` | `amount`, `message` | no |
 | `project_tasks` | `project_id`, `title`, `description`, `amount`, `start_date` | none (use `set_task_status()`) | no |
 | `project_reports` | `project_id`, `title`, `content` | `title`, `content` | no |
@@ -152,13 +152,15 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Domain | Views |
 |--------|-------|
 | Profile | `v_my_profile`, `v_public_profiles`, `v_my_addresses`, `v_my_identity` |
-| Business | `v_business_documents`, `v_admin_verification_queue` |
+| Business | `v_business_documents`, `v_admin_verification_queue`, `v_contractors` |
 | Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_reports`, `v_project_payments`, `v_bank_transfers` |
 | Marketplace | `v_marketplace_items`, `v_my_orders`, `v_order_items` |
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
+
+`v_contractors` is the client's directory of verified contractors (migration 61): city, rating, `completed_project_count`, and `is_in_my_city` (the contractor's city is the city of the caller's latest saved address). Order by `is_in_my_city` first to show the client's city first.
 
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens.
 
@@ -172,8 +174,21 @@ This file does not list view columns. Never guess a column name: read it from th
 | `images` | yes | general images (e.g. listings) | |
 | `business-documents` | **no** | verification documents | path saved in `business_documents.storage_path` |
 | `bank-transfer-receipts` | **no** | transfer receipts | path saved in `bank_transfers.storage_path` |
+| `project-deeds` | **no** | ownership deeds of projects (legal documents) | `<owner id>/<file name>`, saved in `projects.deed_storage_path` |
 
 Use signed URLs for the private buckets. Never make them public.
+
+**`project-deeds`** (migration 60). Deeds prove who owns a property, so they're locked down:
+
+| Who | Upload | Read | Replace or delete |
+|-----|--------|------|-------------------|
+| The project's owner | yes, into `<their user id>/` only, while not suspended | their own files | no: a new deed is a new file, then a new `deed_storage_path` |
+| Admins | no | every deed, to review it | no |
+| Contractors, other clients, signed-out users | no | no | no |
+
+- Files are PDF, JPEG or PNG, at most 10 MB. The bucket refuses anything else.
+- `projects.deed_storage_path` must start with the project owner's id (a check constraint), so a client can't point their project at someone else's deed.
+- The path itself is a column of `projects`, so whoever can see the project row can read the path text. The file stays protected: only the owner and admins can download it, through a signed URL.
 
 ## 9. Blockchain
 
@@ -203,12 +218,13 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 - The app uses only the anon key. A key that can bypass RLS never leaves the server.
 - A new state change is a new RPC with its own checks, not a looser policy.
 - The app gets INSERT/UPDATE only on the columns in section 3a. A new writable column needs an explicit grant in a migration, and section 3a must be updated.
-- Sensitive files stay in private buckets.
+- Sensitive files stay in private buckets. A private bucket's policies say exactly who uploads (usually `<user id>/` only) and who reads (the owner, plus admins when they review). Leave out UPDATE and DELETE policies unless a screen needs them.
+- A column that stores a path into a private bucket gets a check that the path is inside the row owner's folder (e.g. `projects_deed_path_in_owner_folder`), so nobody can attach someone else's file.
 - Run the Supabase security advisor after any schema change and fix what it reports.
 
 ## 11. Migrations
 
-- Applied migrations are numbered in order (`00_setup` … `59_restore_v_project_offers`; the next is `60_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
+- Applied migrations are numbered in order (`00_setup` … `61_contractors_directory`; the next is `62_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
 
