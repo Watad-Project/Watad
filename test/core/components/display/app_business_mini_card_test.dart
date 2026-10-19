@@ -44,6 +44,26 @@ void main() {
     );
 
     expect(find.byIcon(Icons.check_circle), findsNothing);
+    // No location given: no pin.
+    expect(find.byIcon(Icons.location_on_outlined), findsNothing);
+  });
+
+  testWidgets('shows where the business works', (tester) async {
+    await pumpComponent(
+      tester,
+      const SizedBox(
+        width: 180,
+        child: AppBusinessMiniCard(
+          name: 'إتقان للتشييد',
+          ratingLabel: '٤٫٧',
+          projectsLabel: '٤١ مشروعاً',
+          location: 'المدينة المنورة',
+        ),
+      ),
+    );
+
+    expect(find.text('المدينة المنورة'), findsOneWidget);
+    expect(find.byIcon(Icons.location_on_outlined), findsOneWidget);
   });
 
   testWidgets('without a photo it shows the default avatar, not stripes', (
@@ -78,6 +98,31 @@ void main() {
             ratingLabel: '٤٫٨',
             projectsLabel: '٦٤ مشروعًا',
             isVerified: true,
+          ),
+        ),
+      ),
+      textScale: largeTextScale,
+      boldText: true,
+    );
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('heightOf withLocation leaves room for the location line', (
+    tester,
+  ) async {
+    await pumpComponent(
+      tester,
+      Builder(
+        builder: (context) => SizedBox(
+          width: 180,
+          height: AppBusinessMiniCard.heightOf(context, withLocation: true),
+          child: const AppBusinessMiniCard(
+            name: 'مؤسسة البناء المتين للمقاولات العامة',
+            ratingLabel: '٤٫٨',
+            projectsLabel: '٦٤ مشروعًا',
+            isVerified: true,
+            location: 'المدينة المنورة',
           ),
         ),
       ),

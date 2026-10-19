@@ -22,7 +22,8 @@ class ClientContractorsFilterSheet extends StatefulWidget {
 
   final ClientContractorFilter filter;
 
-  /// The cities contractors work in. Empty: no city filter.
+  /// The cities contractors work in; the city filter lists them after
+  /// «كل المدن».
   final List<String> cities;
   final ValueChanged<ClientContractorFilter> onApply;
 
@@ -44,19 +45,18 @@ class _ClientContractorsFilterSheetState
   Widget build(BuildContext context) {
     final cities = widget.cities;
     final dropdowns = <Widget>[
-      if (cities.isNotEmpty)
-        AppDropdown<String?>(
-          key: const Key('contractors_filter_city'),
-          floating: true,
-          label: context.tr('home.city_title'),
-          value: _draft.city,
-          options: [
-            AppDropdownOption(value: null, title: context.tr('home.city_any')),
-            for (final city in cities)
-              AppDropdownOption(value: city, title: city),
-          ],
-          onChanged: (city) => _set(_draft.copyWith(city: () => city)),
-        ),
+      AppDropdown<String?>(
+        key: const Key('contractors_filter_city'),
+        floating: true,
+        label: context.tr('home.city_title'),
+        value: _draft.city,
+        options: [
+          AppDropdownOption(value: null, title: context.tr('home.city_any')),
+          for (final city in cities)
+            AppDropdownOption(value: city, title: city),
+        ],
+        onChanged: (city) => _set(_draft.copyWith(city: () => city)),
+      ),
       AppDropdown<double?>(
         key: const Key('contractors_filter_rating'),
         floating: true,

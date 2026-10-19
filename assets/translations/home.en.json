@@ -41,5 +41,6 @@
   "sort_rating": "Highest rated",
   "sort_projects": "Most projects",
   "show_results": "Show results",
-  "clear_filters": "Clear all"
+  "clear_filters": "Clear all",
+  "city_unknown": "City not set"
 }

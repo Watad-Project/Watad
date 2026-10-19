@@ -30,6 +30,7 @@ void main() {
         ClientContractor(
           id: 'c-1',
           companyName: 'البناء المتين',
+          city: 'المدينة المنورة',
           ratingAvg: 4.8,
           ratingCount: 12,
           completedProjectCount: 64,
@@ -78,6 +79,9 @@ void main() {
     expect(find.byType(AppBusinessMiniCard), findsNWidgets(2));
     expect(find.text('٤٫٨ · ٦٤ مشروعًا'), findsOneWidget);
     expect(find.text('– · لا مشاريع بعد'), findsOneWidget);
+    // Each card says where the contractor works.
+    expect(find.text('المدينة المنورة'), findsOneWidget);
+    expect(find.text('لم تُحدَّد المدينة'), findsOneWidget);
   });
 
   testWidgets('«جوال موثّق» shows only for a confirmed phone', (tester) async {
@@ -179,12 +183,29 @@ void main() {
     expect(find.text('لا يوجد مقاولون يطابقون البحث'), findsOneWidget);
   });
 
+  testWidgets('the city filter shows even before any contractor has a city', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
+    router.goNamed(ClientHomeRoutes.contractorsName);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('تصفية النتائج'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('contractors_filter_city')), findsOneWidget);
+    expect(find.text('كل المدن'), findsOneWidget);
+  });
+
   testWidgets('home and every contractor fit large, bold text', (tester) async {
     repository
       ..contractorsPageResult = const Success([
         ClientContractor(
           id: 'c-1',
           companyName: 'مؤسسة البناء المتين للمقاولات العامة',
+          city: 'المدينة المنورة',
           ratingAvg: 4.8,
           ratingCount: 12,
           completedProjectCount: 64,

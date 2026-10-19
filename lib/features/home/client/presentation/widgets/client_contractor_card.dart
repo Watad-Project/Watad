@@ -5,7 +5,8 @@ import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
 
 /// One contractor as a card: photo (or the default avatar), name with the
-/// verified check, rating and completed projects («٤٫٨ · ٦٤ مشروعًا»). Used in «مقاولون مقترحون»
+/// verified check, rating and completed projects («٤٫٨ · ٦٤ مشروعًا»), and
+/// the city it works in. Used in «مقاولون مقترحون»
 /// and in the «الكل» grid.
 class ClientContractorCard extends StatelessWidget {
   const ClientContractorCard({required this.contractor, super.key});
@@ -14,7 +15,7 @@ class ClientContractorCard extends StatelessWidget {
 
   /// The card's height in a row or a grid, at the phone's text size.
   static double heightOf(BuildContext context) =>
-      AppBusinessMiniCard.heightOf(context);
+      AppBusinessMiniCard.heightOf(context, withLocation: true);
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +25,7 @@ class ClientContractorCard extends StatelessWidget {
       name: contractor.companyName,
       isVerified: true,
       imageUrl: contractor.avatarUrl,
+      location: contractor.city ?? context.tr('home.city_unknown'),
       ratingLabel: rating == null
           ? '–'
           : context.formatNumber(rating, decimals: 1),
