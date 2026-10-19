@@ -36,6 +36,10 @@ abstract final class AppLocalization {
       startLocale: arabic,
       saveLocale: saveLocale,
       assetLoader: assetLoader,
+      // Each language's own plural forms (Arabic has six: «٣ تقييمات»,
+      // «٦٤ تقييمًا»). easy_localization's default uses only zero, one,
+      // two and other.
+      ignorePluralRules: false,
       child: child,
     );
   }
@@ -57,4 +61,16 @@ extension AppLanguage on BuildContext {
   Future<void> toggleLanguage() => changeLanguage(
     isArabic ? AppLocalization.english : AppLocalization.arabic,
   );
+
+  /// [value] written for the app's language, with exactly [decimals] digits
+  /// after the point: «٤٦٥٬٠٠٠» and «٤٫٨» in Arabic, "465,000" and "4.8" in
+  /// English.
+  String formatNumber(num value, {int decimals = 0}) {
+    return NumberFormat.decimalPatternDigits(
+      // intl's plain 'ar' writes Western digits; 'ar_EG' writes the
+      // Arabic-Indic digits and separators of the designs.
+      locale: isArabic ? 'ar_EG' : AppLocalization.english.languageCode,
+      decimalDigits: decimals,
+    ).format(value);
+  }
 }

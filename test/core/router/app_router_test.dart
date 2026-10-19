@@ -31,6 +31,7 @@ import 'package:watad/features/onboarding/contractor/presentation/bloc/contracto
 import '../../helpers/fake_admin_review_repository.dart';
 import '../../helpers/fake_app_session.dart';
 import '../../helpers/fake_auth_repository.dart';
+import '../../helpers/fake_client_home_repository.dart';
 import '../../helpers/fake_contractor_dashboard_repository.dart';
 import '../../helpers/fake_splash_repository.dart';
 import '../../helpers/pump_router.dart';
@@ -82,6 +83,8 @@ class _FakeKycRepository implements KycRepository {
 // test/features/<feature>/<role>/presentation/ (APP_ARCHITECTURE.md §11).
 void main() {
   setUp(() {
+    // The client's navigation opens on its «الرئيسية» tab.
+    registerFakeClientHome();
     // The splash fake never answers, so the app stays at its start path.
     registerFakeSplashBloc(FakeSplashRepository());
     registerFakeAuthBloc(FakeAuthRepository());

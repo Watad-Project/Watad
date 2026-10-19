@@ -31,6 +31,9 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
 - **Configuration lives in `.env`**, read with `flutter_dotenv`. After cloning, copy `.env.example` to `.env` and ask a maintainer for the values; the app does not build without it.
   - `.env` is git-ignored: never commit it.
   - `.env` is bundled into the app, so it holds only public values: the Supabase URL and the publishable (anon) key.
+- **The Google Maps key** (map screens) lives in two more git-ignored files, also from a maintainer:
+  - Android: `MAPS_API_KEY=…` in `android/local.properties`;
+  - iOS: copy `ios/Flutter/Secrets.xcconfig.example` to `ios/Flutter/Secrets.xcconfig` and set `MAPS_API_KEY`. Without it, opening a map crashes the app on iOS.
 - **Agents:** never run `flutter upgrade`, `flutter downgrade`, `flutter channel` or `flutter pub upgrade --major-versions`. If the SDK does not match, stop and tell the user.
 
 ## 4. Golden rules (never break these)
@@ -64,6 +67,7 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
   - RTL-safe layouts.
 - **Names carry the role:** `client_projects_bloc.dart`, `ClientProjectsBloc`.
 - **Components:** use one from `docs/APP_COMPONENTS.md`. If none fits, create it in `lib/core/components/` first and register it in the same change.
+- **Large and bold text:** every screen fits the phone's text at 200% with bold on, without overflowing. No fixed heights for text, `Expanded`/`Flexible` in rows, ellipsis or wrapping for long text, and one test per page at `textScale: largeTextScale, boldText: true` (`docs/APP_ARCHITECTURE.md` §10).
 - **Avatars:** a person's or a business's photo is always `AppAvatar`, which shows the default avatar when there's no photo. Never the striped `AppImagePlaceholder` for people or businesses (`docs/APP_ARCHITECTURE.md` §10).
 - **The keyboard closes by itself:** a tap outside the text field (empty space, a card, a button) or a drag on a list closes it, on every page, dialog and sheet. `AppKeyboardDismiss` does this once in `WatadApp`. Don't add your own: no `GestureDetector` that unfocuses, no `onTapOutside`, no `keyboardDismissBehavior` (`docs/APP_ARCHITECTURE.md` §10).
 - **Packages:** only from `docs/APP_PACKAGES.md`. A new one is registered in the same change.

@@ -30,6 +30,7 @@ Related files: [`AGENTS.md`](../AGENTS.md) (workflow and golden rules) · [`ARCH
 15. **Green before done:** format, analyze, test and the architecture check all pass (§18, `AGENTS.md`). A pull request that fails `dart run tool/check_architecture.dart` is rejected.
 16. **The keyboard closes by itself** on a tap outside the text field or a drag on a list, everywhere. It's done once in `WatadApp`; pages and fields add nothing for it (§10).
 17. **People and businesses show `AppAvatar`**, the default avatar when they have no photo; never the striped placeholder (§10).
+18. **Large and bold text never overflow.** Every screen works with the phone's text at 200% and bold on, and has a test that proves it (§10, §16).
 
 ---
 
@@ -704,6 +705,11 @@ final class ClientProjectsLoadFailure extends ClientProjectsState {
 - No hard-coded colors, text styles or magic sizes: use `Theme.of(context)` and the tokens in `lib/core/theme/`. The checker rejects `Color(0x…)` in features.
 - No hard-coded text: translation keys only (§14).
 - `StatefulWidget` only for local UI objects (text controllers, focus nodes, animations), and dispose them. Never use `setState` for data that comes from the backend.
+- **Large and bold text never overflow.** People raise the phone's text size (up to 200%) and turn on bold text, so every screen must still fit:
+  - Don't give text a fixed height. A box that holds text grows with it; when a list or grid needs a fixed size, compute it from the text size (e.g. `AppBusinessMiniCard.heightOf(context)`).
+  - In a `Row`, put text in `Expanded` or `Flexible`. Give single-line labels `maxLines: 1` and `overflow: TextOverflow.ellipsis` where cutting them is fine; let anything longer wrap.
+  - Long pages scroll. Chips and badges that may not fit on one line go in a `Wrap`.
+  - Each page's tests open it once with `textScale: largeTextScale, boldText: true` (`pumpLocalizedApp`, `pumpComponent` or `pumpAppRouter`) and expect `tester.takeException()` to be null.
 - **People and businesses show `AppAvatar`.** A user's or a business's photo is always an `AppAvatar`, which shows the default avatar when there is no photo or it can't load. MUST NOT use `AppImagePlaceholder` (the striped box) or an `AppNetworkImage` for a person or a business; those are for photos of things (projects, items, receipts).
 - **The keyboard closes by itself.** `AppKeyboardDismiss` sits around every page, dialog and sheet (in `WatadApp`): a tap anywhere outside the text field (empty space, a card, a button, which still gets pressed) or a drag on a list or scrolling page closes the keyboard. Moving from one text field to another keeps it up. So a page MUST NOT wrap itself in a `GestureDetector` or `Listener` that unfocuses, and MUST NOT set `onTapOutside` on a field or `keyboardDismissBehavior` on a scroll view, to add it or to turn it off. Calling `FocusScope.of(context).unfocus()` before sending a form is allowed but no longer needed.
 - Keep `build` small. Extract widget classes, not helper methods that return widgets. Use `const` wherever possible.
@@ -1234,6 +1240,7 @@ Icons that point in a direction (back, forward, chevrons) must flip in RTL. Chec
 - `test/` mirrors `lib/`. `lib/features/projects/client/datasource/models/client_project_model.dart` is tested in `test/features/projects/client/datasource/models/client_project_model_test.dart`.
 - MUST test every model's `fromJson` (with a realistic row from the view, including `null`s), every use case that has logic, and every bloc's success and failure paths.
 - MUST test every routes list (§11) and every component (`APP_COMPONENTS.md`). The checker fails when a model, bloc, cubit, routes list or component has no test file at its mirrored path, and when a test file mirrors no file in `lib/`. Shared test code goes in `test/helpers/`.
+- MUST open every page once at large, bold text (`textScale: largeTextScale, boldText: true`) and expect no exception: an overflow fails the test (§10).
 - Use hand-written fakes that implement the domain interfaces. Tests never call the real Supabase project. (`mocktail` and `bloc_test` are not in the registry; add and register them if the team wants them.)
 
 ```dart

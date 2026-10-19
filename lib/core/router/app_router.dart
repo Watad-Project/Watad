@@ -13,6 +13,7 @@ import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
 import 'package:watad/features/dashboard/contractor/presentation/contractor_dashboard_routes.dart';
+import 'package:watad/features/home/client/presentation/client_home_routes.dart';
 import 'package:watad/features/kyc/contractor/presentation/contractor_kyc_routes.dart';
 import 'package:watad/features/kyc/shared/presentation/kyc_routes.dart';
 import 'package:watad/features/location/shared/presentation/location_routes.dart';
@@ -55,6 +56,7 @@ GoRouter createAppRouter({
       ...adminNavigationRoutes,
       ...adminReviewRoutes,
       ...authRoutes,
+      ...clientHomeRoutes,
       ...clientNavigationRoutes,
       ...clientProjectsRoutes,
       ...contractorDashboardRoutes,
