@@ -51,6 +51,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
 | | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
+| | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
 | Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. `deed_storage_path`: the ownership deed in the private `project-deeds` bucket; must be inside the owner's folder (`projects_deed_path_in_owner_folder`). `deed_status`: `none → under_review → verified | rejected`, decided by `admin_set_project_deed_verification()`. |
 | | `project_offers` | insert/edit while `pending` | Decided by `accept_offer()`, `reject_offer()`, `withdraw_offer()`. |
 | | `project_tasks` | propose as taker | `status` only by `set_task_status()`. |
