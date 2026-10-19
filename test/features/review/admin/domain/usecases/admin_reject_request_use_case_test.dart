@@ -42,25 +42,36 @@ void main() {
     expect(repository.rejected, [('b-1', 'الختم غير ظاهر')]);
   });
 
-  for (final reason in ['الصورة غير واضحة', null]) {
-    test('refuses empty details (reason: $reason)', () async {
-      final result = await useCase(
-        AdminReviewRejection(businessId: 'b-1', reason: reason, details: '  '),
-      );
+  test('a listed reason needs no details', () async {
+    final result = await useCase(
+      const AdminReviewRejection(
+        businessId: 'b-1',
+        reason: 'المستند منتهي الصلاحية',
+        details: '',
+      ),
+    );
 
-      expect(
-        result,
-        isA<Failed<void>>().having(
-          (f) => f.failure,
-          'failure',
-          isA<ValidationFailure>().having(
-            (f) => f.messageKey,
-            'messageKey',
-            'common.reason_required',
-          ),
+    expect(result, isA<Success<void>>());
+    expect(repository.rejected, [('b-1', 'المستند منتهي الصلاحية')]);
+  });
+
+  test('«أخرى» without details is refused', () async {
+    final result = await useCase(
+      const AdminReviewRejection(businessId: 'b-1', details: '  '),
+    );
+
+    expect(
+      result,
+      isA<Failed<void>>().having(
+        (f) => f.failure,
+        'failure',
+        isA<ValidationFailure>().having(
+          (f) => f.messageKey,
+          'messageKey',
+          'common.reason_required',
         ),
-      );
-      expect(repository.rejected, isEmpty);
-    });
-  }
+      ),
+    );
+    expect(repository.rejected, isEmpty);
+  });
 }

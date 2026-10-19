@@ -1,5 +1,5 @@
-/// An admin's rejection of a license: the reason picked from the list and
-/// the details written for the contractor.
+/// An admin's rejection of a license: the reason picked from the list, or
+/// for «أخرى» the details the admin wrote for the contractor.
 class AdminReviewRejection {
   const AdminReviewRejection({
     required this.businessId,
@@ -12,5 +12,7 @@ class AdminReviewRejection {
   /// The reason as the admin saw it in the list. Null for «أخرى»: the
   /// details alone explain it.
   final String? reason;
+
+  /// Empty for a reason from the list.
   final String details;
 }
