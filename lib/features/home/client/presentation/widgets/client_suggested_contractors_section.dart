@@ -80,7 +80,7 @@ class ClientSuggestedContractorsSection extends StatelessWidget {
         );
       case ClientHomeStatus.success:
         return SizedBox(
-          height: ClientContractorCard.height,
+          height: ClientContractorCard.heightOf(context),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final width = (constraints.maxWidth - AppSpacing.sm) / 2;
@@ -109,9 +109,9 @@ class _ContractorsSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      height: ClientContractorCard.height,
-      child: AppShimmer(
+    return SizedBox(
+      height: ClientContractorCard.heightOf(context),
+      child: const AppShimmer(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

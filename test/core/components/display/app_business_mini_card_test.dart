@@ -65,4 +65,26 @@ void main() {
     expect(find.byIcon(Icons.person_rounded), findsOneWidget);
     expect(find.byType(AppImagePlaceholder), findsNothing);
   });
+
+  testWidgets('heightOf leaves room for large, bold text', (tester) async {
+    await pumpComponent(
+      tester,
+      Builder(
+        builder: (context) => SizedBox(
+          width: 180,
+          height: AppBusinessMiniCard.heightOf(context),
+          child: const AppBusinessMiniCard(
+            name: 'مؤسسة البناء المتين للمقاولات العامة',
+            ratingLabel: '٤٫٨',
+            projectsLabel: '٦٤ مشروعًا',
+            isVerified: true,
+          ),
+        ),
+      ),
+      textScale: largeTextScale,
+      boldText: true,
+    );
+
+    expect(tester.takeException(), isNull);
+  });
 }

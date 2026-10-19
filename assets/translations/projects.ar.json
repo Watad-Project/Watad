@@ -1,8 +1,5 @@
 {
   "client": {
-    "step_1": "الخطوة ١",
-    "choose_type_title": "ما نوع مشروعك؟",
-    "choose_type_subtitle": "يحدد النوع إن كان صك الملكية مطلوباً قبل النشر.",
     "project_type_label": "نوع المشروع",
     "project_type_placeholder": "اختر النوع",
     "type_new_house": "تأسيس منزل",
@@ -37,8 +34,6 @@
     "no_deed_banner_title": "لا حاجة لصك الملكية",
     "no_deed_banner_subtitle": "يُنشر المشروع مباشرة بعد المراجعة وتُفتح العروض.",
     "photos_label": "صور المشروع",
-    "next_deed_button": "التالي — توثيق الملكية",
-    "next_review_button": "التالي — المراجعة والنشر",
     "deed_title": "صك ملكية العقار أو الأرض",
     "deed_subtitle": "مطلوب لمشاريع التأسيس والترميم فقط. بعد اعتماده يصبح المشروع مرئياً للمقاولين وتُفتح العروض.",
     "deed_upload_label": "١ · لم يُرفع بعد — تصوير أو رفع الصك",

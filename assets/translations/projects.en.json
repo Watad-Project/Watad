@@ -1,8 +1,5 @@
 {
   "client": {
-    "step_1": "Step 1",
-    "choose_type_title": "What is your project type?",
-    "choose_type_subtitle": "The type determines whether a property deed is required before publishing.",
     "project_type_label": "Project type",
     "project_type_placeholder": "Select type",
     "type_new_house": "New home construction",
@@ -37,8 +34,6 @@
     "no_deed_banner_title": "No property deed required",
     "no_deed_banner_subtitle": "The project will be published directly after review and offers will open.",
     "photos_label": "Project photos",
-    "next_deed_button": "Next — Property Deed",
-    "next_review_button": "Next — Review & Publish",
     "deed_title": "Property or Land Ownership Deed",
     "deed_subtitle": "Required for construction and renovation projects only. Once approved, the project becomes visible to contractors and offers are opened.",
     "deed_upload_label": "1 · Not uploaded yet — Photograph or upload deed",

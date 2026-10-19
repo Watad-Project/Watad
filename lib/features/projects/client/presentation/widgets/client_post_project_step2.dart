@@ -252,7 +252,7 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppStepProgress(current: 2, total: state.totalSteps),
+          AppStepProgress(current: 1, total: state.totalSteps),
           const SizedBox(height: AppSpacing.lg),
           Text(
             context.tr('projects.client.details_title'),

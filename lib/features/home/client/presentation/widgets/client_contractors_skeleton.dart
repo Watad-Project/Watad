@@ -18,11 +18,11 @@ class ClientContractorsSkeleton extends StatelessWidget {
         padding: const EdgeInsetsDirectional.symmetric(
           horizontal: AppSpacing.md,
         ),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           mainAxisSpacing: AppSpacing.sm,
           crossAxisSpacing: AppSpacing.sm,
-          mainAxisExtent: ClientContractorCard.height,
+          mainAxisExtent: ClientContractorCard.heightOf(context),
         ),
         itemCount: _cards,
         itemBuilder: (_, _) => const ClientContractorCardSkeleton(),

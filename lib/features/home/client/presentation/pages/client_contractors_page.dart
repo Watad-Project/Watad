@@ -108,13 +108,12 @@ class ClientContractorsPage extends StatelessWidget {
                   ),
                   // Two cards per row.
                   sliver: SliverGrid.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: AppSpacing.sm,
-                          crossAxisSpacing: AppSpacing.sm,
-                          mainAxisExtent: ClientContractorCard.height,
-                        ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: AppSpacing.sm,
+                      crossAxisSpacing: AppSpacing.sm,
+                      mainAxisExtent: ClientContractorCard.heightOf(context),
+                    ),
                     itemCount: contractors.length,
                     itemBuilder: (context, index) =>
                         ClientContractorCard(contractor: contractors[index]),

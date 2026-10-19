@@ -12,8 +12,9 @@ class ClientContractorCard extends StatelessWidget {
 
   final ClientContractor contractor;
 
-  /// The card's height in a row or a grid.
-  static const double height = 160;
+  /// The card's height in a row or a grid, at the phone's text size.
+  static double heightOf(BuildContext context) =>
+      AppBusinessMiniCard.heightOf(context);
 
   @override
   Widget build(BuildContext context) {

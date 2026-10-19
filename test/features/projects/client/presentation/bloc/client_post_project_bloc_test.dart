@@ -19,12 +19,11 @@ void main() {
       expect(bloc.state.currentStep, 1);
       expect(bloc.state.projectType, isNull);
       expect(bloc.state.status, ClientPostProjectStatus.initial);
-      expect(bloc.state.canProceedFromStep1, isFalse);
-      expect(bloc.state.canProceedFromStep2, isFalse);
+      expect(bloc.state.canProceedFromDetails, isFalse);
       bloc.close();
     });
 
-    test('selects newHouse type with deed required and 4 steps', () async {
+    test('selects newHouse type with deed required and 3 steps', () async {
       final bloc = ClientPostProjectBloc();
 
       bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse));
@@ -34,8 +33,7 @@ void main() {
           predicate<ClientPostProjectState>((s) {
             return s.projectType == ClientProjectType.newHouse &&
                 s.requiresDeed == true &&
-                s.totalSteps == 4 &&
-                s.canProceedFromStep1 == true;
+                s.totalSteps == 3;
           }),
         ),
       );
@@ -43,7 +41,7 @@ void main() {
       await bloc.close();
     });
 
-    test('selects repairs type without deed and 3 steps', () async {
+    test('selects repairs type without deed and 2 steps', () async {
       final bloc = ClientPostProjectBloc();
 
       bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.repairs));
@@ -53,8 +51,7 @@ void main() {
           predicate<ClientPostProjectState>((s) {
             return s.projectType == ClientProjectType.repairs &&
                 s.requiresDeed == false &&
-                s.totalSteps == 3 &&
-                s.canProceedFromStep1 == true;
+                s.totalSteps == 2;
           }),
         ),
       );
@@ -81,7 +78,7 @@ void main() {
                 s.maxBudget == Money.fromSar(100000) &&
                 s.locationAddress == 'Riyadh Al-Morouj' &&
                 s.photos.length == 1 &&
-                s.canProceedFromStep2 == true &&
+                s.canProceedFromDetails == true &&
                 s.isBudgetValid == true;
           }),
         ),
@@ -106,7 +103,7 @@ void main() {
         bloc.stream,
         emitsThrough(
           predicate<ClientPostProjectState>((s) {
-            return s.isBudgetValid == false && s.canProceedFromStep2 == false;
+            return s.isBudgetValid == false && s.canProceedFromDetails == false;
           }),
         ),
       );
@@ -140,7 +137,7 @@ void main() {
 
       bloc.add(const ClientPostProjectTypeSelected(ClientProjectType.newHouse));
       expect(bloc.state.deedStatus, ClientDeedVerificationStatus.none);
-      expect(bloc.state.canProceedFromStep3, isFalse);
+      expect(bloc.state.canProceedFromDeed, isFalse);
 
       bloc.add(
         const ClientPostProjectDeedSelected(
@@ -156,7 +153,7 @@ void main() {
             return s.deedFilePath == 'path/to/deed.pdf' &&
                 s.deedFileName == 'my_deed.pdf' &&
                 s.deedStatus == ClientDeedVerificationStatus.none &&
-                s.canProceedFromStep3 == true;
+                s.canProceedFromDeed == true;
           }),
         ),
       );
@@ -187,7 +184,7 @@ void main() {
         emits(
           predicate<ClientPostProjectState>((s) {
             return s.deedStatus == ClientDeedVerificationStatus.verified &&
-                s.canProceedFromStep3 == true;
+                s.canProceedFromDeed == true;
           }),
         ),
       );
@@ -219,7 +216,7 @@ void main() {
                 s.deedFileName == null &&
                 s.deedStatus == ClientDeedVerificationStatus.none &&
                 s.deedRejectionReason == null &&
-                s.canProceedFromStep3 == false;
+                s.canProceedFromDeed == false;
           }),
         ),
       );
@@ -235,14 +232,13 @@ void main() {
       bloc.add(ClientPostProjectMinBudgetChanged(Money.fromSar(500)));
       bloc.add(ClientPostProjectMaxBudgetChanged(Money.fromSar(1500)));
       bloc.add(const ClientPostProjectLocationChanged('Riyadh'));
-      bloc.add(const ClientPostProjectStepAdvanced()); // step 2
-      bloc.add(const ClientPostProjectStepAdvanced()); // step 3 (review)
+      bloc.add(const ClientPostProjectStepAdvanced()); // step 2 (review)
 
       await expectLater(
         bloc.stream,
         emitsThrough(
           predicate<ClientPostProjectState>((s) {
-            return s.currentStep == 3 &&
+            return s.currentStep == 2 &&
                 s.isReviewStep == true &&
                 s.canPublish == true;
           }),

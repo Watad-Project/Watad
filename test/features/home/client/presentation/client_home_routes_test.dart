@@ -15,6 +15,7 @@ import 'package:watad/features/home/client/presentation/pages/client_home_page.d
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_home_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
+import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
 
 void main() {
@@ -163,5 +164,34 @@ void main() {
     // The button shows how many filters are on.
     expect(find.text('٣'), findsOneWidget);
     expect(find.text('لا يوجد مقاولون يطابقون البحث'), findsOneWidget);
+  });
+
+  testWidgets('home and every contractor fit large, bold text', (tester) async {
+    repository
+      ..contractorsPageResult = const Success([
+        ClientContractor(
+          id: 'c-1',
+          companyName: 'مؤسسة البناء المتين للمقاولات العامة',
+          ratingAvg: 4.8,
+          ratingCount: 12,
+          completedProjectCount: 64,
+        ),
+      ])
+      ..citiesResult = const Success(['المدينة المنورة', 'جدة']);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+      textScale: largeTextScale,
+      boldText: true,
+    );
+    router.goNamed(ClientHomeRoutes.homeName);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    router.goNamed(ClientHomeRoutes.contractorsName);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('تصفية النتائج'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
 }
