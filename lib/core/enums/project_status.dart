@@ -8,8 +8,10 @@ enum ProjectStatus {
 
   const ProjectStatus(this.value);
 
+  /// The exact value stored in Postgres.
   final String value;
 
+  /// Throws on an unknown value: never guess a status.
   static ProjectStatus fromJson(String value) =>
       values.firstWhere((status) => status.value == value);
 

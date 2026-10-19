@@ -1,0 +1,23 @@
+{
+  "address_name_hint": "e.g. Home, Office",
+  "address_name_label": "Address Name",
+  "address_section_subtitle": "Autofilled from the map",
+  "address_section_title": "Address",
+  "building_number_label": "Building Number",
+  "city_label": "City",
+  "confirm_location": "Confirm Location",
+  "current_location": "My Location",
+  "district_label": "District",
+  "page_title": "Set Location",
+  "postal_code_label": "Postal Code",
+  "save_to_my_addresses": "Save to my addresses",
+  "search_hint": "Search district or street",
+  "street_label": "Street",
+  "mock_current_city": "Riyadh",
+  "mock_current_district": "An Narjis",
+  "mock_current_street": "Anas Ibn Malik Rd",
+  "mock_current_building": "4210",
+  "mock_current_postal_code": "13324",
+  "additional_number_label": "Additional Number",
+  "short_address_label": "Short National Address"
+}

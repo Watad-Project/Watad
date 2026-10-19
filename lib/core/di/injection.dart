@@ -5,8 +5,10 @@ import 'package:watad/features/auth/shared/auth_injection.dart';
 import 'package:watad/features/dashboard/contractor/contractor_dashboard_injection.dart';
 import 'package:watad/features/kyc/contractor/contractor_kyc_injection.dart';
 import 'package:watad/features/kyc/shared/kyc_injection.dart';
+import 'package:watad/features/location/shared/location_injection.dart';
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
+import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
 
@@ -26,10 +28,12 @@ void configureDependencies() {
   // Features: one line per role folder, in alphabetical order.
   registerAdminReviewDependencies(getIt);
   registerAuthDependencies(getIt);
+  registerClientProjectsDependencies(getIt);
   registerContractorDashboardDependencies(getIt);
   registerContractorKycDependencies(getIt);
   registerContractorOnboardingDependencies(getIt);
   registerKycDependencies(getIt);
+  registerLocationDependencies(getIt);
   registerOnboardingDependencies(getIt);
   registerSplashDependencies(getIt);
 }
