@@ -1,0 +1,23 @@
+{
+  "address_name_hint": "مثال: المنزل، المكتب",
+  "address_name_label": "اسم العنوان",
+  "address_section_subtitle": "يُعبأ تلقائياً من الخريطة",
+  "address_section_title": "العنوان",
+  "building_number_label": "رقم المبنى",
+  "city_label": "المدينة",
+  "confirm_location": "تأكيد الموقع",
+  "current_location": "موقعي الحالي",
+  "district_label": "الحي",
+  "page_title": "تحديد الموقع",
+  "postal_code_label": "الرمز البريدي",
+  "save_to_my_addresses": "حفظ في عناويني",
+  "search_hint": "ابحث عن حي أو شارع",
+  "street_label": "الشارع",
+  "mock_current_city": "الرياض",
+  "mock_current_district": "حي النرجس",
+  "mock_current_street": "طريق أنس بن مالك",
+  "mock_current_building": "4210",
+  "mock_current_postal_code": "13324",
+  "additional_number_label": "الرقم الإضافي",
+  "short_address_label": "العنوان الوطني المختصر"
+}
