@@ -1,5 +1,7 @@
--- 61_project_photos_and_deeds
+-- 63_project_photos_and_deeds
 -- Storage and database support for project photos, ownership deeds, and verification lifecycle (GRA-18, GRA-21, GRA-22, GRA-30).
+-- Numbered 63: version 20261019160000 was already recorded for 61_contractors_directory,
+-- and 62 is v_contractors_read_only. The project-deeds bucket and its policies are migration 60.
 
 -- 1. Add deed, photo storage paths, and deed verification status columns to public.projects
 alter table public.projects
@@ -9,6 +11,13 @@ alter table public.projects
   add column if not exists deed_rejection_reason text,
   add column if not exists deed_reviewed_at timestamptz,
   add column if not exists deed_reviewed_by uuid references public.users (id);
+
+-- Deeds uploaded before this migration wait for an admin's review.
+update public.projects
+   set deed_status = 'under_review'
+ where deed_storage_path is not null
+   and btrim(deed_storage_path) <> ''
+   and deed_status = 'none';
 
 -- 2. Allow direct INSERT/UPDATE from client for deed_storage_path and photo_paths (ARCHITECTURE.md §3a)
 -- Note: deed_status and deed_rejection_reason are locked and changed only by trigger / admin RPC.
