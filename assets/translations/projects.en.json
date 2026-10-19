@@ -1,0 +1,31 @@
+{
+  "tab": "My projects",
+  "title": "My projects",
+  "status_draft": "Under review",
+  "status_open": "Verified",
+  "status_in_progress": "In progress",
+  "status_completed": "Completed",
+  "status_cancelled": "Cancelled",
+  "no_budget": "No declared budget",
+  "offers_count": {
+    "zero": "No offers yet",
+    "one": "{} offer",
+    "two": "{} offers",
+    "few": "{} offers",
+    "many": "{} offers",
+    "other": "{} offers"
+  },
+  "no_offers_yet": "No offers yet",
+  "empty": "You haven't posted a project yet",
+  "declared_budget": "Declared budget {}",
+  "no_offers": "No offers on this project yet",
+  "accept_offer": "Accept offer",
+  "message_contractor": "Message",
+  "accept_title": "Accept this offer?",
+  "accept_message": "The project starts with {} for {}, and the other offers are rejected.",
+  "offer_accepted": "Offer accepted; the project has started",
+  "offer_pending": "Waiting for your answer",
+  "offer_accepted_status": "Accepted",
+  "offer_rejected": "Rejected",
+  "offer_withdrawn": "Withdrawn by the contractor"
+}

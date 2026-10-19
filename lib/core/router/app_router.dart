@@ -21,6 +21,7 @@ import 'package:watad/features/navigation/client/presentation/client_navigation_
 import 'package:watad/features/navigation/contractor/presentation/contractor_navigation_routes.dart';
 import 'package:watad/features/onboarding/contractor/presentation/contractor_onboarding_routes.dart';
 import 'package:watad/features/onboarding/shared/presentation/onboarding_routes.dart';
+import 'package:watad/features/projects/client/presentation/client_projects_routes.dart';
 import 'package:watad/features/review/admin/presentation/admin_review_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
@@ -55,6 +56,7 @@ GoRouter createAppRouter({
       ...authRoutes,
       ...clientHomeRoutes,
       ...clientNavigationRoutes,
+      ...clientProjectsRoutes,
       ...contractorDashboardRoutes,
       ...contractorKycRoutes,
       ...contractorNavigationRoutes,

@@ -9,6 +9,7 @@ import 'package:watad/features/navigation/shared/presentation/widgets/navigation
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_home_repository.dart';
+import '../../../../helpers/fake_client_projects_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -16,6 +17,7 @@ void main() {
   setUp(() {
     // The client's navigation opens on its «الرئيسية» tab.
     registerFakeClientHome();
+    registerFakeClientProjects();
     // A tab's feature adds its register…Dependencies(getIt) call here when
     // it sets its tab's routeName (ClientNavigationPage.tabs).
     //
