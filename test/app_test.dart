@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/app.dart';
+import 'package:watad/core/components/layout/app_keyboard_dismiss.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/supabase/app_session.dart';
@@ -38,5 +39,13 @@ void main() {
     expect(page.locale, AppLocalization.arabic);
     expect(Directionality.of(page), TextDirection.rtl);
     expect(find.byType(SplashPage), findsOneWidget);
+    // The keyboard closes the same way on every page.
+    expect(
+      find.ancestor(
+        of: find.byType(SplashPage),
+        matching: find.byType(AppKeyboardDismiss),
+      ),
+      findsOneWidget,
+    );
   });
 }

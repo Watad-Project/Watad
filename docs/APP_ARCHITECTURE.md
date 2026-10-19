@@ -28,6 +28,7 @@ Related files: [`AGENTS.md`](../AGENTS.md) (workflow and golden rules) · [`ARCH
 13. **Packages from the registry only.** A new package is added to `APP_PACKAGES.md` in the same change (§15).
 14. **Names carry the role:** files in `client/` start with `client_`, public types with `Client` (§7).
 15. **Green before done:** format, analyze, test and the architecture check all pass (§18, `AGENTS.md`). A pull request that fails `dart run tool/check_architecture.dart` is rejected.
+16. **The keyboard closes by itself** on a tap outside the text field or a drag on a list, everywhere. It's done once in `WatadApp`; pages and fields add nothing for it (§10).
 
 ---
 
@@ -702,6 +703,7 @@ final class ClientProjectsLoadFailure extends ClientProjectsState {
 - No hard-coded colors, text styles or magic sizes: use `Theme.of(context)` and the tokens in `lib/core/theme/`. The checker rejects `Color(0x…)` in features.
 - No hard-coded text: translation keys only (§14).
 - `StatefulWidget` only for local UI objects (text controllers, focus nodes, animations), and dispose them. Never use `setState` for data that comes from the backend.
+- **The keyboard closes by itself.** `AppKeyboardDismiss` sits around every page, dialog and sheet (in `WatadApp`): a tap anywhere outside the text field (empty space, a card, a button, which still gets pressed) or a drag on a list or scrolling page closes the keyboard. Moving from one text field to another keeps it up. So a page MUST NOT wrap itself in a `GestureDetector` or `Listener` that unfocuses, and MUST NOT set `onTapOutside` on a field or `keyboardDismissBehavior` on a scroll view, to add it or to turn it off. Calling `FocusScope.of(context).unfocus()` before sending a form is allowed but no longer needed.
 - Keep `build` small. Extract widget classes, not helper methods that return widgets. Use `const` wherever possible.
 - A widget in `widgets/` is used only inside its role folder. If the same feature's other roles need it, move it to the feature's `shared/presentation/widgets/`. If other features need it, make it a component (§15).
 

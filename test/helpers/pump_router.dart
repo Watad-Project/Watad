@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart' show DefaultCupertinoLocalizations;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:watad/core/components/layout/app_keyboard_dismiss.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/app_router.dart';
 import 'package:watad/core/supabase/app_session.dart';
@@ -41,6 +42,8 @@ Future<GoRouter> pumpAppRouter(
           ],
           supportedLocales: context.supportedLocales,
           locale: context.locale,
+          builder: (context, child) =>
+              AppKeyboardDismiss(child: child ?? const SizedBox.shrink()),
         ),
       ),
     ),
