@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_card.dart';
+import 'package:watad/core/components/display/app_network_image.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
 import 'package:watad/core/enums/offer_status.dart';
 import 'package:watad/core/theme/app_colors.dart';
@@ -21,6 +22,25 @@ class ContractorOpenProjectCard extends StatelessWidget {
   final ContractorOpenProject project;
   final VoidCallback? onSubmitOfferTap;
   final VoidCallback? onPendingOfferTap;
+
+  (String, AppTone) _offerStatusMeta(OfferStatus status) => switch (status) {
+    OfferStatus.pending => (
+      'work.contractor.offer_status_pending',
+      AppTone.attention,
+    ),
+    OfferStatus.accepted => (
+      'work.contractor.offer_status_accepted',
+      AppTone.success,
+    ),
+    OfferStatus.rejected => (
+      'work.contractor.offer_status_rejected',
+      AppTone.danger,
+    ),
+    OfferStatus.withdrawn => (
+      'work.contractor.offer_status_withdrawn',
+      AppTone.neutral,
+    ),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -51,69 +71,135 @@ class ContractorOpenProjectCard extends StatelessWidget {
         ? (onPendingOfferTap ?? onSubmitOfferTap)
         : onSubmitOfferTap;
 
+    final imageUrl = project.imageUrl?.trim();
+    final hasImage = imageUrl != null && imageUrl.isNotEmpty;
+
+    final statusMeta = project.hasMyOffer
+        ? _offerStatusMeta(project.myOfferStatus ?? OfferStatus.pending)
+        : null;
+
     return AppCard(
       onTap: cardTap,
-      padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+      padding: EdgeInsets.zero,
+      color: AppColors.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            project.title,
-            style: AppTextStyles.h2,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.location_on_outlined,
-                size: 16,
-                color: AppColors.textSecondary,
+              SizedBox(
+                height: 96,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (hasImage)
+                      AppNetworkImage(url: imageUrl, fit: BoxFit.cover)
+                    else
+                      Container(
+                        color: AppColors.primarySoft,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.home_work_rounded,
+                          size: 36,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    if (statusMeta case (final statusKey, final tone))
+                      PositionedDirectional(
+                        top: AppSpacing.xs,
+                        start: AppSpacing.xs,
+                        child: AppStatusBadge(
+                          label: context.tr(statusKey),
+                          tone: tone,
+                          onImage: true,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-              const SizedBox(width: AppSpacing.xxs),
-              Expanded(
-                child: Text(
-                  locationText,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                  AppSpacing.xs,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      project.title,
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_outlined,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: AppSpacing.xxs),
+                        Expanded(
+                          child: Text(
+                            locationText,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      budgetText,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      offerCountText,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Text(
-                  budgetText,
-                  style: AppTextStyles.label.copyWith(color: AppColors.ink),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                offerCountText,
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          if (project.hasMyOffer)
-            _SubmittedOfferBanner(project: project, currency: currency)
-          else
-            AppButton(
-              label: context.tr('work.contractor.submit_offer'),
-              onPressed: onSubmitOfferTap,
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpacing.sm,
+              0,
+              AppSpacing.sm,
+              AppSpacing.sm,
             ),
+            child: project.hasMyOffer
+                ? _SubmittedOfferBanner(project: project, currency: currency)
+                : AppButton(
+                    label: context.tr('work.contractor.submit_offer'),
+                    onPressed: onSubmitOfferTap,
+                  ),
+          ),
         ],
       ),
     );
@@ -139,30 +225,10 @@ class _SubmittedOfferBanner extends StatelessWidget {
           )
         : context.tr('work.contractor.your_offer_no_amount');
 
-    final status = project.myOfferStatus ?? OfferStatus.pending;
-    final (statusKey, tone) = switch (status) {
-      OfferStatus.pending => (
-        'work.contractor.offer_status_pending',
-        AppTone.attention,
-      ),
-      OfferStatus.accepted => (
-        'work.contractor.offer_status_accepted',
-        AppTone.success,
-      ),
-      OfferStatus.rejected => (
-        'work.contractor.offer_status_rejected',
-        AppTone.danger,
-      ),
-      OfferStatus.withdrawn => (
-        'work.contractor.offer_status_withdrawn',
-        AppTone.neutral,
-      ),
-    };
-
     return Container(
       padding: const EdgeInsetsDirectional.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
       ),
       decoration: const BoxDecoration(
         color: AppColors.surfaceMuted,
@@ -173,18 +239,19 @@ class _SubmittedOfferBanner extends StatelessWidget {
           Expanded(
             child: Text(
               offerLabel,
-              style: AppTextStyles.label.copyWith(color: AppColors.ink),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.ink,
+                fontWeight: FontWeight.w700,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          AppStatusBadge(label: context.tr(statusKey), tone: tone),
           if (project.isMyOfferPending) ...[
-            const SizedBox(width: AppSpacing.xs),
+            const SizedBox(width: AppSpacing.xxs),
             const Icon(
               Icons.chevron_right,
-              size: 18,
+              size: 16,
               color: AppColors.textSecondary,
             ),
           ],

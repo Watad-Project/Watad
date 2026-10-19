@@ -23,3 +23,19 @@ final class ContractorWorkContractFilterChanged extends ContractorWorkEvent {
 
   final int filterIndex;
 }
+
+final class ContractorWorkSearchQueryChanged extends ContractorWorkEvent {
+  const ContractorWorkSearchQueryChanged(this.searchQuery);
+
+  final String searchQuery;
+}
+
+final class ContractorWorkFilterUpdated extends ContractorWorkEvent {
+  const ContractorWorkFilterUpdated(this.filter);
+
+  final ContractorWorkFilter filter;
+}
+
+final class ContractorWorkFilterReset extends ContractorWorkEvent {
+  const ContractorWorkFilterReset();
+}

@@ -5,6 +5,7 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_contract_project.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_open_project.dart';
+import 'package:watad/features/work/contractor/domain/entities/contractor_work_filter.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_work_overview.dart';
 import 'package:watad/features/work/contractor/domain/usecases/contractor_get_work_overview_use_case.dart';
 import 'package:watad/features/work/contractor/presentation/bloc/contractor_work_bloc.dart';
@@ -51,6 +52,15 @@ void main() {
         ownerName: 'عبدالله السالم',
         offerCount: 5,
       ),
+      ContractorOpenProject(
+        id: 'proj-2',
+        title: 'إصلاح تسريب خزان',
+        description: 'عزل مائي.',
+        city: 'جدة',
+        createdAt: DateTime.utc(2026, 10, 19),
+        ownerName: 'سالم الحربي',
+        offerCount: 0,
+      ),
     ],
     contracts: [inProgressContract, completedContract],
   );
@@ -86,7 +96,7 @@ void main() {
         expect(states[0], isA<ContractorWorkLoadInProgress>());
         expect(states[1], isA<ContractorWorkLoadSuccess>());
         final success = states[1] as ContractorWorkLoadSuccess;
-        expect(success.overview.opportunitiesCount, 1);
+        expect(success.overview.opportunitiesCount, 2);
         expect(success.overview.contractsCount, 2);
         expect(success.selectedTabIndex, 0);
         expect(success.selectedContractFilterIndex, 0);
@@ -117,7 +127,7 @@ void main() {
       },
     );
 
-    test('updates selectedTabIndex and selectedContractFilterIndex and preserves both on refresh', () async {
+    test('updates selectedTabIndex, selectedContractFilterIndex, searchQuery, and filter', () async {
       final bloc = ContractorWorkBloc(
         ContractorGetWorkOverviewUseCase(
           FakeContractorWorkRepository(result: Success(sampleOverview)),
@@ -129,6 +139,16 @@ void main() {
         ..add(const ContractorWorkStarted())
         ..add(const ContractorWorkTabChanged(1))
         ..add(const ContractorWorkContractFilterChanged(1))
+        ..add(const ContractorWorkSearchQueryChanged('خزان'))
+        ..add(
+          const ContractorWorkFilterUpdated(
+            ContractorWorkFilter(
+              searchQuery: 'خزان',
+              projectType: ContractorWorkType.repairs,
+              zeroOffersOnly: true,
+            ),
+          ),
+        )
         ..add(const ContractorWorkRefreshed());
       await Future<void>.delayed(Duration.zero);
 
@@ -137,6 +157,17 @@ void main() {
       expect(success.selectedTabIndex, 1);
       expect(success.selectedContractFilterIndex, 1);
       expect(success.filteredContracts.single.id, 'contract-2');
+      expect(success.filter.searchQuery, 'خزان');
+      expect(success.filter.projectType, ContractorWorkType.repairs);
+      expect(success.filter.zeroOffersOnly, isTrue);
+      expect(success.overview.openProjects.single.id, 'proj-2');
+
+      bloc.add(const ContractorWorkFilterReset());
+      await Future<void>.delayed(Duration.zero);
+
+      final resetState = bloc.state as ContractorWorkLoadSuccess;
+      expect(resetState.filter.hasActiveFilters, isFalse);
+      expect(resetState.overview.openProjects, hasLength(2));
     });
   });
 }

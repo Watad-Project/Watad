@@ -6,6 +6,7 @@ import 'package:watad/core/router/routes/contractor_work_routes.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_bid_details.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_contract_project.dart';
+import 'package:watad/features/work/contractor/domain/entities/contractor_work_filter.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_work_overview.dart';
 import 'package:watad/features/work/contractor/domain/repositories/contractor_work_repository.dart';
 import 'package:watad/features/work/contractor/domain/usecases/contractor_edit_offer_use_case.dart';
@@ -42,7 +43,9 @@ class FakeContractorWorkRepository implements ContractorWorkRepository {
   final Result<void> withdrawOfferResult;
 
   @override
-  Future<Result<ContractorWorkOverview>> getWorkOverview() async => result;
+  Future<Result<ContractorWorkOverview>> getWorkOverview({
+    ContractorWorkFilter filter = const ContractorWorkFilter(),
+  }) async => result;
 
   @override
   Future<Result<List<ContractorContractProject>>> getMyContracts() async =>

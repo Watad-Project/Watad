@@ -21,12 +21,14 @@ import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_bid_details.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_contract_project.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_open_project.dart';
+import 'package:watad/features/work/contractor/domain/entities/contractor_work_filter.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_work_overview.dart';
 import 'package:watad/features/work/contractor/domain/usecases/contractor_get_work_overview_use_case.dart';
 import 'package:watad/features/work/contractor/presentation/bloc/contractor_work_bloc.dart';
 import 'package:watad/features/work/contractor/presentation/pages/contractor_bid_page.dart';
 import 'package:watad/features/work/contractor/presentation/pages/contractor_work_page.dart';
 import 'package:watad/features/work/contractor/presentation/widgets/contractor_open_project_card.dart';
+import 'package:watad/features/work/contractor/presentation/widgets/contractor_work_filter_sheet.dart';
 
 import '../../../../../helpers/fake_contractor_work_repository.dart';
 import '../../../../../helpers/fake_splash_repository.dart';
@@ -39,7 +41,9 @@ class _AsyncWorkRepository extends FakeContractorWorkRepository {
   final Completer<Result<ContractorWorkOverview>> _completer;
 
   @override
-  Future<Result<ContractorWorkOverview>> getWorkOverview() => _completer.future;
+  Future<Result<ContractorWorkOverview>> getWorkOverview({
+    ContractorWorkFilter filter = const ContractorWorkFilter(),
+  }) => _completer.future;
 }
 
 class _MutableWorkRepository extends FakeContractorWorkRepository {
@@ -48,8 +52,9 @@ class _MutableWorkRepository extends FakeContractorWorkRepository {
   Result<ContractorWorkOverview> currentResult;
 
   @override
-  Future<Result<ContractorWorkOverview>> getWorkOverview() async =>
-      currentResult;
+  Future<Result<ContractorWorkOverview>> getWorkOverview({
+    ContractorWorkFilter filter = const ContractorWorkFilter(),
+  }) async => currentResult;
 }
 
 void main() {
@@ -179,7 +184,7 @@ void main() {
   });
 
   testWidgets(
-    'displays segmented tabs, open project cards, and My Contracts with AppFilterChips and AppProjectCard',
+    'displays segmented tabs, search & filter controls, open project cards, and My Contracts with AppFilterChips and AppProjectCard',
     (tester) async {
       final repository = _MutableWorkRepository(Success(sampleOverview));
       getIt.registerFactory(
@@ -196,6 +201,12 @@ void main() {
       expect(find.text('فرص جديدة 2'), findsOneWidget);
       expect(find.text('عقودي 3'), findsOneWidget);
 
+      // Quick project type filter chips
+      expect(find.text('الكل'), findsOneWidget);
+      expect(find.text('تأسيس'), findsOneWidget);
+      expect(find.text('ترميم'), findsOneWidget);
+      expect(find.text('إصلاحات'), findsOneWidget);
+
       // Hint under the switch
       expect(
         find.text(
@@ -204,8 +215,10 @@ void main() {
         findsOneWidget,
       );
 
-      // Project 1 (no offer submitted yet)
+      // 2-column GridView and Project 1 (no offer submitted yet)
+      expect(find.byType(GridView), findsOneWidget);
       expect(find.byType(ContractorOpenProjectCard), findsNWidgets(2));
+      expect(find.byIcon(Icons.home_work_rounded), findsNWidgets(2));
       expect(find.text('تأسيس فيلا سكنية دورين'), findsOneWidget);
       expect(find.text('الرياض · حي الياسمين'), findsOneWidget);
       expect(find.text('الميزانية: 450000.0 ر.س'), findsOneWidget);
@@ -220,6 +233,35 @@ void main() {
       expect(find.text('عرضك 7800.0 ر.س'), findsOneWidget);
       expect(find.byType(AppStatusBadge), findsOneWidget);
       expect(find.text('قيد الانتظار'), findsOneWidget);
+
+      // Quick filter by "إصلاحات"
+      await tester.tap(find.text('إصلاحات'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ContractorOpenProjectCard), findsOneWidget);
+      expect(find.text('إصلاح تسريبات خزان أرضي'), findsOneWidget);
+
+      // Reset quick filter to "الكل"
+      await tester.tap(find.text('الكل'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ContractorOpenProjectCard), findsNWidgets(2));
+
+      // Open the filter bottom sheet via the tune icon button
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+      expect(find.byType(ContractorWorkFilterSheet), findsOneWidget);
+      expect(find.text('تصفية وترتيب الفرص'), findsOneWidget);
+      expect(find.text('نوع العمل'), findsNothing);
+      expect(find.text('الموقع'), findsOneWidget);
+      expect(find.text('الميزانية: الحد الأدنى (ر.س)'), findsOneWidget);
+      expect(find.text('المسافة والترتيب'), findsOneWidget);
+      expect(
+        find.text('المنافسة: مشاريع بدون عروض فقط (0 عروض)'),
+        findsOneWidget,
+      );
+
+      // Close filter sheet via Apply
+      await tester.tap(find.text('تطبيق الفلترة'));
+      await tester.pumpAndSettle();
 
       // Switch to "عقودي" tab
       await tester.tap(find.text('عقودي 3'));
