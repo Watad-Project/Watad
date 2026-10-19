@@ -127,13 +127,14 @@ void main() {
 
   testWidgets('Arabic plurals use all six forms', (tester) async {
     final context = await contextIn(tester, AppLocalization.arabic);
-    String ratings(int n) => context.plural(
-      'home.ratings_count',
+    String projects(int n) => context.plural(
+      'home.projects_count',
       n,
       args: [context.formatNumber(n)],
     );
-    expect(ratings(3), '٣ تقييمات');
-    expect(ratings(64), '٦٤ تقييمًا');
-    expect(ratings(100), '١٠٠ تقييم');
+    expect(projects(0), 'لا مشاريع بعد');
+    expect(projects(3), '٣ مشاريع');
+    expect(projects(64), '٦٤ مشروعًا');
+    expect(projects(100), '١٠٠ مشروع');
   });
 }
