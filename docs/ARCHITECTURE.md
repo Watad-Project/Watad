@@ -47,7 +47,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | Domain | Table | Access | Notes |
 |--------|-------|--------|-------|
 | Identity | `users` | update `full_name`, `avatar_path` only | `role` locked. Anonymised, never deleted. |
-| | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. |
+| | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. `city`: where the business works, set by the contractor from the location picker. |
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
 | | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
@@ -74,7 +74,7 @@ Writes are limited twice: by RLS (which rows) and by column-level grants (which 
 | Table | INSERT columns | UPDATE columns | DELETE |
 |-------|----------------|----------------|--------|
 | `users` | none (trigger creates it) | `full_name`, `avatar_path` | no |
-| `businesses` | `company_name`, `cr_number`, `specialized_field` | same three | no |
+| `businesses` | `company_name`, `cr_number`, `specialized_field`, `city` | same four | no |
 | `business_documents` | `document_type`, `storage_path` | none | no |
 | `addresses` | `name`, `city`, `district`, `street`, `building_number`, `postal_code` | same six | yes |
 | `projects` | `title`, `description`, `budget`, `city`, `district`, `address_id`, `status`, `deed_storage_path` | `title`, `description`, `budget`, `city`, `district`, `address_id`, `deed_storage_path` | yes |
@@ -152,13 +152,15 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Domain | Views |
 |--------|-------|
 | Profile | `v_my_profile`, `v_public_profiles`, `v_my_addresses`, `v_my_identity` |
-| Business | `v_business_documents`, `v_admin_verification_queue` |
+| Business | `v_business_documents`, `v_admin_verification_queue`, `v_contractors` |
 | Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_reports`, `v_project_payments`, `v_bank_transfers` |
 | Marketplace | `v_marketplace_items`, `v_my_orders`, `v_order_items` |
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
+
+`v_contractors` is the client's directory of verified contractors (migration 61): city, rating, `completed_project_count`, and `is_in_my_city` (the contractor's city is the city of the caller's latest saved address). Order by `is_in_my_city` first to show the client's city first.
 
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens.
 
@@ -222,7 +224,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Applied migrations are numbered in order (`00_setup` … `60_protect_project_deeds`; the next is `61_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
+- Applied migrations are numbered in order (`00_setup` … `61_contractors_directory`; the next is `62_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
 
