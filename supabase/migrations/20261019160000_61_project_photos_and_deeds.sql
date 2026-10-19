@@ -1,4 +1,4 @@
--- 60_project_photos_and_deeds
+-- 61_project_photos_and_deeds
 -- Storage and database support for project photos, ownership deeds, and verification lifecycle (GRA-18, GRA-21, GRA-22, GRA-30).
 
 -- 1. Add deed, photo storage paths, and deed verification status columns to public.projects
@@ -97,31 +97,3 @@ $$;
 revoke all on function public.admin_set_project_deed_verification(uuid, text, text) from public, anon;
 grant execute on function public.admin_set_project_deed_verification(uuid, text, text) to authenticated;
 
--- 5. Storage bucket for ownership deeds (private bucket, sensitive legal data)
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values (
-  'project-deeds',
-  'project-deeds',
-  false,
-  10485760, -- 10MB limit
-  array['application/pdf', 'image/jpeg', 'image/png']
-)
-on conflict (id) do nothing;
-
--- RLS: Only file owner (folder = user_id) or admin can read deed files
-create policy "Users can upload their own deed documents"
-  on storage.objects for insert to authenticated
-  with check (
-    bucket_id = 'project-deeds'
-    and (storage.foldername(name))[1] = (select auth.uid())::text
-  );
-
-create policy "Users can read their own deed documents"
-  on storage.objects for select to authenticated
-  using (
-    bucket_id = 'project-deeds'
-    and (
-      (storage.foldername(name))[1] = (select auth.uid())::text
-      or (select private.is_admin())
-    )
-  );
