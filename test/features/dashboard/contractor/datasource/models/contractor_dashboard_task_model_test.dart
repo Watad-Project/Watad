@@ -12,4 +12,12 @@ void main() {
     expect(model.projectId, 'proj-1');
     expect(model.status, TaskStatus.approved);
   });
+
+  test('fromJson handles null or missing fields gracefully', () {
+    final model = ContractorDashboardTaskModel.fromJson({});
+
+    expect(model.id, isEmpty);
+    expect(model.projectId, isEmpty);
+    expect(model.status, TaskStatus.proposed);
+  });
 }

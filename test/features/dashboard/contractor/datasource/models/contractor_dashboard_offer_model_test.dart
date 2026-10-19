@@ -21,4 +21,14 @@ void main() {
     expect(model.amount.halalas, 320000);
     expect(model.status, OfferStatus.pending);
   });
+
+  test('fromJson handles null or missing fields gracefully', () {
+    final model = ContractorDashboardOfferModel.fromJson({});
+
+    expect(model.id, isEmpty);
+    expect(model.projectId, isEmpty);
+    expect(model.projectTitle, isEmpty);
+    expect(model.amount.halalas, 0);
+    expect(model.status, OfferStatus.pending);
+  });
 }

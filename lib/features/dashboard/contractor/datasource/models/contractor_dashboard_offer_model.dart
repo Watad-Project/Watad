@@ -14,13 +14,24 @@ class ContractorDashboardOfferModel extends ContractorDashboardOffer {
 
   factory ContractorDashboardOfferModel.fromJson(Map<String, dynamic> json) {
     final amountNum = json['amount'] as num? ?? 0;
+    final statusStr = json['status'] as String? ?? 'pending';
+    final status = OfferStatus.values.firstWhere(
+      (e) => e.value == statusStr,
+      orElse: () => OfferStatus.pending,
+    );
+
+    final createdAtStr = json['created_at'] as String?;
+    final createdAt = createdAtStr != null
+        ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
+        : DateTime.now();
+
     return ContractorDashboardOfferModel(
-      id: json['id'] as String,
-      projectId: json['project_id'] as String,
+      id: json['id'] as String? ?? '',
+      projectId: json['project_id'] as String? ?? '',
       projectTitle: json['project_title'] as String? ?? '',
       amount: Money.fromJson(amountNum),
-      status: OfferStatus.fromJson(json['status'] as String),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      status: status,
+      createdAt: createdAt,
     );
   }
 }

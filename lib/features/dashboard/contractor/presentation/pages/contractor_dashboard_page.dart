@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
+import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -86,7 +87,9 @@ class ContractorDashboardPage extends StatelessWidget {
                     children: [
                       ContractorDashboardHeader(
                         profile: data.profile,
-                        onVerificationStatusTap: onVerificationStatusTap,
+                        onVerificationStatusTap:
+                            onVerificationStatusTap ??
+                            () => context.pushNamed(KycRoutes.statusName),
                       ),
                       ContractorDashboardEarningsCard(earnings: data.earnings),
                       const SizedBox(height: AppSpacing.sm),
@@ -102,13 +105,23 @@ class ContractorDashboardPage extends StatelessWidget {
                       const SizedBox(height: AppSpacing.md),
                       ContractorDashboardActiveProjects(
                         projects: data.activeProjects,
-                        onAllProjectsTap: onAllProjectsTap,
+                        onAllProjectsTap:
+                            onAllProjectsTap ??
+                            () => context.goNamed(
+                              ContractorNavigationRoutes.navigationName,
+                              queryParameters: {'tab': 'contractor-work'},
+                            ),
                         onProjectTap: onProjectTap,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       ContractorDashboardOffers(
                         offers: data.myOffers,
-                        onAllOffersTap: onAllOffersTap,
+                        onAllOffersTap:
+                            onAllOffersTap ??
+                            () => context.goNamed(
+                              ContractorNavigationRoutes.navigationName,
+                              queryParameters: {'tab': 'contractor-work'},
+                            ),
                         onOfferTap: onOfferTap,
                       ),
                       const SizedBox(height: AppSpacing.xxl),

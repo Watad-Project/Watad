@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
@@ -39,6 +41,12 @@ class ContractorDashboardBloc
       case Success(:final data):
         emit(ContractorDashboardLoadSuccess(data));
       case Failed(:final failure):
+        // debugPrint('Dashboard Error: $e');
+        log(
+          'Dashboard Error: ${failure.cause ?? failure.messageKey}',
+          name: 'watad.dashboard',
+          error: failure.cause,
+        );
         emit(ContractorDashboardLoadFailure(failure));
     }
   }

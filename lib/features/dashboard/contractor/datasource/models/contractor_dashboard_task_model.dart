@@ -10,10 +10,15 @@ class ContractorDashboardTaskModel extends ContractorDashboardTask {
 
   factory ContractorDashboardTaskModel.fromJson(Map<String, dynamic> json) {
     final statusStr = json['status'] as String? ?? 'proposed';
+    final status = TaskStatus.values.firstWhere(
+      (e) => e.value == statusStr,
+      orElse: () => TaskStatus.proposed,
+    );
+
     return ContractorDashboardTaskModel(
-      id: json['id'] as String,
-      projectId: json['project_id'] as String,
-      status: TaskStatus.fromJson(statusStr),
+      id: json['id'] as String? ?? '',
+      projectId: json['project_id'] as String? ?? '',
+      status: status,
     );
   }
 }

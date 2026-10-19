@@ -9,9 +9,19 @@ class ContractorDashboardProfileModel extends ContractorDashboardProfile {
 
   factory ContractorDashboardProfileModel.fromJson(Map<String, dynamic> json) {
     final statusStr = json['verification_status'] as String? ?? 'unverified';
+    final status = VerificationStatus.values.firstWhere(
+      (e) => e.value == statusStr,
+      orElse: () => VerificationStatus.unverified,
+    );
+
+    final company =
+        (json['company_name'] ?? json['business_name'] ?? json['name'])
+            as String? ??
+        '';
+
     return ContractorDashboardProfileModel(
-      companyName: json['company_name'] as String? ?? '',
-      verificationStatus: VerificationStatus.fromJson(statusStr),
+      companyName: company,
+      verificationStatus: status,
     );
   }
 }

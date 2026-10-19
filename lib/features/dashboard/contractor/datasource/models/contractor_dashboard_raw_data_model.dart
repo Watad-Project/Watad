@@ -25,31 +25,35 @@ class ContractorDashboardRawDataModel extends ContractorDashboardRawData {
     return ContractorDashboardRawDataModel(
       profile: ContractorDashboardProfileModel.fromJson(profileJson),
       payments: paymentsJson
+          .whereType<Map<dynamic, dynamic>>()
           .map(
             (e) => ContractorDashboardPaymentModel.fromJson(
-              e as Map<String, dynamic>,
+              Map<String, dynamic>.from(e),
             ),
           )
           .toList(),
       opportunitiesCount: json['opportunities_count'] as int? ?? 0,
       projects: projectsJson
+          .whereType<Map<dynamic, dynamic>>()
           .map(
             (e) => ContractorDashboardProjectModel.fromJson(
-              e as Map<String, dynamic>,
+              Map<String, dynamic>.from(e),
             ),
           )
           .toList(),
       tasks: tasksJson
+          .whereType<Map<dynamic, dynamic>>()
           .map(
             (e) => ContractorDashboardTaskModel.fromJson(
-              e as Map<String, dynamic>,
+              Map<String, dynamic>.from(e),
             ),
           )
           .toList(),
       offers: offersJson
+          .whereType<Map<dynamic, dynamic>>()
           .map(
             (e) => ContractorDashboardOfferModel.fromJson(
-              e as Map<String, dynamic>,
+              Map<String, dynamic>.from(e),
             ),
           )
           .toList(),

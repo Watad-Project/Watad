@@ -50,4 +50,18 @@ void main() {
     expect(model.progress, 0.0);
     expect(model.budget, isNull);
   });
+
+  test('handles completely empty or null fields gracefully', () {
+    final model = ContractorDashboardProjectModel.fromJson({});
+
+    expect(model.id, isEmpty);
+    expect(model.title, isEmpty);
+    expect(model.ownerName, isEmpty);
+    expect(model.status, ProjectStatus.inProgress);
+    expect(model.approvedTasksCount, 0);
+    expect(model.totalTasksCount, 0);
+    expect(model.progress, 0.0);
+    expect(model.budget, isNull);
+    expect(model.city, isNull);
+  });
 }

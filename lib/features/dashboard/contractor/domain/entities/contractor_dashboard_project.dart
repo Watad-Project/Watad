@@ -28,9 +28,12 @@ class ContractorDashboardProject {
 
   String get clientName => ownerName;
 
-  double get progress => totalTasksCount > 0
-      ? (approvedTasksCount / totalTasksCount).clamp(0.0, 1.0)
-      : 0.0;
+  double get progress {
+    if (totalTasksCount <= 0 || approvedTasksCount <= 0) return 0.0;
+    final val = approvedTasksCount / totalTasksCount;
+    if (val.isNaN || val.isInfinite) return 0.0;
+    return val.clamp(0.0, 1.0);
+  }
 
   ContractorDashboardProject copyWith({
     String? id,

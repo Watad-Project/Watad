@@ -18,14 +18,25 @@ class ContractorDashboardProjectModel extends ContractorDashboardProject {
 
   factory ContractorDashboardProjectModel.fromJson(Map<String, dynamic> json) {
     final budgetNum = json['budget'] as num?;
+    final statusStr = json['status'] as String? ?? 'in_progress';
+    final status = ProjectStatus.values.firstWhere(
+      (e) => e.value == statusStr,
+      orElse: () => ProjectStatus.inProgress,
+    );
+
+    final createdAtStr = json['created_at'] as String?;
+    final createdAt = createdAtStr != null
+        ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
+        : DateTime.now();
+
     return ContractorDashboardProjectModel(
-      id: json['id'] as String,
-      title: json['title'] as String,
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
       ownerName: (json['owner_name'] ?? json['client_name']) as String? ?? '',
-      status: ProjectStatus.fromJson(json['status'] as String),
+      status: status,
       approvedTasksCount: json['approved_tasks_count'] as int? ?? 0,
       totalTasksCount: json['total_tasks_count'] as int? ?? 0,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: createdAt,
       budget: budgetNum != null ? Money.fromJson(budgetNum) : null,
       city: json['city'] as String?,
     );

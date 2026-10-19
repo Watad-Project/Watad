@@ -13,10 +13,16 @@ class ContractorDashboardPaymentModel extends ContractorDashboardPayment {
     final amountNum = json['amount'] as num? ?? 0;
     final statusStr = json['status'] as String? ?? 'pending';
     final paidAtStr = json['paid_at'] as String?;
+
+    final status = PaymentStatus.values.firstWhere(
+      (e) => e.value == statusStr,
+      orElse: () => PaymentStatus.pending,
+    );
+
     return ContractorDashboardPaymentModel(
       amount: Money.fromJson(amountNum),
-      status: PaymentStatus.fromJson(statusStr),
-      paidAt: paidAtStr != null ? DateTime.parse(paidAtStr) : null,
+      status: status,
+      paidAt: paidAtStr != null ? DateTime.tryParse(paidAtStr) : null,
     );
   }
 }

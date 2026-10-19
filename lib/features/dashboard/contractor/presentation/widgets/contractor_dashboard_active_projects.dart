@@ -54,8 +54,9 @@ class ContractorDashboardActiveProjects extends StatelessWidget {
             itemBuilder: (context, index) {
               final project = projects[index];
               final currency = context.tr('dashboard.contractor.currency');
-              final budget = project.budget != null
-                  ? '${project.budget!.toJson()} $currency'
+              final budgetMoney = project.budget;
+              final budget = budgetMoney != null
+                  ? '${budgetMoney.toJson()} $currency'
                   : '';
               final date =
                   '${project.createdAt.year}/${project.createdAt.month.toString().padLeft(2, '0')}/${project.createdAt.day.toString().padLeft(2, '0')}';

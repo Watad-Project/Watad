@@ -24,16 +24,18 @@ class ContractorDashboardDataModel extends ContractorDashboardData {
       earnings: ContractorDashboardEarningsModel.fromJson(earningsJson),
       opportunitiesCount: json['opportunities_count'] as int? ?? 0,
       activeProjects: projectsJson
+          .whereType<Map<dynamic, dynamic>>()
           .map(
             (e) => ContractorDashboardProjectModel.fromJson(
-              e as Map<String, dynamic>,
+              Map<String, dynamic>.from(e),
             ),
           )
           .toList(),
       myOffers: offersJson
+          .whereType<Map<dynamic, dynamic>>()
           .map(
             (e) => ContractorDashboardOfferModel.fromJson(
-              e as Map<String, dynamic>,
+              Map<String, dynamic>.from(e),
             ),
           )
           .toList(),

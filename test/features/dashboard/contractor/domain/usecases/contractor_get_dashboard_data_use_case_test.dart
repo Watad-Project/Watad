@@ -131,4 +131,36 @@ void main() {
       expect(project.progress, 0.5);
     },
   );
+
+  test(
+    'handles new user with empty data and zero earnings and progress',
+    () async {
+      const rawData = ContractorDashboardRawData(
+        profile: ContractorDashboardProfile(
+          companyName: '',
+          verificationStatus: VerificationStatus.unverified,
+        ),
+        payments: [],
+        opportunitiesCount: 0,
+        projects: [],
+        tasks: [],
+        offers: [],
+      );
+
+      final useCase = ContractorGetDashboardDataUseCase(
+        FakeContractorDashboardRepository(const Success(rawData)),
+      );
+
+      final result = await useCase(const NoParams());
+
+      expect(result, isA<Success<ContractorDashboardData>>());
+      final data = (result as Success<ContractorDashboardData>).data;
+
+      expect(data.earnings.thisMonthEarnings.halalas, 0);
+      expect(data.earnings.pendingTransfers.halalas, 0);
+      expect(data.opportunitiesCount, 0);
+      expect(data.activeProjects, isEmpty);
+      expect(data.myOffers, isEmpty);
+    },
+  );
 }

@@ -48,7 +48,7 @@ class ContractorDashboardOpportunitiesBanner extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.sm),
             SizedBox(
-              width: 84,
+              width: 100,
               child: AppButton(
                 label: context.tr('dashboard.contractor.browse_opportunities'),
                 onPressed: onBrowse ?? () {},

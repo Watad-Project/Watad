@@ -38,10 +38,9 @@ class ContractorGetDashboardDataUseCase
     var pendingTransfers = const Money.zero();
 
     for (final payment in raw.payments) {
-      if (payment.status == PaymentStatus.paid && payment.paidAt != null) {
-        final paidAtRiyadh = payment.paidAt!.toUtc().add(
-          const Duration(hours: 3),
-        );
+      final paidAt = payment.paidAt;
+      if (payment.status == PaymentStatus.paid && paidAt != null) {
+        final paidAtRiyadh = paidAt.toUtc().add(const Duration(hours: 3));
         if (paidAtRiyadh.year == riyadhNow.year &&
             paidAtRiyadh.month == riyadhNow.month) {
           thisMonthEarnings = thisMonthEarnings + payment.amount;
