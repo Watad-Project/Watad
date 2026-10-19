@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/auth_injection.dart';
+import 'package:watad/features/dashboard/contractor/contractor_dashboard_injection.dart';
 import 'package:watad/features/kyc/contractor/contractor_kyc_injection.dart';
 import 'package:watad/features/kyc/shared/kyc_injection.dart';
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
@@ -23,6 +24,7 @@ void configureDependencies() {
 
   // Features: one line per role folder, in alphabetical order.
   registerAuthDependencies(getIt);
+  registerContractorDashboardDependencies(getIt);
   registerContractorKycDependencies(getIt);
   registerContractorOnboardingDependencies(getIt);
   registerKycDependencies(getIt);

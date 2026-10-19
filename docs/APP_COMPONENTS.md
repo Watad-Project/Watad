@@ -81,6 +81,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppNotFoundView` | `feedback/app_not_found_view.dart` | The router's page for an address that doesn't exist: "We couldn't find this page" and a button back to the start | `onBackToStart` | 2026-10-09 |
 | `AppActionBar` | `layout/app_action_bar.dart` | The bottom bar of actions; with two, the primary takes 2/3 of the width | `primary`, `secondary` | 2026-10-09 |
 | `AppTopBar` | `layout/app_top_bar.dart` | The top bar of sub-screens: back arrow (flips in RTL) and a quiet title | `title`, `onBack`, `actions` | 2026-10-09 |
+| `AppSectionHeader` | `layout/app_section_header.dart` | Section title with an optional action (e.g. "See all" / "الكل") | `title`, `actionLabel`, `onAction`, `padding` | 2026-10-14 |
 | `AppStepProgress` | `layout/app_step_progress.dart` | "Step 2 of 4" with one bar per step (multi-step flows) | `current`, `total`, `label` (default "Step 2 of 4") | 2026-10-09 |
 | `AppPageDots` | `layout/app_page_dots.dart` | One dot per page under swipeable pages (onboarding); the current page is an orange pill; follows the reading direction | `count`, `currentIndex`, `semanticLabel` | 2026-10-12 |
 | `AppTabBar` | `layout/app_tab_bar.dart` | Underlined tabs of equal width (business profile) | `labels`, `controller`, `onTap` | 2026-10-09 |

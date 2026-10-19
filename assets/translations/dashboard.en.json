@@ -1,0 +1,29 @@
+{
+  "tab_title": "Dashboard",
+  "contractor": {
+    "active_projects_title": "In Progress",
+    "browse_opportunities": "Browse",
+    "client_name": "Client: {name}",
+    "currency": "SAR",
+    "default_company": "Contracting Business",
+    "earnings_pending_transfers": "Pending Transfers",
+    "earnings_this_month": "This Month's Earnings",
+    "my_offers_title": "My Submitted Offers",
+    "no_active_projects": "No active projects in progress",
+    "no_offers": "No submitted offers yet",
+    "offer_status_accepted": "Accepted",
+    "offer_status_pending": "Pending",
+    "offer_status_rejected": "Not Accepted",
+    "offer_status_withdrawn": "Withdrawn",
+    "opportunities_banner": "{count} new opportunities near you",
+    "project_status_waiting": "Awaiting Client Approval",
+    "see_all": "See All",
+    "tasks_progress": "{approved} of {total} tasks",
+    "title": "Dashboard",
+    "verification_pending": "Under Review",
+    "verification_rejected": "Rejected",
+    "verification_unverified": "Unverified",
+    "verification_verified": "Verified License",
+    "your_offer": "Your offer: {amount} {currency}"
+  }
+}

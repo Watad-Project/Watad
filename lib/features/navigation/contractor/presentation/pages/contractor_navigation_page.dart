@@ -1,4 +1,5 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:watad/core/router/routes/contractor_dashboard_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -11,10 +12,14 @@ class ContractorNavigationPage extends StatelessWidget {
   });
 
   /// The contractor's tabs, in order; in Arabic the first one is on the
-  /// right. For now every tab is a placeholder. How a feature becomes a tab:
-  /// see `ClientNavigationPage.tabs`.
+  /// right. How a feature becomes a tab: see `ClientNavigationPage.tabs`.
   static const List<NavigationTab> tabs = [
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'dashboard.tab_title',
+      icon: Icons.dashboard_outlined,
+      selectedIcon: Icons.dashboard,
+      routeName: ContractorDashboardRoutes.dashboardName,
+    ),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
