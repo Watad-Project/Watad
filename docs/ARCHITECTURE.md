@@ -198,7 +198,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Applied migrations are numbered in order (`00_setup` … `58_v_my_identity_security_invoker`; the next is `59_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
+- Applied migrations are numbered in order (`00_setup` … `59_restore_v_project_offers`; the next is `60_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
 
