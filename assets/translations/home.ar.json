@@ -18,5 +18,10 @@
     "few": "{} تقييمات",
     "many": "{} تقييمًا",
     "other": "{} تقييم"
-  }
+  },
+  "contractors_title": "المقاولون",
+  "search_contractors": "ابحث باسم المنشأة",
+  "rating_any": "كل التقييمات",
+  "rating_at_least": "{} فأكثر",
+  "no_matching_contractors": "لا يوجد مقاولون يطابقون البحث"
 }

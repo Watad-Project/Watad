@@ -64,6 +64,7 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
   - RTL-safe layouts.
 - **Names carry the role:** `client_projects_bloc.dart`, `ClientProjectsBloc`.
 - **Components:** use one from `docs/APP_COMPONENTS.md`. If none fits, create it in `lib/core/components/` first and register it in the same change.
+- **Avatars:** a person's or a business's photo is always `AppAvatar`, which shows the default avatar when there's no photo. Never the striped `AppImagePlaceholder` for people or businesses (`docs/APP_ARCHITECTURE.md` §10).
 - **The keyboard closes by itself:** a tap outside the text field (empty space, a card, a button) or a drag on a list closes it, on every page, dialog and sheet. `AppKeyboardDismiss` does this once in `WatadApp`. Don't add your own: no `GestureDetector` that unfocuses, no `onTapOutside`, no `keyboardDismissBehavior` (`docs/APP_ARCHITECTURE.md` §10).
 - **Packages:** only from `docs/APP_PACKAGES.md`. A new one is registered in the same change.
 - **Copy the worked example** in `docs/APP_ARCHITECTURE.md` (§8 to §12). Do not invent a new layout.

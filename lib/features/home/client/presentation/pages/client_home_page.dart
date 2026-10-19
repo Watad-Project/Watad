@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
+import 'package:watad/core/router/routes/client_home_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/home/client/presentation/bloc/client_home_bloc.dart';
@@ -66,6 +68,8 @@ class ClientHomePage extends StatelessWidget {
                 ? null
                 : context.tr(state.contractorsFailure!.messageKey),
             onRetry: () => bloc.add(const ClientHomeContractorsRetried()),
+            onViewAll: () =>
+                context.pushNamed(ClientHomeRoutes.contractorsName),
           ),
         ],
       ),

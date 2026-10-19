@@ -2,8 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/usecase/usecase.dart';
+import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
 import 'package:watad/features/home/client/domain/entities/client_home_profile.dart';
-import 'package:watad/features/home/client/domain/entities/client_suggested_contractor.dart';
 import 'package:watad/features/home/client/domain/usecases/client_get_home_profile_use_case.dart';
 import 'package:watad/features/home/client/domain/usecases/client_get_suggested_contractors_use_case.dart';
 

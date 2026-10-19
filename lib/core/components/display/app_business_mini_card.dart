@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/components/display/app_card.dart';
-import 'package:watad/core/components/display/app_network_image.dart';
 import 'package:watad/core/components/display/app_verified_name.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 
-/// A small business card for horizontal lists (home, saved, offers): photo,
-/// name with the verified check, rating and number of projects.
+/// A small business card for horizontal lists (home, saved, offers): the
+/// business's photo in a circle (the default avatar without one), name with
+/// the verified check, rating and number of projects.
 class AppBusinessMiniCard extends StatelessWidget {
   const AppBusinessMiniCard({
     super.key,
@@ -40,7 +41,14 @@ class AppBusinessMiniCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(height: 80, child: AppNetworkImage(url: imageUrl)),
+          // The business's photo, or the default avatar without one.
+          SizedBox(
+            height: 80,
+            child: ColoredBox(
+              color: AppColors.surfaceMuted,
+              child: Center(child: AppAvatar(url: imageUrl, size: 56)),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.sm),
             child: Column(

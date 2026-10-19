@@ -19,7 +19,7 @@ final class ClientHomeState {
 
   /// The «مقاولون مقترحون» section loads and fails on its own.
   final ClientHomeStatus contractorsStatus;
-  final List<ClientSuggestedContractor> contractors;
+  final List<ClientContractor> contractors;
   final Failure? contractorsFailure;
 
   ClientHomeState copyWith({
@@ -27,7 +27,7 @@ final class ClientHomeState {
     ClientHomeProfile? profile,
     Failure? Function()? failure,
     ClientHomeStatus? contractorsStatus,
-    List<ClientSuggestedContractor>? contractors,
+    List<ClientContractor>? contractors,
     Failure? Function()? contractorsFailure,
   }) {
     return ClientHomeState(

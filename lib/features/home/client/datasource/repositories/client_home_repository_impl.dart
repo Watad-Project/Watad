@@ -1,8 +1,9 @@
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/supabase/supabase_guard.dart';
 import 'package:watad/features/home/client/datasource/remote/client_home_remote_data_source.dart';
+import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
+import 'package:watad/features/home/client/domain/entities/client_contractors_query.dart';
 import 'package:watad/features/home/client/domain/entities/client_home_profile.dart';
-import 'package:watad/features/home/client/domain/entities/client_suggested_contractor.dart';
 import 'package:watad/features/home/client/domain/repositories/client_home_repository.dart';
 
 class ClientHomeRepositoryImpl implements ClientHomeRepository {
@@ -15,6 +16,11 @@ class ClientHomeRepositoryImpl implements ClientHomeRepository {
       guardSupabaseCall(_remote.getProfile);
 
   @override
-  Future<Result<List<ClientSuggestedContractor>>> getSuggestedContractors() =>
+  Future<Result<List<ClientContractor>>> getSuggestedContractors() =>
       guardSupabaseCall(_remote.getSuggestedContractors);
+
+  @override
+  Future<Result<List<ClientContractor>>> getContractors(
+    ClientContractorsQuery query,
+  ) => guardSupabaseCall(() => _remote.getContractors(query));
 }

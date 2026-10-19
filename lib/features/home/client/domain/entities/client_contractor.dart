@@ -1,6 +1,6 @@
-/// A verified contractor on the home screen: a `v_public_profiles` row.
-class ClientSuggestedContractor {
-  const ClientSuggestedContractor({
+/// A verified contractor a client can find: a `v_public_profiles` row.
+class ClientContractor {
+  const ClientContractor({
     required this.id,
     required this.companyName,
     required this.ratingCount,
