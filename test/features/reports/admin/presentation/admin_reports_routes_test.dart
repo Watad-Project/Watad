@@ -107,4 +107,21 @@ void main() {
     expect(find.byType(AppConfirmDialog), findsNothing);
     expect(repository.calls, isEmpty);
   });
+
+  testWidgets('a tap elsewhere in the dialog closes the keyboard', (
+    tester,
+  ) async {
+    await openReports(tester);
+
+    await tester.tap(find.text('حذف الإعلان'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isTrue);
+
+    await tester.tap(find.text('حذف الإعلان؟'));
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isFalse);
+    expect(find.byType(AppConfirmDialog), findsOneWidget);
+  });
 }
