@@ -9,7 +9,8 @@ import 'package:watad/features/home/client/domain/entities/client_contractor_fil
 import 'package:watad/features/home/client/domain/entities/client_contractor_sort.dart';
 
 /// The filter sheet of the «الكل» list: city, rating, completed projects
-/// and order, as dropdowns two per row to keep the sheet short. Changes
+/// and order, as dropdowns two per row to keep the sheet short. Their lists
+/// float over the sheet, so it keeps its size. Changes
 /// apply with «عرض النتائج»; «مسح الكل» goes back to the defaults.
 class ClientContractorsFilterSheet extends StatefulWidget {
   const ClientContractorsFilterSheet({
@@ -46,6 +47,7 @@ class _ClientContractorsFilterSheetState
       if (cities.isNotEmpty)
         AppDropdown<String?>(
           key: const Key('contractors_filter_city'),
+          floating: true,
           label: context.tr('home.city_title'),
           value: _draft.city,
           options: [
@@ -57,6 +59,7 @@ class _ClientContractorsFilterSheetState
         ),
       AppDropdown<double?>(
         key: const Key('contractors_filter_rating'),
+        floating: true,
         label: context.tr('home.rating_title'),
         value: _draft.minRating,
         options: [
@@ -74,6 +77,7 @@ class _ClientContractorsFilterSheetState
       ),
       AppDropdown<int?>(
         key: const Key('contractors_filter_projects'),
+        floating: true,
         label: context.tr('home.projects_title'),
         value: _draft.minProjects,
         options: [
@@ -96,6 +100,7 @@ class _ClientContractorsFilterSheetState
       ),
       AppDropdown<ClientContractorSort>(
         key: const Key('contractors_filter_sort'),
+        floating: true,
         label: context.tr('home.sort_title'),
         value: _draft.sort,
         options: [

@@ -75,4 +75,68 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('لا يلزم صك'), findsNothing);
   });
+
+  testWidgets('a floating list opens over the page without resizing it', (
+    tester,
+  ) async {
+    String? chosen;
+    await pumpComponent(
+      tester,
+      Column(
+        children: [
+          AppDropdown<String>(
+            key: const Key('dropdown'),
+            floating: true,
+            hint: 'اختر المدينة',
+            value: null,
+            options: const [
+              AppDropdownOption(value: 'madinah', title: 'المدينة المنورة'),
+              AppDropdownOption(value: 'jeddah', title: 'جدة'),
+            ],
+            onChanged: (value) => chosen = value,
+          ),
+          const Text('تحت الحقل'),
+        ],
+      ),
+    );
+    final below = tester.getTopLeft(find.text('تحت الحقل'));
+
+    await tester.tap(find.text('اختر المدينة'));
+    await tester.pumpAndSettle();
+    expect(find.text('جدة'), findsOneWidget);
+    // The page below the field didn't move.
+    expect(tester.getTopLeft(find.text('تحت الحقل')), below);
+
+    await tester.tap(find.text('جدة'));
+    await tester.pumpAndSettle();
+    expect(chosen, 'jeddah');
+    expect(find.text('المدينة المنورة'), findsNothing);
+  });
+
+  testWidgets('a tap outside closes the floating list', (tester) async {
+    await pumpComponent(
+      tester,
+      Column(
+        children: [
+          AppDropdown<String>(
+            floating: true,
+            hint: 'اختر المدينة',
+            value: null,
+            options: const [AppDropdownOption(value: 'jeddah', title: 'جدة')],
+            onChanged: (_) {},
+          ),
+          const SizedBox(height: 200),
+          const Text('مكان آخر'),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('اختر المدينة'));
+    await tester.pumpAndSettle();
+    expect(find.text('جدة'), findsOneWidget);
+
+    await tester.tap(find.text('مكان آخر'));
+    await tester.pumpAndSettle();
+    expect(find.text('جدة'), findsNothing);
+  });
 }
