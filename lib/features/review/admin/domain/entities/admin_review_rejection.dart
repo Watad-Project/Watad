@@ -3,13 +3,14 @@
 class AdminReviewRejection {
   const AdminReviewRejection({
     required this.businessId,
-    required this.reason,
     required this.details,
+    this.reason,
   });
 
   final String businessId;
 
-  /// The reason as the admin saw it in the list.
-  final String reason;
+  /// The reason as the admin saw it in the list. Null for «أخرى»: the
+  /// details alone explain it.
+  final String? reason;
   final String details;
 }
