@@ -58,46 +58,14 @@ class ContractorDashboardRemoteDataSourceImpl
       tasksResponse = [];
     }
 
-    // 6. My Offers (v_project_offers has: id, project_id, amount, status, created_at, is_mine)
+    // 6. My Offers (v_project_offers has: id, project_id, project_title, amount, status, created_at, is_mine)
     final offersResponse = await _client
         .from('v_project_offers')
-        .select('id, project_id, amount, status, created_at, is_mine')
+        .select(
+          'id, project_id, project_title, amount, status, created_at, is_mine',
+        )
         .eq('is_mine', true)
         .order('created_at', ascending: false);
-
-    final offerProjectIds = offersResponse
-        .map((o) => o['project_id'] as String?)
-        .whereType<String>()
-        .toSet()
-        .toList();
-
-    final Map<String, String> projectTitles = {
-      for (final p in activeProjectsResponse)
-        if (p['id'] case final String id when p['title'] is String)
-          id: p['title'] as String,
-    };
-
-    if (offerProjectIds.isNotEmpty) {
-      final missingIds = offerProjectIds
-          .where((id) => !projectTitles.containsKey(id))
-          .toList();
-      if (missingIds.isNotEmpty) {
-        final openProjectsWithTitles = await _client
-            .from('v_open_projects')
-            .select('id, title')
-            .inFilter('id', missingIds);
-        for (final p in openProjectsWithTitles) {
-          if (p['id'] case final String id when p['title'] is String) {
-            projectTitles[id] = p['title'] as String;
-          }
-        }
-      }
-    }
-
-    final enrichedOffers = offersResponse.map((offer) {
-      final pid = offer['project_id'] as String?;
-      return {...offer, 'project_title': projectTitles[pid] ?? ''};
-    }).toList();
 
     return ContractorDashboardRawDataModel.fromJson({
       'profile': profileResponse ?? {},
@@ -105,7 +73,7 @@ class ContractorDashboardRemoteDataSourceImpl
       'opportunities_count': openProjectsResponse.length,
       'projects': activeProjectsResponse,
       'tasks': tasksResponse,
-      'offers': enrichedOffers,
+      'offers': offersResponse,
     });
   }
 }

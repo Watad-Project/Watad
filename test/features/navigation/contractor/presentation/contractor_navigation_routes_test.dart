@@ -8,6 +8,7 @@ import 'package:watad/features/navigation/contractor/presentation/pages/contract
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_placeholder.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_contractor_dashboard_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -18,6 +19,7 @@ void main() {
     //
     // The router opens at the splash page first. Its fake never answers.
     registerFakeSplashBloc(FakeSplashRepository());
+    registerFakeContractorDashboardTab();
   });
 
   tearDown(getIt.reset);

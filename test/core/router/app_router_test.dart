@@ -30,6 +30,7 @@ import 'package:watad/features/onboarding/contractor/presentation/bloc/contracto
 
 import '../../helpers/fake_app_session.dart';
 import '../../helpers/fake_auth_repository.dart';
+import '../../helpers/fake_contractor_dashboard_repository.dart';
 import '../../helpers/fake_splash_repository.dart';
 import '../../helpers/pump_router.dart';
 
@@ -101,6 +102,7 @@ void main() {
         WatchKycDocumentUseCase(_FakeKycRepository()),
       ),
     );
+    registerFakeContractorDashboardTab();
   });
 
   tearDown(getIt.reset);

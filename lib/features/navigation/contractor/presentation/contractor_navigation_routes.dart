@@ -14,9 +14,7 @@ final List<RouteBase> contractorNavigationRoutes = [
       screens: [
         for (final tab in ContractorNavigationPage.tabs)
           if (tab.routeName case final name?)
-            getIt.isRegistered<Widget>(instanceName: name)
-                ? () => getIt<Widget>(instanceName: name)
-                : null
+            () => getIt<Widget>(instanceName: name)
           else
             null,
       ],
