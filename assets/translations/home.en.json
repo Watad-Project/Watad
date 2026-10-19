@@ -18,5 +18,10 @@
     "few": "{} ratings",
     "many": "{} ratings",
     "other": "{} ratings"
-  }
+  },
+  "contractors_title": "Contractors",
+  "search_contractors": "Search by business name",
+  "rating_any": "Any rating",
+  "rating_at_least": "{} and up",
+  "no_matching_contractors": "No contractors match your search"
 }

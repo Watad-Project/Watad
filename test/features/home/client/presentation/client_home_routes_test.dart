@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_business_mini_card.dart';
@@ -5,8 +6,9 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_home_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
 import 'package:watad/features/home/client/domain/entities/client_home_profile.dart';
-import 'package:watad/features/home/client/domain/entities/client_suggested_contractor.dart';
+import 'package:watad/features/home/client/presentation/pages/client_contractors_page.dart';
 import 'package:watad/features/home/client/presentation/pages/client_home_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
@@ -22,13 +24,13 @@ void main() {
     registerFakeSplashBloc(FakeSplashRepository());
     repository = FakeClientHomeRepository()
       ..contractorsResult = const Success([
-        ClientSuggestedContractor(
+        ClientContractor(
           id: 'c-1',
           companyName: 'البناء المتين',
           ratingAvg: 4.8,
           ratingCount: 64,
         ),
-        ClientSuggestedContractor(
+        ClientContractor(
           id: 'c-2',
           companyName: 'إتقان للتشييد',
           ratingCount: 0,
@@ -95,5 +97,47 @@ void main() {
     await openHome(tester);
 
     expect(find.text('لا يوجد مقاولون موثّقون بعد'), findsOneWidget);
+  });
+
+  testWidgets('«الكل» opens every contractor, with the default avatar', (
+    tester,
+  ) async {
+    repository.contractorsPageResult = const Success([
+      ClientContractor(
+        id: 'c-1',
+        companyName: 'البناء المتين',
+        ratingAvg: 4.8,
+        ratingCount: 64,
+      ),
+    ]);
+    await openHome(tester);
+
+    await tester.tap(find.text('الكل'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ClientContractorsPage), findsOneWidget);
+    expect(find.text('البناء المتين'), findsOneWidget);
+    expect(find.byIcon(Icons.person_rounded), findsOneWidget);
+  });
+
+  testWidgets('client-contractors filters by name and rating', (tester) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
+    router.goNamed(ClientHomeRoutes.contractorsName);
+    await tester.pumpAndSettle();
+    expect(currentPath(router), ClientHomeRoutes.contractorsPath);
+
+    await tester.enterText(find.byType(TextField), 'البناء');
+    // The name is sent once typing pauses.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+    expect(repository.queries.last.filter.query, 'البناء');
+
+    await tester.tap(find.text('٤ فأكثر'));
+    await tester.pumpAndSettle();
+    expect(repository.queries.last.filter.minRating, 4);
+    expect(repository.queries.last.filter.query, 'البناء');
+    expect(find.text('لا يوجد مقاولون يطابقون البحث'), findsOneWidget);
   });
 }

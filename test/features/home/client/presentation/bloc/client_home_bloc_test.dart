@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/features/home/client/domain/entities/client_suggested_contractor.dart';
+import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
 import 'package:watad/features/home/client/domain/usecases/client_get_home_profile_use_case.dart';
 import 'package:watad/features/home/client/domain/usecases/client_get_suggested_contractors_use_case.dart';
 import 'package:watad/features/home/client/presentation/bloc/client_home_bloc.dart';
@@ -9,7 +9,7 @@ import 'package:watad/features/home/client/presentation/bloc/client_home_bloc.da
 import '../../../../../helpers/fake_client_home_repository.dart';
 
 void main() {
-  const contractor = ClientSuggestedContractor(
+  const contractor = ClientContractor(
     id: 'c-1',
     companyName: 'البناء المتين',
     ratingAvg: 4.8,

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:watad/features/home/client/datasource/models/client_suggested_contractor_model.dart';
+import 'package:watad/features/home/client/datasource/models/client_contractor_model.dart';
 
 void main() {
   test('fromJson maps a v_public_profiles row', () {
-    final model = ClientSuggestedContractorModel.fromJson({
+    final model = ClientContractorModel.fromJson({
       'id': '0b8f3c1e-7d2a-4e51-9a63-5c4d2e1f0a98',
       'company_name': 'البناء المتين',
       'avatar_path': 'u-1/avatar.jpg',
@@ -20,7 +20,7 @@ void main() {
   });
 
   test('a contractor without ratings or a photo', () {
-    final model = ClientSuggestedContractorModel.fromJson({
+    final model = ClientContractorModel.fromJson({
       'id': 'c-2',
       'company_name': 'إتقان للتشييد',
       'avatar_path': null,
