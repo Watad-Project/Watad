@@ -217,6 +217,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 - Every table has RLS enabled. A new table without RLS policies is a bug.
 - The app uses only the anon key. A key that can bypass RLS never leaves the server.
 - A new state change is a new RPC with its own checks, not a looser policy.
+- A new view or table starts with Supabase's default privileges: everything, for `anon` and `authenticated`. Revoke them from `public`, `anon` and `authenticated`, then grant back only what the app needs (`select` to `authenticated` for a view).
 - The app gets INSERT/UPDATE only on the columns in section 3a. A new writable column needs an explicit grant in a migration, and section 3a must be updated.
 - Sensitive files stay in private buckets. A private bucket's policies say exactly who uploads (usually `<user id>/` only) and who reads (the owner, plus admins when they review). Leave out UPDATE and DELETE policies unless a screen needs them.
 - A column that stores a path into a private bucket gets a check that the path is inside the row owner's folder (e.g. `projects_deed_path_in_owner_folder`), so nobody can attach someone else's file.
@@ -224,7 +225,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Applied migrations are numbered in order (`00_setup` … `61_contractors_directory`; the next is `62_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
+- Applied migrations are numbered in order (`00_setup` … `62_v_contractors_read_only`; the next is `63_...`). Keep the SQL files in the repo under `supabase/migrations/` (create the folder if it is not there yet) so the history is reviewable.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
 
