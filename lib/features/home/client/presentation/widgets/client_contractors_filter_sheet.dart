@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
-import 'package:watad/core/components/inputs/app_filter_chips.dart';
+import 'package:watad/core/components/inputs/app_dropdown.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -9,8 +9,8 @@ import 'package:watad/features/home/client/domain/entities/client_contractor_fil
 import 'package:watad/features/home/client/domain/entities/client_contractor_sort.dart';
 
 /// The filter sheet of the «الكل» list: city, rating, completed projects
-/// and order. Changes apply with «عرض النتائج»; «مسح الكل» goes back to
-/// the defaults.
+/// and order, as dropdowns two per row to keep the sheet short. Changes
+/// apply with «عرض النتائج»; «مسح الكل» goes back to the defaults.
 class ClientContractorsFilterSheet extends StatefulWidget {
   const ClientContractorsFilterSheet({
     required this.filter,
@@ -21,7 +21,7 @@ class ClientContractorsFilterSheet extends StatefulWidget {
 
   final ClientContractorFilter filter;
 
-  /// The cities contractors work in. Empty: no city part.
+  /// The cities contractors work in. Empty: no city filter.
   final List<String> cities;
   final ValueChanged<ClientContractorFilter> onApply;
 
@@ -42,12 +42,75 @@ class _ClientContractorsFilterSheetState
   @override
   Widget build(BuildContext context) {
     final cities = widget.cities;
-    const ratings = ClientContractorsFilterSheet.minRatings;
-    const projects = ClientContractorsFilterSheet.minProjects;
-    const sorts = ClientContractorSort.values;
-    final city = _draft.city;
-    final minRating = _draft.minRating;
-    final minProjects = _draft.minProjects;
+    final dropdowns = <Widget>[
+      if (cities.isNotEmpty)
+        AppDropdown<String?>(
+          key: const Key('contractors_filter_city'),
+          label: context.tr('home.city_title'),
+          value: _draft.city,
+          options: [
+            AppDropdownOption(value: null, title: context.tr('home.city_any')),
+            for (final city in cities)
+              AppDropdownOption(value: city, title: city),
+          ],
+          onChanged: (city) => _set(_draft.copyWith(city: () => city)),
+        ),
+      AppDropdown<double?>(
+        key: const Key('contractors_filter_rating'),
+        label: context.tr('home.rating_title'),
+        value: _draft.minRating,
+        options: [
+          AppDropdownOption(value: null, title: context.tr('home.rating_any')),
+          for (final rating in ClientContractorsFilterSheet.minRatings)
+            AppDropdownOption(
+              value: rating,
+              title: context.tr(
+                'home.rating_at_least',
+                args: [context.formatNumber(rating)],
+              ),
+            ),
+        ],
+        onChanged: (rating) => _set(_draft.copyWith(minRating: () => rating)),
+      ),
+      AppDropdown<int?>(
+        key: const Key('contractors_filter_projects'),
+        label: context.tr('home.projects_title'),
+        value: _draft.minProjects,
+        options: [
+          AppDropdownOption(
+            value: null,
+            title: context.tr('home.projects_any'),
+          ),
+          for (final projects in ClientContractorsFilterSheet.minProjects)
+            AppDropdownOption(
+              value: projects,
+              title: context.plural(
+                'home.projects_at_least',
+                projects,
+                args: [context.formatNumber(projects)],
+              ),
+            ),
+        ],
+        onChanged: (projects) =>
+            _set(_draft.copyWith(minProjects: () => projects)),
+      ),
+      AppDropdown<ClientContractorSort>(
+        key: const Key('contractors_filter_sort'),
+        label: context.tr('home.sort_title'),
+        value: _draft.sort,
+        options: [
+          AppDropdownOption(
+            value: ClientContractorSort.rating,
+            title: context.tr('home.sort_rating'),
+          ),
+          AppDropdownOption(
+            value: ClientContractorSort.projects,
+            title: context.tr('home.sort_projects'),
+          ),
+        ],
+        onChanged: (sort) => _set(_draft.copyWith(sort: sort)),
+      ),
+    ];
     return SingleChildScrollView(
       padding: EdgeInsetsDirectional.fromSTEB(
         AppSpacing.md,
@@ -59,77 +122,22 @@ class _ClientContractorsFilterSheetState
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(context.tr('home.filters_title'), style: AppTextStyles.h2),
-          if (cities.isNotEmpty)
-            _Section(
-              title: context.tr('home.city_title'),
-              child: AppFilterChips(
-                isWrapped: true,
-                labels: [context.tr('home.city_any'), ...cities],
-                selectedIndex: city == null ? 0 : cities.indexOf(city) + 1,
-                onSelected: (index) => _set(
-                  _draft.copyWith(
-                    city: () => index == 0 ? null : cities[index - 1],
-                  ),
+          // Two dropdowns per row.
+          for (var i = 0; i < dropdowns.length; i += 2) ...[
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: dropdowns[i]),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: i + 1 < dropdowns.length
+                      ? dropdowns[i + 1]
+                      : const SizedBox.shrink(),
                 ),
-              ),
-            ),
-          _Section(
-            title: context.tr('home.rating_title'),
-            child: AppFilterChips(
-              isWrapped: true,
-              labels: [
-                context.tr('home.rating_any'),
-                for (final r in ratings)
-                  context.tr(
-                    'home.rating_at_least',
-                    args: [context.formatNumber(r)],
-                  ),
               ],
-              selectedIndex: minRating == null
-                  ? 0
-                  : ratings.indexOf(minRating) + 1,
-              onSelected: (index) => _set(
-                _draft.copyWith(
-                  minRating: () => index == 0 ? null : ratings[index - 1],
-                ),
-              ),
             ),
-          ),
-          _Section(
-            title: context.tr('home.projects_title'),
-            child: AppFilterChips(
-              isWrapped: true,
-              labels: [
-                context.tr('home.projects_any'),
-                for (final p in projects)
-                  context.plural(
-                    'home.projects_at_least',
-                    p,
-                    args: [context.formatNumber(p)],
-                  ),
-              ],
-              selectedIndex: minProjects == null
-                  ? 0
-                  : projects.indexOf(minProjects) + 1,
-              onSelected: (index) => _set(
-                _draft.copyWith(
-                  minProjects: () => index == 0 ? null : projects[index - 1],
-                ),
-              ),
-            ),
-          ),
-          _Section(
-            title: context.tr('home.sort_title'),
-            child: AppFilterChips(
-              isWrapped: true,
-              labels: [
-                context.tr('home.sort_rating'),
-                context.tr('home.sort_projects'),
-              ],
-              selectedIndex: sorts.indexOf(_draft.sort),
-              onSelected: (index) => _set(_draft.copyWith(sort: sorts[index])),
-            ),
-          ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           AppButton(
             label: context.tr('home.show_results'),
@@ -138,7 +146,6 @@ class _ClientContractorsFilterSheetState
               Navigator.of(context).pop();
             },
           ),
-          const SizedBox(height: AppSpacing.xs),
           AppButton(
             label: context.tr('home.clear_filters'),
             variant: AppButtonVariant.link,
@@ -146,28 +153,6 @@ class _ClientContractorsFilterSheetState
                 ? null
                 : () => _set(ClientContractorFilter(query: _draft.query)),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(top: AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(title, style: AppTextStyles.label),
-          const SizedBox(height: AppSpacing.xs),
-          child,
         ],
       ),
     );

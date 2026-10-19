@@ -141,20 +141,24 @@ void main() {
     await tester.tap(find.byTooltip('تصفية النتائج'));
     await tester.pumpAndSettle();
     // The sheet scrolls on a short screen.
-    Future<void> tapInSheet(String text) async {
-      await tester.ensureVisible(find.text(text));
+    Future<void> tapInSheet(Finder finder) async {
+      await tester.ensureVisible(finder);
       await tester.pumpAndSettle();
-      await tester.tap(find.text(text));
-      await tester.pump();
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
     }
 
-    await tapInSheet('المدينة المنورة');
-    await tapInSheet('١٠٠ مشروع فأكثر');
-    await tapInSheet('الأكثر مشاريع');
+    // Each filter is a dropdown: open it, pick an option.
+    await tapInSheet(find.byKey(const Key('contractors_filter_city')));
+    await tapInSheet(find.text('المدينة المنورة').last);
+    await tapInSheet(find.byKey(const Key('contractors_filter_projects')));
+    await tapInSheet(find.text('١٠٠ مشروع فأكثر').last);
+    await tapInSheet(find.byKey(const Key('contractors_filter_sort')));
+    await tapInSheet(find.text('الأكثر مشاريع').last);
     // Nothing is sent until «عرض النتائج».
     expect(repository.queries.last.filter.minProjects, isNull);
 
-    await tapInSheet('عرض النتائج');
+    await tapInSheet(find.text('عرض النتائج'));
     await tester.pumpAndSettle();
     final filter = repository.queries.last.filter;
     expect(filter.query, 'البناء');
