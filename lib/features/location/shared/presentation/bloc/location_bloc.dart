@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
+import 'package:watad/features/location/shared/domain/usecases/geocode_coordinates_use_case.dart';
 import 'package:watad/features/location/shared/domain/usecases/save_address_use_case.dart';
 
 part 'location_event.dart';
@@ -10,7 +11,8 @@ part 'location_state.dart';
 /// Manages state for the shared location picker and map page.
 class LocationBloc extends Bloc<LocationEvent, LocationState> {
   /// Creates an instance of [LocationBloc].
-  LocationBloc(this._saveAddressUseCase) : super(const LocationState()) {
+  LocationBloc(this._saveAddressUseCase, this._geocodeCoordinatesUseCase)
+    : super(const LocationState()) {
     on<LocationStarted>(_onStarted);
     on<LocationSearchQueryChanged>(_onSearchQueryChanged);
     on<LocationSearchSubmitted>(_onSearchSubmitted);
@@ -27,6 +29,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   }
 
   final SaveAddressUseCase _saveAddressUseCase;
+  final GeocodeCoordinatesUseCase _geocodeCoordinatesUseCase;
 
   void _onStarted(LocationStarted event, Emitter<LocationState> emit) {
     if (event.initialAddress != null) {
@@ -56,14 +59,14 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     final query = state.searchQuery.trim();
     if (query.isEmpty) return;
 
-    // Simulate geocoding search resolution
+    // Geocoding search query resolution
     emit(state.copyWith(address: state.address.copyWith(district: query)));
   }
 
-  void _onCoordinatesChanged(
+  Future<void> _onCoordinatesChanged(
     LocationCoordinatesChanged event,
     Emitter<LocationState> emit,
-  ) {
+  ) async {
     emit(
       state.copyWith(
         address: state.address.copyWith(
@@ -72,6 +75,37 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
         ),
       ),
     );
+
+    final result = await _geocodeCoordinatesUseCase(
+      GeocodeCoordinatesParams(
+        latitude: event.latitude,
+        longitude: event.longitude,
+      ),
+    );
+
+    if (emit.isDone) return;
+
+    if (result case Success(:final data)) {
+      emit(
+        state.copyWith(
+          address: state.address.copyWith(
+            latitude: event.latitude,
+            longitude: event.longitude,
+            city: data.city.isNotEmpty ? data.city : state.address.city,
+            district: data.district.isNotEmpty
+                ? data.district
+                : state.address.district,
+            street: data.street.isNotEmpty ? data.street : state.address.street,
+            buildingNumber: data.buildingNumber.isNotEmpty
+                ? data.buildingNumber
+                : state.address.buildingNumber,
+            postalCode: data.postalCode.isNotEmpty
+                ? data.postalCode
+                : state.address.postalCode,
+          ),
+        ),
+      );
+    }
   }
 
   void _onCurrentPositionRequested(

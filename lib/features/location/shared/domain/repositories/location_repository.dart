@@ -11,4 +11,10 @@ abstract interface class LocationRepository {
 
   /// Deletes a saved address by its [id].
   Future<Result<void>> deleteAddress(String id);
+
+  /// Reverse geocodes the given map pin coordinates [lat] and [lng] using the geocode Edge Function.
+  Future<Result<LocationAddress>> geocodeCoordinates({
+    required double lat,
+    required double lng,
+  });
 }

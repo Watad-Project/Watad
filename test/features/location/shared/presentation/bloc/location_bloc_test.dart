@@ -3,6 +3,7 @@ import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
 import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
+import 'package:watad/features/location/shared/domain/usecases/geocode_coordinates_use_case.dart';
 import 'package:watad/features/location/shared/domain/usecases/save_address_use_case.dart';
 import 'package:watad/features/location/shared/presentation/bloc/location_bloc.dart';
 
@@ -21,17 +22,37 @@ class _FakeLocationRepository implements LocationRepository {
 
   @override
   Future<Result<void>> deleteAddress(String id) async => const Success(null);
+
+  @override
+  Future<Result<LocationAddress>> geocodeCoordinates({
+    required double lat,
+    required double lng,
+  }) async => Success(
+    LocationAddress(
+      id: '',
+      name: '',
+      city: 'الرياض',
+      district: 'النرجس',
+      street: 'طريق عثمان بن عفان',
+      buildingNumber: '1234',
+      postalCode: '13324',
+      latitude: lat,
+      longitude: lng,
+    ),
+  );
 }
 
 void main() {
   late _FakeLocationRepository repo;
   late SaveAddressUseCase saveAddressUseCase;
+  late GeocodeCoordinatesUseCase geocodeCoordinatesUseCase;
   late LocationBloc bloc;
 
   setUp(() {
     repo = _FakeLocationRepository();
     saveAddressUseCase = SaveAddressUseCase(repo);
-    bloc = LocationBloc(saveAddressUseCase);
+    geocodeCoordinatesUseCase = GeocodeCoordinatesUseCase(repo);
+    bloc = LocationBloc(saveAddressUseCase, geocodeCoordinatesUseCase);
   });
 
   tearDown(() => bloc.close());
@@ -126,9 +147,33 @@ void main() {
     expect(repo.savedAddress, isNull);
   });
 
+  test('LocationCoordinatesChanged resolves geocoded address fields', () async {
+    bloc.add(
+      const LocationCoordinatesChanged(latitude: 24.7136, longitude: 46.6753),
+    );
+
+    await expectLater(
+      bloc.stream,
+      emitsInOrder([
+        isA<LocationState>()
+            .having((s) => s.address.latitude, 'lat', 24.7136)
+            .having((s) => s.address.longitude, 'lng', 46.6753),
+        isA<LocationState>()
+            .having((s) => s.address.city, 'city', 'الرياض')
+            .having((s) => s.address.district, 'district', 'النرجس')
+            .having((s) => s.address.street, 'street', 'طريق عثمان بن عفان')
+            .having((s) => s.address.buildingNumber, 'bldg', '1234')
+            .having((s) => s.address.postalCode, 'postal', '13324'),
+      ]),
+    );
+  });
+
   test('LocationConfirmed emits failure when saveAddress fails', () async {
     final failingRepo = _FailingLocationRepository();
-    final failingBloc = LocationBloc(SaveAddressUseCase(failingRepo));
+    final failingBloc = LocationBloc(
+      SaveAddressUseCase(failingRepo),
+      GeocodeCoordinatesUseCase(failingRepo),
+    );
 
     failingBloc.add(const LocationCityChanged('Riyadh'));
     failingBloc.add(const LocationDistrictChanged('Al Nakheel'));
@@ -165,4 +210,10 @@ class _FailingLocationRepository implements LocationRepository {
 
   @override
   Future<Result<void>> deleteAddress(String id) async => const Success(null);
+
+  @override
+  Future<Result<LocationAddress>> geocodeCoordinates({
+    required double lat,
+    required double lng,
+  }) async => const Failed(PermissionFailure('unauthorized'));
 }

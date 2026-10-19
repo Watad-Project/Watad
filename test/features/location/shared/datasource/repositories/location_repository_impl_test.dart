@@ -37,6 +37,24 @@ class _FakeLocationRemoteDataSource implements LocationRemoteDataSource {
     if (shouldThrow) throw Exception('Remote error');
     addresses.removeWhere((a) => a.id == id);
   }
+
+  @override
+  Future<Map<String, dynamic>> geocodeCoordinates({
+    required double lat,
+    required double lng,
+  }) async {
+    if (shouldThrow) throw Exception('Geocode error');
+    return {
+      'city': 'الرياض',
+      'district': 'النرجس',
+      'street': 'طريق عثمان بن عفان',
+      'building_number': '1234',
+      'postal_code': '13324',
+      'additional_number': '5678',
+      'short_address': 'RRRR1234',
+      'formatted_address': 'الرياض · النرجس',
+    };
+  }
 }
 
 void main() {
@@ -109,6 +127,26 @@ void main() {
     expect(result, isA<Success<void>>());
     expect(remote.addresses.isEmpty, isTrue);
   });
+
+  test(
+    'geocodeCoordinates calls remote and returns mapped LocationAddress',
+    () async {
+      final result = await repository.geocodeCoordinates(
+        lat: 24.7136,
+        lng: 46.6753,
+      );
+
+      expect(result, isA<Success<LocationAddress>>());
+      final addr = (result as Success<LocationAddress>).data;
+      expect(addr.city, 'الرياض');
+      expect(addr.district, 'النرجس');
+      expect(addr.street, 'طريق عثمان بن عفان');
+      expect(addr.buildingNumber, '1234');
+      expect(addr.postalCode, '13324');
+      expect(addr.latitude, 24.7136);
+      expect(addr.longitude, 46.6753);
+    },
+  );
 
   test('guardSupabaseCall maps exceptions to Failed', () async {
     remote.shouldThrow = true;

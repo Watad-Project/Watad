@@ -30,4 +30,23 @@ class LocationRepositoryImpl implements LocationRepository {
   @override
   Future<Result<void>> deleteAddress(String id) =>
       guardSupabaseCall(() => _remoteDataSource.deleteAddress(id));
+
+  @override
+  Future<Result<LocationAddress>> geocodeCoordinates({
+    required double lat,
+    required double lng,
+  }) => guardSupabaseCall(() async {
+    final data = await _remoteDataSource.geocodeCoordinates(lat: lat, lng: lng);
+    return LocationAddress(
+      id: '',
+      name: '',
+      city: (data['city'] as String?)?.trim() ?? '',
+      district: (data['district'] as String?)?.trim() ?? '',
+      street: (data['street'] as String?)?.trim() ?? '',
+      buildingNumber: (data['building_number'] as String?)?.trim() ?? '',
+      postalCode: (data['postal_code'] as String?)?.trim() ?? '',
+      latitude: lat,
+      longitude: lng,
+    );
+  });
 }

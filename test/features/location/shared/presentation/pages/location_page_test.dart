@@ -6,6 +6,7 @@ import 'package:watad/core/components/display/app_google_map.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
 import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
+import 'package:watad/features/location/shared/domain/usecases/geocode_coordinates_use_case.dart';
 import 'package:watad/features/location/shared/domain/usecases/save_address_use_case.dart';
 import 'package:watad/features/location/shared/presentation/bloc/location_bloc.dart';
 import 'package:watad/features/location/shared/presentation/pages/location_page.dart';
@@ -23,13 +24,34 @@ class _FakeLocationRepository implements LocationRepository {
 
   @override
   Future<Result<void>> deleteAddress(String id) async => const Success(null);
+
+  @override
+  Future<Result<LocationAddress>> geocodeCoordinates({
+    required double lat,
+    required double lng,
+  }) async => Success(
+    LocationAddress(
+      id: '',
+      name: '',
+      city: 'الرياض',
+      district: 'النرجس',
+      street: 'طريق الملك فهد',
+      buildingNumber: '1234',
+      postalCode: '13324',
+      latitude: lat,
+      longitude: lng,
+    ),
+  );
 }
 
 void main() {
   Widget buildPage() {
+    final repo = _FakeLocationRepository();
     return BlocProvider(
-      create: (_) =>
-          LocationBloc(SaveAddressUseCase(_FakeLocationRepository())),
+      create: (_) => LocationBloc(
+        SaveAddressUseCase(repo),
+        GeocodeCoordinatesUseCase(repo),
+      ),
       child: const LocationPage(),
     );
   }
