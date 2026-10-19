@@ -83,15 +83,13 @@ void main() {
     expect(find.text('جوال موثّق'), findsOneWidget);
   });
 
-  testWidgets('«ابدأ الآن» stays off until the post-project flow exists', (
-    tester,
-  ) async {
+  testWidgets('«ابدأ الآن» opens the post-project flow', (tester) async {
     await openHome(tester);
 
     final start = tester.widget<AppButton>(
       find.widgetWithText(AppButton, 'ابدأ الآن'),
     );
-    expect(start.onPressed, isNull);
+    expect(start.onPressed, isNotNull);
   });
 
   testWidgets('no verified contractors yet', (tester) async {

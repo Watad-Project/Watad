@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/router/routes/client_home_routes.dart';
+import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/home/client/presentation/bloc/client_home_bloc.dart';
@@ -59,7 +60,10 @@ class ClientHomePage extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           const ClientSearchBar(),
           const SizedBox(height: AppSpacing.lg),
-          const ClientPostProjectBanner(),
+          ClientPostProjectBanner(
+            onStart: () =>
+                context.pushNamed(ClientProjectsRoutes.postProjectName),
+          ),
           const SizedBox(height: AppSpacing.xl),
           ClientSuggestedContractorsSection(
             status: state.contractorsStatus,

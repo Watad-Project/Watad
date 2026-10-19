@@ -6,13 +6,11 @@ import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 
 /// The orange «انشر مشروعاً» card. «ابدأ الآن» opens the post-project flow
-/// at `/client/post-project` (GRA-18); until that route exists it stays
-/// off.
+/// (GRA-18).
 class ClientPostProjectBanner extends StatelessWidget {
-  const ClientPostProjectBanner({this.onStart, super.key});
+  const ClientPostProjectBanner({required this.onStart, super.key});
 
-  /// Null keeps «ابدأ الآن» off.
-  final VoidCallback? onStart;
+  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
