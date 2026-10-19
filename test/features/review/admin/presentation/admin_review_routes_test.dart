@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/components/display/app_image_viewer.dart';
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/enums/business_document_type.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/review/admin/domain/entities/admin_review_document.dart';
 import 'package:watad/features/review/admin/domain/entities/admin_review_request.dart';
 import 'package:watad/features/review/admin/presentation/pages/admin_review_documents_page.dart';
 import 'package:watad/features/review/admin/presentation/pages/admin_review_page.dart';
@@ -91,7 +94,7 @@ void main() {
     router.goNamed(AdminReviewRoutes.reviewName);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('رفض بسبب'));
+    await tester.tap(find.text('رفض'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('أخرى'));
     await tester.pump();
@@ -101,5 +104,51 @@ void main() {
 
     expect(repository.rejected, [('b-1', 'الختم غير ظاهر')]);
     expect(find.byType(AdminReviewRequestCard), findsNothing);
+  });
+
+  testWidgets('rejecting with a listed reason needs no details', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminReviewRoutes.reviewName);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('رفض'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('المستند منتهي الصلاحية'));
+    await tester.pump();
+    expect(find.byType(TextField), findsNothing);
+    await tester.tap(find.text('إرسال الرفض'));
+    await tester.pumpAndSettle();
+
+    expect(repository.rejected, [('b-1', 'المستند منتهي الصلاحية')]);
+  });
+
+  testWidgets('tapping an image opens it full screen', (tester) async {
+    repository.documentsResult = Success([
+      AdminReviewDocument(
+        id: 'doc-1',
+        documentType: BusinessDocumentType.commercialRegistration,
+        storagePath: 'u-1/license.jpeg',
+        createdAt: DateTime.utc(2026, 10, 18),
+        url: 'https://example.supabase.co/license.jpeg',
+      ),
+    ]);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(
+      AdminReviewRoutes.reviewDocumentsName,
+      pathParameters: {'businessId': 'b-1'},
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.bySemanticsLabel(RegExp('عرض بالحجم الكامل')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppImageViewer), findsOneWidget);
   });
 }

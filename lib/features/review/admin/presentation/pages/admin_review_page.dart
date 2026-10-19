@@ -20,8 +20,8 @@ import 'package:watad/features/review/admin/presentation/widgets/admin_review_re
 class AdminReviewPage extends StatelessWidget {
   const AdminReviewPage({super.key});
 
-  /// The rejection reasons, in order (GRA-30). The last one, «أخرى», sends
-  /// the details alone.
+  /// The rejection reasons, in order (GRA-30). Only the last one, «أخرى»,
+  /// asks the admin to write the reason.
   static const _reasonKeys = [
     'review.reason_unclear',
     'review.reason_expired',
@@ -29,6 +29,7 @@ class AdminReviewPage extends StatelessWidget {
     'review.reason_wrong_document',
     'review.reason_other',
   ];
+  static final _otherReasonIndex = _reasonKeys.length - 1;
 
   @override
   Widget build(BuildContext context) {
@@ -128,12 +129,13 @@ class AdminReviewPage extends StatelessWidget {
         ),
         child: AppRejectReasonForm(
           reasons: reasons,
+          otherReasonIndex: _otherReasonIndex,
           onSubmit: (reasonIndex, details) {
             bloc.add(
               AdminReviewRejected(
                 AdminReviewRejection(
                   businessId: request.businessId,
-                  reason: reasonIndex == _reasonKeys.length - 1
+                  reason: reasonIndex == _otherReasonIndex
                       ? null
                       : reasons[reasonIndex],
                   details: details,
