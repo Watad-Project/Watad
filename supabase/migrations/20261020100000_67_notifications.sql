@@ -1,17 +1,19 @@
 -- =====================================================================
--- 66_notifications.sql  ·  in-app notifications and push (GRA-32)
+-- 67_notifications.sql  ·  in-app notifications and push (GRA-32)
 --
 -- To notify a user, the server inserts a row into public.notifications.
--- Right after the insert, a trigger asks the send-push Edge Function to
--- deliver it as a push through OneSignal (to the devices signed in as
--- that user: OneSignal's external_id is the user id). The app reads its
--- own rows through v_my_notifications and marks them read with
--- mark_notifications_read(); it never inserts one and never calls
--- OneSignal.
+-- The app lists it, live (Realtime). Right after the insert, a trigger asks
+-- the send-push Edge Function to deliver it: when the user has the app
+-- open (private.is_online(), migration 66) it stays in the app, which
+-- shows it there; otherwise it goes as a push through OneSignal, to the
+-- devices signed in as that user (OneSignal's external_id is the user id).
+-- The app reads its own rows through v_my_notifications and marks them
+-- read with mark_notifications_read(); it never inserts one and never
+-- calls OneSignal's REST API.
 --
---   1. public.notifications, readable by its user only;
+--   1. public.notifications, readable by its user only, and in Realtime;
 --   2. v_my_notifications and mark_notifications_read();
---   3. the push: a Vault secret shared with send-push, the trigger, and
+--   3. the delivery: a Vault secret shared with send-push, the trigger, and
 --      push_claim() / push_complete(), which only the function calls.
 -- =====================================================================
 
@@ -25,7 +27,10 @@ create table public.notifications (
   data       jsonb       not null default '{}'::jsonb check (jsonb_typeof(data) = 'object'),
   read_at    timestamptz,
   created_at timestamptz not null default now(),
-  -- Delivery, for the server only: set by push_complete().
+  -- Delivery, for the server only (push_claim, push_complete): 'pending',
+  -- then 'in_app' (the user had the app open), 'sent' or 'failed'.
+  push_status text       not null default 'pending'
+                         check (push_status in ('pending', 'in_app', 'sent', 'failed')),
   pushed_at  timestamptz,
   push_error text
 );
@@ -41,6 +46,9 @@ create policy notifications_select_own on public.notifications
 -- Read-only for the app: rows are written by the server.
 revoke all on public.notifications from public, anon, authenticated;
 grant select on public.notifications to authenticated;
+
+-- New rows reach the open app live (Realtime applies the policy above).
+alter publication supabase_realtime add table public.notifications;
 
 -- 2. What the app reads and does.
 create view public.v_my_notifications
@@ -106,7 +114,7 @@ as $$
 $$;
 
 -- After an insert: ask send-push to deliver the row. A failure here never
--- blocks the insert; the row keeps pushed_at null.
+-- blocks the insert; the row stays 'pending'.
 create or replace function private.notifications_push()
 returns trigger
 language plpgsql
@@ -135,8 +143,9 @@ create trigger notifications_push
   after insert on public.notifications
   for each row execute function private.notifications_push();
 
--- send-push: the row to deliver, once. Null when it was already sent (or
--- doesn't exist), so a repeated call sends nothing.
+-- send-push: the row to push, once. Null when there's nothing to push: it
+-- was already handled (or doesn't exist), or the user has the app open, in
+-- which case it is marked 'in_app' and the app shows it.
 create or replace function public.push_claim(p_secret text, p_notification_id uuid)
 returns jsonb
 language plpgsql
@@ -150,10 +159,12 @@ begin
     raise exception 'forbidden' using errcode = '42501';
   end if;
   update public.notifications n
-     set pushed_at = now(), push_error = null
-   where n.id = p_notification_id and n.pushed_at is null
+     set push_status = case when private.is_online(n.user_id) then 'in_app' else 'sent' end,
+         pushed_at   = now(),
+         push_error  = null
+   where n.id = p_notification_id and n.push_status = 'pending'
   returning n.* into v_row;
-  if not found then
+  if not found or v_row.push_status = 'in_app' then
     return null;
   end if;
   return jsonb_build_object(
@@ -164,8 +175,8 @@ begin
 end;
 $$;
 
--- send-push: how the delivery went. With an error the row is marked not
--- sent again, with the reason.
+-- send-push: how the push went. With an error the row is 'failed', with
+-- the reason.
 create or replace function public.push_complete(
   p_secret text, p_notification_id uuid, p_error text default null)
 returns void
@@ -179,7 +190,7 @@ begin
   end if;
   if p_error is not null then
     update public.notifications n
-       set pushed_at = null, push_error = left(p_error, 1000)
+       set push_status = 'failed', push_error = left(p_error, 1000)
      where n.id = p_notification_id;
   end if;
 end;

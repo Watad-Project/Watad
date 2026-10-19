@@ -2,10 +2,12 @@
 // (GRA-32).
 //
 // Called by the database right after a row is inserted into
-// public.notifications (trigger notifications_push, migration 66):
+// public.notifications (trigger notifications_push, migration 67):
 //
 // POST { "notification_id": uuid }   header x-push-secret
-// 200  { status: "sent", onesignal_id } | { status: "skipped" }  (already sent)
+// 200  { status: "sent", onesignal_id }
+//      { status: "skipped" }   already handled, or the user has the app open:
+//                              the app shows it (push_status 'in_app')
 // 400  { error: "invalid_body" }
 // 403  { error: "forbidden" }            wrong or missing secret
 // 502  { error: "push_failed" }          OneSignal refused it (see push_error)
@@ -48,7 +50,8 @@ Deno.serve(async (req: Request) => {
       p_error: error,
     });
 
-  // The row, once: a repeated call gets null and sends nothing.
+  // The row, once: null when there's nothing to push (already handled, or
+  // the user has the app open and sees it there).
   const { data: row, error: claimError } = await supabase.rpc("push_claim", {
     p_secret: secret,
     p_notification_id: notificationId,
