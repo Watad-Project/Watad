@@ -10,18 +10,36 @@
   "suggested_contractors": "Suggested contractors",
   "view_all": "All",
   "no_contractors": "No verified contractors yet",
-  "no_ratings": "No ratings yet",
-  "ratings_count": {
-    "zero": "No ratings yet",
-    "one": "{} rating",
-    "two": "{} ratings",
-    "few": "{} ratings",
-    "many": "{} ratings",
-    "other": "{} ratings"
-  },
   "contractors_title": "Contractors",
   "search_contractors": "Search by business name",
   "rating_any": "Any rating",
   "rating_at_least": "{} and up",
-  "no_matching_contractors": "No contractors match your search"
+  "no_matching_contractors": "No contractors match your search",
+  "filters_title": "Filter results",
+  "city_title": "City",
+  "city_any": "All cities",
+  "rating_title": "Rating",
+  "projects_title": "Completed projects",
+  "projects_any": "Any number",
+  "projects_at_least": {
+    "zero": "{}+ projects",
+    "one": "{}+ project",
+    "two": "{}+ projects",
+    "few": "{}+ projects",
+    "many": "{}+ projects",
+    "other": "{}+ projects"
+  },
+  "projects_count": {
+    "zero": "No projects yet",
+    "one": "{} project",
+    "two": "{} projects",
+    "few": "{} projects",
+    "many": "{} projects",
+    "other": "{} projects"
+  },
+  "sort_title": "Order",
+  "sort_rating": "Highest rated",
+  "sort_projects": "Most projects",
+  "show_results": "Show results",
+  "clear_filters": "Clear all"
 }

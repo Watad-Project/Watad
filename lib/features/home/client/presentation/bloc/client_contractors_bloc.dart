@@ -1,22 +1,25 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractor_filter.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractors_query.dart';
+import 'package:watad/features/home/client/domain/usecases/client_get_contractor_cities_use_case.dart';
 import 'package:watad/features/home/client/domain/usecases/client_get_contractors_use_case.dart';
 
 part 'client_contractors_event.dart';
 part 'client_contractors_state.dart';
 
-/// «الكل»: every verified contractor, best rated first, a page at a time,
-/// narrowed by name and rating.
+/// «الكل»: every verified contractor, the client's city first, a page at a
+/// time, narrowed by name, city, rating and completed projects.
 class ClientContractorsBloc
     extends Bloc<ClientContractorsEvent, ClientContractorsState> {
-  ClientContractorsBloc(this._getContractors)
+  ClientContractorsBloc(this._getContractors, this._getCities)
     : super(const ClientContractorsState()) {
     on<ClientContractorsFetched>(
-      (event, emit) => _loadFirstPage(state.filter, emit),
+      (event, emit) =>
+          Future.wait([_loadFirstPage(state.filter, emit), _loadCities(emit)]),
     );
     on<ClientContractorsFilterChanged>((event, emit) {
       if (event.filter == state.filter) return null;
@@ -26,6 +29,7 @@ class ClientContractorsBloc
   }
 
   final ClientGetContractorsUseCase _getContractors;
+  final ClientGetContractorCitiesUseCase _getCities;
 
   /// Contractors per page.
   static const int pageSize = 20;
@@ -66,6 +70,12 @@ class ClientContractorsBloc
           ),
         );
     }
+  }
+
+  /// The city filter's cities. Without them the sheet has no city part.
+  Future<void> _loadCities(Emitter<ClientContractorsState> emit) async {
+    final result = await _getCities(const NoParams());
+    if (result case Success(:final data)) emit(state.copyWith(cities: data));
   }
 
   Future<void> _onMoreRequested(

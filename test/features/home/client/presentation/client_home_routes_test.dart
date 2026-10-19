@@ -7,6 +7,7 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_home_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
+import 'package:watad/features/home/client/domain/entities/client_contractor_sort.dart';
 import 'package:watad/features/home/client/domain/entities/client_home_profile.dart';
 import 'package:watad/features/home/client/presentation/pages/client_contractors_page.dart';
 import 'package:watad/features/home/client/presentation/pages/client_home_page.dart';
@@ -28,7 +29,8 @@ void main() {
           id: 'c-1',
           companyName: 'البناء المتين',
           ratingAvg: 4.8,
-          ratingCount: 64,
+          ratingCount: 12,
+          completedProjectCount: 64,
         ),
         ClientContractor(
           id: 'c-2',
@@ -64,8 +66,8 @@ void main() {
     await openHome(tester);
 
     expect(find.byType(AppBusinessMiniCard), findsNWidgets(2));
-    expect(find.text('٤٫٨ · ٦٤ تقييمًا'), findsOneWidget);
-    expect(find.text('– · لا تقييمات بعد'), findsOneWidget);
+    expect(find.text('٤٫٨ · ٦٤ مشروعًا'), findsOneWidget);
+    expect(find.text('– · لا مشاريع بعد'), findsOneWidget);
   });
 
   testWidgets('«جوال موثّق» shows only for a confirmed phone', (tester) async {
@@ -119,7 +121,10 @@ void main() {
     expect(find.byIcon(Icons.person_rounded), findsOneWidget);
   });
 
-  testWidgets('client-contractors filters by name and rating', (tester) async {
+  testWidgets('client-contractors filters by name and from the sheet', (
+    tester,
+  ) async {
+    repository.citiesResult = const Success(['جدة', 'المدينة المنورة']);
     final router = await pumpAppRouter(
       tester,
       session: FakeAppSession()..signIn(AppRole.client),
@@ -134,10 +139,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.queries.last.filter.query, 'البناء');
 
-    await tester.tap(find.text('٤ فأكثر'));
+    await tester.tap(find.byTooltip('تصفية النتائج'));
     await tester.pumpAndSettle();
-    expect(repository.queries.last.filter.minRating, 4);
-    expect(repository.queries.last.filter.query, 'البناء');
+    // The sheet scrolls on a short screen.
+    Future<void> tapInSheet(String text) async {
+      await tester.ensureVisible(find.text(text));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(text));
+      await tester.pump();
+    }
+
+    await tapInSheet('المدينة المنورة');
+    await tapInSheet('١٠٠ مشروع فأكثر');
+    await tapInSheet('الأكثر مشاريع');
+    // Nothing is sent until «عرض النتائج».
+    expect(repository.queries.last.filter.minProjects, isNull);
+
+    await tapInSheet('عرض النتائج');
+    await tester.pumpAndSettle();
+    final filter = repository.queries.last.filter;
+    expect(filter.query, 'البناء');
+    expect(filter.city, 'المدينة المنورة');
+    expect(filter.minProjects, 100);
+    expect(filter.sort, ClientContractorSort.projects);
+    // The button shows how many filters are on.
+    expect(find.text('٣'), findsOneWidget);
     expect(find.text('لا يوجد مقاولون يطابقون البحث'), findsOneWidget);
   });
 }

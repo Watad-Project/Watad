@@ -15,6 +15,7 @@ class FakeClientHomeRepository implements ClientHomeRepository {
   Result<List<ClientContractor>> contractorsResult = const Success([]);
 
   Result<List<ClientContractor>> contractorsPageResult = const Success([]);
+  Result<List<String>> citiesResult = const Success([]);
 
   /// How many times the suggested contractors were read.
   int contractorReads = 0;
@@ -30,6 +31,9 @@ class FakeClientHomeRepository implements ClientHomeRepository {
     contractorReads++;
     return contractorsResult;
   }
+
+  @override
+  Future<Result<List<String>>> getContractorCities() async => citiesResult;
 
   @override
   Future<Result<List<ClientContractor>>> getContractors(

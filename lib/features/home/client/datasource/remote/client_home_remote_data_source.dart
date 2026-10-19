@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/home/client/datasource/models/client_contractor_model.dart';
 import 'package:watad/features/home/client/datasource/models/client_home_profile_model.dart';
+import 'package:watad/features/home/client/domain/entities/client_contractor_sort.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractors_query.dart';
 
 abstract interface class ClientHomeRemoteDataSource {
@@ -11,6 +12,8 @@ abstract interface class ClientHomeRemoteDataSource {
   Future<List<ClientContractorModel>> getContractors(
     ClientContractorsQuery query,
   );
+
+  Future<List<String>> getContractorCities();
 }
 
 class ClientHomeRemoteDataSourceImpl implements ClientHomeRemoteDataSource {
@@ -22,7 +25,8 @@ class ClientHomeRemoteDataSourceImpl implements ClientHomeRemoteDataSource {
   static const int _suggestedCount = 5;
 
   static const String _contractorColumns =
-      'id, company_name, avatar_path, rating_avg, rating_count';
+      'id, company_name, avatar_path, city, rating_avg, rating_count, '
+      'completed_project_count, is_in_my_city';
 
   @override
   Future<ClientHomeProfileModel> getProfile() async {
@@ -39,8 +43,11 @@ class ClientHomeRemoteDataSourceImpl implements ClientHomeRemoteDataSource {
 
   @override
   Future<List<ClientContractorModel>> getSuggestedContractors() async {
-    final rows = await _verifiedContractors()
-        // Highest rated first; contractors without ratings last.
+    final rows = await _client
+        .from('v_contractors')
+        .select(_contractorColumns)
+        // The client's city first, then the best rated.
+        .order('is_in_my_city', ascending: false)
         .order('rating_avg', ascending: false, nullsFirst: false)
         .order('rating_count', ascending: false)
         .limit(_suggestedCount);
@@ -52,30 +59,51 @@ class ClientHomeRemoteDataSourceImpl implements ClientHomeRemoteDataSource {
     ClientContractorsQuery query,
   ) async {
     final filter = query.filter;
-    var request = _verifiedContractors();
+    var request = _client.from('v_contractors').select(_contractorColumns);
     final name = filter.query.trim();
     if (name.isNotEmpty) {
       request = request.ilike('company_name', '%${_escapeLike(name)}%');
     }
+    if (filter.city case final city?) {
+      request = request.eq('city', city);
+    }
     if (filter.minRating case final minRating?) {
       request = request.gte('rating_avg', minRating);
     }
-    final rows = await request
-        .order('rating_avg', ascending: false, nullsFirst: false)
-        .order('rating_count', ascending: false)
+    if (filter.minProjects case final minProjects?) {
+      request = request.gte('completed_project_count', minProjects);
+    }
+    // The client's city first, then the chosen order.
+    var ordered = request.order('is_in_my_city', ascending: false);
+    ordered = switch (filter.sort) {
+      ClientContractorSort.rating =>
+        ordered
+            .order('rating_avg', ascending: false, nullsFirst: false)
+            .order('rating_count', ascending: false),
+      ClientContractorSort.projects =>
+        ordered
+            .order('completed_project_count', ascending: false)
+            .order('rating_avg', ascending: false, nullsFirst: false),
+    };
+    final rows = await ordered
         .order('company_name', ascending: true)
         .range(query.offset, query.offset + query.limit - 1);
     return rows.map(_toModel).toList();
   }
 
-  /// Verified businesses that still have an account.
-  PostgrestFilterBuilder<List<Map<String, dynamic>>> _verifiedContractors() {
-    return _client
-        .from('v_public_profiles')
-        .select(_contractorColumns)
-        .eq('is_business', true)
-        .eq('is_verified_business', true)
-        .eq('is_deleted', false);
+  @override
+  Future<List<String>> getContractorCities() async {
+    final rows = await _client
+        .from('v_contractors')
+        .select('city')
+        .not('city', 'is', null);
+    final cities = {
+      for (final row in rows)
+        if ((row['city'] as String?)?.trim() case final city?
+            when city.isNotEmpty)
+          city,
+    }.toList()..sort();
+    return cities;
   }
 
   ClientContractorModel _toModel(Map<String, dynamic> row) {

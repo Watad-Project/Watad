@@ -9,6 +9,7 @@ final class ClientContractorsState {
     this.contractors = const [],
     this.hasMore = true,
     this.isLoadingMore = false,
+    this.cities = const [],
     this.failure,
   });
 
@@ -22,6 +23,9 @@ final class ClientContractorsState {
   final bool hasMore;
   final bool isLoadingMore;
 
+  /// The cities of the city filter; empty until contractors set theirs.
+  final List<String> cities;
+
   /// Why the first page couldn't load.
   final Failure? failure;
 
@@ -31,6 +35,7 @@ final class ClientContractorsState {
     List<ClientContractor>? contractors,
     bool? hasMore,
     bool? isLoadingMore,
+    List<String>? cities,
     Failure? Function()? failure,
   }) {
     return ClientContractorsState(
@@ -39,6 +44,7 @@ final class ClientContractorsState {
       contractors: contractors ?? this.contractors,
       hasMore: hasMore ?? this.hasMore,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      cities: cities ?? this.cities,
       failure: failure == null ? this.failure : failure(),
     );
   }
