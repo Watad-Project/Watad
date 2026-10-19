@@ -62,21 +62,27 @@ class ClientProjectsRemoteDataSourceImpl
   Future<void> createProject(ClientNewProject project) async {
     final photoPaths = <String>[];
     for (final photoPath in project.photos) {
-      if (File(photoPath).existsSync()) {
-        final remotePath = await uploadProjectPhoto(filePath: photoPath);
-        photoPaths.add(remotePath);
-      } else {
-        photoPaths.add(photoPath);
+      final file = File(photoPath);
+      if (!file.existsSync()) {
+        throw FileSystemException(
+          'Project photo not found on device',
+          photoPath,
+        );
       }
+      final remotePath = await uploadProjectPhoto(filePath: photoPath);
+      photoPaths.add(remotePath);
     }
 
     String? deedPath;
     if (project.deedFilePath != null && project.deedFilePath!.isNotEmpty) {
-      if (File(project.deedFilePath!).existsSync()) {
-        deedPath = await uploadDeedDocument(filePath: project.deedFilePath!);
-      } else {
-        deedPath = project.deedFilePath;
+      final file = File(project.deedFilePath!);
+      if (!file.existsSync()) {
+        throw FileSystemException(
+          'Project ownership deed file not found on device',
+          project.deedFilePath!,
+        );
       }
+      deedPath = await uploadDeedDocument(filePath: project.deedFilePath!);
     }
 
     // Only the INSERT columns allowed on `projects` (ARCHITECTURE.md §3a).
@@ -121,9 +127,9 @@ class ClientProjectsRemoteDataSourceImpl
     final ext = filePath.split('.').last.toLowerCase();
     final fileName =
         '${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.isNotEmpty ? file.uri.pathSegments.last : 'deed.$ext'}';
-    final storagePath = '$userId/projects/$fileName';
+    final storagePath = '$userId/$fileName';
     await _client.storage
-        .from('images')
+        .from('project-deeds')
         .upload(
           storagePath,
           file,

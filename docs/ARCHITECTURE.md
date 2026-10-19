@@ -52,7 +52,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
 | | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
-| Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. |
+| Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. `deed_status`: `none → under_review → verified | rejected`, decided by `admin_set_project_deed_verification()`. |
 | | `project_offers` | insert/edit while `pending` | Decided by `accept_offer()`, `reject_offer()`, `withdraw_offer()`. |
 | | `project_tasks` | propose as taker | `status` only by `set_task_status()`. |
 | | `project_reports` | insert (taker, while project in progress) | "publishUpdate". |
@@ -78,7 +78,6 @@ Writes are limited twice: by RLS (which rows) and by column-level grants (which 
 | `business_documents` | `document_type`, `storage_path` | none | no |
 | `addresses` | `name`, `city`, `district`, `street`, `building_number`, `postal_code` | same six | yes |
 | `projects` | `title`, `description`, `budget`, `city`, `district`, `address_id`, `status`, `deed_storage_path`, `photo_paths` | `title`, `description`, `budget`, `city`, `district`, `address_id`, `deed_storage_path`, `photo_paths` | yes |
-| `project_photos` | `project_id`, `storage_path`, `sort_order` | none | yes |
 | `project_offers` | `project_id`, `amount`, `message` | `amount`, `message` | no |
 | `project_tasks` | `project_id`, `title`, `description`, `amount`, `start_date` | none (use `set_task_status()`) | no |
 | `project_reports` | `project_id`, `title`, `content` | `title`, `content` | no |
@@ -95,6 +94,7 @@ Every other table is read-only from the app. `projects.status` can be set on ins
 |------|--------|
 | `app_role` | `user`, `admin` |
 | `verification_status` | `unverified`, `pending`, `verified`, `rejected`, `suspended` |
+| `deed_verification_status` | `none`, `under_review`, `verified`, `rejected` |
 | `project_status` | `draft`, `open`, `in_progress`, `completed`, `cancelled` |
 | `offer_status` | `pending`, `accepted`, `rejected`, `withdrawn` |
 | `task_status` | `proposed`, `accepted`, `done`, `approved`, `rejected` |
@@ -133,7 +133,7 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Chat | `start_chat(p_other_user_id, p_project_id)`, `add_chat_member(p_chat_id, p_user_id)`, `remove_chat_member(p_chat_id, p_user_id)`, `mark_chat_read(p_chat_id)` |
 | Business | `request_business_verification()` |
 | Account | `complete_client_profile(p_full_name, p_national_id, p_phone)`, `delete_my_account()` |
-| Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing` |
+| Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_set_project_deed_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing` |
 | Blockchain sync (server only) | `blockchain_sync_claim`, `blockchain_sync_snapshot`, `blockchain_sync_complete`. They need the shared secret. **The app never calls these.** |
 
 `complete_client_profile()` finishes client sign-up. Call it once, after email OTP verification (before that there is no session). `p_phone` is the 9 digits starting with 5, without `+966`. It sets `users.full_name`, saves the `user_identity` row and returns `'created'`, or `'already_registered'` (and changes nothing) when the account already finished sign-up. Use that result, not `v_my_profile`, to tell a new account from an existing one: the sign-up trigger always creates the `users` row. Errors: `22023` for invalid input (`ValidationFailure`), `23505` when the ID/iqama number belongs to another account (`ConflictFailure`).
