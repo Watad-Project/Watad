@@ -228,7 +228,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `64_admin_deed_review`; `65_admin_requester_national_id` is in the repo and waits to be applied; the next is `66_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `65_admin_requester_national_id`; the next is `66_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.

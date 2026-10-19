@@ -86,11 +86,8 @@ class AdminReviewRequestCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          AppButton(
-            label: context.tr('review.details'),
-            variant: AppButtonVariant.secondary,
-            onPressed: onDetails,
-          ),
+          // The card's one action, in the app's orange.
+          AppButton(label: context.tr('review.details'), onPressed: onDetails),
         ],
       ),
     );
