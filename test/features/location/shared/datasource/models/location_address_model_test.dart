@@ -121,4 +121,41 @@ void main() {
       'postal_code',
     });
   });
+
+  test('fromGeocode parses Saudi national address fields and coords', () {
+    final geocodeJson = {
+      'city': 'الرياض',
+      'district': 'النرجس',
+      'street': 'رقم 116',
+      'building_number': '6780',
+      'postal_code': '13326',
+      'additional_number': '3929',
+      'short_address': 'RAYB6780',
+    };
+
+    final model = LocationAddressModel.fromGeocode(
+      geocodeJson,
+      lat: 24.8214,
+      lng: 46.6438,
+    );
+
+    expect(model.city, 'الرياض');
+    expect(model.district, 'النرجس');
+    expect(model.street, 'رقم 116');
+    expect(model.buildingNumber, '6780');
+    expect(model.postalCode, '13326');
+    expect(model.additionalNumber, '3929');
+    expect(model.shortAddress, 'RAYB6780');
+    expect(model.latitude, 24.8214);
+    expect(model.longitude, 46.6438);
+
+    // Verify toSupabaseMap does not include additional_number, short_address, or lat/lng
+    final dbMap = model.toSupabaseMap();
+    expect(dbMap.containsKey('additional_number'), isFalse);
+    expect(dbMap.containsKey('short_address'), isFalse);
+    expect(dbMap.containsKey('latitude'), isFalse);
+    expect(dbMap.containsKey('longitude'), isFalse);
+    expect(dbMap.length, 6);
+  });
 }
+

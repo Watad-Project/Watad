@@ -39,6 +39,24 @@ class _FakeLocationRemoteDataSource implements LocationRemoteDataSource {
   }
 
   @override
+  Future<LocationAddressModel> addressAt({
+    required double lat,
+    required double lng,
+  }) async {
+    if (shouldThrow) throw Exception('Geocode error');
+    return LocationAddressModel.fromGeocode({
+      'city': 'الرياض',
+      'district': 'النرجس',
+      'street': 'طريق عثمان بن عفان',
+      'building_number': '1234',
+      'postal_code': '13324',
+      'additional_number': '5678',
+      'short_address': 'RRRR1234',
+      'formatted_address': 'الرياض · النرجس',
+    }, lat: lat, lng: lng);
+  }
+
+  @override
   Future<Map<String, dynamic>> geocodeCoordinates({
     required double lat,
     required double lng,

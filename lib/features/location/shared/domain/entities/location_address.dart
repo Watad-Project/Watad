@@ -12,6 +12,8 @@ class LocationAddress {
     required this.postalCode,
     this.latitude,
     this.longitude,
+    this.additionalNumber,
+    this.shortAddress,
     this.isSaved = false,
   });
 
@@ -42,6 +44,12 @@ class LocationAddress {
   /// Longitude coordinate on the map.
   final double? longitude;
 
+  /// Saudi national address additional 4 digits (e.g. '3929').
+  final String? additionalNumber;
+
+  /// Saudi national short address code (e.g. 'RAYB6780').
+  final String? shortAddress;
+
   /// Whether this address is saved in the user's address book.
   final bool isSaved;
 
@@ -68,6 +76,8 @@ class LocationAddress {
     String? postalCode,
     double? latitude,
     double? longitude,
+    String? additionalNumber,
+    String? shortAddress,
     bool? isSaved,
   }) {
     return LocationAddress(
@@ -80,6 +90,8 @@ class LocationAddress {
       postalCode: postalCode ?? this.postalCode,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      additionalNumber: additionalNumber ?? this.additionalNumber,
+      shortAddress: shortAddress ?? this.shortAddress,
       isSaved: isSaved ?? this.isSaved,
     );
   }
@@ -98,6 +110,8 @@ class LocationAddress {
           postalCode == other.postalCode &&
           latitude == other.latitude &&
           longitude == other.longitude &&
+          additionalNumber == other.additionalNumber &&
+          shortAddress == other.shortAddress &&
           isSaved == other.isSaved;
 
   @override
@@ -111,6 +125,8 @@ class LocationAddress {
     postalCode,
     latitude,
     longitude,
+    additionalNumber,
+    shortAddress,
     isSaved,
   );
 }

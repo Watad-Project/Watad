@@ -356,6 +356,98 @@ class _LocationPageState extends State<LocationPage> {
                                 ),
                               ],
                             ),
+
+                            // National Address Details (display-only, ARCHITECTURE.md §3a)
+                            if ((state.address.shortAddress?.isNotEmpty ??
+                                    false) ||
+                                (state.address.additionalNumber?.isNotEmpty ??
+                                    false)) ...[
+                              const SizedBox(height: AppSpacing.md),
+                              Container(
+                                padding: const EdgeInsets.all(AppSpacing.sm),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceMuted,
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.md,
+                                  ),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Row(
+                                  children: [
+                                    if (state.address.shortAddress?.isNotEmpty ??
+                                        false)
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              context.tr(
+                                                'location.short_address_label',
+                                              ),
+                                              style: AppTextStyles.labelSmall
+                                                  .copyWith(
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
+                                            ),
+                                            const SizedBox(
+                                              height: AppSpacing.xxs,
+                                            ),
+                                            Text(
+                                              state.address.shortAddress!,
+                                              style: AppTextStyles.body
+                                                  .copyWith(
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    if ((state.address.shortAddress
+                                                ?.isNotEmpty ??
+                                            false) &&
+                                        (state.address.additionalNumber
+                                                ?.isNotEmpty ??
+                                            false))
+                                      const SizedBox(width: AppSpacing.md),
+                                    if (state.address.additionalNumber
+                                            ?.isNotEmpty ??
+                                        false)
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              context.tr(
+                                                'location.additional_number_label',
+                                              ),
+                                              style: AppTextStyles.labelSmall
+                                                  .copyWith(
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
+                                            ),
+                                            const SizedBox(
+                                              height: AppSpacing.xxs,
+                                            ),
+                                            Text(
+                                              state.address.additionalNumber!,
+                                              style: AppTextStyles.body
+                                                  .copyWith(
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: AppSpacing.md),
 
                             // Address label name

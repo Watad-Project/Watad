@@ -17,7 +17,7 @@ class _FakeLocationRepository implements LocationRepository {
   Future<Result<void>> deleteAddress(String id) async => const Success(null);
 
   @override
-  Future<Result<LocationAddress>> geocodeCoordinates({
+  Future<Result<LocationAddress>> addressAt({
     required double lat,
     required double lng,
   }) async => Success(
@@ -29,10 +29,18 @@ class _FakeLocationRepository implements LocationRepository {
       street: 'طريق عثمان بن عفان',
       buildingNumber: '1234',
       postalCode: '13324',
+      additionalNumber: '3929',
+      shortAddress: 'RAYB6780',
       latitude: lat,
       longitude: lng,
     ),
   );
+
+  @override
+  Future<Result<LocationAddress>> geocodeCoordinates({
+    required double lat,
+    required double lng,
+  }) => addressAt(lat: lat, lng: lng);
 }
 
 void main() {

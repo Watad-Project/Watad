@@ -13,6 +13,8 @@ class LocationAddressModel extends LocationAddress {
     required super.postalCode,
     super.latitude,
     super.longitude,
+    super.additionalNumber,
+    super.shortAddress,
     super.isSaved = false,
   });
 
@@ -28,7 +30,31 @@ class LocationAddressModel extends LocationAddress {
       postalCode: json['postal_code'] as String? ?? '',
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      additionalNumber: json['additional_number'] as String?,
+      shortAddress: json['short_address'] as String?,
       isSaved: json['is_saved'] as bool? ?? true,
+    );
+  }
+
+  /// Creates an address model from the `geocode` Edge Function response.
+  factory LocationAddressModel.fromGeocode(
+    Map<String, dynamic> json, {
+    double? lat,
+    double? lng,
+  }) {
+    return LocationAddressModel(
+      id: '',
+      name: '',
+      city: (json['city'] as String?)?.trim() ?? '',
+      district: (json['district'] as String?)?.trim() ?? '',
+      street: (json['street'] as String?)?.trim() ?? '',
+      buildingNumber: (json['building_number'] as String?)?.trim() ?? '',
+      postalCode: (json['postal_code'] as String?)?.trim() ?? '',
+      latitude: lat ?? (json['lat'] as num?)?.toDouble(),
+      longitude: lng ?? (json['lng'] as num?)?.toDouble(),
+      additionalNumber: (json['additional_number'] as String?)?.trim(),
+      shortAddress: (json['short_address'] as String?)?.trim(),
+      isSaved: false,
     );
   }
 
@@ -44,6 +70,8 @@ class LocationAddressModel extends LocationAddress {
       postalCode: entity.postalCode,
       latitude: entity.latitude,
       longitude: entity.longitude,
+      additionalNumber: entity.additionalNumber,
+      shortAddress: entity.shortAddress,
       isSaved: entity.isSaved,
     );
   }
@@ -75,6 +103,8 @@ class LocationAddressModel extends LocationAddress {
       'postal_code': postalCode,
       'latitude': latitude,
       'longitude': longitude,
+      'additional_number': additionalNumber,
+      'short_address': shortAddress,
       'is_saved': isSaved,
     };
   }
@@ -91,6 +121,8 @@ class LocationAddressModel extends LocationAddress {
       postalCode: postalCode,
       latitude: latitude,
       longitude: longitude,
+      additionalNumber: additionalNumber,
+      shortAddress: shortAddress,
       isSaved: isSaved,
     );
   }

@@ -17,5 +17,7 @@
   "mock_current_district": "حي النرجس",
   "mock_current_street": "طريق أنس بن مالك",
   "mock_current_building": "4210",
-  "mock_current_postal_code": "13324"
+  "mock_current_postal_code": "13324",
+  "additional_number_label": "الرقم الإضافي",
+  "short_address_label": "العنوان الوطني المختصر"
 }

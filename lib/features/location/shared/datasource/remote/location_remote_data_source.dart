@@ -13,6 +13,14 @@ abstract interface class LocationRemoteDataSource {
   /// Deletes an address from `addresses` table by its [id].
   Future<void> deleteAddress(String id);
 
+  /// Reverse geocodes [lat] and [lng] using the Supabase `geocode` Edge Function (GRA-19).
+  /// Returns [LocationAddressModel] with parsed city, district, street, building_number,
+  /// postal_code, additional_number, and short_address.
+  Future<LocationAddressModel> addressAt({
+    required double lat,
+    required double lng,
+  });
+
   /// Reverse geocodes [lat] and [lng] using the Supabase `geocode` Edge Function.
   /// Returns a map with address fields: `city`, `district`, `street`,
   /// `building_number`, `postal_code`, `additional_number`, `short_address`,
@@ -83,6 +91,26 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
   @override
   Future<void> deleteAddress(String id) async {
     await _client.from('addresses').delete().eq('id', id);
+  }
+
+  @override
+  Future<LocationAddressModel> addressAt({
+    required double lat,
+    required double lng,
+  }) async {
+    final response = await _client.functions.invoke(
+      'geocode',
+      body: {'lat': lat, 'lng': lng},
+    );
+    final data = response.data;
+    final map = data is Map<String, dynamic>
+        ? data
+        : (data is Map ? Map<String, dynamic>.from(data) : <String, dynamic>{});
+    return LocationAddressModel.fromGeocode(
+      map,
+      lat: lat,
+      lng: lng,
+    );
   }
 
   @override

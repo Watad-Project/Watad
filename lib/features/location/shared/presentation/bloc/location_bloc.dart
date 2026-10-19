@@ -67,8 +67,16 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     LocationCoordinatesChanged event,
     Emitter<LocationState> emit,
   ) async {
+    final cityBefore = state.address.city;
+    final districtBefore = state.address.district;
+    final streetBefore = state.address.street;
+    final buildingBefore = state.address.buildingNumber;
+    final postalBefore = state.address.postalCode;
+
     emit(
       state.copyWith(
+        status: LocationStatus.initial,
+        errorMessage: null,
         address: state.address.copyWith(
           latitude: event.latitude,
           longitude: event.longitude,
@@ -88,21 +96,51 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     if (result case Success(:final data)) {
       emit(
         state.copyWith(
+          status: LocationStatus.initial,
           address: state.address.copyWith(
             latitude: event.latitude,
             longitude: event.longitude,
-            city: data.city.isNotEmpty ? data.city : state.address.city,
-            district: data.district.isNotEmpty
-                ? data.district
-                : state.address.district,
-            street: data.street.isNotEmpty ? data.street : state.address.street,
-            buildingNumber: data.buildingNumber.isNotEmpty
-                ? data.buildingNumber
-                : state.address.buildingNumber,
-            postalCode: data.postalCode.isNotEmpty
-                ? data.postalCode
-                : state.address.postalCode,
+            city: state.address.city != cityBefore && state.address.city.isNotEmpty
+                ? state.address.city
+                : (data.city.isNotEmpty ? data.city : state.address.city),
+            district: state.address.district != districtBefore &&
+                    state.address.district.isNotEmpty
+                ? state.address.district
+                : (data.district.isNotEmpty
+                    ? data.district
+                    : state.address.district),
+            street: state.address.street != streetBefore &&
+                    state.address.street.isNotEmpty
+                ? state.address.street
+                : (data.street.isNotEmpty ? data.street : state.address.street),
+            buildingNumber:
+                state.address.buildingNumber != buildingBefore &&
+                        state.address.buildingNumber.isNotEmpty
+                    ? state.address.buildingNumber
+                    : (data.buildingNumber.isNotEmpty
+                        ? data.buildingNumber
+                        : state.address.buildingNumber),
+            postalCode: state.address.postalCode != postalBefore &&
+                    state.address.postalCode.isNotEmpty
+                ? state.address.postalCode
+                : (data.postalCode.isNotEmpty
+                    ? data.postalCode
+                    : state.address.postalCode),
+            additionalNumber: data.additionalNumber?.isNotEmpty == true
+                ? data.additionalNumber
+                : state.address.additionalNumber,
+            shortAddress: data.shortAddress?.isNotEmpty == true
+                ? data.shortAddress
+                : state.address.shortAddress,
           ),
+        ),
+      );
+    } else if (result case Failed(:final failure)) {
+      emit(
+        state.copyWith(
+          status: LocationStatus.failure,
+          failure: failure,
+          errorMessage: failure.messageKey,
         ),
       );
     }
@@ -134,7 +172,12 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   }
 
   void _onCityChanged(LocationCityChanged event, Emitter<LocationState> emit) {
-    emit(state.copyWith(address: state.address.copyWith(city: event.city)));
+    emit(
+      state.copyWith(
+        status: LocationStatus.initial,
+        address: state.address.copyWith(city: event.city),
+      ),
+    );
   }
 
   void _onDistrictChanged(
@@ -142,7 +185,10 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     Emitter<LocationState> emit,
   ) {
     emit(
-      state.copyWith(address: state.address.copyWith(district: event.district)),
+      state.copyWith(
+        status: LocationStatus.initial,
+        address: state.address.copyWith(district: event.district),
+      ),
     );
   }
 
@@ -150,7 +196,12 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     LocationStreetChanged event,
     Emitter<LocationState> emit,
   ) {
-    emit(state.copyWith(address: state.address.copyWith(street: event.street)));
+    emit(
+      state.copyWith(
+        status: LocationStatus.initial,
+        address: state.address.copyWith(street: event.street),
+      ),
+    );
   }
 
   void _onBuildingNumberChanged(
@@ -159,6 +210,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   ) {
     emit(
       state.copyWith(
+        status: LocationStatus.initial,
         address: state.address.copyWith(buildingNumber: event.buildingNumber),
       ),
     );
@@ -170,13 +222,19 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   ) {
     emit(
       state.copyWith(
+        status: LocationStatus.initial,
         address: state.address.copyWith(postalCode: event.postalCode),
       ),
     );
   }
 
   void _onNameChanged(LocationNameChanged event, Emitter<LocationState> emit) {
-    emit(state.copyWith(address: state.address.copyWith(name: event.name)));
+    emit(
+      state.copyWith(
+        status: LocationStatus.initial,
+        address: state.address.copyWith(name: event.name),
+      ),
+    );
   }
 
   void _onSaveToggled(LocationSaveToggled event, Emitter<LocationState> emit) {
