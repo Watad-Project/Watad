@@ -18,6 +18,7 @@ void main() {
       'owner_name': 'سالم العتيبي',
       'owner_avatar_path': null,
       'member_since': '2026-09-30T10:00:00+00:00',
+      'owner_national_id': '2098765432',
       'deed_url': 'https://example.supabase.co/sign/deed.pdf',
       'photo_urls': ['https://example.supabase.co/images/site.jpg'],
       'owner_avatar_url': null,
@@ -35,9 +36,11 @@ void main() {
     expect(model.photoUrls, ['https://example.supabase.co/images/site.jpg']);
     expect(model.deedUrl, 'https://example.supabase.co/sign/deed.pdf');
     expect(model.isDeedPdf, isTrue);
+    expect(model.hasFiles, isTrue);
     expect(model.requester.name, 'سالم العتيبي');
     expect(model.requester.avatarUrl, isNull);
     expect(model.requester.memberSince, DateTime.utc(2026, 9, 30, 10));
+    expect(model.requester.nationalId, '2098765432');
     expect(model.requestedAt, DateTime.utc(2026, 10, 19, 8));
   });
 
@@ -55,7 +58,8 @@ void main() {
       'owner_name': 'Sara',
       'owner_avatar_path': null,
       'member_since': null,
-      'deed_url': 'https://example.supabase.co/sign/deed.jpg',
+      // The file isn't in storage: no link.
+      'deed_url': null,
       'photo_urls': <String>[],
       'owner_avatar_url': null,
     });
@@ -64,6 +68,8 @@ void main() {
     expect(model.budget, isNull);
     expect(model.photoUrls, isEmpty);
     expect(model.isDeedPdf, isFalse);
+    expect(model.deedUrl, isNull);
+    expect(model.hasFiles, isFalse);
     expect(model.requestedAt, isNull);
   });
 }

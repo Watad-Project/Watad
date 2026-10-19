@@ -7,10 +7,11 @@ import 'package:watad/core/components/display/app_image_viewer.dart';
 import 'package:watad/core/components/display/app_network_image.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
+import 'package:watad/core/theme/app_text_styles.dart';
 
 /// A file the admin checks, through a short-lived signed link: an image
 /// shows here and opens full screen to zoom in; a PDF opens in the phone's
-/// viewer.
+/// viewer. Without a link (the file isn't in storage) it says so.
 class AdminReviewFilePreview extends StatelessWidget {
   const AdminReviewFilePreview({
     required this.url,
@@ -19,7 +20,7 @@ class AdminReviewFilePreview extends StatelessWidget {
     super.key,
   });
 
-  final String url;
+  final String? url;
 
   /// What the file is, e.g. «السجل التجاري».
   final String title;
@@ -27,6 +28,26 @@ class AdminReviewFilePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final url = this.url;
+    if (url == null) {
+      return AppCard(
+        child: Row(
+          children: [
+            const Icon(
+              Icons.report_gmailerrorred_outlined,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                context.tr('review.file_missing'),
+                style: AppTextStyles.caption,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     if (isPdf) {
       return AppButton(
         label: context.tr('review.open_file'),

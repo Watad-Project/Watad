@@ -14,6 +14,7 @@ import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/review/admin/domain/entities/admin_deed_details.dart';
 import 'package:watad/features/review/admin/domain/entities/admin_license_details.dart';
+import 'package:watad/features/review/admin/domain/entities/admin_review_kind.dart';
 import 'package:watad/features/review/admin/domain/entities/admin_review_target.dart';
 import 'package:watad/features/review/admin/presentation/bloc/admin_review_details_bloc.dart';
 import 'package:watad/features/review/admin/presentation/widgets/admin_deed_details_view.dart';
@@ -29,16 +30,23 @@ class AdminReviewDetailsPage extends StatelessWidget {
 
   final AdminReviewTarget target;
 
-  /// The rejection reasons, in order (GRA-30). Only the last one, «أخرى»,
-  /// asks the admin to write the reason.
-  static const _reasonKeys = [
+  /// The rejection reasons of a license, in order (GRA-30), and of a deed.
+  /// Only the last one, «أخرى», asks the admin to write the reason.
+  static const _licenseReasonKeys = [
     'review.reason_unclear',
     'review.reason_expired',
     'review.reason_mismatch',
     'review.reason_wrong_document',
     'review.reason_other',
   ];
-  static final _otherReasonIndex = _reasonKeys.length - 1;
+  static const _deedReasonKeys = [
+    'review.deed_reason_unclear',
+    'review.deed_reason_owner_mismatch',
+    'review.deed_reason_location_mismatch',
+    'review.deed_reason_invalid',
+    'review.deed_reason_not_a_deed',
+    'review.reason_other',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +91,8 @@ class AdminReviewDetailsPage extends StatelessWidget {
                   label: context.tr('review.approve'),
                   variant: AppButtonVariant.dark,
                   isLoading: state.isSending,
-                  onPressed: state.isSending
+                  // Nothing to approve without a file: only «رفض».
+                  onPressed: state.isSending || !state.details!.hasFiles
                       ? null
                       : () => context.read<AdminReviewDetailsBloc>().add(
                           const AdminReviewDetailsApproved(),
@@ -143,7 +152,12 @@ class AdminReviewDetailsPage extends StatelessWidget {
   }
 
   void _showRejectForm(BuildContext context, AdminReviewDetailsBloc bloc) {
-    final reasons = [for (final key in _reasonKeys) context.tr(key)];
+    final reasonKeys = switch (target.kind) {
+      AdminReviewKind.license => _licenseReasonKeys,
+      AdminReviewKind.deed => _deedReasonKeys,
+    };
+    final reasons = [for (final key in reasonKeys) context.tr(key)];
+    final otherReasonIndex = reasons.length - 1;
     AppPopup.sheet<void>(
       context,
       // Scrolls when the reasons and the keyboard don't fit.
@@ -155,11 +169,11 @@ class AdminReviewDetailsPage extends StatelessWidget {
         ),
         child: AppRejectReasonForm(
           reasons: reasons,
-          otherReasonIndex: _otherReasonIndex,
+          otherReasonIndex: otherReasonIndex,
           onSubmit: (reasonIndex, details) {
             bloc.add(
               AdminReviewDetailsRejected(
-                reason: reasonIndex == _otherReasonIndex
+                reason: reasonIndex == otherReasonIndex
                     ? null
                     : reasons[reasonIndex],
                 details: details,

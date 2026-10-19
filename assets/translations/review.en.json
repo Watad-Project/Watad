@@ -69,5 +69,12 @@
   "field_title": "Project title",
   "field_budget": "Budget",
   "field_description": "Description",
-  "not_set": "Not set"
+  "not_set": "Not set",
+  "file_missing": "The file wasn't found. Reject the request so it's uploaded again.",
+  "deed_reason_unclear": "The deed image isn't clear",
+  "deed_reason_owner_mismatch": "The owner's name on the deed doesn't match the client",
+  "deed_reason_location_mismatch": "The deed doesn't match the project's location",
+  "deed_reason_invalid": "The deed isn't valid or is suspended",
+  "deed_reason_not_a_deed": "The uploaded document isn't an ownership deed",
+  "field_national_id": "ID / iqama number"
 }

@@ -7,8 +7,8 @@ class AdminDeedDetails extends AdminReviewDetails {
     required super.target,
     required super.requester,
     required this.title,
-    required this.deedUrl,
     required this.deedPath,
+    this.deedUrl,
     super.requestedAt,
     this.description,
     this.budget,
@@ -27,11 +27,15 @@ class AdminDeedDetails extends AdminReviewDetails {
   final List<String> photoUrls;
 
   /// A signed URL to the deed, valid for a few minutes. Never a public URL.
-  final String deedUrl;
+  /// Null when the file isn't in storage.
+  final String? deedUrl;
 
   /// The deed's path in the private `project-deeds` bucket.
   final String deedPath;
 
   /// Whether the deed is a PDF (the rest are images).
   bool get isDeedPdf => deedPath.toLowerCase().endsWith('.pdf');
+
+  @override
+  bool get hasFiles => deedUrl != null;
 }

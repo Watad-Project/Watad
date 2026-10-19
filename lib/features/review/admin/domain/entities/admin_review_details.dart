@@ -17,4 +17,8 @@ abstract class AdminReviewDetails {
 
   /// When the request was sent (UTC).
   final DateTime? requestedAt;
+
+  /// Whether there is a file to check. Without one the admin can only
+  /// reject, so the requester uploads it again.
+  bool get hasFiles;
 }

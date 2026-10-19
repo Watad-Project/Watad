@@ -4,6 +4,7 @@ class AdminReviewRequester {
     required this.name,
     this.avatarUrl,
     this.memberSince,
+    this.nationalId,
   });
 
   final String name;
@@ -11,4 +12,9 @@ class AdminReviewRequester {
 
   /// When their account was created (UTC).
   final DateTime? memberSince;
+
+  /// Their ID/iqama number, to match against the documents. Null when they
+  /// never gave one (contractors don't at sign-up). Personal data: never
+  /// log it.
+  final String? nationalId;
 }

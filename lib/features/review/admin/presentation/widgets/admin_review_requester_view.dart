@@ -64,23 +64,26 @@ class AdminReviewRequesterView extends StatelessWidget {
             ],
           ),
         ),
-        if (memberSince != null || requestedAt != null) ...[
-          const SizedBox(height: AppSpacing.sm),
-          AppKeyValueList(
-            rows: [
-              if (requestedAt != null)
-                AppKeyValueRow(
-                  label: context.tr('review.field_requested_at'),
-                  value: AdminReviewTimeAgo.format(context, requestedAt, now),
-                ),
-              if (memberSince != null)
-                AppKeyValueRow(
-                  label: context.tr('review.field_member_since'),
-                  value: AdminReviewTimeAgo.format(context, memberSince, now),
-                ),
-            ],
-          ),
-        ],
+        const SizedBox(height: AppSpacing.sm),
+        AppKeyValueList(
+          rows: [
+            AppKeyValueRow(
+              label: context.tr('review.field_national_id'),
+              value: requester.nationalId ?? context.tr('review.not_set'),
+              isMonospace: requester.nationalId != null,
+            ),
+            if (requestedAt != null)
+              AppKeyValueRow(
+                label: context.tr('review.field_requested_at'),
+                value: AdminReviewTimeAgo.format(context, requestedAt, now),
+              ),
+            if (memberSince != null)
+              AppKeyValueRow(
+                label: context.tr('review.field_member_since'),
+                value: AdminReviewTimeAgo.format(context, memberSince, now),
+              ),
+          ],
+        ),
       ],
     );
   }

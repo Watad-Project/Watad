@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_image_viewer.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_not_found_view.dart';
@@ -73,7 +74,10 @@ void main() {
       )
       ..details[deedTarget] = AdminDeedDetails(
         target: deedTarget,
-        requester: const AdminReviewRequester(name: 'سارة القحطاني'),
+        requester: const AdminReviewRequester(
+          name: 'سارة القحطاني',
+          nationalId: '1012345678',
+        ),
         title: 'بناء فيلا',
         description: 'فيلا من دورين في حي العزيزية',
         budget: Money.fromSar(450000),
@@ -163,6 +167,9 @@ void main() {
 
     expect(find.text('سالم العتيبي'), findsOneWidget);
     expect(find.text('منذ ٣ أيام'), findsOneWidget);
+    // A contractor without an ID number on file.
+    expect(find.text('رقم الهوية / الإقامة'), findsOneWidget);
+    expect(find.text('غير محدد'), findsOneWidget);
     expect(find.text('مؤسسة البناء الحديث'), findsOneWidget);
     expect(find.text('1010123456'), findsOneWidget);
     expect(find.text('مقاولات عامة'), findsOneWidget);
@@ -176,6 +183,7 @@ void main() {
     await openDetails(tester, deedTarget);
 
     expect(find.text('سارة القحطاني'), findsOneWidget);
+    expect(find.text('1012345678'), findsOneWidget);
     expect(find.text('بناء فيلا'), findsOneWidget);
     expect(find.text('٤٥٠٬٠٠٠ ر.س'), findsOneWidget);
     expect(find.text('العزيزية'), findsOneWidget);
@@ -184,6 +192,51 @@ void main() {
     expect(find.text('فتح الملف'), findsOneWidget);
     await tester.ensureVisible(find.text('صور الموقع'));
     expect(find.text('صور الموقع'), findsOneWidget);
+  });
+
+  testWidgets('a deed whose file is missing can only be rejected', (
+    tester,
+  ) async {
+    const missing = AdminReviewTarget(kind: AdminReviewKind.deed, id: 'p-2');
+    repository.details[missing] = const AdminDeedDetails(
+      target: missing,
+      requester: AdminReviewRequester(name: 'سارة القحطاني'),
+      title: 'ترميم',
+      deedPath: 'u-2/never-uploaded.pdf',
+    );
+    await openDetails(tester, missing);
+
+    await tester.ensureVisible(
+      find.text('لم يُعثر على الملف. ارفض الطلب ليُرفع من جديد.'),
+    );
+    expect(find.text('فتح الملف'), findsNothing);
+    final approve = tester.widget<AppButton>(
+      find.byKey(const Key('review_approve_button')),
+    );
+    expect(approve.onPressed, isNull);
+
+    await tester.tap(find.byKey(const Key('review_reject_button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('المستند المرفوع ليس صك ملكية'));
+    await tester.pump();
+    await tester.tap(find.text('إرسال الرفض'));
+    await tester.pumpAndSettle();
+    expect(repository.rejected, [(missing, 'المستند المرفوع ليس صك ملكية')]);
+  });
+
+  testWidgets('a deed has its own rejection reasons', (tester) async {
+    await openDetails(tester, deedTarget);
+    await tester.tap(find.byKey(const Key('review_reject_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('صورة الصك غير واضحة'), findsOneWidget);
+    expect(find.text('اسم المالك في الصك لا يطابق اسم العميل'), findsOneWidget);
+    expect(find.text('الصك لا يطابق موقع المشروع'), findsOneWidget);
+    expect(find.text('الصك غير ساري أو موقوف'), findsOneWidget);
+    expect(find.text('أخرى'), findsOneWidget);
+    // Not the license's.
+    expect(find.text('المستند لا يطابق بيانات المنشأة'), findsNothing);
+    expect(find.text('المستند منتهي الصلاحية'), findsNothing);
   });
 
   testWidgets('approving closes the details and the card leaves the grid', (

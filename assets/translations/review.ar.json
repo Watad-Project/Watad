@@ -69,5 +69,12 @@
   "field_title": "عنوان المشروع",
   "field_budget": "الميزانية",
   "field_description": "الوصف",
-  "not_set": "غير محدد"
+  "not_set": "غير محدد",
+  "file_missing": "لم يُعثر على الملف. ارفض الطلب ليُرفع من جديد.",
+  "deed_reason_unclear": "صورة الصك غير واضحة",
+  "deed_reason_owner_mismatch": "اسم المالك في الصك لا يطابق اسم العميل",
+  "deed_reason_location_mismatch": "الصك لا يطابق موقع المشروع",
+  "deed_reason_invalid": "الصك غير ساري أو موقوف",
+  "deed_reason_not_a_deed": "المستند المرفوع ليس صك ملكية",
+  "field_national_id": "رقم الهوية / الإقامة"
 }

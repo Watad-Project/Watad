@@ -7,7 +7,7 @@ class AdminReviewDocumentModel extends AdminReviewDocument {
     required super.documentType,
     required super.storagePath,
     required super.createdAt,
-    required super.url,
+    super.url,
   });
 
   /// Maps the columns selected in AdminReviewRemoteDataSourceImpl, plus
@@ -20,7 +20,7 @@ class AdminReviewDocumentModel extends AdminReviewDocument {
       ),
       storagePath: json['storage_path'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
-      url: json['url'] as String,
+      url: json['url'] as String?,
     );
   }
 }

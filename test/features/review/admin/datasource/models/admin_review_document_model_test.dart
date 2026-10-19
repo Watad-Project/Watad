@@ -34,4 +34,16 @@ void main() {
     expect(model.documentType, BusinessDocumentType.nationalAddress);
     expect(model.isPdf, isFalse);
   });
+
+  test('a file missing from storage has no link', () {
+    final model = AdminReviewDocumentModel.fromJson({
+      'id': 'doc-3',
+      'document_type': 'commercial_registration',
+      'storage_path': 'b-1/commercial_registration/cr.pdf',
+      'created_at': '2026-10-18T09:32:00+00:00',
+      'url': null,
+    });
+
+    expect(model.url, isNull);
+  });
 }

@@ -24,6 +24,7 @@ void main() {
       'owner_avatar_path': 'u-1/avatar.jpg',
       'member_since': '2026-10-01T12:00:00+00:00',
       'requested_at': '2026-10-18T09:30:00+00:00',
+      'owner_national_id': '1012345678',
       'owner_avatar_url': 'https://example.supabase.co/avatars/u-1/avatar.jpg',
       'documents': [document],
     };
@@ -42,6 +43,7 @@ void main() {
       'https://example.supabase.co/avatars/u-1/avatar.jpg',
     );
     expect(model.requester.memberSince, DateTime.utc(2026, 10, 1, 12));
+    expect(model.requester.nationalId, '1012345678');
     expect(model.requestedAt, DateTime.utc(2026, 10, 18, 9, 30));
     expect(model.documents, [document]);
   });
@@ -57,6 +59,8 @@ void main() {
       'owner_avatar_path': null,
       'member_since': null,
       'requested_at': null,
+      // Contractors don't give an ID number at sign-up.
+      'owner_national_id': null,
       'owner_avatar_url': null,
       'documents': <AdminReviewDocumentModel>[],
     });
@@ -65,6 +69,7 @@ void main() {
     expect(model.city, isNull);
     expect(model.requester.name, '');
     expect(model.requester.memberSince, isNull);
+    expect(model.requester.nationalId, isNull);
     expect(model.documents, isEmpty);
   });
 }

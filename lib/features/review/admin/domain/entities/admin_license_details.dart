@@ -25,4 +25,7 @@ class AdminLicenseDetails extends AdminReviewDetails {
 
   /// The files, oldest first.
   final List<AdminReviewDocument> documents;
+
+  @override
+  bool get hasFiles => documents.any((document) => document.url != null);
 }

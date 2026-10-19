@@ -9,8 +9,8 @@ class AdminDeedDetailsModel extends AdminDeedDetails {
     required super.target,
     required super.requester,
     required super.title,
-    required super.deedUrl,
     required super.deedPath,
+    super.deedUrl,
     super.requestedAt,
     super.description,
     super.budget,
@@ -21,7 +21,8 @@ class AdminDeedDetailsModel extends AdminDeedDetails {
 
   /// Maps a `v_admin_deed_queue` row as selected in
   /// AdminReviewRemoteDataSourceImpl, plus what the data source made from
-  /// it: `deed_url` (a signed URL), `photo_urls` and `owner_avatar_url`.
+  /// it: `deed_url` (a signed URL, null when the file isn't in storage),
+  /// `photo_urls` and `owner_avatar_url`.
   factory AdminDeedDetailsModel.fromJson(Map<String, dynamic> json) {
     final budget = json['budget'] as num?;
     return AdminDeedDetailsModel(
@@ -33,6 +34,7 @@ class AdminDeedDetailsModel extends AdminDeedDetails {
         name: json['owner_name'] as String? ?? '',
         avatarUrl: json['owner_avatar_url'] as String?,
         memberSince: _date(json['member_since']),
+        nationalId: json['owner_national_id'] as String?,
       ),
       title: json['title'] as String? ?? '',
       description: json['description'] as String?,
@@ -43,7 +45,7 @@ class AdminDeedDetailsModel extends AdminDeedDetails {
         for (final url in json['photo_urls'] as List? ?? const [])
           url as String,
       ],
-      deedUrl: json['deed_url'] as String,
+      deedUrl: json['deed_url'] as String?,
       deedPath: json['deed_storage_path'] as String,
       requestedAt: _date(json['requested_at']),
     );

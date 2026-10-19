@@ -49,7 +49,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | Identity | `users` | update `full_name`, `avatar_path` only | `role` locked. Anonymised, never deleted. |
 | | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. `city`: where the business works, set by the contractor from the location picker. |
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
-| | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Personal data: never log it. |
+| | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Admins see the ID number (not the phone) of someone waiting for review, as `owner_national_id` in the two admin queues, through `private.admin_national_id()` (migration 65). Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
 | | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
 | Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. `deed_storage_path`: the ownership deed in the private `project-deeds` bucket; must be inside the owner's folder (`projects_deed_path_in_owner_folder`). `deed_status`: `none → under_review → verified | rejected`, decided by `admin_set_project_deed_verification()`; `deed_submitted_at` is when the deed was sent. A project whose deed is `under_review` or `rejected` can't be `open` (migration 64): it starts as a draft, and verifying the deed publishes it. |
@@ -165,7 +165,7 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker).
 
-`v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo and `member_since`, but never their `user_identity` (ID number, phone).
+`v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo, `member_since` and `owner_national_id` (their ID/iqama number, null when they never gave one), never their phone.
 
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 
@@ -228,7 +228,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `64_admin_deed_review`; the next is `65_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `64_admin_deed_review`; `65_admin_requester_national_id` is in the repo and waits to be applied; the next is `66_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.

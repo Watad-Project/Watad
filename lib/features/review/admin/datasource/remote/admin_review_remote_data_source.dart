@@ -82,7 +82,8 @@ class AdminReviewRemoteDataSourceImpl implements AdminReviewRemoteDataSource {
         .from('v_admin_verification_queue')
         .select(
           'business_id, company_name, cr_number, specialized_field, city, '
-          'owner_name, owner_avatar_path, member_since, requested_at',
+          'owner_name, owner_avatar_path, member_since, requested_at, '
+          'owner_national_id',
         )
         .eq('business_id', businessId)
         .single();
@@ -102,13 +103,14 @@ class AdminReviewRemoteDataSourceImpl implements AdminReviewRemoteDataSource {
         .select(
           'project_id, title, description, budget, city, district, '
           'photo_paths, deed_storage_path, requested_at, owner_name, '
-          'owner_avatar_path, member_since',
+          'owner_avatar_path, member_since, owner_national_id',
         )
         .eq('project_id', projectId)
         .single();
-    final deedUrl = await _client.storage
-        .from('project-deeds')
-        .createSignedUrl(row['deed_storage_path'] as String, _signedUrlSeconds);
+    final deedUrl = await _signedUrl(
+      _client.storage.from('project-deeds'),
+      row['deed_storage_path'] as String,
+    );
     final photoPaths = row['photo_paths'] as List? ?? const [];
     return AdminDeedDetailsModel.fromJson({
       ...row,
@@ -131,9 +133,10 @@ class AdminReviewRemoteDataSourceImpl implements AdminReviewRemoteDataSource {
         .order('created_at', ascending: true);
     return Future.wait(
       rows.map((row) async {
-        final url = await _client.storage
-            .from('business-documents')
-            .createSignedUrl(row['storage_path'] as String, _signedUrlSeconds);
+        final url = await _signedUrl(
+          _client.storage.from('business-documents'),
+          row['storage_path'] as String,
+        );
         return AdminReviewDocumentModel.fromJson({...row, 'url': url});
       }),
     );
@@ -170,6 +173,14 @@ class AdminReviewRemoteDataSourceImpl implements AdminReviewRemoteDataSource {
       },
     );
   }
+
+  /// A short-lived link to [path] in a private bucket, or null when the
+  /// file isn't there (never uploaded, or removed): the admin still sees the
+  /// request and can reject it.
+  Future<String?> _signedUrl(StorageFileApi bucket, String path) async =>
+      await bucket.exists(path)
+      ? await bucket.createSignedUrl(path, _signedUrlSeconds)
+      : null;
 
   /// Photos are in the public `avatars` bucket.
   String? _avatarUrl(Object? path) => path is String && path.isNotEmpty
