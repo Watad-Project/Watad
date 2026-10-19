@@ -1,6 +1,6 @@
 # Watad architecture
 
-This document describes the backend the Flutter app depends on. It was written from the live Supabase project (21 tables, 32 RPC functions, 20 views, 4 storage buckets, 1 Edge Function) on 2026-10-06, and updated for migrations `56`–`58` (client identity: 22 tables, 33 RPC functions, 21 views) on 2026-10-14. If the database changes, update this file in the same PR.
+This document describes the backend the Flutter app depends on. It was written from the live Supabase project (21 tables, 32 RPC functions, 20 views, 4 storage buckets, 1 Edge Function) on 2026-10-06, updated for migrations `56`–`58` (client identity: 22 tables, 33 RPC functions, 21 views) on 2026-10-14, and for the `geocode` Edge Function (2 Edge Functions) on 2026-10-19. If the database changes, update this file in the same PR.
 
 How the Flutter app itself is organised (folders, layers, BLoC, naming) is in [`APP_ARCHITECTURE.md`](APP_ARCHITECTURE.md). This file is the contract between that app and the backend.
 
@@ -134,6 +134,16 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Account | `complete_client_profile(p_full_name, p_national_id, p_phone)`, `delete_my_account()` |
 | Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing` |
 | Blockchain sync (server only) | `blockchain_sync_claim`, `blockchain_sync_snapshot`, `blockchain_sync_complete`. They need the shared secret. **The app never calls these.** |
+
+### Edge Functions the app calls
+
+Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/`, signed in: the user's session is sent with it.
+
+| Function | Body | Returns |
+|----------|------|---------|
+| `geocode` | `lat`, `lng` (numbers), optional `language` (`ar` default, or `en`) | The address of that point, from Google: `city`, `district`, `street`, `building_number`, `postal_code` (the `addresses` columns of §3a), plus `additional_number` and `short_address` (the Saudi national address, e.g. `RAYB6780`) and `formatted_address`. A field Google doesn't know is `null`; the user types it. Errors: `400` `invalid_body` / `invalid_coordinates`, `401` `unauthorized` (signed-in users only), `502` `geocoder_unavailable`. |
+
+`geocode` holds the Google key as the server secret `GOOGLE_MAPS_SERVER_KEY`; the app never sees it. It is deployed with `verify_jwt` off and checks the caller's session itself. Its source is in `supabase/functions/geocode/`.
 
 `complete_client_profile()` finishes client sign-up. Call it once, after email OTP verification (before that there is no session). `p_phone` is the 9 digits starting with 5, without `+966`. It sets `users.full_name`, saves the `user_identity` row and returns `'created'`, or `'already_registered'` (and changes nothing) when the account already finished sign-up. Use that result, not `v_my_profile`, to tell a new account from an existing one: the sign-up trigger always creates the `users` row. Errors: `22023` for invalid input (`ValidationFailure`), `23505` when the ID/iqama number belongs to another account (`ConflictFailure`).
 
