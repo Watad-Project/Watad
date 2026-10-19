@@ -107,7 +107,10 @@ class _LocationPageState extends State<LocationPage> {
         _syncControllersWithState(state);
         if (state.status == LocationStatus.success &&
             state.confirmedAddress != null) {
-          context.pop(state.confirmedAddress!.formattedAddress);
+          // The saved address's id, so the flow that opened the picker can
+          // select it (GRA-34); nothing when the address wasn't saved.
+          final id = state.confirmedAddress!.id;
+          context.pop(id.isEmpty ? null : id);
         }
         if (state.status == LocationStatus.failure) {
           final messageKey = state.failure?.messageKey ?? state.errorMessage;
