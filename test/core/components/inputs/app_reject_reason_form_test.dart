@@ -59,4 +59,46 @@ void main() {
     await tester.tap(find.text('إرسال الرفض'));
     expect(submitted, [(1, 'لا تظهر الزوايا')]);
   });
+
+  group('with an «أخرى» reason', () {
+    Future<List<(int, String)>> pumpWithOther(WidgetTester tester) async {
+      final submitted = <(int, String)>[];
+      await pumpComponent(
+        tester,
+        AppRejectReasonForm(
+          reasons: const ['الصورة غير واضحة', 'أخرى'],
+          otherReasonIndex: 1,
+          onSubmit: (reason, details) => submitted.add((reason, details)),
+        ),
+      );
+      return submitted;
+    }
+
+    testWidgets('a listed reason sends without details', (tester) async {
+      final submitted = await pumpWithOther(tester);
+
+      expect(find.byType(TextField), findsNothing);
+      await tester.tap(find.text('الصورة غير واضحة'));
+      await tester.pump();
+      expect(find.byType(TextField), findsNothing);
+      await tester.tap(find.text('إرسال الرفض'));
+      expect(submitted, [(0, '')]);
+    });
+
+    testWidgets('«أخرى» asks for details before sending', (tester) async {
+      final submitted = await pumpWithOther(tester);
+
+      await tester.tap(find.text('أخرى'));
+      await tester.pump();
+      expect(find.byType(TextField), findsOneWidget);
+      await tester.tap(find.text('إرسال الرفض'));
+      await tester.pump();
+      expect(find.text('السبب مطلوب قبل الإرسال'), findsOneWidget);
+      expect(submitted, isEmpty);
+
+      await tester.enterText(find.byType(TextField), ' الختم غير ظاهر ');
+      await tester.tap(find.text('إرسال الرفض'));
+      expect(submitted, [(1, 'الختم غير ظاهر')]);
+    });
+  });
 }
