@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/components/display/app_business_mini_card.dart';
+import 'package:watad/core/components/display/app_image_placeholder.dart';
 
 import '../../../helpers/pump_component.dart';
 
@@ -42,5 +44,25 @@ void main() {
     );
 
     expect(find.byIcon(Icons.check_circle), findsNothing);
+  });
+
+  testWidgets('without a photo it shows the default avatar, not stripes', (
+    tester,
+  ) async {
+    await pumpComponent(
+      tester,
+      const SizedBox(
+        width: 180,
+        child: AppBusinessMiniCard(
+          name: 'إتقان للتشييد',
+          ratingLabel: '٤٫٧',
+          projectsLabel: '٤١ مشروعاً',
+        ),
+      ),
+    );
+
+    expect(find.byType(AppAvatar), findsOneWidget);
+    expect(find.byIcon(Icons.person_rounded), findsOneWidget);
+    expect(find.byType(AppImagePlaceholder), findsNothing);
   });
 }

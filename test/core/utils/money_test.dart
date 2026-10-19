@@ -31,9 +31,28 @@ void main() {
       expect(money1.hashCode, equals(money2.hashCode));
     });
 
-    test('toString formats two decimal places', () {
-      const money = Money.halalas(12345);
-      expect(money.toString(), '123.45');
+    test('addition, subtraction, zero, and string representation', () {
+      const zero = Money.zero();
+      expect(zero.halalas, 0);
+
+      const m1 = Money.halalas(150050);
+      const m2 = Money.halalas(50050);
+      final sum = m1 + m2;
+      final diff = m1 - m2;
+
+      expect(sum.halalas, 200100);
+      expect(diff.halalas, 100000);
+      expect(m1.toString(), '1500.5 SAR');
+    });
+
+    test('comparisons work as expected', () {
+      const m1 = Money.halalas(100);
+      const m2 = Money.halalas(200);
+      expect(m1 < m2, isTrue);
+      expect(m1 <= m2, isTrue);
+      expect(m2 > m1, isTrue);
+      expect(m2 >= m1, isTrue);
+      expect(m1.compareTo(m2), isNegative);
     });
   });
 }

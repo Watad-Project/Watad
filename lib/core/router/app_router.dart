@@ -12,6 +12,7 @@ import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
+import 'package:watad/features/dashboard/contractor/presentation/contractor_dashboard_routes.dart';
 import 'package:watad/features/kyc/contractor/presentation/contractor_kyc_routes.dart';
 import 'package:watad/features/kyc/shared/presentation/kyc_routes.dart';
 import 'package:watad/features/location/shared/presentation/location_routes.dart';
@@ -21,6 +22,7 @@ import 'package:watad/features/navigation/contractor/presentation/contractor_nav
 import 'package:watad/features/onboarding/contractor/presentation/contractor_onboarding_routes.dart';
 import 'package:watad/features/onboarding/shared/presentation/onboarding_routes.dart';
 import 'package:watad/features/projects/client/presentation/client_projects_routes.dart';
+import 'package:watad/features/review/admin/presentation/admin_review_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 
 /// The app's only router, used by `WatadApp`.
@@ -50,9 +52,11 @@ GoRouter createAppRouter({
       // One line per role folder, sorted by file name. Each folder's names
       // and paths live in lib/core/router/routes/.
       ...adminNavigationRoutes,
+      ...adminReviewRoutes,
       ...authRoutes,
       ...clientNavigationRoutes,
       ...clientProjectsRoutes,
+      ...contractorDashboardRoutes,
       ...contractorKycRoutes,
       ...contractorNavigationRoutes,
       ...contractorOnboardingRoutes,

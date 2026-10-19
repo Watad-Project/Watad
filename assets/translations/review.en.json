@@ -1,0 +1,53 @@
+{
+  "tab": "Verification",
+  "title": "Verification requests",
+  "filter_all": "All",
+  "filter_license": "License",
+  "filter_deed": "Deed",
+  "license_document": "Contractor license",
+  "for_contractor": "Contractor",
+  "approve": "Approve",
+  "reject": "Reject",
+  "approved": "Business verified",
+  "rejected": "Request rejected; the contractor sees the reason",
+  "empty": "Nothing to review",
+  "deeds_soon": "Deed reviews are coming soon",
+  "reason_unclear": "The image is unclear",
+  "reason_expired": "The document has expired",
+  "reason_mismatch": "The document doesn't match the business's details",
+  "reason_wrong_document": "Not the requested document",
+  "reason_other": "Other",
+  "documents_title": "Request documents",
+  "no_documents": "No documents uploaded",
+  "open_file": "Open the file",
+  "view_full_size": "{}, view full size",
+  "type_commercial_registration": "Commercial registration",
+  "type_vat_certificate": "VAT certificate",
+  "type_national_address": "National address",
+  "type_other": "Document",
+  "just_now": "Just now",
+  "minutes_ago": {
+    "zero": "{} minutes ago",
+    "one": "{} minute ago",
+    "two": "{} minutes ago",
+    "few": "{} minutes ago",
+    "many": "{} minutes ago",
+    "other": "{} minutes ago"
+  },
+  "hours_ago": {
+    "zero": "{} hours ago",
+    "one": "{} hour ago",
+    "two": "{} hours ago",
+    "few": "{} hours ago",
+    "many": "{} hours ago",
+    "other": "{} hours ago"
+  },
+  "days_ago": {
+    "zero": "{} days ago",
+    "one": "{} day ago",
+    "two": "{} days ago",
+    "few": "{} days ago",
+    "many": "{} days ago",
+    "other": "{} days ago"
+  }
+}

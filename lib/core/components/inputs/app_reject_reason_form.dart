@@ -13,6 +13,10 @@ import 'package:watad/core/theme/app_text_styles.dart';
 /// details shows "Write a reason before you send" instead of calling
 /// [onSubmit].
 ///
+/// With [otherReasonIndex] (e.g. «أخرى» last in the list), the details field
+/// shows and is required only for that reason; the others send right away,
+/// with empty details.
+///
 /// The title, the hint and the button say "Reason for rejecting", "Write the
 /// reason..." and "Send rejection" unless you pass something more specific.
 class AppRejectReasonForm extends StatefulWidget {
@@ -23,14 +27,20 @@ class AppRejectReasonForm extends StatefulWidget {
     this.title,
     this.detailsHint,
     this.submitLabel,
+    this.otherReasonIndex,
     this.isSubmitting = false,
   });
 
   /// The translated reasons to choose from.
   final List<String> reasons;
 
-  /// Called with the index of the chosen reason and the trimmed details.
+  /// Called with the index of the chosen reason and the trimmed details
+  /// (empty when the reason needs none).
   final void Function(int reasonIndex, String details) onSubmit;
+
+  /// The reason that needs the person's own words, e.g. «أخرى». Null: every
+  /// reason needs details.
+  final int? otherReasonIndex;
 
   final String? title;
   final String? detailsHint;
@@ -52,9 +62,15 @@ class _AppRejectReasonFormState extends State<AppRejectReasonForm> {
     super.dispose();
   }
 
+  /// Whether the chosen reason needs details.
+  bool get _needsDetails {
+    final other = widget.otherReasonIndex;
+    return other == null || _reason == other;
+  }
+
   void _submit() {
-    final details = _details.text.trim();
-    if (details.isEmpty) {
+    final details = _needsDetails ? _details.text.trim() : '';
+    if (_needsDetails && details.isEmpty) {
       setState(() => _showError = true);
       return;
     }
@@ -83,20 +99,22 @@ class _AppRejectReasonFormState extends State<AppRejectReasonForm> {
                 : () => setState(() => _reason = i),
           ),
         ],
-        const SizedBox(height: AppSpacing.md),
-        AppTextField(
-          label: context.tr('common.details'),
-          isRequired: true,
-          controller: _details,
-          hint: widget.detailsHint ?? context.tr('common.write_reason'),
-          minLines: 3,
-          maxLines: 5,
-          enabled: !widget.isSubmitting,
-          errorText: _showError ? context.tr('common.reason_required') : null,
-          onChanged: (_) {
-            if (_showError) setState(() => _showError = false);
-          },
-        ),
+        if (_needsDetails) ...[
+          const SizedBox(height: AppSpacing.md),
+          AppTextField(
+            label: context.tr('common.details'),
+            isRequired: true,
+            controller: _details,
+            hint: widget.detailsHint ?? context.tr('common.write_reason'),
+            minLines: 3,
+            maxLines: 5,
+            enabled: !widget.isSubmitting,
+            errorText: _showError ? context.tr('common.reason_required') : null,
+            onChanged: (_) {
+              if (_showError) setState(() => _showError = false);
+            },
+          ),
+        ],
         const SizedBox(height: AppSpacing.md),
         AppButton(
           label: widget.submitLabel ?? context.tr('common.send_rejection'),

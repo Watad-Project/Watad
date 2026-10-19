@@ -3,6 +3,8 @@
 final class Money implements Comparable<Money> {
   const Money.halalas(this.halalas);
 
+  const Money.zero() : halalas = 0;
+
   /// Creates a [Money] amount from SAR.
   factory Money.fromSar(num sar) => Money.halalas((sar * 100).round());
 
@@ -11,11 +13,15 @@ final class Money implements Comparable<Money> {
 
   final int halalas;
 
+  /// The value to send to a `numeric` column or an RPC parameter.
+  num toJson() => halalas / 100;
+
   /// The value in SAR.
   double get sar => halalas / 100;
 
-  /// The value to send to a `numeric` column or an RPC parameter.
-  num toJson() => halalas / 100;
+  Money operator +(Money other) => Money.halalas(halalas + other.halalas);
+
+  Money operator -(Money other) => Money.halalas(halalas - other.halalas);
 
   bool operator >(Money other) => halalas > other.halalas;
   bool operator >=(Money other) => halalas >= other.halalas;
@@ -33,5 +39,5 @@ final class Money implements Comparable<Money> {
   int get hashCode => halalas.hashCode;
 
   @override
-  String toString() => (halalas / 100).toStringAsFixed(2);
+  String toString() => '${toJson()} SAR';
 }

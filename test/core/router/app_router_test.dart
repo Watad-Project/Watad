@@ -28,8 +28,10 @@ import 'package:watad/features/onboarding/contractor/domain/repositories/contrac
 import 'package:watad/features/onboarding/contractor/domain/usecases/contractor_save_specialty_use_case.dart';
 import 'package:watad/features/onboarding/contractor/presentation/bloc/contractor_specialty_bloc.dart';
 
+import '../../helpers/fake_admin_review_repository.dart';
 import '../../helpers/fake_app_session.dart';
 import '../../helpers/fake_auth_repository.dart';
+import '../../helpers/fake_contractor_dashboard_repository.dart';
 import '../../helpers/fake_splash_repository.dart';
 import '../../helpers/pump_router.dart';
 
@@ -83,6 +85,8 @@ void main() {
     // The splash fake never answers, so the app stays at its start path.
     registerFakeSplashBloc(FakeSplashRepository());
     registerFakeAuthBloc(FakeAuthRepository());
+    // The admin's navigation opens on its «التوثيق» tab.
+    registerFakeAdminReview(FakeAdminReviewRepository());
     getIt.registerFactory(
       () => ContractorLicenseBloc(
         ContractorUploadLicenseUseCase(_FakeContractorKycRepository()),
@@ -101,6 +105,7 @@ void main() {
         WatchKycDocumentUseCase(_FakeKycRepository()),
       ),
     );
+    registerFakeContractorDashboardTab();
   });
 
   tearDown(getIt.reset);
