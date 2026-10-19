@@ -31,6 +31,9 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
 - **Configuration lives in `.env`**, read with `flutter_dotenv`. After cloning, copy `.env.example` to `.env` and ask a maintainer for the values; the app does not build without it.
   - `.env` is git-ignored: never commit it.
   - `.env` is bundled into the app, so it holds only public values: the Supabase URL and the publishable (anon) key.
+- **The Google Maps key** (map screens) lives in two more git-ignored files, also from a maintainer:
+  - Android: `MAPS_API_KEY=…` in `android/local.properties`;
+  - iOS: copy `ios/Flutter/Secrets.xcconfig.example` to `ios/Flutter/Secrets.xcconfig` and set `MAPS_API_KEY`. Without it, opening a map crashes the app on iOS.
 - **Agents:** never run `flutter upgrade`, `flutter downgrade`, `flutter channel` or `flutter pub upgrade --major-versions`. If the SDK does not match, stop and tell the user.
 
 ## 4. Golden rules (never break these)

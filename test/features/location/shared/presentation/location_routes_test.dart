@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
@@ -78,5 +79,23 @@ void main() {
 
     expect(currentPath(router), LocationRoutes.locationPath);
     expect(find.byType(LocationPage), findsOneWidget);
+  });
+
+  testWidgets('the save switch shows by default', (tester) async {
+    await pumpAppRouter(tester, initialLocation: LocationRoutes.locationPath);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('location_save_switch')), findsOneWidget);
+  });
+
+  testWidgets('?save=required always saves: the save switch is hidden', (
+    tester,
+  ) async {
+    await pumpAppRouter(
+      tester,
+      initialLocation: '${LocationRoutes.locationPath}?save=required',
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(LocationPage), findsOneWidget);
+    expect(find.byKey(const Key('location_save_switch')), findsNothing);
   });
 }

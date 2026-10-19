@@ -15,12 +15,15 @@ import 'package:watad/features/auth/shared/presentation/pages/sign_up_client_pag
 
 import '../../../../../helpers/fake_app_session.dart';
 import '../../../../../helpers/fake_auth_repository.dart';
+import '../../../../../helpers/fake_client_home_repository.dart';
 import '../../../../../helpers/pump_router.dart';
 
 void main() {
   late FakeAuthRepository repository;
 
   setUp(() {
+    // The client's navigation opens on its «الرئيسية» tab.
+    registerFakeClientHome();
     repository = FakeAuthRepository();
     registerFakeAuthBloc(repository);
     registerFakeSignUpClientBloc(repository);

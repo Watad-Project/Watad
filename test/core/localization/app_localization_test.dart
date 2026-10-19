@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/localization/app_localization.dart';
@@ -92,5 +93,48 @@ void main() {
     await tester.tap(find.text('en'));
     await tester.pumpAndSettle();
     expect(find.text('ar'), findsOneWidget);
+  });
+
+  /// The context of a widget shown in [locale].
+  Future<BuildContext> contextIn(WidgetTester tester, Locale locale) async {
+    late BuildContext captured;
+    await pumpComponent(
+      tester,
+      Builder(
+        builder: (context) {
+          captured = context;
+          return const SizedBox();
+        },
+      ),
+      locale: locale,
+    );
+    return captured;
+  }
+
+  testWidgets('formatNumber writes Arabic-Indic digits in Arabic', (
+    tester,
+  ) async {
+    final context = await contextIn(tester, AppLocalization.arabic);
+    expect(context.formatNumber(465000), '٤٦٥٬٠٠٠');
+    expect(context.formatNumber(4.75, decimals: 1), '٤٫٨');
+  });
+
+  testWidgets('formatNumber writes Western digits in English', (tester) async {
+    final context = await contextIn(tester, AppLocalization.english);
+    expect(context.formatNumber(465000), '465,000');
+    expect(context.formatNumber(4.75, decimals: 1), '4.8');
+  });
+
+  testWidgets('Arabic plurals use all six forms', (tester) async {
+    final context = await contextIn(tester, AppLocalization.arabic);
+    String projects(int n) => context.plural(
+      'home.projects_count',
+      n,
+      args: [context.formatNumber(n)],
+    );
+    expect(projects(0), 'لا مشاريع بعد');
+    expect(projects(3), '٣ مشاريع');
+    expect(projects(64), '٦٤ مشروعًا');
+    expect(projects(100), '١٠٠ مشروع');
   });
 }
