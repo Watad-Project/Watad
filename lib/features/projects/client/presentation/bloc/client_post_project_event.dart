@@ -34,7 +34,10 @@ final class ClientPostProjectMaxBudgetChanged extends ClientPostProjectEvent {
 
 /// Load client's saved addresses from Supabase `v_my_addresses`.
 final class ClientPostProjectAddressesRequested extends ClientPostProjectEvent {
-  const ClientPostProjectAddressesRequested();
+  const ClientPostProjectAddressesRequested({this.selectId});
+
+  /// The address to select once loaded, e.g. one just saved on the map.
+  final String? selectId;
 }
 
 /// The user selected an address from their saved Supabase addresses.

@@ -84,16 +84,22 @@ class ClientPostProjectBloc
     switch (result) {
       case Success(:final data):
         final addresses = data;
+        final picked = addresses
+            .where((a) => a.id == event.selectId)
+            .firstOrNull;
         final currentSelected = state.selectedAddress;
         final selected =
-            currentSelected ?? (addresses.isNotEmpty ? addresses.first : null);
+            picked ??
+            currentSelected ??
+            (addresses.isNotEmpty ? addresses.first : null);
         emit(
           state.copyWith(
             isLoadingAddresses: false,
             savedAddresses: addresses,
             selectedAddress: selected,
-            locationAddress:
-                selected?.formattedAddress ?? state.locationAddress,
+            locationAddress: picked != null
+                ? picked.formattedAddress
+                : selected?.formattedAddress ?? state.locationAddress,
             addressId: selected?.id ?? state.addressId,
             locationCity: selected?.city ?? state.locationCity,
             locationDistrict: selected?.district ?? state.locationDistrict,

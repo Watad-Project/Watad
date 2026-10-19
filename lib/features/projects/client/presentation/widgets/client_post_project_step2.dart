@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_photo_tile.dart';
+import 'package:watad/core/components/feedback/app_popup.dart';
 import 'package:watad/core/components/feedback/app_status_card.dart';
 import 'package:watad/core/components/inputs/app_dropdown.dart';
 import 'package:watad/core/components/inputs/app_field_label.dart';
@@ -167,273 +168,78 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
     } catch (_) {}
   }
 
-  void _showAddAddressSheet(BuildContext context) {
-    final nameCtrl = TextEditingController();
-    final cityCtrl = TextEditingController();
-    final districtCtrl = TextEditingController();
-    final streetCtrl = TextEditingController();
-    final buildingCtrl = TextEditingController();
-    final postalCtrl = TextEditingController();
-
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
-      builder: (bottomSheetContext) {
-        return Padding(
-          padding: EdgeInsetsDirectional.only(
-            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
-            start: AppSpacing.md,
-            end: AppSpacing.md,
-            top: AppSpacing.lg,
+  /// The location field's sheet: the saved addresses to pick from, and
+  /// «حدد على الخريطة» to add one on the map (GRA-34).
+  void _showLocationSheet(BuildContext context) {
+    final bloc = context.read<ClientPostProjectBloc>();
+    AppPopup.sheet<void>(
+      context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            AppSpacing.md,
           ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    context.tr('projects.client.add_address_button'),
-                    style: AppTextStyles.h2,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  AppButton(
-                    key: const Key('client_post_project_sheet_pick_map_button'),
-                    label: context.tr('projects.client.address_new_on_map'),
-                    icon: Icons.map_outlined,
-                    variant: AppButtonVariant.secondary,
-                    onPressed: () async {
-                      Navigator.of(bottomSheetContext).pop();
-                      final result = await context.pushNamed<dynamic>(
-                        LocationRoutes.locationName,
-                      );
-                      if (result is String && result.trim().isNotEmpty) {
-                        widget.onLocationChanged(result);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  AppFieldLabel(
-                    label: context.tr('projects.client.address_name_label'),
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  AppTextField(
-                    controller: nameCtrl,
-                    hint: context.tr('projects.client.address_name_hint'),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AppFieldLabel(
-                              label: context.tr(
-                                'projects.client.address_city_label',
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            AppTextField(
-                              controller: cityCtrl,
-                              hint: context.tr(
-                                'projects.client.address_city_hint',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AppFieldLabel(
-                              label: context.tr(
-                                'projects.client.address_district_label',
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            AppTextField(
-                              controller: districtCtrl,
-                              hint: context.tr(
-                                'projects.client.address_district_hint',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  AppFieldLabel(
-                    label: context.tr('projects.client.address_street_label'),
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  AppTextField(
-                    controller: streetCtrl,
-                    hint: context.tr('projects.client.address_street_hint'),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AppFieldLabel(
-                              label: context.tr(
-                                'projects.client.address_building_number_label',
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            AppTextField(
-                              controller: buildingCtrl,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(4),
-                              ],
-                              hint: '4210',
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AppFieldLabel(
-                              label: context.tr(
-                                'projects.client.address_postal_code_label',
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            AppTextField(
-                              controller: postalCtrl,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(5),
-                              ],
-                              hint: '13324',
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  AppButton(
-                    key: const Key('submit_new_address_button'),
-                    label: context.tr('projects.client.address_save_button'),
-                    onPressed: () {
-                      final name = nameCtrl.text.trim();
-                      final city = cityCtrl.text.trim();
-                      final district = districtCtrl.text.trim();
-                      final street = streetCtrl.text.trim();
-                      final building = buildingCtrl.text.trim();
-                      final postal = postalCtrl.text.trim();
-
-                      if (city.isNotEmpty &&
-                          building.length == 4 &&
-                          postal.length == 5) {
-                        Navigator.of(bottomSheetContext).pop();
-                        context.read<ClientPostProjectBloc>().add(
-                          ClientPostProjectAddressCreated(
-                            name: name.isNotEmpty
-                                ? name
-                                : context.tr(
-                                    'projects.client.address_default_name',
-                                  ),
-                            city: city,
-                            district: district,
-                            street: street,
-                            buildingNumber: building,
-                            postalCode: postal,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                context.tr('projects.client.saved_addresses_title'),
+                style: AppTextStyles.h2,
               ),
-            ),
+              const SizedBox(height: AppSpacing.md),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      for (final address in widget.state.savedAddresses) ...[
+                        AppRadioRow(
+                          key: ValueKey('addr_radio_${address.id}'),
+                          title: address.name,
+                          subtitle: address.formattedAddress,
+                          selected:
+                              widget.state.selectedAddress?.id == address.id,
+                          onTap: () {
+                            bloc.add(ClientPostProjectAddressSelected(address));
+                            Navigator.of(sheetContext).pop();
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                key: const Key('client_post_project_sheet_pick_map_button'),
+                label: context.tr('projects.client.address_new_on_map'),
+                icon: Icons.map_outlined,
+                onPressed: () {
+                  Navigator.of(sheetContext).pop();
+                  _pickOnMap(bloc);
+                },
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  void _showAddressSelectionSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
-      builder: (bottomSheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  context.tr('projects.client.saved_addresses_title'),
-                  style: AppTextStyles.h2,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        for (final address in widget.state.savedAddresses) ...[
-                          AppRadioRow(
-                            key: ValueKey('addr_radio_${address.id}'),
-                            title: address.name,
-                            subtitle: address.formattedAddress,
-                            selected:
-                                widget.state.selectedAddress?.id == address.id,
-                            onTap: () {
-                              context.read<ClientPostProjectBloc>().add(
-                                ClientPostProjectAddressSelected(address),
-                              );
-                              widget.onLocationChanged(
-                                address.formattedAddress,
-                              );
-                              Navigator.of(bottomSheetContext).pop();
-                            },
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                AppButton(
-                  label: context.tr('projects.client.add_address_button'),
-                  icon: Icons.add_location_alt_outlined,
-                  variant: AppButtonVariant.primary,
-                  onPressed: () {
-                    Navigator.of(bottomSheetContext).pop();
-                    _showAddAddressSheet(context);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+  /// Opens the map picker straight away. It saves the address and returns
+  /// its id; the form reloads the saved addresses and selects it.
+  Future<void> _pickOnMap(ClientPostProjectBloc bloc) async {
+    final addressId = await context.pushNamed<String>(
+      LocationRoutes.locationName,
+      // A project needs a saved address, so the picker always saves it.
+      queryParameters: const {'save': 'required'},
     );
+    if (!mounted || addressId == null || addressId.isEmpty) return;
+    bloc.add(ClientPostProjectAddressesRequested(selectId: addressId));
   }
 
   @override
@@ -572,7 +378,8 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
                 key: const Key('client_post_project_add_address_button'),
                 label: context.tr('projects.client.add_address_button'),
                 icon: Icons.add_location_alt_outlined,
-                onPressed: () => _showAddAddressSheet(context),
+                onPressed: () =>
+                    _pickOnMap(context.read<ClientPostProjectBloc>()),
               ),
             ),
           ] else ...[
@@ -581,7 +388,7 @@ class _ClientPostProjectStep2State extends State<ClientPostProjectStep2> {
                   state.locationAddress ??
                   state.selectedAddress?.formattedAddress ??
                   state.savedAddresses.first.formattedAddress,
-              onChangeTap: () => _showAddressSelectionSheet(context),
+              onChangeTap: () => _showLocationSheet(context),
             ),
           ],
           const SizedBox(height: AppSpacing.md),
@@ -618,52 +425,54 @@ class _LocationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.lg)),
-        border: Border.all(color: AppColors.borderStrong),
-      ),
-      child: Row(
-        children: [
-          InkWell(
-            key: const Key('client_post_project_change_location_button'),
-            onTap: onChangeTap,
-            child: Text(
+    // The whole field opens the location sheet (GRA-34).
+    return InkWell(
+      key: const Key('client_post_project_change_location_button'),
+      onTap: onChangeTap,
+      borderRadius: const BorderRadius.all(Radius.circular(AppRadius.lg)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: const BorderRadius.all(Radius.circular(AppRadius.lg)),
+          border: Border.all(color: AppColors.borderStrong),
+        ),
+        child: Row(
+          children: [
+            Text(
               context.tr('projects.client.location_change'),
               style: AppTextStyles.labelSmall.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-          const Spacer(),
-          Flexible(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    address,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.label,
+            const Spacer(),
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      address,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.label,
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                const Icon(
-                  Icons.location_on,
-                  color: AppColors.primary,
-                  size: 18,
-                ),
-              ],
+                  const SizedBox(width: AppSpacing.xs),
+                  const Icon(
+                    Icons.location_on,
+                    color: AppColors.primary,
+                    size: 18,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

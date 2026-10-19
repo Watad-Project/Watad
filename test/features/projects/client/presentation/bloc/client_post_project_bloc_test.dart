@@ -361,6 +361,52 @@ void main() {
       await bloc.close();
     });
 
+    test(
+      'a new address saved on the map is reloaded and selected (GRA-34)',
+      () async {
+        final repo = _FakeClientProjectsRepository();
+        const home = ClientSavedAddress(
+          id: 'addr_1',
+          name: 'Home',
+          city: 'Riyadh',
+          district: 'An-Narjis',
+          street: 'Anas Ibn Malik',
+          buildingNumber: '4210',
+          postalCode: '13324',
+          formattedAddress: 'Riyadh · An-Narjis',
+        );
+        const site = ClientSavedAddress(
+          id: 'addr_2',
+          name: 'Site',
+          city: 'Madinah',
+          district: 'Al-Aziziyah',
+          street: 'King Abdullah Rd',
+          buildingNumber: '7310',
+          postalCode: '42311',
+          formattedAddress: 'Madinah · Al-Aziziyah',
+        );
+        repo.addressesResult = const Success([home]);
+        final bloc = ClientPostProjectBloc(
+          getSavedAddressesUseCase: ClientGetSavedAddressesUseCase(repo),
+        );
+        await bloc.stream.firstWhere((s) => s.selectedAddress?.id == 'addr_1');
+
+        // The map picker saved addr_2 and returned its id.
+        repo.addressesResult = const Success([site, home]);
+        bloc.add(const ClientPostProjectAddressesRequested(selectId: 'addr_2'));
+
+        final state = await bloc.stream.firstWhere(
+          (s) => !s.isLoadingAddresses && s.savedAddresses.length == 2,
+        );
+        expect(state.selectedAddress?.id, 'addr_2');
+        expect(state.addressId, 'addr_2');
+        expect(state.locationAddress, 'Madinah · Al-Aziziyah');
+        expect(state.locationCity, 'Madinah');
+
+        await bloc.close();
+      },
+    );
+
     test('creates address and adds it to savedAddresses', () async {
       final repo = _FakeClientProjectsRepository();
       const newAddr = ClientSavedAddress(

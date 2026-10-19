@@ -162,6 +162,44 @@ void main() {
     );
 
     testWidgets(
+      'the location field opens one sheet: saved addresses and the map (GRA-34)',
+      (tester) async {
+        final bloc = ClientPostProjectBloc()
+          ..add(
+            const ClientPostProjectTypeSelected(ClientProjectType.renovation),
+          )
+          ..add(const ClientPostProjectAddressSelected(_testAddress))
+          ..add(const ClientPostProjectStepAdvanced());
+
+        await pumpLocalizedApp(tester, buildPage(bloc: bloc));
+        await tester.pumpAndSettle();
+
+        // Step 2 is taller than the test screen.
+        final field = find.byKey(
+          const Key('client_post_project_change_location_button'),
+        );
+        await tester.ensureVisible(field);
+        await tester.pumpAndSettle();
+        await tester.tap(field);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(ValueKey('addr_radio_${_testAddress.id}')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('client_post_project_sheet_pick_map_button')),
+          findsOneWidget,
+        );
+        // No manual address form any more.
+        expect(
+          find.byKey(const Key('submit_new_address_button')),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
       'Variant B: renders repairs fields, info banner, and review next button',
       (tester) async {
         final bloc = ClientPostProjectBloc()
