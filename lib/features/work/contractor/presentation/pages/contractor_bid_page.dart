@@ -263,6 +263,17 @@ class _BidFormContent extends StatelessWidget {
             namedArgs: {'city': project.city},
           );
 
+    final district = project.district?.trim();
+    final locationText = district != null && district.isNotEmpty
+        ? context.tr(
+            'work.contractor.location_with_district',
+            namedArgs: {'city': project.city, 'district': district},
+          )
+        : project.city;
+
+    final imageUrl = project.imageUrl?.trim();
+    final hasImage = imageUrl != null && imageUrl.isNotEmpty;
+
     return SingleChildScrollView(
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppSpacing.lg,
@@ -274,23 +285,126 @@ class _BidFormContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCard(
-            padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+            padding: EdgeInsets.zero,
+            color: AppColors.surface,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(project.title, style: AppTextStyles.h2),
-                const SizedBox(height: AppSpacing.xs),
-                AppIconTag(
-                  label: context.tr('work.contractor.verified_ownership_tag'),
-                  icon: Icons.check,
-                  tone: AppTone.success,
+                SizedBox(
+                  height: 180,
+                  child: hasImage
+                      ? ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(AppRadius.lg),
+                          ),
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: AppColors.primarySoft,
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.home_work_rounded,
+                                    size: 56,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                          ),
+                        )
+                      : Container(
+                          decoration: const BoxDecoration(
+                            color: AppColors.primarySoft,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(AppRadius.lg),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.home_work_rounded,
+                            size: 56,
+                            color: AppColors.primary,
+                          ),
+                        ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  summaryMeta,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
+                Padding(
+                  padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(project.title, style: AppTextStyles.h2),
+                      const SizedBox(height: AppSpacing.xs),
+                      Row(
+                        children: [
+                          AppIconTag(
+                            label: context.tr(
+                              'work.contractor.verified_ownership_tag',
+                            ),
+                            icon: Icons.check,
+                            tone: AppTone.success,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              summaryMeta,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      const Divider(height: 1, color: AppColors.border),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        context.tr('work.contractor.project_address_title'),
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.ink,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              locationText,
+                              style: AppTextStyles.body.copyWith(
+                                color: AppColors.textBody,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (project.description.trim().isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          context.tr(
+                            'work.contractor.project_requirements_title',
+                          ),
+                          style: AppTextStyles.label.copyWith(
+                            color: AppColors.ink,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          project.description,
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.textBody,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],

@@ -3,15 +3,26 @@ import 'package:watad/features/work/contractor/domain/entities/contractor_open_p
 
 /// Project work type filter for contractor opportunities.
 enum ContractorWorkType {
-  construction([
+  foundation([
     '\u062a\u0623\u0633\u064a\u0633',
+    '\u062a\u0627\u0633\u064a\u0633',
+    '\u0633\u0628\u0627\u0643\u0629',
+    '\u0643\u0647\u0631\u0628\u0627\u0621',
+    '\u062a\u0645\u062f\u064a\u062f',
+    '\u0642\u0648\u0627\u0639\u062f',
+    '\u062e\u0631\u0633\u0627\u0646\u0629',
+    'foundation',
+  ]),
+  building([
     '\u0628\u0646\u0627\u0621',
     '\u0639\u0638\u0645',
     '\u0641\u064a\u0644\u0627',
     '\u0645\u0644\u062d\u0642',
-    'construction',
-    'newhouse',
+    '\u0639\u0645\u0627\u0631\u0629',
+    '\u062f\u0648\u0631',
+    'building',
     'build',
+    'construction',
   ]),
   renovation([
     '\u062a\u0631\u0645\u064a\u0645',

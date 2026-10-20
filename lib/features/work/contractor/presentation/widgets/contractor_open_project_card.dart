@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_card.dart';
-import 'package:watad/core/components/display/app_network_image.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
 import 'package:watad/core/enums/offer_status.dart';
 import 'package:watad/core/theme/app_colors.dart';
@@ -72,7 +71,6 @@ class ContractorOpenProjectCard extends StatelessWidget {
         : onSubmitOfferTap;
 
     final imageUrl = project.imageUrl?.trim();
-    final hasImage = imageUrl != null && imageUrl.isNotEmpty;
 
     final statusMeta = project.hasMyOffer
         ? _offerStatusMeta(project.myOfferStatus ?? OfferStatus.pending)
@@ -96,11 +94,34 @@ class ContractorOpenProjectCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (hasImage)
-                      AppNetworkImage(url: imageUrl, fit: BoxFit.cover)
+                    if (imageUrl != null && imageUrl.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(AppRadius.lg),
+                        ),
+                        child: Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                color: AppColors.primarySoft,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.home_work_rounded,
+                                  size: 36,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                        ),
+                      )
                     else
                       Container(
-                        color: AppColors.primarySoft,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primarySoft,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(AppRadius.lg),
+                          ),
+                        ),
                         alignment: Alignment.center,
                         child: const Icon(
                           Icons.home_work_rounded,
