@@ -292,7 +292,7 @@ A failed push isn't retried; the notification is still in the app's list.
 
 **The app** starts OneSignal at launch (`startAppServices()`), signs the device in as the Supabase user with `OneSignal.login()` and out on sign-out, and asks permission when the bell first shows on a home. It reads `v_my_notifications` (newest first: order by `created_at` desc) and marks rows read with `mark_notifications_read(p_ids)`.
 
-**Secrets:** `ONESIGNAL_APP_ID` and `ONESIGNAL_REST_API_KEY` are secrets of `send-push` (`supabase secrets set`); the REST API key never leaves the server. The app knows only the App ID, which is public (`ONESIGNAL_APP_ID` in `.env`). Deploy the function with `supabase functions deploy send-push --no-verify-jwt`: it checks the secret itself. Its source is in `supabase/functions/send-push/`.
+**Secrets:** `ONESIGNAL_APP_ID` and `ONESIGNAL_REST_API_KEY` are secrets of `send-push` (`supabase secrets set`); the REST API key never leaves the server. `ONESIGNAL_ANDROID_CHANNEL_ID` is the Android channel the pushes go on: one made in OneSignal (Settings → Push & In-App → Android Notification Channels) with importance **Urgent**, so a push pops up over the screen. Pushes are sent at high priority. The app knows only the App ID, which is public (`ONESIGNAL_APP_ID` in `.env`). Deploy the function with `supabase functions deploy send-push --no-verify-jwt`: it checks the secret itself. Its source is in `supabase/functions/send-push/`.
 
 ## 14. Presence (online now, last seen)
 

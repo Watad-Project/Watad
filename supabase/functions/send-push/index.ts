@@ -15,8 +15,11 @@
 // OneSignal targets the user's devices by external_id = the user id, which
 // the app sets with OneSignal.login() after sign-in. The OneSignal keys
 // (ONESIGNAL_APP_ID, ONESIGNAL_REST_API_KEY) stay here, as server secrets:
-// the app never sees the REST API key. Deployed with verify_jwt off; the
-// database checks the secret on every call (push_claim, push_complete).
+// the app never sees the REST API key. ONESIGNAL_ANDROID_CHANNEL_ID, when
+// set, is the Android channel the pushes go on: one created in OneSignal with
+// importance "Urgent", so a push pops up over the screen, not only in the
+// drawer. Deployed with verify_jwt off; the database checks the secret on
+// every call (push_claim, push_complete).
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -65,6 +68,7 @@ Deno.serve(async (req: Request) => {
 
   const appId = Deno.env.get("ONESIGNAL_APP_ID");
   const apiKey = Deno.env.get("ONESIGNAL_REST_API_KEY");
+  const androidChannelId = Deno.env.get("ONESIGNAL_ANDROID_CHANNEL_ID");
   if (!appId || !apiKey) {
     console.error("send-push: ONESIGNAL_APP_ID or ONESIGNAL_REST_API_KEY is not set");
     await complete("onesignal_not_configured");
@@ -84,8 +88,13 @@ Deno.serve(async (req: Request) => {
       // OneSignal needs an "en" text; it is shown in every language.
       headings: { en: row.title },
       contents: { en: row.body },
-      // The app opens data.route when the push is tapped.
+      // The app opens the screen of data.type when the push is tapped, and
+      // marks notification_id read.
       data: { ...row.data, notification_id: notificationId },
+      // High priority, on the "Urgent" channel: Android shows it over the
+      // screen (heads-up) instead of only in the drawer.
+      priority: 10,
+      ...(androidChannelId ? { android_channel_id: androidChannelId } : {}),
     }),
   });
   const result = await response.json().catch(() => ({}));
