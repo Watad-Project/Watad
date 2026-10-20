@@ -271,14 +271,14 @@ values (v_user_id, '<title>', '<body>',
 
 **What notifies people already** (migration 68, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
 
-| Event | Who is told | `data.type` (+ ids) |
-|---|---|---|
-| A deed is verified / rejected | the project's owner | `deed_verified` / `deed_rejected` (`project_id`) |
-| A task is added to a project | the other side of the project | `task_added` (`project_id`, `task_id`) |
-| A task is accepted | the other side (the contractor, when the client accepts) | `task_accepted` (`project_id`, `task_id`) |
-| A message is sent | everyone else in the chat | `message` (`chat_id`, `message_id`) |
+| Event | Who is told | `data.type` (+ ids) | Pops up |
+|---|---|---|---|
+| A deed is verified / rejected | the project's owner | `deed_verified` / `deed_rejected` (`project_id`) | yes |
+| A task is added to a project | the other side of the project | `task_added` (`project_id`, `task_id`) | yes |
+| A task is accepted | the other side (the contractor, when the client accepts) | `task_accepted` (`project_id`, `task_id`) | yes |
+| A message is sent | everyone else in the chat | `message` (`chat_id`, `message_id`) | yes |
 
-A new event is one more trigger that calls `private.notify(user_id, title, body, data)`, in its own migration.
+A new event is one more trigger that calls `private.notify(user_id, title, body, data, pop_up)`, in its own migration.
 
 **Then:** the new row reaches the open app through Realtime (`notifications` is in the `supabase_realtime` publication), and the trigger `notifications_push` posts its id to the `send-push` Edge Function with the Vault secret `push_secret`. The function takes the row once (`push_claim`):
 
@@ -292,7 +292,7 @@ A failed push isn't retried; the notification is still in the app's list.
 
 **The app** starts OneSignal at launch (`startAppServices()`), signs the device in as the Supabase user with `OneSignal.login()` and out on sign-out, and asks permission when the bell first shows on a home. It reads `v_my_notifications` (newest first: order by `created_at` desc) and marks rows read with `mark_notifications_read(p_ids)`.
 
-**Secrets:** `ONESIGNAL_APP_ID` and `ONESIGNAL_REST_API_KEY` are secrets of `send-push` (`supabase secrets set`); the REST API key never leaves the server. `ONESIGNAL_ANDROID_CHANNEL_ID` is the Android channel the pushes go on: one made in OneSignal (Settings → Push & In-App → Android Notification Channels) with importance **Urgent**, so a push pops up over the screen. Pushes are sent at high priority. The app knows only the App ID, which is public (`ONESIGNAL_APP_ID` in `.env`). Deploy the function with `supabase functions deploy send-push --no-verify-jwt`: it checks the secret itself. Its source is in `supabase/functions/send-push/`.
+**Secrets:** `ONESIGNAL_APP_ID` and `ONESIGNAL_REST_API_KEY` are secrets of `send-push` (`supabase secrets set`); the REST API key never leaves the server. The Android channels, made in OneSignal (Settings → Push & In-App → Android Notification Channels), are two more secrets: `ONESIGNAL_ANDROID_CHANNEL_POPUP` (importance **Urgent**: the push pops up over the screen, at high priority) for a notification whose `pop_up` is true, and `ONESIGNAL_ANDROID_CHANNEL_NORMAL` (sound and the drawer) for the rest. `private.notify(…, p_pop_up => true)` marks an event that should pop up; every event of migration 68 does. The app knows only the App ID, which is public (`ONESIGNAL_APP_ID` in `.env`). Deploy the function with `supabase functions deploy send-push --no-verify-jwt`: it checks the secret itself. Its source is in `supabase/functions/send-push/`.
 
 ## 14. Presence (online now, last seen)
 

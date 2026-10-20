@@ -16,11 +16,53 @@
 -- can't be written never stops the event: the trigger logs a warning.
 -- `data.type` names the event and carries its ids, for the screens that
 -- will open them (ARCHITECTURE.md §13).
+--
+-- These four pop up over the screen on Android (notifications.pop_up): the
+-- push goes on the "pop up" channel at high priority. A notification
+-- inserted without it (a test, a later campaign) uses the normal channel.
 -- =====================================================================
 
+-- Whether the push pops up over the screen, or only sounds and waits in
+-- the drawer. For the server (send-push) only.
+alter table public.notifications
+  add column if not exists pop_up boolean not null default false;
+
+-- send-push gets pop_up with the row (migration 67's push_claim, plus it).
+create or replace function public.push_claim(p_secret text, p_notification_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path to ''
+as $$
+declare
+  v_row public.notifications;
+begin
+  if not private.push_check_secret(p_secret) then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+  update public.notifications n
+     set push_status = case when private.is_online(n.user_id) then 'in_app' else 'sent' end,
+         pushed_at   = now(),
+         push_error  = null
+   where n.id = p_notification_id and n.push_status = 'pending'
+  returning n.* into v_row;
+  if not found or v_row.push_status = 'in_app' then
+    return null;
+  end if;
+  return jsonb_build_object(
+    'user_id', v_row.user_id,
+    'title',   v_row.title,
+    'body',    v_row.body,
+    'data',    v_row.data,
+    'pop_up',  v_row.pop_up);
+end;
+$$;
+
 -- Writes one notification; does nothing for nobody or a closed account.
+-- p_pop_up: the push pops up over the screen (Android's "pop up" channel).
 create or replace function private.notify(
-  p_user_id uuid, p_title text, p_body text, p_data jsonb default '{}'::jsonb)
+  p_user_id uuid, p_title text, p_body text, p_data jsonb default '{}'::jsonb,
+  p_pop_up boolean default false)
 returns void
 language plpgsql
 security definer
@@ -32,16 +74,17 @@ begin
                      where u.id = p_user_id and u.deleted_at is null) then
     return;
   end if;
-  insert into public.notifications (user_id, title, body, data)
+  insert into public.notifications (user_id, title, body, data, pop_up)
   values (
     p_user_id,
     left(btrim(p_title), 200),
     left(btrim(p_body), 1000),
-    coalesce(p_data, '{}'::jsonb));
+    coalesce(p_data, '{}'::jsonb),
+    coalesce(p_pop_up, false));
 end;
 $$;
 
-revoke all on function private.notify(uuid, text, text, jsonb) from public, anon, authenticated;
+revoke all on function private.notify(uuid, text, text, jsonb, boolean) from public, anon, authenticated;
 
 -- A project's title in «», or nothing when it has none.
 create or replace function private.notification_project_title(p_project_id uuid)
@@ -78,7 +121,8 @@ begin
       'تم توثيق صك الملكية',
       case when v_title = '' then 'نُشر مشروعك وأصبح متاحًا للمقاولين.'
            else 'نُشر مشروعك ' || v_title || ' وأصبح متاحًا للمقاولين.' end,
-      jsonb_build_object('type', 'deed_verified', 'project_id', new.id));
+      jsonb_build_object('type', 'deed_verified', 'project_id', new.id),
+      true);
   elsif new.deed_status = 'rejected' then
     perform private.notify(
       new.owner_id,
@@ -86,7 +130,8 @@ begin
       'ارفع صكًا جديدًا لمشروعك'
         || case when v_title = '' then '' else ' ' || v_title end
         || coalesce('. السبب: ' || nullif(btrim(new.deed_rejection_reason), ''), '.'),
-      jsonb_build_object('type', 'deed_rejected', 'project_id', new.id));
+      jsonb_build_object('type', 'deed_rejected', 'project_id', new.id),
+      true);
   end if;
   return null;
 exception when others then
@@ -120,7 +165,8 @@ begin
         coalesce(nullif(btrim(new.title), ''), 'مهمة')
           || case when v_title = '' then '' else ' — ' || v_title end,
         jsonb_build_object('type', 'task_added', 'project_id', new.project_id,
-                           'task_id', new.id));
+                           'task_id', new.id),
+        true);
     end if;
   end loop;
   return null;
@@ -160,7 +206,8 @@ begin
         coalesce(nullif(btrim(new.title), ''), 'مهمة')
           || case when v_title = '' then '' else ' — ' || v_title end,
         jsonb_build_object('type', 'task_accepted', 'project_id', new.project_id,
-                           'task_id', new.id));
+                           'task_id', new.id),
+        true);
     end if;
   end loop;
   return null;
@@ -200,7 +247,8 @@ begin
       coalesce(v_sender, 'رسالة جديدة'),
       coalesce(nullif(btrim(new.content), ''), 'رسالة جديدة'),
       jsonb_build_object('type', 'message', 'chat_id', new.chat_id,
-                         'message_id', new.id));
+                         'message_id', new.id),
+      true);
   end loop;
   return null;
 exception when others then
