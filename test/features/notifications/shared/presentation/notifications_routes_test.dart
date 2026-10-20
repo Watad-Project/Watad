@@ -121,14 +121,12 @@ void main() {
   testWidgets('a notification arriving shows on top', (tester) async {
     await openList(tester);
 
-    repository.arrivals.add(
-      Success(
-        UserNotification(
-          id: 'n-3',
-          title: 'مهمة جديدة',
-          body: 'اقترح المقاول مهمة',
-          createdAt: now,
-        ),
+    repository.arrive(
+      UserNotification(
+        id: 'n-3',
+        title: 'مهمة جديدة',
+        body: 'اقترح المقاول مهمة',
+        createdAt: now,
       ),
     );
     await tester.pumpAndSettle();

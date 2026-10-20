@@ -9,9 +9,9 @@ final class NotificationsFetched extends NotificationsEvent {
   const NotificationsFetched();
 }
 
-/// Add the notifications arriving while the page is open.
-final class NotificationsArrivalsWatched extends NotificationsEvent {
-  const NotificationsArrivalsWatched();
+/// Follow the changes while the page is open: new ones, read ones.
+final class NotificationsChangesWatched extends NotificationsEvent {
+  const NotificationsChangesWatched();
 }
 
 /// The user tapped [notification].

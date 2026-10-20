@@ -3,9 +3,10 @@ import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
+import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/get_unread_notifications_count_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/start_push_use_case.dart';
-import 'package:watad/features/notifications/shared/domain/usecases/watch_new_notifications_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_changes_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_taps_use_case.dart';
 import 'package:watad/features/notifications/shared/presentation/bloc/notifications_bell_bloc.dart';
 
@@ -17,7 +18,7 @@ void main() {
   NotificationsBellBloc buildBloc() => NotificationsBellBloc(
     GetUnreadNotificationsCountUseCase(repository),
     StartPushUseCase(repository),
-    WatchNewNotificationsUseCase(repository),
+    WatchNotificationChangesUseCase(repository),
     WatchNotificationTapsUseCase(repository),
   );
 
@@ -51,17 +52,46 @@ void main() {
     await bloc.close();
   });
 
-  test('a notification arriving adds one and is shown once', () async {
+  test('a notification arriving is shown and the bell counts again', () async {
     repository.unreadResult = const Success(1);
     final bloc = buildBloc()..add(const NotificationsBellStarted());
     await bloc.stream.firstWhere((s) => s.unreadCount == 1);
     // Listening has started.
     await pumpEventQueue();
 
-    repository.arrivals.add(Success(arrival));
-    final state = await bloc.stream.firstWhere((s) => s.arrived != null);
-    expect(state.unreadCount, 2);
+    repository.unreadResult = const Success(2);
+    repository.arrive(arrival);
+    final state = await bloc.stream.firstWhere(
+      (s) => s.arrived != null && s.unreadCount == 2,
+    );
     expect(state.arrived, same(arrival));
+    await bloc.close();
+  });
+
+  test('a notification read elsewhere lowers the count, live', () async {
+    repository.unreadResult = const Success(2);
+    final bloc = buildBloc()..add(const NotificationsBellStarted());
+    await bloc.stream.firstWhere((s) => s.unreadCount == 2);
+    await pumpEventQueue();
+
+    repository.unreadResult = const Success(1);
+    repository.changes.add(
+      Success(
+        UserNotificationChange(
+          notification: UserNotification(
+            id: 'n-1',
+            title: 'عرض جديد',
+            body: 'وصلك عرض',
+            createdAt: DateTime.utc(2026, 10, 20),
+            readAt: DateTime.utc(2026, 10, 20, 1),
+          ),
+          isNew: false,
+        ),
+      ),
+    );
+    final state = await bloc.stream.firstWhere((s) => s.unreadCount == 1);
+    // A read isn't shown.
+    expect(state.arrived, isNull);
     await bloc.close();
   });
 

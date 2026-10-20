@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/components/feedback/app_top_toast.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
@@ -75,13 +76,18 @@ void main() {
     expect(find.byType(NotificationsPage), findsOneWidget);
   });
 
-  testWidgets('a notification arriving in the app shows here, not as a push', (
+  testWidgets('a notification arriving shows at the top, on any screen', (
     tester,
   ) async {
     await openHome(tester);
+    // Another page is open over the home.
+    await tester.tap(find.byType(NotificationsBell));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotificationsPage), findsOneWidget);
 
-    repository.arrivals.add(
-      Success(
+    repository
+      ..unreadResult = const Success(4)
+      ..arrive(
         UserNotification(
           id: 'n-1',
           title: 'عرض جديد',
@@ -91,15 +97,34 @@ void main() {
           ),
           createdAt: DateTime.now().toUtc(),
         ),
-      ),
-    );
+      );
     await tester.pumpAndSettle();
 
-    expect(find.text('عرض جديد: وصلك عرض على مشروعك'), findsOneWidget);
-    expect(find.text('٤'), findsOneWidget);
-    await tester.tap(find.text('عرض'));
+    expect(find.byType(AppTopToast), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AppTopToast),
+        matching: find.text('وصلك عرض على مشروعك'),
+      ),
+      findsOneWidget,
+    );
+    // The open list shows it too, live.
+    expect(
+      find.descendant(
+        of: find.byType(NotificationsPage),
+        matching: find.text('عرض جديد'),
+      ),
+      findsOneWidget,
+    );
+    // The bell, under the list, counted again, live.
+    expect(find.text('٤', skipOffstage: false), findsOneWidget);
+
+    await tester.tap(find.byType(AppTopToast));
     await tester.pumpAndSettle();
-    expect(find.byType(NotificationsPage), findsOneWidget);
+    expect(
+      find.byType(NotificationsPage, skipOffstage: false),
+      findsNWidgets(2),
+    );
   });
 
   testWidgets('a tapped push opens where it leads', (tester) async {

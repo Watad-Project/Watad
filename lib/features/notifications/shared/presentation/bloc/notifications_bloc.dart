@@ -5,7 +5,7 @@ import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/get_notifications_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/mark_notifications_read_use_case.dart';
-import 'package:watad/features/notifications/shared/domain/usecases/watch_new_notifications_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_changes_use_case.dart';
 
 part 'notifications_event.dart';
 part 'notifications_state.dart';
@@ -13,17 +13,17 @@ part 'notifications_state.dart';
 /// «الإشعارات»: the user's notifications, newest first, live; opening one
 /// marks it read.
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
-  NotificationsBloc(this._getNotifications, this._markRead, this._watchNew)
+  NotificationsBloc(this._getNotifications, this._markRead, this._watchChanges)
     : super(const NotificationsState()) {
     on<NotificationsFetched>(_onFetched);
-    on<NotificationsArrivalsWatched>(_onArrivalsWatched);
+    on<NotificationsChangesWatched>(_onChangesWatched);
     on<NotificationsOpened>(_onOpened);
     on<NotificationsAllRead>(_onAllRead);
   }
 
   final GetNotificationsUseCase _getNotifications;
   final MarkNotificationsReadUseCase _markRead;
-  final WatchNewNotificationsUseCase _watchNew;
+  final WatchNotificationChangesUseCase _watchChanges;
 
   Future<void> _onFetched(
     NotificationsFetched event,
@@ -50,23 +50,29 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     }
   }
 
-  Future<void> _onArrivalsWatched(
-    NotificationsArrivalsWatched event,
+  /// A new notification goes on top; a changed one (e.g. read on another
+  /// device) is replaced where it is.
+  Future<void> _onChangesWatched(
+    NotificationsChangesWatched event,
     Emitter<NotificationsState> emit,
   ) async {
-    final result = await _watchNew(const NoParams());
-    if (result case Success(data: final arrivals)) {
+    final result = await _watchChanges(const NoParams());
+    if (result case Success(data: final changes)) {
       await emit.forEach(
-        arrivals,
-        onData: (arrival) => switch (arrival) {
-          Success(:final data) => state.copyWith(
-            notifications: [
-              data,
-              for (final n in state.notifications)
-                if (n.id != data.id) n,
-            ],
-          ),
-          Failed() => state,
+        changes,
+        onData: (change) {
+          if (change case Success(:final data)) {
+            final changed = data.notification;
+            final known = state.notifications.any((n) => n.id == changed.id);
+            return state.copyWith(
+              notifications: [
+                if (data.isNew && !known) changed,
+                for (final n in state.notifications)
+                  n.id == changed.id ? changed : n,
+              ],
+            );
+          }
+          return state;
         },
       );
     }

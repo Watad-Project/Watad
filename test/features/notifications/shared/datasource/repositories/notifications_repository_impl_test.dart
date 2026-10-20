@@ -3,15 +3,16 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/notifications/shared/datasource/local/notifications_push.dart';
+import 'package:watad/features/notifications/shared/datasource/models/user_notification_change_model.dart';
 import 'package:watad/features/notifications/shared/datasource/models/user_notification_model.dart';
 import 'package:watad/features/notifications/shared/datasource/remote/notifications_remote_data_source.dart';
 import 'package:watad/features/notifications/shared/datasource/repositories/notifications_repository_impl.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
-import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
+import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 
 /// A remote data source whose stream is typed for the model, as the real one.
 class _FakeRemote implements NotificationsRemoteDataSource {
-  final StreamController<UserNotificationModel> arrivals =
+  final StreamController<UserNotificationChangeModel> changes =
       StreamController.broadcast();
 
   @override
@@ -24,9 +25,9 @@ class _FakeRemote implements NotificationsRemoteDataSource {
   Future<void> markRead(List<String>? ids) async {}
 
   @override
-  Stream<UserNotificationModel> watchNew() => arrivals.stream;
+  Stream<UserNotificationChangeModel> watchChanges() => changes.stream;
 
-  Future<void> close() => arrivals.close();
+  Future<void> close() => changes.close();
 }
 
 class _FakePush implements NotificationsPush {
@@ -66,18 +67,25 @@ void main() {
   });
 
   test('a model arriving from the data source comes out as a result', () async {
-    final arrival = UserNotificationModel(
-      id: 'n-1',
-      title: 'عرض جديد',
-      body: 'وصلك عرض',
-      createdAt: DateTime.utc(2026, 10, 20),
+    final change = UserNotificationChangeModel(
+      notification: UserNotificationModel(
+        id: 'n-1',
+        title: 'عرض جديد',
+        body: 'وصلك عرض',
+        createdAt: DateTime.utc(2026, 10, 20),
+      ),
+      isNew: true,
     );
-    final first = repository.watchNew().first;
-    remote.arrivals.add(arrival);
+    final first = repository.watchChanges().first;
+    remote.changes.add(change);
 
     expect(
       await first,
-      isA<Success<UserNotification>>().having((s) => s.data, 'data', arrival),
+      isA<Success<UserNotificationChange>>().having(
+        (s) => s.data,
+        'data',
+        change,
+      ),
     );
   });
 

@@ -12,7 +12,7 @@ import 'package:watad/features/notifications/shared/domain/usecases/get_notifica
 import 'package:watad/features/notifications/shared/domain/usecases/get_unread_notifications_count_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/mark_notifications_read_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/start_push_use_case.dart';
-import 'package:watad/features/notifications/shared/domain/usecases/watch_new_notifications_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_changes_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_taps_use_case.dart';
 import 'package:watad/features/notifications/shared/presentation/bloc/notifications_bell_bloc.dart';
 import 'package:watad/features/notifications/shared/presentation/bloc/notifications_bloc.dart';
@@ -35,7 +35,7 @@ void registerNotificationsDependencies(GetIt getIt) {
     ..registerLazySingleton(() => GetUnreadNotificationsCountUseCase(getIt()))
     ..registerLazySingleton(() => MarkNotificationsReadUseCase(getIt()))
     ..registerLazySingleton(() => StartPushUseCase(getIt()))
-    ..registerLazySingleton(() => WatchNewNotificationsUseCase(getIt()))
+    ..registerLazySingleton(() => WatchNotificationChangesUseCase(getIt()))
     ..registerLazySingleton(() => WatchNotificationTapsUseCase(getIt()))
     ..registerFactory(() => NotificationsBloc(getIt(), getIt(), getIt()))
     ..registerFactory(

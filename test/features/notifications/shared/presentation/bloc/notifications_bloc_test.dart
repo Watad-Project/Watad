@@ -2,9 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
+import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/get_notifications_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/mark_notifications_read_use_case.dart';
-import 'package:watad/features/notifications/shared/domain/usecases/watch_new_notifications_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_changes_use_case.dart';
 import 'package:watad/features/notifications/shared/presentation/bloc/notifications_bloc.dart';
 
 import '../../../../../helpers/fake_notifications_repository.dart';
@@ -15,7 +16,7 @@ void main() {
   NotificationsBloc buildBloc() => NotificationsBloc(
     GetNotificationsUseCase(repository),
     MarkNotificationsReadUseCase(repository),
-    WatchNewNotificationsUseCase(repository),
+    WatchNotificationChangesUseCase(repository),
   );
 
   final unread = UserNotification(
@@ -102,7 +103,7 @@ void main() {
 
   test('a notification arriving goes on top', () async {
     final bloc = await loadedBloc()
-      ..add(const NotificationsArrivalsWatched());
+      ..add(const NotificationsChangesWatched());
     await pumpEventQueue();
 
     final arrival = UserNotification(
@@ -111,12 +112,36 @@ void main() {
       body: 'اقترح المقاول مهمة',
       createdAt: DateTime.utc(2026, 10, 20, 9),
     );
-    repository.arrivals.add(Success(arrival));
+    repository.arrive(arrival);
     final state = await bloc.stream.firstWhere(
       (s) => s.notifications.length == 3,
     );
     expect(state.notifications.first, same(arrival));
     expect(state.unreadCount, 2);
+    await bloc.close();
+  });
+
+  test('one read on another device shows read, in place', () async {
+    final bloc = await loadedBloc()
+      ..add(const NotificationsChangesWatched());
+    await pumpEventQueue();
+
+    repository.changes.add(
+      Success(
+        UserNotificationChange(
+          notification: UserNotification(
+            id: unread.id,
+            title: unread.title,
+            body: unread.body,
+            createdAt: unread.createdAt,
+            readAt: DateTime.utc(2026, 10, 20, 9),
+          ),
+          isNew: false,
+        ),
+      ),
+    );
+    final state = await bloc.stream.firstWhere((s) => s.unreadCount == 0);
+    expect(state.notifications.map((n) => n.id), ['n-1', 'n-2']);
     await bloc.close();
   });
 }

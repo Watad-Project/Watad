@@ -5,6 +5,7 @@ import 'package:watad/features/notifications/shared/datasource/models/notificati
 import 'package:watad/features/notifications/shared/datasource/remote/notifications_remote_data_source.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
+import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 import 'package:watad/features/notifications/shared/domain/repositories/notifications_repository.dart';
 
 class NotificationsRepositoryImpl implements NotificationsRepository {
@@ -28,8 +29,9 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   /// The data source's stream is of models: cast it to the entity, or the
   /// guard's transformer (typed for the entity) is refused at run time.
   @override
-  Stream<Result<UserNotification>> watchNew() =>
-      guardSupabaseStream(_remote.watchNew().cast<UserNotification>());
+  Stream<Result<UserNotificationChange>> watchChanges() => guardSupabaseStream(
+    _remote.watchChanges().cast<UserNotificationChange>(),
+  );
 
   @override
   Future<Result<void>> startPush() => guardSupabaseCall(() async {

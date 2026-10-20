@@ -238,7 +238,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `67_notifications`; the next is `68_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `67_notifications`; `68_notification_events` is in the repo and waits to be applied; the next is `69_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
@@ -266,6 +266,17 @@ values (v_user_id, '<title>', '<body>', jsonb_build_object('route', '<route name
 - `title` (1 to 200 characters) and `body` (1 to 1000) are shown as they are, in one language.
 - `data.route` is the `go_router` route name the app opens on a tap, and `data.params` its path parameters (strings). Leave `data` empty (`'{}'`) for a notification that opens nothing.
 - The app never inserts a notification, and never calls OneSignal's REST API or `send-push`.
+
+**What notifies people already** (migration 68, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
+
+| Event | Who is told | `data.type` (+ ids) |
+|---|---|---|
+| A deed is verified / rejected | the project's owner | `deed_verified` / `deed_rejected` (`project_id`) |
+| A task is added to a project | the other side of the project | `task_added` (`project_id`, `task_id`) |
+| A task is accepted | the other side (the contractor, when the client accepts) | `task_accepted` (`project_id`, `task_id`) |
+| A message is sent | everyone else in the chat | `message` (`chat_id`, `message_id`) |
+
+A new event is one more trigger that calls `private.notify(user_id, title, body, data)`, in its own migration.
 
 **Then:** the new row reaches the open app through Realtime (`notifications` is in the `supabase_realtime` publication), and the trigger `notifications_push` posts its id to the `send-push` Edge Function with the Vault secret `push_secret`. The function takes the row once (`push_claim`):
 

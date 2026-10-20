@@ -5,14 +5,15 @@ import 'package:watad/features/notifications/shared/domain/entities/notification
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/get_unread_notifications_count_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/start_push_use_case.dart';
-import 'package:watad/features/notifications/shared/domain/usecases/watch_new_notifications_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_changes_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_taps_use_case.dart';
 
 part 'notifications_bell_event.dart';
 part 'notifications_bell_state.dart';
 
-/// The bell on each home: the unread count, each notification arriving while
-/// the app is open (shown in the app, no push), and the pushes the user taps.
+/// The bell on each role's home, alive for the whole session: the unread
+/// count, live; each notification arriving while the app is open, shown on
+/// top of any screen (no push then); and the pushes the user taps.
 /// Starting it asks permission to notify; OneSignal itself starts at launch
 /// (`startAppServices()`).
 class NotificationsBellBloc
@@ -20,18 +21,18 @@ class NotificationsBellBloc
   NotificationsBellBloc(
     this._getUnreadCount,
     this._startPush,
-    this._watchNew,
+    this._watchChanges,
     this._watchTaps,
   ) : super(const NotificationsBellState()) {
     on<NotificationsBellStarted>(_onStarted);
     on<NotificationsBellCountRequested>(_onCountRequested);
-    on<NotificationsBellArrivalsWatched>(_onArrivalsWatched);
+    on<NotificationsBellChangesWatched>(_onChangesWatched);
     on<NotificationsBellTapsWatched>(_onTapsWatched);
   }
 
   final GetUnreadNotificationsCountUseCase _getUnreadCount;
   final StartPushUseCase _startPush;
-  final WatchNewNotificationsUseCase _watchNew;
+  final WatchNotificationChangesUseCase _watchChanges;
   final WatchNotificationTapsUseCase _watchTaps;
 
   Future<void> _onStarted(
@@ -40,7 +41,7 @@ class NotificationsBellBloc
   ) async {
     // Listening first, so a tap that opened the app isn't missed.
     add(const NotificationsBellTapsWatched());
-    add(const NotificationsBellArrivalsWatched());
+    add(const NotificationsBellChangesWatched());
     await _refreshCount(emit);
     // Push is a bonus: without it (no permission, no App ID) the bell works.
     await _startPush(const NoParams());
@@ -58,20 +59,24 @@ class NotificationsBellBloc
     }
   }
 
-  Future<void> _onArrivalsWatched(
-    NotificationsBellArrivalsWatched event,
+  /// A new notification is shown; any change (new, read here or on another
+  /// device) counts again, so the bell is right.
+  Future<void> _onChangesWatched(
+    NotificationsBellChangesWatched event,
     Emitter<NotificationsBellState> emit,
   ) async {
-    final result = await _watchNew(const NoParams());
-    if (result case Success(data: final arrivals)) {
+    final result = await _watchChanges(const NoParams());
+    if (result case Success(data: final changes)) {
       await emit.forEach(
-        arrivals,
-        onData: (arrival) => switch (arrival) {
-          Success(:final data) => state.copyWith(
-            unreadCount: state.unreadCount + 1,
-            arrived: () => data,
-          ),
-          Failed() => state,
+        changes,
+        onData: (change) {
+          if (change case Success(:final data)) {
+            add(const NotificationsBellCountRequested());
+            if (data.isNew) {
+              return state.copyWith(arrived: () => data.notification);
+            }
+          }
+          return state;
         },
       );
     }

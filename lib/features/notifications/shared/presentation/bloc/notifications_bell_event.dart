@@ -14,9 +14,9 @@ final class NotificationsBellCountRequested extends NotificationsBellEvent {
   const NotificationsBellCountRequested();
 }
 
-/// Listen to the notifications arriving while the app is open.
-final class NotificationsBellArrivalsWatched extends NotificationsBellEvent {
-  const NotificationsBellArrivalsWatched();
+/// Listen to the changes to the user's notifications while the app is open.
+final class NotificationsBellChangesWatched extends NotificationsBellEvent {
+  const NotificationsBellChangesWatched();
 }
 
 /// Listen to the pushes the user taps.

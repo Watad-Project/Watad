@@ -4,6 +4,7 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
+import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 import 'package:watad/features/notifications/shared/domain/repositories/notifications_repository.dart';
 import 'package:watad/features/notifications/shared/notifications_injection.dart';
 
@@ -14,8 +15,8 @@ class FakeNotificationsRepository implements NotificationsRepository {
   Result<List<UserNotification>> listResult = const Success([]);
   Result<int> unreadResult = const Success(0);
 
-  /// Send a notification as if it had just arrived (Realtime).
-  final StreamController<Result<UserNotification>> arrivals =
+  /// Send a change as Realtime would: a new notification, or one read.
+  final StreamController<Result<UserNotificationChange>> changes =
       StreamController.broadcast();
 
   /// Send where a tapped push leads.
@@ -39,7 +40,12 @@ class FakeNotificationsRepository implements NotificationsRepository {
   }
 
   @override
-  Stream<Result<UserNotification>> watchNew() => arrivals.stream;
+  Stream<Result<UserNotificationChange>> watchChanges() => changes.stream;
+
+  /// Send [notification] as just arrived.
+  void arrive(UserNotification notification) => changes.add(
+    Success(UserNotificationChange(notification: notification, isNew: true)),
+  );
 
   @override
   Future<Result<void>> startPush() async {
@@ -52,7 +58,7 @@ class FakeNotificationsRepository implements NotificationsRepository {
 
   /// Call it in tearDown.
   Future<void> close() async {
-    await arrivals.close();
+    await changes.close();
     await taps.close();
   }
 }

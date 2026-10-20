@@ -12,7 +12,7 @@ final List<RouteBase> notificationsRoutes = [
     builder: (context, state) => BlocProvider(
       create: (_) => getIt<NotificationsBloc>()
         ..add(const NotificationsFetched())
-        ..add(const NotificationsArrivalsWatched()),
+        ..add(const NotificationsChangesWatched()),
       child: const NotificationsPage(),
     ),
   ),
