@@ -8,7 +8,7 @@ class AdminReviewDocument {
     required this.documentType,
     required this.storagePath,
     required this.createdAt,
-    required this.url,
+    this.url,
   });
 
   final String id;
@@ -16,8 +16,9 @@ class AdminReviewDocument {
   final String storagePath;
   final DateTime createdAt;
 
-  /// A signed URL, valid for a few minutes. Never a public URL.
-  final String url;
+  /// A signed URL, valid for a few minutes. Never a public URL. Null when
+  /// the file isn't in storage (it was never uploaded, or was removed).
+  final String? url;
 
   /// Whether the file is a PDF (the rest are images).
   bool get isPdf => storagePath.toLowerCase().endsWith('.pdf');

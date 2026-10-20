@@ -3,6 +3,7 @@ import 'package:watad/features/kyc/shared/datasource/remote/kyc_remote_data_sour
 import 'package:watad/features/kyc/shared/datasource/repositories/kyc_repository_impl.dart';
 import 'package:watad/features/kyc/shared/domain/repositories/kyc_repository.dart';
 import 'package:watad/features/kyc/shared/domain/usecases/get_kyc_document_use_case.dart';
+import 'package:watad/features/kyc/shared/domain/usecases/sign_out_kyc_use_case.dart';
 import 'package:watad/features/kyc/shared/domain/usecases/watch_kyc_document_use_case.dart';
 import 'package:watad/features/kyc/shared/presentation/bloc/kyc_status_bloc.dart';
 
@@ -23,10 +24,15 @@ void registerKycDependencies(GetIt getIt) {
     () => WatchKycDocumentUseCase(getIt<KycRepository>()),
   );
 
+  getIt.registerLazySingleton<SignOutKycUseCase>(
+    () => SignOutKycUseCase(getIt<KycRepository>()),
+  );
+
   getIt.registerFactory<KycStatusBloc>(
     () => KycStatusBloc(
       getIt<GetKycDocumentUseCase>(),
       getIt<WatchKycDocumentUseCase>(),
+      getIt<SignOutKycUseCase>(),
     ),
   );
 }

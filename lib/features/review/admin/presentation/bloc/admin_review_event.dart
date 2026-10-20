@@ -15,14 +15,9 @@ final class AdminReviewFilterChanged extends AdminReviewEvent {
   final AdminReviewFilter filter;
 }
 
-final class AdminReviewApproved extends AdminReviewEvent {
-  const AdminReviewApproved(this.businessId);
+/// The admin decided on [target] from its details.
+final class AdminReviewDecided extends AdminReviewEvent {
+  const AdminReviewDecided(this.target);
 
-  final String businessId;
-}
-
-final class AdminReviewRejected extends AdminReviewEvent {
-  const AdminReviewRejected(this.rejection);
-
-  final AdminReviewRejection rejection;
+  final AdminReviewTarget target;
 }

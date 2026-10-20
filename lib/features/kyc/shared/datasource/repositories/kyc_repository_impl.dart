@@ -25,4 +25,9 @@ class KycRepositoryImpl implements KycRepository {
   ]) {
     return guardSupabaseStream(const Stream.empty());
   }
+
+  @override
+  Future<Result<void>> signOut() {
+    return guardSupabaseCall(_remoteDataSource.signOut);
+  }
 }

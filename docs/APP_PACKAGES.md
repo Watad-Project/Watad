@@ -52,6 +52,7 @@ The Flutter version the whole team uses, and the registry of every package the a
 | `image_picker` | runtime | Camera capture and gallery image selection | `presentation/`, `lib/core/components/` | 2026-10-14 |
 | `material_ui` | runtime | The standalone Material library that `pinput` 7 is built on. `AppOtpInput` uses its `Material` and `MaterialLocalizations`, which are other types than Flutter's own | `lib/core/components/` only (the `AppOtpInput` component) | 2026-10-10 |
 | `lottie` | runtime | Lottie animations from `assets/animations/` (onboarding illustrations) | `lib/core/components/` only (the `AppLottie` component) | 2026-10-12 |
+| `onesignal_flutter` | runtime | Push notifications on Android and iOS through OneSignal: sign the device in as the user (`external_id`), ask permission, report taps. Web uses the OneSignal Web SDK in `web/index.html` instead | `datasource/local/` of the notifications feature only | 2026-10-20 |
 | `permission_handler` | runtime | Requesting camera and storage runtime permissions | `presentation/`, `lib/core/components/` | 2026-10-14 |
 | `pinput` | runtime | OTP / PIN input. The package is `pinput`, not `pin_put` | `lib/core/components/` only (the `AppOtpInput` component) | 2026-10-06 |
 | `shared_preferences` | runtime | On-device key-value storage (e.g. remember onboarding seen) | `datasource/`, `lib/core/` | 2026-10-11 |

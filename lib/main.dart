@@ -18,5 +18,6 @@ Future<void> main() async {
     publishableKey: Env.supabasePublishableKey,
   );
   configureDependencies();
+  startAppServices();
   runApp(AppLocalization.scope(child: const WatadApp()));
 }

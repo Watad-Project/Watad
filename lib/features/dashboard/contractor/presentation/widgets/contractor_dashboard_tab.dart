@@ -14,6 +14,7 @@ class ContractorDashboardTab extends StatefulWidget {
     this.onBrowseOpportunities,
     this.onAllProjectsTap,
     this.onAllOffersTap,
+    this.bell,
     super.key,
   });
 
@@ -22,6 +23,9 @@ class ContractorDashboardTab extends StatefulWidget {
   final VoidCallback? onBrowseOpportunities;
   final VoidCallback? onAllProjectsTap;
   final VoidCallback? onAllOffersTap;
+
+  /// The notifications bell, for the header.
+  final Widget? bell;
 
   @override
   State<ContractorDashboardTab> createState() => _ContractorDashboardTabState();
@@ -39,6 +43,7 @@ class _ContractorDashboardTabState extends State<ContractorDashboardTab> {
     return BlocProvider.value(
       value: widget.bloc,
       child: ContractorDashboardPage(
+        bell: widget.bell,
         onVerificationStatusTap:
             widget.onVerificationStatusTap ??
             () => context.pushNamed(KycRoutes.statusName),

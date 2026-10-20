@@ -48,6 +48,9 @@ class _FakeContractorKycRepository implements ContractorKycRepository {
     required Uint8List bytes,
     required String fileName,
   }) async => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> signOut() async => const Success(null);
 }
 
 class _FakeContractorOnboardingRepository
@@ -77,6 +80,9 @@ class _FakeKycRepository implements KycRepository {
     BusinessDocumentType documentType =
         BusinessDocumentType.commercialRegistration,
   ]) => const Stream.empty();
+
+  @override
+  Future<Result<void>> signOut() async => const Success(null);
 }
 
 // Each role folder tests its own routes in

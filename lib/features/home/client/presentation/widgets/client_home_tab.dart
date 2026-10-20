@@ -7,9 +7,12 @@ import 'package:watad/features/home/client/presentation/pages/client_home_page.d
 /// bloc in (widgets don't create blocs, APP_ARCHITECTURE.md §10), and the tab
 /// closes it when it goes away.
 class ClientHomeTab extends StatefulWidget {
-  const ClientHomeTab({required this.bloc, super.key});
+  const ClientHomeTab({required this.bloc, this.bell, super.key});
 
   final ClientHomeBloc bloc;
+
+  /// The notifications bell, for the header.
+  final Widget? bell;
 
   @override
   State<ClientHomeTab> createState() => _ClientHomeTabState();
@@ -23,6 +26,8 @@ class _ClientHomeTabState extends State<ClientHomeTab> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      BlocProvider.value(value: widget.bloc, child: const ClientHomePage());
+  Widget build(BuildContext context) => BlocProvider.value(
+    value: widget.bloc,
+    child: ClientHomePage(bell: widget.bell),
+  );
 }

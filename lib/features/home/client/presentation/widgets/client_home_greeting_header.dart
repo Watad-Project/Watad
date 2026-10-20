@@ -8,15 +8,20 @@ import 'package:watad/core/theme/app_tone.dart';
 import 'package:watad/features/home/client/domain/entities/client_home_profile.dart';
 
 /// The client's photo (or the default avatar), «مساء الخير» and their name,
-/// with «جوال موثّق» when their phone was confirmed.
+/// with «جوال موثّق» when their phone was confirmed, and the notifications
+/// [bell] at the end.
 class ClientHomeGreetingHeader extends StatelessWidget {
   const ClientHomeGreetingHeader({
     required this.profile,
     required this.now,
+    this.bell,
     super.key,
   });
 
   final ClientHomeProfile profile;
+
+  /// Lent by the notifications feature (AppSlots.notificationsBell).
+  final Widget? bell;
 
   /// The phone's local time, for the greeting.
   final DateTime now;
@@ -57,6 +62,7 @@ class ClientHomeGreetingHeader extends StatelessWidget {
             label: context.tr('home.verified_phone'),
             tone: AppTone.neutral,
           ),
+        ?bell,
       ],
     );
   }

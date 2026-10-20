@@ -30,7 +30,7 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
 - **Updated on 2026-10-06** from Flutter 3.38.3. If you are still on the old version, run `flutter upgrade`, then `flutter pub get`. What changed is in [`docs/APP_PACKAGES.md`](docs/APP_PACKAGES.md) §1.
 - **Configuration lives in `.env`**, read with `flutter_dotenv`. After cloning, copy `.env.example` to `.env` and ask a maintainer for the values; the app does not build without it.
   - `.env` is git-ignored: never commit it.
-  - `.env` is bundled into the app, so it holds only public values: the Supabase URL and the publishable (anon) key.
+  - `.env` is bundled into the app, so it holds only public values: the Supabase URL, the publishable (anon) key and the OneSignal App ID (`ONESIGNAL_APP_ID`, for push; without it the app runs without push). The OneSignal REST API key is a server secret of `send-push`, never in `.env`.
 - **The Google Maps key** (map screens) lives in two more git-ignored files, also from a maintainer:
   - Android: `MAPS_API_KEY=…` in `android/local.properties`;
   - iOS: copy `ios/Flutter/Secrets.xcconfig.example` to `ios/Flutter/Secrets.xcconfig` and set `MAPS_API_KEY`. Without it, opening a map crashes the app on iOS.
@@ -39,7 +39,7 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
 ## 4. Golden rules (never break these)
 
 1. **The app talks only to Supabase**, with the publishable (anon) key and the signed-in user's session. It never calls the blockchain REST API.
-2. **No server secrets** in the app, `.env`, tests or docs. Never use or commit the secret (`service_role`) key, `BLOCKCHAIN_API_KEY`, `BLOCKCHAIN_API_URL` or the `blockchain_sync_secret`. Never commit `.env`.
+2. **No server secrets** in the app, `.env`, tests or docs. Never use or commit the secret (`service_role`) key, `BLOCKCHAIN_API_KEY`, `BLOCKCHAIN_API_URL`, `ONESIGNAL_REST_API_KEY`, the `blockchain_sync_secret` or the `push_secret`. Never commit `.env`.
 3. **Read through `v_*` views; write through RPC functions.** Use a direct `insert`/`update` only on the tables and exact columns in `docs/ARCHITECTURE.md` §3a. Locked columns change only through RPCs: `projects.status` after creation, `projects.taker_id`, `orders.status`, `project_payments.status`, `users.role`.
 4. **The marketplace is off-chain.** Nothing from marketplace items, orders or order payments goes to the blockchain.
 5. **Do not add or change fields of the on-chain record** without a maintainer's approval. On-chain payments are append-only.
@@ -70,6 +70,7 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
 - **Large and bold text:** every screen fits the phone's text at 200% with bold on, without overflowing. No fixed heights for text, `Expanded`/`Flexible` in rows, ellipsis or wrapping for long text, and one test per page at `textScale: largeTextScale, boldText: true` (`docs/APP_ARCHITECTURE.md` §10).
 - **Avatars:** a person's or a business's photo is always `AppAvatar`, which shows the default avatar when there's no photo. Never the striped `AppImagePlaceholder` for people or businesses (`docs/APP_ARCHITECTURE.md` §10).
 - **The keyboard closes by itself:** a tap outside the text field (empty space, a card, a button) or a drag on a list closes it, on every page, dialog and sheet. `AppKeyboardDismiss` does this once in `WatadApp`. Don't add your own: no `GestureDetector` that unfocuses, no `onTapOutside`, no `keyboardDismissBehavior` (`docs/APP_ARCHITECTURE.md` §10).
+- **Notifications:** to notify a user, the server inserts a row into `notifications`; a trigger sends it as a push through OneSignal. The app only reads `v_my_notifications` and calls `mark_notifications_read()`. It never inserts a notification and never calls OneSignal's REST API (`docs/ARCHITECTURE.md` §13). A notification opens the screen of its event: the feature that has that screen links the event's `data.type` to its route with `AppNotificationLinks.register(…)` in its injection file (`docs/APP_ARCHITECTURE.md` §11).
 - **Packages:** only from `docs/APP_PACKAGES.md`. A new one is registered in the same change.
 - **Copy the worked example** in `docs/APP_ARCHITECTURE.md` (§8 to §12). Do not invent a new layout.
 

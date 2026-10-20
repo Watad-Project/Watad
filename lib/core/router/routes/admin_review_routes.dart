@@ -4,6 +4,8 @@ abstract final class AdminReviewRoutes {
   static const String reviewName = 'admin-review';
   static const String reviewPath = '/admin/review';
 
-  static const String reviewDocumentsName = 'admin-review-documents';
-  static const String reviewDocumentsPath = '/admin/review/:businessId';
+  /// One request: `kind` is `license` (the id is the business's) or `deed`
+  /// (the id is the project's).
+  static const String reviewDetailsName = 'admin-review-details';
+  static const String reviewDetailsPath = '/admin/review/:kind/:id';
 }
