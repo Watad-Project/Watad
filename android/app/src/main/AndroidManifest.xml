@@ -32,6 +32,14 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
+        <!-- OneSignal notification look: the small icon is
+             drawable/ic_stat_onesignal_default and the large one
+             ic_onesignal_large_icon_default (the Watad logo); the accent
+             is the brand orange (AppColors.primary), ARGB. -->
+        <meta-data
+            android:name="com.onesignal.NotificationAccentColor.DEFAULT"
+            android:value="FFE8722C" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

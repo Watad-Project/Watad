@@ -27,6 +27,11 @@ class NotificationsPushMobile implements NotificationsPush {
 
   Future<void> _start() async {
     await OneSignal.initialize(_appId);
+    // The open app shows its notifications itself (Realtime, the bell and
+    // the list), so a push that arrives meanwhile isn't drawn on top.
+    OneSignal.Notifications.addForegroundWillDisplayListener(
+      (event) => event.preventDefault(),
+    );
     OneSignal.Notifications.addClickListener((event) {
       final data = event.notification.additionalData ?? const {};
       // A tap that opened the app comes before anyone listens: keep it.
