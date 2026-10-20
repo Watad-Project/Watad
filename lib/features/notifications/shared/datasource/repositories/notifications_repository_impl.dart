@@ -25,9 +25,11 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   Future<Result<void>> markRead(List<String>? ids) =>
       guardSupabaseCall(() => _remote.markRead(ids));
 
+  /// The data source's stream is of models: cast it to the entity, or the
+  /// guard's transformer (typed for the entity) is refused at run time.
   @override
   Stream<Result<UserNotification>> watchNew() =>
-      guardSupabaseStream(_remote.watchNew());
+      guardSupabaseStream(_remote.watchNew().cast<UserNotification>());
 
   @override
   Future<Result<void>> startPush() => guardSupabaseCall(() async {
@@ -40,7 +42,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   Stream<Result<NotificationTarget>> watchTaps() => guardSupabaseStream(
     _push.taps
         .map(NotificationTargetModel.routeOf)
-        .where((t) => t != null)
-        .cast(),
+        .where((target) => target != null)
+        .cast<NotificationTarget>(),
   );
 }
