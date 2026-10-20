@@ -173,16 +173,18 @@ class _WorkContent extends StatelessWidget {
 
   int get _projectTypeChipIndex => switch (filter.projectType) {
     null => 0,
-    ContractorWorkType.construction => 1,
-    ContractorWorkType.renovation => 2,
-    ContractorWorkType.repairs => 3,
+    ContractorWorkType.foundation => 1,
+    ContractorWorkType.building => 2,
+    ContractorWorkType.renovation => 3,
+    ContractorWorkType.repairs => 4,
   };
 
   void _onProjectTypeSelected(BuildContext context, int index) {
     final selectedType = switch (index) {
-      1 => ContractorWorkType.construction,
-      2 => ContractorWorkType.renovation,
-      3 => ContractorWorkType.repairs,
+      1 => ContractorWorkType.foundation,
+      2 => ContractorWorkType.building,
+      3 => ContractorWorkType.renovation,
+      4 => ContractorWorkType.repairs,
       _ => null,
     };
     context.read<ContractorWorkBloc>().add(
@@ -259,7 +261,8 @@ class _WorkContent extends StatelessWidget {
           AppFilterChips(
             labels: [
               context.tr('work.contractor.filter_type_all'),
-              context.tr('work.contractor.filter_type_construction'),
+              context.tr('work.contractor.filter_type_foundation'),
+              context.tr('work.contractor.filter_type_building'),
               context.tr('work.contractor.filter_type_renovation'),
               context.tr('work.contractor.filter_type_repairs'),
             ],

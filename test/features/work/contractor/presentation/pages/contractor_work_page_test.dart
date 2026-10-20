@@ -204,6 +204,7 @@ void main() {
       // Quick project type filter chips
       expect(find.text('الكل'), findsOneWidget);
       expect(find.text('تأسيس'), findsOneWidget);
+      expect(find.text('بناء'), findsOneWidget);
       expect(find.text('ترميم'), findsOneWidget);
       expect(find.text('إصلاحات'), findsOneWidget);
 

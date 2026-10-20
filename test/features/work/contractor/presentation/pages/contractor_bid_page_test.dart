@@ -96,6 +96,11 @@ void main() {
     expect(find.text('تأسيس فيلا سكنية دورين'), findsOneWidget);
     expect(find.text('ملكية موثّقة'), findsOneWidget);
     expect(find.text('الرياض · الميزانية 480000.0 ر.س'), findsOneWidget);
+    expect(find.text('العنوان'), findsOneWidget);
+    expect(find.text('الرياض · حي الياسمين'), findsOneWidget);
+    expect(find.text('المتطلبات'), findsOneWidget);
+    expect(find.text('بناء عظم بالمواد.'), findsOneWidget);
+    expect(find.byIcon(Icons.home_work_rounded), findsOneWidget);
     expect(
       find.text('يمكنك تعديل العرض أو سحبه ما دام قيد الانتظار.'),
       findsOneWidget,
