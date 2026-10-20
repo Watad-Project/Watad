@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/get_unread_notifications_count_use_case.dart';
@@ -104,7 +103,7 @@ void main() {
 
     const tap = NotificationTap(
       notificationId: 'n-1',
-      target: NotificationTarget(route: 'client-projects'),
+      data: {'type': 'task_added', 'project_id': 'p-1'},
     );
     repository.taps.add(const Success(tap));
     final state = await bloc.stream.firstWhere((s) => s.tapped != null);

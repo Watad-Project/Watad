@@ -3,7 +3,7 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/notifications_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
+import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/presentation/pages/notifications_page.dart';
 
@@ -26,26 +26,29 @@ void main() {
           id: 'n-1',
           title: 'عرض جديد',
           body: 'وصلك عرض على مشروعك',
-          // Leads to the list itself: a route every test has.
-          target: const NotificationTarget(
-            route: NotificationsRoutes.notificationsName,
-          ),
+          // Linked below, to the list itself: a route every test has.
+          data: const {'type': 'test_linked'},
           createdAt: now.subtract(const Duration(hours: 2)),
         ),
         UserNotification(
           id: 'n-2',
           title: 'تم توثيق الصك',
           body: 'نُشر مشروعك',
-          // A route this app doesn't have.
-          target: const NotificationTarget(route: 'not-a-route'),
+          // An event no feature links yet.
+          data: const {'type': 'test_unlinked'},
           createdAt: now.subtract(const Duration(days: 3)),
           readAt: now.subtract(const Duration(days: 2)),
         ),
       ]);
     registerFakeNotifications(repository);
+    AppNotificationLinks.register(
+      'test_linked',
+      (_) => (name: NotificationsRoutes.notificationsName, pathParameters: {}),
+    );
   });
 
   tearDown(() async {
+    AppNotificationLinks.clear();
     await repository.close();
     await getIt.reset();
   });
@@ -72,7 +75,9 @@ void main() {
     expect(find.text('منذ ٣ أيام'), findsOneWidget);
   });
 
-  testWidgets('a tap marks it read and opens where it leads', (tester) async {
+  testWidgets('a tap marks it read and opens the screen of its event', (
+    tester,
+  ) async {
     await openList(tester);
 
     await tester.tap(find.text('عرض جديد'));
@@ -88,9 +93,7 @@ void main() {
     );
   });
 
-  testWidgets('a route the app doesn\'t have stays on the list', (
-    tester,
-  ) async {
+  testWidgets('an event no feature links stays on the list', (tester) async {
     await openList(tester);
 
     await tester.tap(find.text('تم توثيق الصك'));

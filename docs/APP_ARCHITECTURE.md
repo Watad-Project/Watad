@@ -868,6 +868,32 @@ context.pushNamed(
 );
 ```
 
+### Opening a screen from a notification
+
+A notification's `data` says what happened: its `type` (e.g. `task_added`) and the ids of what changed (`docs/ARCHITECTURE.md` §13). It never names a route. The feature that has the screen for that event decides where a tap goes, and nothing else changes:
+
+1. **Link the event once, in the feature's injection file**, with `AppNotificationLinks` (`lib/core/utils/app_notification_links.dart`). The link builds the route from the data:
+
+   ```dart
+   void registerContractorJobsDependencies(GetIt getIt) {
+     // …
+     AppNotificationLinks.register(
+       'task_added',
+       (data) => (
+         name: ContractorJobsRoutes.jobName,
+         pathParameters: {'jobId': '${data['project_id']}'},
+       ),
+     );
+   }
+   ```
+
+2. **Done.** A tap on the toast, the push or the row in «الإشعارات» opens that screen and marks the notification read. The screen loads its data by id, as for any route.
+
+- A new kind of event is a trigger on the server that calls `private.notify(…)` with a new `type`, in its own migration (`docs/ARCHITECTURE.md` §13), plus its link here. The event types and their ids are listed in `ARCHITECTURE.md` §13.
+- A type nothing links yet opens the notifications list, so a notification is useful before its screen exists.
+- Return `null` from the link for a notification that should open nothing.
+- In tests, call `AppNotificationLinks.clear()` in `tearDown`.
+
 ### How the router is set up
 
 The router is set up once, in `lib/core/router/`. Every route's page and `GoRoute` live in the feature that owns it; its name and path live in that folder's names file.

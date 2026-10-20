@@ -7,12 +7,12 @@ import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/features/notifications/shared/presentation/bloc/notifications_bloc.dart';
-import 'package:watad/features/notifications/shared/presentation/widgets/notification_target_navigator.dart';
+import 'package:watad/features/notifications/shared/presentation/widgets/notification_navigator.dart';
 import 'package:watad/features/notifications/shared/presentation/widgets/notification_tile.dart';
 import 'package:watad/features/notifications/shared/presentation/widgets/notifications_skeleton.dart';
 
 /// «الإشعارات»: the user's notifications, newest first, live. A tap marks
-/// one read and opens where it leads.
+/// one read and opens the screen of its event, when one is linked.
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
 
@@ -81,9 +81,7 @@ class NotificationsPage extends StatelessWidget {
                   now: now,
                   onTap: () {
                     bloc.add(NotificationsOpened(notification));
-                    if (notification.target case final target?) {
-                      NotificationTargetNavigator.open(context, target);
-                    }
+                    NotificationNavigator.open(context, notification.data);
                   },
                 );
               },

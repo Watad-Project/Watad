@@ -260,11 +260,13 @@ A notification is a row of `notifications` (migration 67). The server writes it;
 
 ```sql
 insert into public.notifications (user_id, title, body, data)
-values (v_user_id, '<title>', '<body>', jsonb_build_object('route', '<route name>'));
+values (v_user_id, '<title>', '<body>',
+        jsonb_build_object('type', '<event>', '<thing>_id', v_thing_id));
 ```
 
 - `title` (1 to 200 characters) and `body` (1 to 1000) are shown as they are, in one language.
-- `data.route` is the `go_router` route name the app opens on a tap, and `data.params` its path parameters (strings). Leave `data` empty (`'{}'`) for a notification that opens nothing.
+- `data` says **what happened**, never where to go in the app: `type` names the event (`task_added`), and the ids of what changed come with it (`project_id`, `task_id`). Use the helper `private.notify(user_id, title, body, data)`, which skips closed accounts.
+- **Where a tap goes is the app's choice:** the feature that has the screen for that event links its `type` to a route with `AppNotificationLinks` (`docs/APP_ARCHITECTURE.md` §11). A tap on the toast, the push or the row in the list opens that screen and marks the notification read; a type nothing links yet opens the notifications list.
 - The app never inserts a notification, and never calls OneSignal's REST API or `send-push`.
 
 **What notifies people already** (migration 68, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:

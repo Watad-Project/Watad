@@ -1,8 +1,7 @@
-import 'package:watad/features/notifications/shared/datasource/models/notification_target_model.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 
 class NotificationTapModel extends NotificationTap {
-  const NotificationTapModel({super.notificationId, super.target});
+  const NotificationTapModel({super.notificationId, super.data});
 
   /// Maps a tapped push's additional data: the notification's `data` plus
   /// `notification_id`, as send-push sends it (ARCHITECTURE.md §13).
@@ -10,7 +9,10 @@ class NotificationTapModel extends NotificationTap {
     final id = json['notification_id'];
     return NotificationTapModel(
       notificationId: id is String && id.isNotEmpty ? id : null,
-      target: NotificationTargetModel.routeOf(json),
+      data: {
+        for (final entry in json.entries)
+          if (entry.key != 'notification_id') entry.key: entry.value,
+      },
     );
   }
 }

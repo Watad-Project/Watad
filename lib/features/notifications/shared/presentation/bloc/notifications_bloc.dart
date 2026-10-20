@@ -110,7 +110,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
             id: n.id,
             title: n.title,
             body: n.body,
-            target: n.target,
+            data: n.data,
             readAt: now,
             createdAt: n.createdAt,
           )

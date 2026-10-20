@@ -1,4 +1,3 @@
-import 'package:watad/features/notifications/shared/datasource/models/notification_target_model.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 
 class UserNotificationModel extends UserNotification {
@@ -7,7 +6,7 @@ class UserNotificationModel extends UserNotification {
     required super.title,
     required super.body,
     required super.createdAt,
-    super.target,
+    super.data,
     super.readAt,
   });
 
@@ -20,7 +19,7 @@ class UserNotificationModel extends UserNotification {
       id: json['id'] as String,
       title: json['title'] as String,
       body: json['body'] as String,
-      target: NotificationTargetModel.routeOf(json['data']),
+      data: {if (json['data'] case final Map<String, dynamic> data) ...data},
       readAt: readAt == null ? null : DateTime.parse(readAt),
       createdAt: DateTime.parse(json['created_at'] as String),
     );

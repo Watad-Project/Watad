@@ -6,8 +6,8 @@ import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/router/routes/notifications_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/presentation/pages/notifications_page.dart';
 import 'package:watad/features/notifications/shared/presentation/widgets/notifications_bell.dart';
@@ -27,9 +27,14 @@ void main() {
     registerFakeClientHome();
     repository = FakeNotificationsRepository()..unreadResult = const Success(3);
     registerFakeNotifications(repository);
+    AppNotificationLinks.register(
+      'test_linked',
+      (_) => (name: NotificationsRoutes.notificationsName, pathParameters: {}),
+    );
   });
 
   tearDown(() async {
+    AppNotificationLinks.clear();
     await repository.close();
     await getIt.reset();
   });
@@ -93,9 +98,8 @@ void main() {
           id: 'n-1',
           title: 'عرض جديد',
           body: 'وصلك عرض على مشروعك',
-          target: const NotificationTarget(
-            route: NotificationsRoutes.notificationsName,
-          ),
+          // Linked in setUp, to the list itself.
+          data: const {'type': 'test_linked'},
           createdAt: DateTime.now().toUtc(),
         ),
       );
@@ -132,17 +136,14 @@ void main() {
     ]);
   });
 
-  testWidgets('a tapped push opens where it leads', (tester) async {
+  testWidgets('a tapped push reads it and opens the screen of its event', (
+    tester,
+  ) async {
     await openHome(tester);
 
     repository.taps.add(
       const Success(
-        NotificationTap(
-          notificationId: 'n-1',
-          target: NotificationTarget(
-            route: NotificationsRoutes.notificationsName,
-          ),
-        ),
+        NotificationTap(notificationId: 'n-1', data: {'type': 'test_linked'}),
       ),
     );
     await tester.pumpAndSettle();
@@ -151,5 +152,18 @@ void main() {
     expect(repository.markedRead, [
       ['n-1'],
     ]);
+  });
+
+  testWidgets('a tapped push no feature links opens the list', (tester) async {
+    await openHome(tester);
+
+    repository.taps.add(
+      const Success(
+        NotificationTap(notificationId: 'n-2', data: {'type': 'message'}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NotificationsPage), findsOneWidget);
   });
 }

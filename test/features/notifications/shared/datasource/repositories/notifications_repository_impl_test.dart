@@ -89,29 +89,22 @@ void main() {
     );
   });
 
-  test('each tapped push comes out with its notification and target', () async {
-    final taps = repository.watchTaps().take(2).toList();
-    push.tapsController
-      ..add(const {'notification_id': 'n-1'})
-      ..add(const {
-        'notification_id': 'n-2',
-        'route': 'client-projects',
-        'params': {'id': 'p-1'},
-      });
+  test('each tapped push comes out with its notification and data', () async {
+    final taps = repository.watchTaps().first;
+    push.tapsController.add(const {
+      'notification_id': 'n-1',
+      'type': 'task_added',
+      'project_id': 'p-1',
+    });
 
-    final results = await taps;
     expect(
-      results.first,
+      await taps,
       isA<Success<NotificationTap>>()
           .having((s) => s.data.notificationId, 'notificationId', 'n-1')
-          .having((s) => s.data.target, 'target', isNull),
-    );
-    expect(
-      results.last,
-      isA<Success<NotificationTap>>()
-          .having((s) => s.data.notificationId, 'notificationId', 'n-2')
-          .having((s) => s.data.target?.route, 'route', 'client-projects')
-          .having((s) => s.data.target?.params, 'params', {'id': 'p-1'}),
+          .having((s) => s.data.data, 'data', {
+            'type': 'task_added',
+            'project_id': 'p-1',
+          }),
     );
   });
 

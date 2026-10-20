@@ -1,5 +1,3 @@
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
-
 /// One notification of the signed-in user (`v_my_notifications`).
 class UserNotification {
   const UserNotification({
@@ -7,7 +5,7 @@ class UserNotification {
     required this.title,
     required this.body,
     required this.createdAt,
-    this.target,
+    this.data = const {},
     this.readAt,
   });
 
@@ -15,8 +13,9 @@ class UserNotification {
   final String title;
   final String body;
 
-  /// Where a tap leads; null when it opens nothing.
-  final NotificationTarget? target;
+  /// What happened: `type` and the ids. Where a tap leads comes from it
+  /// (AppNotificationLinks, ARCHITECTURE.md §13).
+  final Map<String, Object?> data;
 
   /// When the user opened it (UTC); null while unread.
   final DateTime? readAt;

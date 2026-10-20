@@ -7,7 +7,7 @@ void main() {
       'id': 'n-1',
       'title': 'تم توثيق الصك',
       'body': 'نُشر مشروعك',
-      'data': {'route': 'client-projects', 'params': <String, dynamic>{}},
+      'data': {'type': 'deed_verified', 'project_id': 'p-1'},
       'read_at': null,
       'created_at': '2026-10-20T08:00:00+00:00',
     });
@@ -15,7 +15,7 @@ void main() {
     expect(model.id, 'n-1');
     expect(model.title, 'تم توثيق الصك');
     expect(model.body, 'نُشر مشروعك');
-    expect(model.target?.route, 'client-projects');
+    expect(model.data, {'type': 'deed_verified', 'project_id': 'p-1'});
     expect(model.isRead, isFalse);
     expect(model.createdAt, DateTime.utc(2026, 10, 20, 8));
   });
@@ -34,7 +34,7 @@ void main() {
       'push_error': null,
     });
 
-    expect(model.target, isNull);
+    expect(model.data, isEmpty);
     expect(model.isRead, isTrue);
     expect(model.readAt, DateTime.utc(2026, 10, 20, 9));
   });
