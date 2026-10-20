@@ -71,20 +71,25 @@ class _NotificationsBellState extends State<NotificationsBell> {
     // screen is showing (the bell's tab stays alive under every page).
     final arrived = state.arrived;
     if (arrived != null && !identical(arrived, previous.arrived)) {
-      final target = arrived.target;
       AppTopToast.show(
         context,
         title: arrived.title,
         message: arrived.body,
-        onTap: target == null
-            ? null
-            : () => NotificationTargetNavigator.open(context, target),
+        // Opening it reads it, and goes where it leads.
+        onTap: () {
+          widget.bloc.add(NotificationsBellOpened(arrived.id));
+          if (arrived.target case final target?) {
+            NotificationTargetNavigator.open(context, target);
+          }
+        },
       );
     }
     // A push was tapped: open where it leads.
     final tapped = state.tapped;
     if (tapped != null && !identical(tapped, previous.tapped)) {
-      NotificationTargetNavigator.open(context, tapped);
+      if (tapped.target case final target?) {
+        NotificationTargetNavigator.open(context, target);
+      }
     }
   }
 

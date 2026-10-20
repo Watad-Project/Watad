@@ -1,9 +1,9 @@
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/supabase/supabase_guard.dart';
 import 'package:watad/features/notifications/shared/datasource/local/notifications_push.dart';
-import 'package:watad/features/notifications/shared/datasource/models/notification_target_model.dart';
+import 'package:watad/features/notifications/shared/datasource/models/notification_tap_model.dart';
 import 'package:watad/features/notifications/shared/datasource/remote/notifications_remote_data_source.dart';
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
+import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 import 'package:watad/features/notifications/shared/domain/repositories/notifications_repository.dart';
@@ -39,12 +39,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     await _push.requestPermission();
   });
 
-  /// Only taps that lead somewhere.
   @override
-  Stream<Result<NotificationTarget>> watchTaps() => guardSupabaseStream(
-    _push.taps
-        .map(NotificationTargetModel.routeOf)
-        .where((target) => target != null)
-        .cast<NotificationTarget>(),
+  Stream<Result<NotificationTap>> watchTaps() => guardSupabaseStream(
+    _push.taps.map(NotificationTapModel.fromJson).cast<NotificationTap>(),
   );
 }

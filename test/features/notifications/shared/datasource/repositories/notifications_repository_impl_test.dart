@@ -7,7 +7,7 @@ import 'package:watad/features/notifications/shared/datasource/models/user_notif
 import 'package:watad/features/notifications/shared/datasource/models/user_notification_model.dart';
 import 'package:watad/features/notifications/shared/datasource/remote/notifications_remote_data_source.dart';
 import 'package:watad/features/notifications/shared/datasource/repositories/notifications_repository_impl.dart';
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
+import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 
 /// A remote data source whose stream is typed for the model, as the real one.
@@ -89,21 +89,29 @@ void main() {
     );
   });
 
-  test('only taps that lead somewhere come out, as targets', () async {
-    final targets = repository.watchTaps().take(1).toList();
+  test('each tapped push comes out with its notification and target', () async {
+    final taps = repository.watchTaps().take(2).toList();
     push.tapsController
       ..add(const {'notification_id': 'n-1'})
       ..add(const {
+        'notification_id': 'n-2',
         'route': 'client-projects',
         'params': {'id': 'p-1'},
       });
 
-    final result = (await targets).single;
+    final results = await taps;
     expect(
-      result,
-      isA<Success<NotificationTarget>>()
-          .having((s) => s.data.route, 'route', 'client-projects')
-          .having((s) => s.data.params, 'params', {'id': 'p-1'}),
+      results.first,
+      isA<Success<NotificationTap>>()
+          .having((s) => s.data.notificationId, 'notificationId', 'n-1')
+          .having((s) => s.data.target, 'target', isNull),
+    );
+    expect(
+      results.last,
+      isA<Success<NotificationTap>>()
+          .having((s) => s.data.notificationId, 'notificationId', 'n-2')
+          .having((s) => s.data.target?.route, 'route', 'client-projects')
+          .having((s) => s.data.target?.params, 'params', {'id': 'p-1'}),
     );
   });
 

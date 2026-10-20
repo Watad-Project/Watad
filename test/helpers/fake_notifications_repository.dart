@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
+import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 import 'package:watad/features/notifications/shared/domain/repositories/notifications_repository.dart';
@@ -20,7 +20,7 @@ class FakeNotificationsRepository implements NotificationsRepository {
       StreamController.broadcast();
 
   /// Send where a tapped push leads.
-  final StreamController<Result<NotificationTarget>> taps =
+  final StreamController<Result<NotificationTap>> taps =
       StreamController.broadcast();
 
   /// The calls to markRead: a list of ids, or null for all.
@@ -54,7 +54,7 @@ class FakeNotificationsRepository implements NotificationsRepository {
   }
 
   @override
-  Stream<Result<NotificationTarget>> watchTaps() => taps.stream;
+  Stream<Result<NotificationTap>> watchTaps() => taps.stream;
 
   /// Call it in tearDown.
   Future<void> close() async {

@@ -1,9 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/usecase/usecase.dart';
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
+import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/get_unread_notifications_count_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/mark_notifications_read_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/start_push_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_changes_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_taps_use_case.dart';
@@ -23,17 +24,20 @@ class NotificationsBellBloc
     this._startPush,
     this._watchChanges,
     this._watchTaps,
+    this._markRead,
   ) : super(const NotificationsBellState()) {
     on<NotificationsBellStarted>(_onStarted);
     on<NotificationsBellCountRequested>(_onCountRequested);
     on<NotificationsBellChangesWatched>(_onChangesWatched);
     on<NotificationsBellTapsWatched>(_onTapsWatched);
+    on<NotificationsBellOpened>(_onOpened);
   }
 
   final GetUnreadNotificationsCountUseCase _getUnreadCount;
   final StartPushUseCase _startPush;
   final WatchNotificationChangesUseCase _watchChanges;
   final WatchNotificationTapsUseCase _watchTaps;
+  final MarkNotificationsReadUseCase _markRead;
 
   Future<void> _onStarted(
     NotificationsBellStarted event,
@@ -82,6 +86,7 @@ class NotificationsBellBloc
     }
   }
 
+  /// A tapped push is read: it leaves the count.
   Future<void> _onTapsWatched(
     NotificationsBellTapsWatched event,
     Emitter<NotificationsBellState> emit,
@@ -90,11 +95,26 @@ class NotificationsBellBloc
     if (result case Success(data: final taps)) {
       await emit.forEach(
         taps,
-        onData: (tap) => switch (tap) {
-          Success(:final data) => state.copyWith(tapped: () => data),
-          Failed() => state,
+        onData: (tap) {
+          if (tap case Success(:final data)) {
+            if (data.notificationId case final id?) {
+              add(NotificationsBellOpened(id));
+            }
+            return state.copyWith(tapped: () => data);
+          }
+          return state;
         },
       );
     }
+  }
+
+  /// The user opened a notification (its toast or its push): it's read.
+  /// Realtime then reports the change, and the bell counts again.
+  Future<void> _onOpened(
+    NotificationsBellOpened event,
+    Emitter<NotificationsBellState> emit,
+  ) async {
+    final result = await _markRead([event.notificationId]);
+    if (result case Success()) await _refreshCount(emit);
   }
 }

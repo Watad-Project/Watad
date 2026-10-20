@@ -13,13 +13,13 @@ final class NotificationsBellState {
   /// once in the app.
   final UserNotification? arrived;
 
-  /// Where the last tapped push leads, to open once.
-  final NotificationTarget? tapped;
+  /// The last tapped push, to open once where it leads.
+  final NotificationTap? tapped;
 
   NotificationsBellState copyWith({
     int? unreadCount,
     UserNotification? Function()? arrived,
-    NotificationTarget? Function()? tapped,
+    NotificationTap? Function()? tapped,
   }) {
     return NotificationsBellState(
       unreadCount: unreadCount ?? this.unreadCount,

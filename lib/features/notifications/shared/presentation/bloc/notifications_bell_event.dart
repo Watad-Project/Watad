@@ -23,3 +23,10 @@ final class NotificationsBellChangesWatched extends NotificationsBellEvent {
 final class NotificationsBellTapsWatched extends NotificationsBellEvent {
   const NotificationsBellTapsWatched();
 }
+
+/// The user opened notification [notificationId], from its toast or push.
+final class NotificationsBellOpened extends NotificationsBellEvent {
+  const NotificationsBellOpened(this.notificationId);
+
+  final String notificationId;
+}

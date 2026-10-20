@@ -6,6 +6,7 @@ import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/router/routes/notifications_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/presentation/pages/notifications_page.dart';
@@ -125,6 +126,10 @@ void main() {
       find.byType(NotificationsPage, skipOffstage: false),
       findsNWidgets(2),
     );
+    // Opening it read it.
+    expect(repository.markedRead, [
+      ['n-1'],
+    ]);
   });
 
   testWidgets('a tapped push opens where it leads', (tester) async {
@@ -132,11 +137,19 @@ void main() {
 
     repository.taps.add(
       const Success(
-        NotificationTarget(route: NotificationsRoutes.notificationsName),
+        NotificationTap(
+          notificationId: 'n-1',
+          target: NotificationTarget(
+            route: NotificationsRoutes.notificationsName,
+          ),
+        ),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.byType(NotificationsPage), findsOneWidget);
+    expect(repository.markedRead, [
+      ['n-1'],
+    ]);
   });
 }

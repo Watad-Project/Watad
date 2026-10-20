@@ -39,7 +39,7 @@ void registerNotificationsDependencies(GetIt getIt) {
     ..registerLazySingleton(() => WatchNotificationTapsUseCase(getIt()))
     ..registerFactory(() => NotificationsBloc(getIt(), getIt(), getIt()))
     ..registerFactory(
-      () => NotificationsBellBloc(getIt(), getIt(), getIt(), getIt()),
+      () => NotificationsBellBloc(getIt(), getIt(), getIt(), getIt(), getIt()),
     )
     // Lent to each role's home.
     ..registerFactory<Widget>(

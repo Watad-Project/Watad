@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/get_unread_notifications_count_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/mark_notifications_read_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/start_push_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_changes_use_case.dart';
 import 'package:watad/features/notifications/shared/domain/usecases/watch_notification_taps_use_case.dart';
@@ -20,6 +22,7 @@ void main() {
     StartPushUseCase(repository),
     WatchNotificationChangesUseCase(repository),
     WatchNotificationTapsUseCase(repository),
+    MarkNotificationsReadUseCase(repository),
   );
 
   final arrival = UserNotification(
@@ -99,10 +102,32 @@ void main() {
     final bloc = buildBloc()..add(const NotificationsBellStarted());
     await pumpEventQueue();
 
-    const target = NotificationTarget(route: 'client-projects');
-    repository.taps.add(const Success(target));
+    const tap = NotificationTap(
+      notificationId: 'n-1',
+      target: NotificationTarget(route: 'client-projects'),
+    );
+    repository.taps.add(const Success(tap));
     final state = await bloc.stream.firstWhere((s) => s.tapped != null);
-    expect(state.tapped, same(target));
+    expect(state.tapped, same(tap));
+    // Opening the push read it.
+    await pumpEventQueue();
+    expect(repository.markedRead, [
+      ['n-1'],
+    ]);
+    await bloc.close();
+  });
+
+  test('opening a notification\'s toast reads it and counts again', () async {
+    repository.unreadResult = const Success(2);
+    final bloc = buildBloc()..add(const NotificationsBellStarted());
+    await bloc.stream.firstWhere((s) => s.unreadCount == 2);
+
+    repository.unreadResult = const Success(1);
+    bloc.add(const NotificationsBellOpened('n-1'));
+    await bloc.stream.firstWhere((s) => s.unreadCount == 1);
+    expect(repository.markedRead, [
+      ['n-1'],
+    ]);
     await bloc.close();
   });
 }

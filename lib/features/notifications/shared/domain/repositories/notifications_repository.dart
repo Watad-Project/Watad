@@ -1,5 +1,5 @@
 import 'package:watad/core/error/result.dart';
-import 'package:watad/features/notifications/shared/domain/entities/notification_target.dart';
+import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification_change.dart';
 
@@ -20,6 +20,6 @@ abstract interface class NotificationsRepository {
   /// device in as them, and asks permission to notify.
   Future<Result<void>> startPush();
 
-  /// Where each tapped push leads.
-  Stream<Result<NotificationTarget>> watchTaps();
+  /// Each push the user taps: which notification, and where it leads.
+  Stream<Result<NotificationTap>> watchTaps();
 }
