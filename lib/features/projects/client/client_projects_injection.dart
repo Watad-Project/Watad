@@ -80,4 +80,12 @@ void registerClientProjectsDependencies(GetIt getIt) {
       pathParameters: {'projectId': '${data['project_id']}'},
     ),
   );
+  // A new offer opens the project's offers (migration 70).
+  AppNotificationLinks.register(
+    'offer_received',
+    (data) => (
+      name: ClientProjectsRoutes.projectOffersName,
+      pathParameters: {'projectId': '${data['project_id']}'},
+    ),
+  );
 }

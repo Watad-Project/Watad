@@ -271,7 +271,7 @@ values (v_user_id, '<title>', '<body>',
 - **Where a tap goes is the app's choice:** the feature that has the screen for that event links its `type` to a route with `AppNotificationLinks` (`docs/APP_ARCHITECTURE.md` §11). A tap on the toast, the push or the row in the list opens that screen and marks the notification read; a type nothing links yet opens the notifications list.
 - The app never inserts a notification, and never calls OneSignal's REST API or `send-push`.
 
-**What notifies people already** (migration 68, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
+**What notifies people already** (migrations 68 and 70, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
 
 | Event | Who is told | `data.type` (+ ids) | Pops up |
 |---|---|---|---|
@@ -279,6 +279,9 @@ values (v_user_id, '<title>', '<body>',
 | A task is added to a project | the other side of the project | `task_added` (`project_id`, `task_id`) | yes |
 | A task is accepted | the other side (the contractor, when the client accepts) | `task_accepted` (`project_id`, `task_id`) | yes |
 | A message is sent | everyone else in the chat | `message` (`chat_id`, `message_id`) | yes |
+| A contractor sends an offer | the project's owner | `offer_received` (`project_id`, `offer_id`) | yes |
+| An offer is accepted | the contractor who sent it | `offer_accepted` (`project_id`, `offer_id`) | yes |
+| An offer is rejected (by the owner, or because `accept_offer()` took another) | the contractor who sent it | `offer_rejected` (`project_id`, `offer_id`) | no |
 
 A new event is one more trigger that calls `private.notify(user_id, title, body, data, pop_up)`, in its own migration.
 

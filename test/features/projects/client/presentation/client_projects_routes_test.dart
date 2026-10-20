@@ -10,6 +10,7 @@ import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
@@ -300,6 +301,22 @@ void main() {
     expect(currentPath(router), '/client/projects/p-1/deed');
     expect(find.text('لا يحتاج هذا المشروع إلى صك جديد'), findsOneWidget);
     expect(find.byKey(const Key('client_project_deed_pick')), findsNothing);
+  });
+
+  test('a project\'s notifications open its screens', () {
+    AppNotificationLink? linkOf(String type) =>
+        AppNotificationLinks.linkOf({'type': type, 'project_id': 'p-1'});
+
+    expect(
+      linkOf('offer_received')?.name,
+      ClientProjectsRoutes.projectOffersName,
+    );
+    expect(
+      linkOf('deed_verified')?.name,
+      ClientProjectsRoutes.projectOffersName,
+    );
+    expect(linkOf('deed_rejected')?.name, ClientProjectsRoutes.projectDeedName);
+    expect(linkOf('offer_received')?.pathParameters, {'projectId': 'p-1'});
   });
 
   testWidgets('every projects page fits large, bold text', (tester) async {
