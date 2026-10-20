@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/core/enums/project_status.dart';
+import 'package:watad/core/utils/money.dart';
+import 'package:watad/features/projects/client/datasource/models/client_project_model.dart';
+import 'package:watad/features/projects/client/datasource/models/client_project_offer_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_saved_address_model.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 
@@ -18,6 +21,21 @@ abstract interface class ClientProjectsRemoteDataSource {
   });
   Future<String> uploadProjectPhoto({required String filePath});
   Future<String> uploadDeedDocument({required String filePath});
+
+  /// The client's projects (`v_my_projects`, `my_role = 'owner'`), newest
+  /// first.
+  Future<List<ClientProjectModel>> getMyProjects();
+
+  Future<ClientProjectModel> getProject(String projectId);
+
+  /// The offers on a project (`v_project_offers`), cheapest first.
+  Future<List<ClientProjectOfferModel>> getOffers(String projectId);
+
+  Future<void> acceptOffer(String offerId, Money expectedAmount);
+
+  /// Uploads [filePath] to `project-deeds` and points the project at it; the
+  /// deed goes back to review (trigger on `deed_storage_path`).
+  Future<void> replaceDeed(String projectId, String filePath);
 }
 
 class ClientProjectsRemoteDataSourceImpl
@@ -177,5 +195,66 @@ class ClientProjectsRemoteDataSourceImpl
         .select()
         .single();
     return ClientSavedAddressModel.fromJson(response);
+  }
+
+  static const String _projectColumns =
+      'id, title, status, city, district, budget, pending_offer_count, '
+      'created_at, deed_status, deed_rejection_reason';
+
+  @override
+  Future<List<ClientProjectModel>> getMyProjects() async {
+    final rows = await _client
+        .from('v_my_projects')
+        .select(_projectColumns)
+        .eq('my_role', 'owner')
+        .order('created_at', ascending: false);
+    return rows.map(ClientProjectModel.fromJson).toList();
+  }
+
+  @override
+  Future<ClientProjectModel> getProject(String projectId) async {
+    final row = await _client
+        .from('v_my_projects')
+        .select(_projectColumns)
+        .eq('my_role', 'owner')
+        .eq('id', projectId)
+        .single();
+    return ClientProjectModel.fromJson(row);
+  }
+
+  @override
+  Future<List<ClientProjectOfferModel>> getOffers(String projectId) async {
+    final rows = await _client
+        .from('v_project_offers')
+        .select(
+          'id, project_id, amount, status, message, created_at, '
+          'provider_company_name, provider_is_verified, provider_rating_avg, '
+          'provider_rating_count',
+        )
+        .eq('project_id', projectId)
+        // Cheapest first, as in the design.
+        .order('amount', ascending: true);
+    return rows.map(ClientProjectOfferModel.fromJson).toList();
+  }
+
+  @override
+  Future<void> acceptOffer(String offerId, Money expectedAmount) async {
+    await _client.rpc<void>(
+      'accept_offer',
+      params: {
+        'p_offer_id': offerId,
+        'p_expected_amount': expectedAmount.toJson(),
+      },
+    );
+  }
+
+  @override
+  Future<void> replaceDeed(String projectId, String filePath) async {
+    final path = await uploadDeedDocument(filePath: filePath);
+    // Only the UPDATE column allowed on `projects` (ARCHITECTURE.md §3a).
+    await _client
+        .from('projects')
+        .update({'deed_storage_path': path})
+        .eq('id', projectId);
   }
 }
