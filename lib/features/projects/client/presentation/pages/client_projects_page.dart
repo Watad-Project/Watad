@@ -122,20 +122,25 @@ class ClientProjectsPage extends StatelessWidget {
                       final project = projects[index];
                       return ClientProjectCard(
                         project: project,
-                        onTap: () async {
-                          // A rejected deed: upload a new one. Otherwise:
-                          // the offers.
-                          await context.pushNamed(
-                            project.deedStatus ==
-                                    ClientDeedVerificationStatus.rejected
-                                ? ClientProjectsRoutes.projectDeedName
-                                : ClientProjectsRoutes.projectOffersName,
-                            pathParameters: {'projectId': project.id},
-                          );
-                          // An accepted offer or a new deed changes the
-                          // project.
-                          bloc.add(const ClientProjectsFetched());
-                        },
+                        // Only a waiting project opens, for now: the
+                        // screens of projects in progress and done come
+                        // with later features.
+                        onTap: !ClientProjectsFilter.waiting.matches(project)
+                            ? null
+                            : () async {
+                                // A rejected deed: upload a new one. Otherwise:
+                                // the offers.
+                                await context.pushNamed(
+                                  project.deedStatus ==
+                                          ClientDeedVerificationStatus.rejected
+                                      ? ClientProjectsRoutes.projectDeedName
+                                      : ClientProjectsRoutes.projectOffersName,
+                                  pathParameters: {'projectId': project.id},
+                                );
+                                // An accepted offer or a new deed changes the
+                                // project.
+                                bloc.add(const ClientProjectsFetched());
+                              },
                       );
                     },
                   ),

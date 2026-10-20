@@ -176,10 +176,17 @@ void main() {
     await tapChip('قيد التنفيذ');
     expect(find.text('بناء ملحق'), findsOneWidget);
     expect(find.text('فيلا سكنية'), findsNothing);
+    // Its screen comes with a later feature: a tap opens nothing yet.
+    await tester.tap(find.text('بناء ملحق'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ClientProjectOffersPage), findsNothing);
 
     await tapChip('مكتملة');
     expect(find.text('ترميم مطبخ'), findsOneWidget);
     expect(find.text('بناء ملحق'), findsNothing);
+    await tester.tap(find.text('ترميم مطبخ'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ClientProjectOffersPage), findsNothing);
   });
 
   testWidgets('a chip without projects says so', (tester) async {

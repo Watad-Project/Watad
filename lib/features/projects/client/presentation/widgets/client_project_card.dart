@@ -16,14 +16,13 @@ import 'package:watad/features/projects/client/presentation/widgets/client_proje
 /// it's open, how many offers wait; with a rejected deed, why. A tap opens
 /// its offers, or a new deed's upload when the deed was rejected.
 class ClientProjectCard extends StatelessWidget {
-  const ClientProjectCard({
-    required this.project,
-    required this.onTap,
-    super.key,
-  });
+  const ClientProjectCard({required this.project, this.onTap, super.key});
 
   final ClientProject project;
-  final VoidCallback onTap;
+
+  /// Null: the card isn't tappable (a project in progress or done, whose
+  /// screens come with later features).
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
