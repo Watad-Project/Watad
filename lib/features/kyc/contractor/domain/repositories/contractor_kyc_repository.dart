@@ -12,4 +12,7 @@ abstract interface class ContractorKycRepository {
     required Uint8List bytes,
     required String fileName,
   });
+
+  /// Signs out the current contractor.
+  Future<Result<void>> signOut();
 }

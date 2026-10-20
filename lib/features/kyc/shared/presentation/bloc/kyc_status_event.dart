@@ -29,3 +29,7 @@ final class KycStatusUpdated extends KycStatusEvent {
 
   final KycDocument document;
 }
+
+final class KycStatusSignedOut extends KycStatusEvent {
+  const KycStatusSignedOut();
+}

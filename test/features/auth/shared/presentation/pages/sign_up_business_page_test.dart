@@ -12,6 +12,7 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
+import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
 import 'package:watad/features/auth/shared/domain/usecases/save_business_sign_up_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/send_sign_up_otp_use_case.dart';
 import 'package:watad/features/auth/shared/domain/usecases/verify_otp_use_case.dart';
@@ -22,6 +23,7 @@ import 'package:watad/features/kyc/contractor/domain/entities/contractor_license
 import 'package:watad/features/kyc/contractor/domain/repositories/contractor_kyc_repository.dart';
 import 'package:watad/features/kyc/contractor/domain/usecases/contractor_upload_license_use_case.dart';
 import 'package:watad/features/kyc/contractor/presentation/bloc/contractor_license_bloc.dart';
+import 'package:watad/features/kyc/contractor/presentation/pages/contractor_license_page.dart';
 
 import '../../../../../helpers/fake_auth_repository.dart';
 import '../../../../../helpers/pump_router.dart';
@@ -32,6 +34,9 @@ class FakeContractorKycRepository implements ContractorKycRepository {
     required Uint8List bytes,
     required String fileName,
   }) async => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> signOut() async => const Success(null);
 }
 
 void main() {
@@ -105,7 +110,7 @@ void main() {
   testWidgets(
     'submitting valid form moves to OTP step and verifying OTP saves business',
     (tester) async {
-      await openSignUpBusiness(tester);
+      final router = await openSignUpBusiness(tester);
 
       final textFields = find.descendant(
         of: find.byType(AppTextField),
@@ -155,6 +160,12 @@ void main() {
       expect(repository.savedBusiness?.email, 'contractor@watad.sa');
       expect(repository.savedBusiness?.phone, '+966501234567');
       expect(repository.savedBusiness?.specializedField, 'contractor');
+
+      // Replaces the route with the KYC license page so the contractor cannot go back
+      expect(currentPath(router), ContractorKycRoutes.licensePath);
+      expect(find.byType(ContractorLicensePage), findsOneWidget);
+      expect(router.canPop(), isFalse);
+      expect(find.byIcon(Icons.arrow_back), findsNothing);
     },
   );
 

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_upload_zone.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
@@ -103,8 +104,10 @@ class ContractorLicensePage extends StatelessWidget {
           if (onSuccess != null) {
             onSuccess!(context);
           } else {
-            context.pushNamed(KycRoutes.statusName);
+            context.goNamed(KycRoutes.statusName);
           }
+        } else if (state is ContractorLicenseSignOutSuccess) {
+          context.goNamed(AuthRoutes.loginName);
         } else if (state is ContractorLicenseLoadFailure) {
           context.showErrorSnackBar(context.tr(state.failure.messageKey));
         }
@@ -116,132 +119,143 @@ class ContractorLicensePage extends StatelessWidget {
           _ => null,
         };
 
-        return Scaffold(
-          appBar: AppTopBar(
-            title: '',
-            onBack: () => context.canPop()
-                ? context.pop()
-                : context.goNamed(AuthRoutes.signUpBusinessName),
-          ),
-          bottomNavigationBar: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: AppButton(
-                label: context.tr('kyc.contractor.submit_button'),
-                isLoading: isLoading,
-                onPressed: selectedFileName == null
-                    ? null
-                    : () => context.read<ContractorLicenseBloc>().add(
-                        const ContractorLicenseSubmitted(),
-                      ),
+        return PopScope(
+          canPop: false,
+          child: Scaffold(
+            appBar: AppTopBar(
+              title: '',
+              actions: [
+                AppIconButton(
+                  icon: Icons.logout,
+                  tooltip: context.tr('kyc.contractor.sign_out'),
+                  onPressed: isLoading
+                      ? null
+                      : () => context.read<ContractorLicenseBloc>().add(
+                          const ContractorLicenseSignedOut(),
+                        ),
+                ),
+              ],
+            ),
+            bottomNavigationBar: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: AppButton(
+                  label: context.tr('kyc.contractor.submit_button'),
+                  isLoading: isLoading,
+                  onPressed: selectedFileName == null
+                      ? null
+                      : () => context.read<ContractorLicenseBloc>().add(
+                          const ContractorLicenseSubmitted(),
+                        ),
+                ),
               ),
             ),
-          ),
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    context.tr('kyc.contractor.license_step_label'),
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    context.tr('kyc.contractor.license_title'),
-                    style: AppTextStyles.h1,
-                  ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    context.tr('kyc.contractor.license_subtitle'),
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  AppUploadZone(
-                    onTap: () => (onPickFiles ?? _defaultPickFiles)(context),
-                    label: context.tr('kyc.contractor.upload_zone_title'),
-                    subtitle: context.tr('kyc.contractor.upload_zone_hint'),
-                  ),
-                  if (selectedFileName != null) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      context.tr('kyc.contractor.license_step_label'),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
                       ),
-                      decoration: const BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(AppRadius.md),
-                        ),
-                        border: Border.fromBorderSide(
-                          BorderSide(color: AppColors.controlBorder),
-                        ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      context.tr('kyc.contractor.license_title'),
+                      style: AppTextStyles.h1,
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      context.tr('kyc.contractor.license_subtitle'),
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textSecondary,
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.check_circle,
-                            color: AppColors.primary,
-                            size: 20,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    AppUploadZone(
+                      onTap: () => (onPickFiles ?? _defaultPickFiles)(context),
+                      label: context.tr('kyc.contractor.upload_zone_title'),
+                      subtitle: context.tr('kyc.contractor.upload_zone_hint'),
+                    ),
+                    if (selectedFileName != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(AppRadius.md),
                           ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text(
-                              context.tr(
-                                'kyc.contractor.file_selected_prefix',
-                                namedArgs: {'fileName': selectedFileName},
-                              ),
-                              style: AppTextStyles.body,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          border: Border.fromBorderSide(
+                            BorderSide(color: AppColors.controlBorder),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle,
+                              color: AppColors.primary,
+                              size: 20,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.md),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppButton(
-                          label: context.tr('kyc.contractor.from_camera'),
-                          icon: Icons.camera_alt,
-                          variant: AppButtonVariant.primary,
-                          onPressed: () =>
-                              (onPickCamera ?? _defaultPickCamera)(context),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: AppButton(
-                          label: context.tr('kyc.contractor.from_files'),
-                          icon: Icons.folder_open,
-                          variant: AppButtonVariant.secondary,
-                          onPressed: () =>
-                              (onPickFiles ?? _defaultPickFiles)(context),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                context.tr(
+                                  'kyc.contractor.file_selected_prefix',
+                                  namedArgs: {'fileName': selectedFileName},
+                                ),
+                                style: AppTextStyles.body,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    context.tr('kyc.contractor.license_footnote'),
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
+                    const SizedBox(height: AppSpacing.md),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            label: context.tr('kyc.contractor.from_camera'),
+                            icon: Icons.camera_alt,
+                            variant: AppButtonVariant.primary,
+                            onPressed: () =>
+                                (onPickCamera ?? _defaultPickCamera)(context),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: AppButton(
+                            label: context.tr('kyc.contractor.from_files'),
+                            icon: Icons.folder_open,
+                            variant: AppButtonVariant.secondary,
+                            onPressed: () =>
+                                (onPickFiles ?? _defaultPickFiles)(context),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(
+                      context.tr('kyc.contractor.license_footnote'),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                ),
               ),
             ),
           ),

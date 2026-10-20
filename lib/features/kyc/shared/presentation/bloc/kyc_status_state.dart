@@ -23,3 +23,7 @@ final class KycStatusLoadFailure extends KycStatusState {
 
   final Failure failure;
 }
+
+final class KycStatusSignOutSuccess extends KycStatusState {
+  const KycStatusSignOutSuccess();
+}

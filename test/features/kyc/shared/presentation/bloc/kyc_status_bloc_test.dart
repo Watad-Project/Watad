@@ -8,6 +8,7 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/features/kyc/shared/domain/entities/kyc_document.dart';
 import 'package:watad/features/kyc/shared/domain/repositories/kyc_repository.dart';
 import 'package:watad/features/kyc/shared/domain/usecases/get_kyc_document_use_case.dart';
+import 'package:watad/features/kyc/shared/domain/usecases/sign_out_kyc_use_case.dart';
 import 'package:watad/features/kyc/shared/domain/usecases/watch_kyc_document_use_case.dart';
 import 'package:watad/features/kyc/shared/presentation/bloc/kyc_status_bloc.dart';
 
@@ -15,10 +16,13 @@ class FakeKycRepository implements KycRepository {
   FakeKycRepository({
     required this.documentResult,
     Stream<Result<KycDocument>>? stream,
+    this.signOutResult = const Success(null),
   }) : stream = stream ?? const Stream.empty();
 
   Result<KycDocument> documentResult;
   final Stream<Result<KycDocument>> stream;
+  final Result<void> signOutResult;
+  int signOutCalls = 0;
 
   @override
   Future<Result<KycDocument>> getDocument([
@@ -31,16 +35,28 @@ class FakeKycRepository implements KycRepository {
     BusinessDocumentType documentType =
         BusinessDocumentType.commercialRegistration,
   ]) => stream;
+
+  @override
+  Future<Result<void>> signOut() async {
+    signOutCalls++;
+    return signOutResult;
+  }
 }
 
 KycStatusBloc buildBloc({
   required Result<KycDocument> result,
   Stream<Result<KycDocument>>? stream,
+  Result<void> signOutResult = const Success(null),
 }) {
-  final repository = FakeKycRepository(documentResult: result, stream: stream);
+  final repository = FakeKycRepository(
+    documentResult: result,
+    stream: stream,
+    signOutResult: signOutResult,
+  );
   return KycStatusBloc(
     GetKycDocumentUseCase(repository),
     WatchKycDocumentUseCase(repository),
+    SignOutKycUseCase(repository),
   );
 }
 
@@ -183,4 +199,44 @@ void main() {
       await bloc.close();
     },
   );
+
+  test(
+    'emits LoadInProgress then SignOutSuccess on successful sign out',
+    () async {
+      final bloc = buildBloc(result: const Success(sampleDocument));
+
+      final states = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<KycStatusLoadInProgress>(),
+          isA<KycStatusSignOutSuccess>(),
+        ]),
+      );
+
+      bloc.add(const KycStatusSignedOut());
+
+      await states;
+      await bloc.close();
+    },
+  );
+
+  test('emits LoadInProgress then LoadFailure on sign out failure', () async {
+    final bloc = buildBloc(
+      result: const Success(sampleDocument),
+      signOutResult: const Failed(NetworkFailure()),
+    );
+
+    final states = expectLater(
+      bloc.stream,
+      emitsInOrder([
+        isA<KycStatusLoadInProgress>(),
+        isA<KycStatusLoadFailure>(),
+      ]),
+    );
+
+    bloc.add(const KycStatusSignedOut());
+
+    await states;
+    await bloc.close();
+  });
 }

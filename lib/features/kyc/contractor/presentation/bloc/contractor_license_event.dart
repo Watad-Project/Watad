@@ -17,3 +17,7 @@ final class ContractorLicenseFileSelected extends ContractorLicenseEvent {
 final class ContractorLicenseSubmitted extends ContractorLicenseEvent {
   const ContractorLicenseSubmitted();
 }
+
+final class ContractorLicenseSignedOut extends ContractorLicenseEvent {
+  const ContractorLicenseSignedOut();
+}

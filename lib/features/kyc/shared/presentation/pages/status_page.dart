@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/feedback/app_status_card.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
@@ -48,11 +49,14 @@ class StatusPage extends StatelessWidget {
               context.goNamed(ContractorNavigationRoutes.navigationName);
             }
           }
+        } else if (state is KycStatusSignOutSuccess) {
+          context.goNamed(AuthRoutes.loginName);
         } else if (state is KycStatusLoadFailure) {
           context.showErrorSnackBar(context.tr(state.failure.messageKey));
         }
       },
       builder: (context, state) {
+        final isLoading = state is KycStatusLoadInProgress;
         final document = switch (state) {
           KycStatusLoadSuccess(:final document) => document,
           _ => null,
@@ -123,53 +127,60 @@ class StatusPage extends StatelessWidget {
           ),
         };
 
-        return Scaffold(
-          appBar: AppTopBar(
-            title: context.tr('kyc.title'),
-            onBack: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.goNamed(AuthRoutes.loginName);
-              }
-            },
-          ),
-          body: SafeArea(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                final completer = Completer<void>();
-                context.read<KycStatusBloc>().add(
-                  KycStatusRefreshed(
-                    documentType: documentType,
-                    completer: completer,
-                  ),
-                );
-                await completer.future;
-              },
-              child: LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
+        return PopScope(
+          canPop: false,
+          child: Scaffold(
+            appBar: AppTopBar(
+              title: context.tr('kyc.title'),
+              actions: [
+                AppIconButton(
+                  icon: Icons.logout,
+                  tooltip: context.tr('kyc.contractor.sign_out'),
+                  onPressed: isLoading
+                      ? null
+                      : () => context.read<KycStatusBloc>().add(
+                          const KycStatusSignedOut(),
+                        ),
+                ),
+              ],
+            ),
+            body: SafeArea(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  final completer = Completer<void>();
+                  context.read<KycStatusBloc>().add(
+                    KycStatusRefreshed(
+                      documentType: documentType,
+                      completer: completer,
                     ),
-                    child: IntrinsicHeight(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            statusCard,
-                            const Spacer(),
-                            Text(
-                              context.tr('kyc.footnote'),
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary,
+                  );
+                  await completer.future;
+                },
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              statusCard,
+                              const Spacer(),
+                              Text(
+                                context.tr('kyc.footnote'),
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                          ],
+                              const SizedBox(height: AppSpacing.sm),
+                            ],
+                          ),
                         ),
                       ),
                     ),
