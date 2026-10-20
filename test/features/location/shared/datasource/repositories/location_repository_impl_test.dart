@@ -1,9 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/datasource/models/location_address_model.dart';
+import 'package:watad/features/location/shared/datasource/models/location_place_model.dart';
+import 'package:watad/features/location/shared/datasource/models/location_suggestion_model.dart';
 import 'package:watad/features/location/shared/datasource/remote/location_remote_data_source.dart';
 import 'package:watad/features/location/shared/datasource/repositories/location_repository_impl.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
+import 'package:watad/features/location/shared/domain/entities/location_place.dart';
+import 'package:watad/features/location/shared/domain/entities/location_suggestion.dart';
 
 class _FakeLocationRemoteDataSource implements LocationRemoteDataSource {
   final List<LocationAddressModel> addresses = [];
@@ -76,6 +80,37 @@ class _FakeLocationRemoteDataSource implements LocationRemoteDataSource {
       'short_address': 'RRRR1234',
       'formatted_address': 'الرياض · النرجس',
     };
+  }
+
+  /// The searches sent, as (query, language, near latitude).
+  final List<(String, String, double?)> searched = [];
+
+  @override
+  Future<List<LocationSuggestionModel>> searchPlaces({
+    required String query,
+    required String language,
+    double? nearLatitude,
+    double? nearLongitude,
+  }) async {
+    if (shouldThrow) throw Exception('Search error');
+    searched.add((query, language, nearLatitude));
+    return [
+      LocationSuggestionModel.fromJson({
+        'place_id': 'ChIJ2YgYzXz5vxURa9o3d1t1gWk',
+        'title': 'العزيزية',
+        'subtitle': 'المدينة المنورة، السعودية',
+      }),
+    ];
+  }
+
+  @override
+  Future<LocationPlaceModel> getPlace(String placeId) async {
+    if (shouldThrow) throw Exception('Place error');
+    return LocationPlaceModel.fromJson({
+      'lat': 24.4672,
+      'lng': 39.6111,
+      'viewport': null,
+    });
   }
 }
 
@@ -169,6 +204,35 @@ void main() {
       expect(addr.longitude, 46.6753);
     },
   );
+
+  test('searchPlaces returns the suggestions', () async {
+    final result = await repository.searchPlaces(
+      query: 'العزيزية',
+      language: 'ar',
+      nearLatitude: 24.47,
+      nearLongitude: 39.61,
+    );
+
+    expect(result, isA<Success<List<LocationSuggestion>>>());
+    final suggestions = (result as Success<List<LocationSuggestion>>).data;
+    expect(suggestions.single.title, 'العزيزية');
+    expect(remote.searched, [('العزيزية', 'ar', 24.47)]);
+  });
+
+  test('getPlace returns where the place is', () async {
+    final result = await repository.getPlace('ChIJ2YgYzXz5vxURa9o3d1t1gWk');
+
+    expect(result, isA<Success<LocationPlace>>());
+    expect((result as Success<LocationPlace>).data.latitude, 24.4672);
+  });
+
+  test('a failed search is Failed', () async {
+    remote.shouldThrow = true;
+
+    final result = await repository.searchPlaces(query: 'جدة', language: 'ar');
+
+    expect(result, isA<Failed<List<LocationSuggestion>>>());
+  });
 
   test('guardSupabaseCall maps exceptions to Failed', () async {
     remote.shouldThrow = true;

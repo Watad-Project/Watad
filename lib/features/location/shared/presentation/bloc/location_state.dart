@@ -33,6 +33,11 @@ final class LocationState {
       isSaved: true,
     ),
     this.searchQuery = '',
+    this.suggestions = const [],
+    this.isSearching = false,
+    this.hasNoResults = false,
+    this.searchFailure,
+    this.place,
     this.showSaveToggle = true,
     this.shouldSave = true,
     this.confirmedAddress,
@@ -48,6 +53,21 @@ final class LocationState {
 
   /// Text in the search field.
   final String searchQuery;
+
+  /// The places matching [searchQuery], under the search field.
+  final List<LocationSuggestion> suggestions;
+
+  /// A search is on its way.
+  final bool isSearching;
+
+  /// The search found no place with that name.
+  final bool hasNoResults;
+
+  /// Why the search, or finding a picked place, failed.
+  final Failure? searchFailure;
+
+  /// The picked place, for the map to show; a new one moves the map again.
+  final LocationPlace? place;
 
   /// Whether the save toggle should be displayed.
   final bool showSaveToggle;
@@ -73,6 +93,11 @@ final class LocationState {
     LocationStatus? status,
     LocationAddress? address,
     String? searchQuery,
+    List<LocationSuggestion>? suggestions,
+    bool? isSearching,
+    bool? hasNoResults,
+    Failure? Function()? searchFailure,
+    LocationPlace? place,
     bool? showSaveToggle,
     bool? shouldSave,
     LocationAddress? confirmedAddress,
@@ -83,6 +108,13 @@ final class LocationState {
       status: status ?? this.status,
       address: address ?? this.address,
       searchQuery: searchQuery ?? this.searchQuery,
+      suggestions: suggestions ?? this.suggestions,
+      isSearching: isSearching ?? this.isSearching,
+      hasNoResults: hasNoResults ?? this.hasNoResults,
+      searchFailure: searchFailure == null
+          ? this.searchFailure
+          : searchFailure(),
+      place: place ?? this.place,
       showSaveToggle: showSaveToggle ?? this.showSaveToggle,
       shouldSave: shouldSave ?? this.shouldSave,
       confirmedAddress: confirmedAddress ?? this.confirmedAddress,

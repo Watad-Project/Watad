@@ -4,7 +4,11 @@ import 'package:watad/features/location/shared/domain/entities/location_address.
 import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
 import 'package:watad/features/location/shared/domain/usecases/geocode_coordinates_use_case.dart';
 
-class _FakeLocationRepository implements LocationRepository {
+import '../../../../../helpers/fake_place_search.dart';
+
+class _FakeLocationRepository
+    with FakePlaceSearch
+    implements LocationRepository {
   @override
   Future<Result<List<LocationAddress>>> getSavedAddresses() async =>
       const Success([]);

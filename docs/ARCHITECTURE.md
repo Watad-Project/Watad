@@ -148,8 +148,10 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Function | Body | Returns |
 |----------|------|---------|
 | `geocode` | `lat`, `lng` (numbers), optional `language` (`ar` default, or `en`) | The address of that point, from Google: `city`, `district`, `street`, `building_number`, `postal_code` (the `addresses` columns of §3a), plus `additional_number` and `short_address` (the Saudi national address, e.g. `RAYB6780`) and `formatted_address`. A field Google doesn't know is `null`; the user types it. Errors: `400` `invalid_body` / `invalid_coordinates`, `401` `unauthorized` (signed-in users only), `502` `geocoder_unavailable`. |
+| `geocode` (search) | `query` (2 to 100 characters: a city, district or street), optional `language`, optional `lat`, `lng` (preferred nearby, within 50 km) | `suggestions`: places in Saudi Arabia matching it, from Google Places Autocomplete, each `place_id`, `title` (e.g. «العزيزية») and `subtitle` (where it is, or `null`). Errors: `400` `invalid_query`, then as above. |
+| `geocode` (place) | `place_id` (from a suggestion) | Where it is: `lat`, `lng`, and `viewport` (`south`, `west`, `north`, `east`: wide for a city, narrow for a street) or `null`. Errors: `400` `invalid_place`, then as above. |
 
-`geocode` holds the Google key as the server secret `GOOGLE_MAPS_SERVER_KEY`; the app never sees it. It is deployed with `verify_jwt` off and checks the caller's session itself. Its source is in `supabase/functions/geocode/`.
+`geocode` holds the Google key as the server secret `GOOGLE_MAPS_SERVER_KEY`; the app never sees it. The search and the place need the **Places API (New)** enabled for that key, besides the Geocoding API. It is deployed with `verify_jwt` off and checks the caller's session itself. Its source is in `supabase/functions/geocode/`.
 
 `send-push` is not one of them: the database calls it after every new notification (§13).
 

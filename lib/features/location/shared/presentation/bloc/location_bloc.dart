@@ -2,8 +2,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
+import 'package:watad/features/location/shared/domain/entities/location_place.dart';
+import 'package:watad/features/location/shared/domain/entities/location_suggestion.dart';
 import 'package:watad/features/location/shared/domain/usecases/geocode_coordinates_use_case.dart';
+import 'package:watad/features/location/shared/domain/usecases/get_place_use_case.dart';
 import 'package:watad/features/location/shared/domain/usecases/save_address_use_case.dart';
+import 'package:watad/features/location/shared/domain/usecases/search_places_use_case.dart';
 
 part 'location_event.dart';
 part 'location_state.dart';
@@ -11,11 +15,19 @@ part 'location_state.dart';
 /// Manages state for the shared location picker and map page.
 class LocationBloc extends Bloc<LocationEvent, LocationState> {
   /// Creates an instance of [LocationBloc].
-  LocationBloc(this._saveAddressUseCase, this._geocodeCoordinatesUseCase)
-    : super(const LocationState()) {
+  ///
+  /// [searchDelay] is how long typing must pause before the search runs.
+  LocationBloc(
+    this._saveAddressUseCase,
+    this._geocodeCoordinatesUseCase,
+    this._searchPlaces,
+    this._getPlace, {
+    this.searchDelay = const Duration(milliseconds: 350),
+  }) : super(const LocationState()) {
     on<LocationStarted>(_onStarted);
     on<LocationSearchQueryChanged>(_onSearchQueryChanged);
     on<LocationSearchSubmitted>(_onSearchSubmitted);
+    on<LocationSuggestionSelected>(_onSuggestionSelected);
     on<LocationCoordinatesChanged>(_onCoordinatesChanged);
     on<LocationCurrentPositionRequested>(_onCurrentPositionRequested);
     on<LocationCityChanged>(_onCityChanged);
@@ -30,6 +42,11 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
 
   final SaveAddressUseCase _saveAddressUseCase;
   final GeocodeCoordinatesUseCase _geocodeCoordinatesUseCase;
+  final SearchPlacesUseCase _searchPlaces;
+  final GetPlaceUseCase _getPlace;
+
+  /// One search per pause in typing, not one per letter.
+  final Duration searchDelay;
 
   void _onStarted(LocationStarted event, Emitter<LocationState> emit) {
     if (event.initialAddress != null) {
@@ -45,22 +62,88 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     }
   }
 
-  void _onSearchQueryChanged(
+  Future<void> _onSearchQueryChanged(
     LocationSearchQueryChanged event,
     Emitter<LocationState> emit,
-  ) {
-    emit(state.copyWith(searchQuery: event.query));
+  ) async {
+    final searches =
+        event.query.trim().length >= SearchPlacesUseCase.minQueryLength;
+    // The last suggestions stay until the new ones arrive.
+    emit(
+      state.copyWith(
+        searchQuery: event.query,
+        suggestions: searches ? null : const [],
+        isSearching: searches,
+        hasNoResults: false,
+        searchFailure: () => null,
+      ),
+    );
+    if (!searches) return;
+
+    await Future<void>.delayed(searchDelay);
+    // A newer letter, or a picked suggestion, replaces this search.
+    if (emit.isDone || state.searchQuery != event.query) return;
+    final result = await _searchPlaces(
+      SearchPlacesParams(
+        query: event.query,
+        language: event.language,
+        nearLatitude: state.address.latitude,
+        nearLongitude: state.address.longitude,
+      ),
+    );
+    if (emit.isDone || state.searchQuery != event.query) return;
+    switch (result) {
+      case Success(:final data):
+        emit(
+          state.copyWith(
+            suggestions: data,
+            isSearching: false,
+            hasNoResults: data.isEmpty,
+          ),
+        );
+      case Failed(:final failure):
+        emit(
+          state.copyWith(
+            suggestions: const [],
+            isSearching: false,
+            searchFailure: () => failure,
+          ),
+        );
+    }
   }
 
+  /// The keyboard's search key picks the first suggestion.
   void _onSearchSubmitted(
     LocationSearchSubmitted event,
     Emitter<LocationState> emit,
   ) {
-    final query = state.searchQuery.trim();
-    if (query.isEmpty) return;
+    final first = state.suggestions.firstOrNull;
+    if (first != null) add(LocationSuggestionSelected(first));
+  }
 
-    // Geocoding search query resolution
-    emit(state.copyWith(address: state.address.copyWith(district: query)));
+  /// Finds where the suggestion is; the map moves there, and its pin fills
+  /// the address (LocationCoordinatesChanged).
+  Future<void> _onSuggestionSelected(
+    LocationSuggestionSelected event,
+    Emitter<LocationState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        searchQuery: event.suggestion.title,
+        suggestions: const [],
+        isSearching: false,
+        hasNoResults: false,
+        searchFailure: () => null,
+      ),
+    );
+    final result = await _getPlace(event.suggestion.placeId);
+    if (emit.isDone) return;
+    switch (result) {
+      case Success(:final data):
+        emit(state.copyWith(place: data));
+      case Failed(:final failure):
+        emit(state.copyWith(searchFailure: () => failure));
+    }
   }
 
   Future<void> _onCoordinatesChanged(
