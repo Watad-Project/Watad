@@ -68,7 +68,7 @@ Deno.serve(async (req: Request) => {
 
   const appId = Deno.env.get("ONESIGNAL_APP_ID");
   const apiKey = Deno.env.get("ONESIGNAL_REST_API_KEY");
-  // The events that matter pop up (notifications.pop_up, migration 68).
+  // The events that matter pop up (notifications.pop_up, migration 69).
   const popUp = row.pop_up === true;
   const androidChannelId = Deno.env.get(
     popUp ? "ONESIGNAL_ANDROID_CHANNEL_POPUP" : "ONESIGNAL_ANDROID_CHANNEL_NORMAL",
