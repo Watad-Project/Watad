@@ -104,6 +104,9 @@
     "filter_done": "مكتملة",
     "filter_waiting": "قيد الانتظار",
     "filter_in_progress": "قيد التنفيذ",
-    "empty_filter": "لا مشاريع هنا بعد"
+    "empty_filter": "لا مشاريع هنا بعد",
+    "tasks_planning": "قيد التخطيط",
+    "tasks_progress": "{} من {} مهام",
+    "tasks_percent": "{}٪"
   }
 }

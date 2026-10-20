@@ -104,6 +104,9 @@
     "filter_done": "Done",
     "filter_waiting": "Waiting",
     "filter_in_progress": "In progress",
-    "empty_filter": "No projects here yet"
+    "empty_filter": "No projects here yet",
+    "tasks_planning": "Planning",
+    "tasks_progress": "{} of {} tasks",
+    "tasks_percent": "{}%"
   }
 }

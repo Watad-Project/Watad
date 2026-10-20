@@ -15,12 +15,20 @@ class ClientProjectModel extends ClientProject {
     super.budget,
     super.deedStatus,
     super.deedRejectionReason,
+    super.photoUrl,
+    super.contractorName,
+    super.agreedAmount,
+    super.taskCount,
+    super.approvedTaskCount,
   });
 
   /// Maps the `v_my_projects` columns selected in
-  /// ClientProjectsRemoteDataSourceImpl.
+  /// ClientProjectsRemoteDataSourceImpl, plus what it adds: `photo_url` (the
+  /// first photo's public URL), `task_count` and `approved_task_count`
+  /// (from `v_project_tasks`).
   factory ClientProjectModel.fromJson(Map<String, dynamic> json) {
     final budget = json['budget'] as num?;
+    final agreedAmount = json['agreed_amount'] as num?;
     return ClientProjectModel(
       id: json['id'] as String,
       title: json['title'] as String,
@@ -32,6 +40,11 @@ class ClientProjectModel extends ClientProject {
       createdAt: DateTime.parse(json['created_at'] as String),
       deedStatus: _deedStatus(json['deed_status'] as String?),
       deedRejectionReason: json['deed_rejection_reason'] as String?,
+      photoUrl: json['photo_url'] as String?,
+      contractorName: json['taker_company_name'] as String?,
+      agreedAmount: agreedAmount == null ? null : Money.fromJson(agreedAmount),
+      taskCount: json['task_count'] as int? ?? 0,
+      approvedTaskCount: json['approved_task_count'] as int? ?? 0,
     );
   }
 

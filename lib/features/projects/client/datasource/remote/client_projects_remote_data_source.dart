@@ -199,7 +199,8 @@ class ClientProjectsRemoteDataSourceImpl
 
   static const String _projectColumns =
       'id, title, status, city, district, budget, pending_offer_count, '
-      'created_at, deed_status, deed_rejection_reason';
+      'created_at, deed_status, deed_rejection_reason, photo_paths, '
+      'taker_company_name, agreed_amount';
 
   @override
   Future<List<ClientProjectModel>> getMyProjects() async {
@@ -208,7 +209,7 @@ class ClientProjectsRemoteDataSourceImpl
         .select(_projectColumns)
         .eq('my_role', 'owner')
         .order('created_at', ascending: false);
-    return rows.map(ClientProjectModel.fromJson).toList();
+    return _withPhotosAndTasks(rows);
   }
 
   @override
@@ -219,7 +220,47 @@ class ClientProjectsRemoteDataSourceImpl
         .eq('my_role', 'owner')
         .eq('id', projectId)
         .single();
-    return ClientProjectModel.fromJson(row);
+    return (await _withPhotosAndTasks([row])).single;
+  }
+
+  /// [rows] with their first photo's public URL (`images` is a public
+  /// bucket) and their tasks counted, in one `v_project_tasks` read.
+  Future<List<ClientProjectModel>> _withPhotosAndTasks(
+    List<Map<String, dynamic>> rows,
+  ) async {
+    final ids = [for (final row in rows) row['id'] as String];
+    final tasks = ids.isEmpty
+        ? const <Map<String, dynamic>>[]
+        : await _client
+              .from('v_project_tasks')
+              .select('project_id, status')
+              .inFilter('project_id', ids);
+    final counted = <String, int>{};
+    final approved = <String, int>{};
+    for (final task in tasks) {
+      final status = task['status'] as String?;
+      // A rejected task isn't part of the work.
+      if (status == 'rejected') continue;
+      final projectId = task['project_id'] as String;
+      counted.update(projectId, (n) => n + 1, ifAbsent: () => 1);
+      if (status == 'approved') {
+        approved.update(projectId, (n) => n + 1, ifAbsent: () => 1);
+      }
+    }
+    final images = _client.storage.from('images');
+    return [
+      for (final row in rows)
+        ClientProjectModel.fromJson({
+          ...row,
+          'photo_url': switch (row['photo_paths']) {
+            [final String first, ...] when first.isNotEmpty =>
+              images.getPublicUrl(first),
+            _ => null,
+          },
+          'task_count': counted[row['id']] ?? 0,
+          'approved_task_count': approved[row['id']] ?? 0,
+        }),
+    ];
   }
 
   @override

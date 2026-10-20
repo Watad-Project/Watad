@@ -16,6 +16,11 @@ class ClientProject {
     this.budget,
     this.deedStatus = ClientDeedVerificationStatus.none,
     this.deedRejectionReason,
+    this.photoUrl,
+    this.contractorName,
+    this.agreedAmount,
+    this.taskCount = 0,
+    this.approvedTaskCount = 0,
   });
 
   final String id;
@@ -37,4 +42,23 @@ class ClientProject {
   /// Why the admin rejected the deed; the client uploads a new one.
   final String? deedRejectionReason;
   final DateTime createdAt;
+
+  /// The first photo the client uploaded with the project, if any.
+  final String? photoUrl;
+
+  /// The business working on it, once an offer was accepted.
+  final String? contractorName;
+
+  /// The accepted offer's amount.
+  final Money? agreedAmount;
+
+  /// The project's tasks, without the rejected ones, and how many of them
+  /// the client approved.
+  final int taskCount;
+  final int approvedTaskCount;
+
+  /// From 0 to 1: the approved share of the tasks. Null without tasks: the
+  /// work is still being planned.
+  double? get progress =>
+      taskCount == 0 ? null : (approvedTaskCount / taskCount).clamp(0.0, 1.0);
 }

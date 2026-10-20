@@ -31,6 +31,48 @@ void main() {
     expect(model.deedRejectionReason, isNull);
   });
 
+  test('the photo, the contractor and the tasks the data source adds', () {
+    final model = ClientProjectModel.fromJson({
+      'id': 'p-5',
+      'title': 'renovation',
+      'status': 'in_progress',
+      'city': 'المدينة المنورة',
+      'pending_offer_count': 0,
+      'created_at': '2026-10-18T08:00:00+00:00',
+      'photo_paths': ['u-1/projects/1792420175478_scaled_35.png'],
+      'photo_url': 'https://nwgqhlqlpyaffoqfsebd.supabase.co/storage/v1/object/public/images/u-1/projects/1792420175478_scaled_35.png',
+      'taker_company_name': 'مؤسسة البناء المتين',
+      'agreed_amount': 465000,
+      'task_count': 4,
+      'approved_task_count': 2,
+    });
+
+    expect(
+      model.photoUrl,
+      endsWith('/images/u-1/projects/1792420175478_scaled_35.png'),
+    );
+    expect(model.contractorName, 'مؤسسة البناء المتين');
+    expect(model.agreedAmount, Money.fromJson(465000));
+    expect(model.taskCount, 4);
+    expect(model.approvedTaskCount, 2);
+    expect(model.progress, 0.5);
+  });
+
+  test('no tasks yet: no progress to show', () {
+    final model = ClientProjectModel.fromJson({
+      'id': 'p-6',
+      'title': 'repairs',
+      'status': 'open',
+      'city': 'جدة',
+      'pending_offer_count': 0,
+      'created_at': '2026-10-18T08:00:00+00:00',
+    });
+
+    expect(model.photoUrl, isNull);
+    expect(model.taskCount, 0);
+    expect(model.progress, isNull);
+  });
+
   test('a rejected deed keeps the admin\'s reason', () {
     final model = ClientProjectModel.fromJson({
       'id': 'p-3',

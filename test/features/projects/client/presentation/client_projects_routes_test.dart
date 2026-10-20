@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/display/app_project_card.dart';
 import 'package:watad/core/components/feedback/app_confirm_dialog.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/enums/offer_status.dart';
@@ -200,6 +201,78 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('لا مشاريع هنا بعد'), findsOneWidget);
+  });
+
+  testWidgets('a card shows the photo and the tasks\' progress', (
+    tester,
+  ) async {
+    repository.projectsResult = Success([
+      ClientProject(
+        id: 'p-3',
+        title: 'بناء ملحق',
+        status: ProjectStatus.inProgress,
+        city: 'جدة',
+        pendingOfferCount: 0,
+        photoUrl: 'https://example.supabase.co/storage/v1/object/public/images/u-1/projects/a.png',
+        contractorName: 'مؤسسة البناء المتين',
+        agreedAmount: const Money.halalas(46500000),
+        taskCount: 4,
+        approvedTaskCount: 2,
+        createdAt: DateTime.utc(2026, 10, 17),
+      ),
+    ]);
+    await openList(tester);
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('client_projects_filter')),
+        matching: find.text('قيد التنفيذ'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final card = find.byType(AppProjectCard);
+    expect(
+      tester.widget<AppProjectCard>(card).imageUrl,
+      endsWith('/images/u-1/projects/a.png'),
+    );
+    expect(find.text('٢ من ٤ مهام'), findsOneWidget);
+    expect(find.text('٥٠٪'), findsOneWidget);
+    expect(
+      tester
+          .widget<LinearProgressIndicator>(
+            find.descendant(
+              of: card,
+              matching: find.byType(LinearProgressIndicator),
+            ),
+          )
+          .value,
+      0.5,
+    );
+    expect(find.text('مؤسسة البناء المتين'), findsOneWidget);
+    expect(find.text('٤٦٥٬٠٠٠ ر.س'), findsOneWidget);
+  });
+
+  testWidgets('without tasks a card says the work is being planned', (
+    tester,
+  ) async {
+    await openList(tester);
+
+    // Both waiting projects have no tasks yet, and no photo: the
+    // placeholder shows.
+    expect(find.text('قيد التخطيط'), findsNWidgets(2));
+    expect(
+      find.descendant(
+        of: find.byType(AppProjectCard),
+        matching: find.byType(LinearProgressIndicator),
+      ),
+      findsNothing,
+    );
+    expect(
+      tester
+          .widgetList<AppProjectCard>(find.byType(AppProjectCard))
+          .map((card) => card.imageUrl),
+      everyElement(isNull),
+    );
   });
 
   testWidgets('no projects yet offers to post one', (tester) async {

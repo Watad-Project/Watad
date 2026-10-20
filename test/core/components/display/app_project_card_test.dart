@@ -42,4 +42,26 @@ void main() {
     await tester.tap(find.text('مؤسسة البناء المتين'));
     expect(taps, 1);
   });
+
+  testWidgets('without progress: no bar, no percentage, only the label', (
+    tester,
+  ) async {
+    await pumpComponent(
+      tester,
+      const AppProjectCard(
+        title: 'فيلا سكنية',
+        subtitle: 'المدينة المنورة',
+        statusLabel: 'موثّق',
+        progress: null,
+        progressLabel: 'قيد التخطيط',
+        percentLabel: '٠٪',
+        dateLabel: 'عرضان',
+        amountLabel: '٤٥٠٬٠٠٠ ر.س',
+      ),
+    );
+
+    expect(find.text('قيد التخطيط'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.text('٠٪'), findsNothing);
+  });
 }
