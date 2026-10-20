@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
+import 'package:watad/core/di/app_slots.dart';
 import 'package:watad/core/router/routes/contractor_dashboard_routes.dart';
 import 'package:watad/features/dashboard/contractor/datasource/remote/contractor_dashboard_remote_data_source.dart';
 import 'package:watad/features/dashboard/contractor/datasource/repositories/contractor_dashboard_repository_impl.dart';
@@ -22,6 +23,7 @@ void registerContractorDashboardDependencies(GetIt getIt) {
       () => ContractorDashboardTab(
         bloc: getIt<ContractorDashboardBloc>()
           ..add(const ContractorDashboardFetched()),
+        bell: AppSlots.widget(getIt, AppSlots.notificationsBell),
       ),
       instanceName: ContractorDashboardRoutes.dashboardName,
     );

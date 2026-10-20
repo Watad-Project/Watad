@@ -7,9 +7,12 @@ import 'package:watad/features/review/admin/presentation/pages/admin_review_page
 /// bloc in (widgets don't create blocs, APP_ARCHITECTURE.md §10), and the tab
 /// closes it when it goes away.
 class AdminReviewTab extends StatefulWidget {
-  const AdminReviewTab({required this.bloc, super.key});
+  const AdminReviewTab({required this.bloc, this.bell, super.key});
 
   final AdminReviewBloc bloc;
+
+  /// The notifications bell, for the top bar.
+  final Widget? bell;
 
   @override
   State<AdminReviewTab> createState() => _AdminReviewTabState();
@@ -23,6 +26,8 @@ class _AdminReviewTabState extends State<AdminReviewTab> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      BlocProvider.value(value: widget.bloc, child: const AdminReviewPage());
+  Widget build(BuildContext context) => BlocProvider.value(
+    value: widget.bloc,
+    child: AdminReviewPage(bell: widget.bell),
+  );
 }

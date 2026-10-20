@@ -16,7 +16,10 @@ import 'package:watad/features/home/client/presentation/widgets/client_suggested
 
 /// «الرئيسية»: the first screen a client sees after signing in.
 class ClientHomePage extends StatelessWidget {
-  const ClientHomePage({super.key});
+  const ClientHomePage({super.key, this.bell});
+
+  /// The notifications bell, beside the greeting.
+  final Widget? bell;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +59,11 @@ class ClientHomePage extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsetsDirectional.all(AppSpacing.md),
         children: [
-          ClientHomeGreetingHeader(profile: profile, now: DateTime.now()),
+          ClientHomeGreetingHeader(
+            profile: profile,
+            now: DateTime.now(),
+            bell: bell,
+          ),
           const SizedBox(height: AppSpacing.lg),
           const ClientSearchBar(),
           const SizedBox(height: AppSpacing.lg),

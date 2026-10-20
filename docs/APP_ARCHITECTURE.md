@@ -868,6 +868,32 @@ context.pushNamed(
 );
 ```
 
+### Opening a screen from a notification
+
+A notification's `data` says what happened: its `type` (e.g. `task_added`) and the ids of what changed (`docs/ARCHITECTURE.md` §13). It never names a route. The feature that has the screen for that event decides where a tap goes, and nothing else changes:
+
+1. **Link the event once, in the feature's injection file**, with `AppNotificationLinks` (`lib/core/utils/app_notification_links.dart`). The link builds the route from the data:
+
+   ```dart
+   void registerContractorJobsDependencies(GetIt getIt) {
+     // …
+     AppNotificationLinks.register(
+       'task_added',
+       (data) => (
+         name: ContractorJobsRoutes.jobName,
+         pathParameters: {'jobId': '${data['project_id']}'},
+       ),
+     );
+   }
+   ```
+
+2. **Done.** A tap on the toast, the push or the row in «الإشعارات» opens that screen and marks the notification read. The screen loads its data by id, as for any route.
+
+- A new kind of event is a trigger on the server that calls `private.notify(…)` with a new `type`, in its own migration (`docs/ARCHITECTURE.md` §13), plus its link here. The event types and their ids are listed in `ARCHITECTURE.md` §13.
+- A type nothing links yet opens the notifications list, so a notification is useful before its screen exists.
+- Return `null` from the link for a notification that should open nothing.
+- In tests, call `AppNotificationLinks.clear()` in `tearDown`.
+
 ### How the router is set up
 
 The router is set up once, in `lib/core/router/`. Every route's page and `GoRoute` live in the feature that owns it; its name and path live in that folder's names file.
@@ -932,6 +958,8 @@ get_it is how the layers of §5 meet without knowing each other. Every class ask
 - Inject through constructors everywhere. `getIt` may appear only in `lib/core/di/`, `lib/core/router/`, `*_injection.dart` files, `*_routes.dart` files, `lib/main.dart` and `lib/app.dart`. Never in blocs, use cases, repositories, data sources or widgets. `package:get_it` itself is imported only in `lib/core/di/` and the injection files; routes files take `getIt` from `lib/core/di/injection.dart`.
 - Register each class once, in the role folder that owns it. get_it throws on a second registration of the same type.
 - A bloc that needs an id gets it in an event, not in its constructor (see step 4).
+- A widget one feature lends to another feature's screen (the notifications bell on each home) is registered as `registerFactory<Widget>(…, instanceName: AppSlots.<name>)` in the lending feature's injection file. The borrowing feature's injection file passes `AppSlots.widget(getIt, AppSlots.<name>)` (null when the lending feature isn't registered) to its page, which takes it as an optional `Widget`. Neither feature imports the other. The names live in `lib/core/di/app_slots.dart`.
+- `startAppServices()` (in `lib/core/di/injection.dart`, called from `main()` after `configureDependencies()`) starts what runs for the whole app on its own: presence (`AppPresence`, ARCHITECTURE.md §14) and push (`startNotificationsPush`, §13).
 - No `injectable` and no code generation.
 
 ### How one folder is wired

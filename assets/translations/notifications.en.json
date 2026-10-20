@@ -1,0 +1,39 @@
+{
+  "title": "Notifications",
+  "empty": "No notifications yet",
+  "mark_all_read": "Mark all as read",
+  "unread": "Unread",
+  "bell": {
+    "zero": "Notifications",
+    "one": "Notifications, 1 unread",
+    "two": "Notifications, {} unread",
+    "few": "Notifications, {} unread",
+    "many": "Notifications, {} unread",
+    "other": "Notifications, {} unread"
+  },
+  "just_now": "Just now",
+  "minutes_ago": {
+    "zero": "Just now",
+    "one": "1 minute ago",
+    "two": "{} minutes ago",
+    "few": "{} minutes ago",
+    "many": "{} minutes ago",
+    "other": "{} minutes ago"
+  },
+  "hours_ago": {
+    "zero": "Just now",
+    "one": "1 hour ago",
+    "two": "{} hours ago",
+    "few": "{} hours ago",
+    "many": "{} hours ago",
+    "other": "{} hours ago"
+  },
+  "days_ago": {
+    "zero": "Today",
+    "one": "1 day ago",
+    "two": "{} days ago",
+    "few": "{} days ago",
+    "many": "{} days ago",
+    "other": "{} days ago"
+  }
+}

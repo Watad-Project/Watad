@@ -51,6 +51,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
 | | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Admins see the ID number (not the phone) of someone waiting for review, as `owner_national_id` in the two admin queues, through `private.admin_national_id()` (migration 65). Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
+| | `user_presence` | RO | When each user was last seen, and whether they have the app open (`online_until` in the future). Written only by `set_my_presence()`; read through `v_public_profiles` (§14). |
 | | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
 | Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. `deed_storage_path`: the ownership deed in the private `project-deeds` bucket; must be inside the owner's folder (`projects_deed_path_in_owner_folder`). `deed_status`: `none → under_review → verified | rejected`, decided by `admin_set_project_deed_verification()`; `deed_submitted_at` is when the deed was sent. A project whose deed is `under_review` or `rejected` can't be `open` (migration 64): it starts as a draft, and verifying the deed publishes it. |
 | | `project_offers` | insert/edit while `pending` | Decided by `accept_offer()`, `reject_offer()`, `withdraw_offer()`. |
@@ -62,6 +63,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `orders`, `order_items` | RO | Created by `checkout()`. Paid only by the payment webhook. Price and name are snapshots. |
 | Social | `chats`, `chat_members` | RO | Via `start_chat()`, `add_chat_member()`, `remove_chat_member()`, `mark_chat_read()`. |
 | | `messages` | insert only | Insert `{chat_id, content}`; `sender_id` comes from the session. |
+| | `notifications` | RO (own rows) | Written by the server only: insert a row to notify a user (§13). Read through `v_my_notifications`; `read_at` set by `mark_notifications_read()`. |
 | | `reviews` | insert | Only between the two parties of a completed project or delivered order. |
 | Moderation | `help_reports` | insert (reporter) | Set at most one `target_*` column. Admins use `admin_assign_help_report()` / `admin_resolve_help_report()`. |
 | Audit | `status_history` | RO, append-only | Written by triggers. |
@@ -133,8 +135,11 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Chat | `start_chat(p_other_user_id, p_project_id)`, `add_chat_member(p_chat_id, p_user_id)`, `remove_chat_member(p_chat_id, p_user_id)`, `mark_chat_read(p_chat_id)` |
 | Business | `request_business_verification()` |
 | Account | `complete_client_profile(p_full_name, p_national_id, p_phone)`, `delete_my_account()` |
+| Notifications | `mark_notifications_read(p_ids)` (all of the caller's when `p_ids` is null; returns how many changed) |
+| Presence | `set_my_presence(p_online)`: `true` every minute while the app is open, `false` when it goes to the background (§14) |
 | Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_set_project_deed_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing` |
 | Blockchain sync (server only) | `blockchain_sync_claim`, `blockchain_sync_snapshot`, `blockchain_sync_complete`. They need the shared secret. **The app never calls these.** |
+| Push (server only) | `push_claim`, `push_complete`, for the `send-push` Edge Function (§13). They need the shared secret. **The app never calls these.** |
 
 ### Edge Functions the app calls
 
@@ -145,6 +150,8 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | `geocode` | `lat`, `lng` (numbers), optional `language` (`ar` default, or `en`) | The address of that point, from Google: `city`, `district`, `street`, `building_number`, `postal_code` (the `addresses` columns of §3a), plus `additional_number` and `short_address` (the Saudi national address, e.g. `RAYB6780`) and `formatted_address`. A field Google doesn't know is `null`; the user types it. Errors: `400` `invalid_body` / `invalid_coordinates`, `401` `unauthorized` (signed-in users only), `502` `geocoder_unavailable`. |
 
 `geocode` holds the Google key as the server secret `GOOGLE_MAPS_SERVER_KEY`; the app never sees it. It is deployed with `verify_jwt` off and checks the caller's session itself. Its source is in `supabase/functions/geocode/`.
+
+`send-push` is not one of them: the database calls it after every new notification (§13).
 
 `complete_client_profile()` finishes client sign-up. Call it once, after email OTP verification (before that there is no session). `p_phone` is the 9 digits starting with 5, without `+966`. It sets `users.full_name`, saves the `user_identity` row and returns `'created'`, or `'already_registered'` (and changes nothing) when the account already finished sign-up. Use that result, not `v_my_profile`, to tell a new account from an existing one: the sign-up trigger always creates the `users` row. Errors: `22023` for invalid input (`ValidationFailure`), `23505` when the ID/iqama number belongs to another account (`ConflictFailure`).
 
@@ -158,10 +165,13 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Marketplace | `v_marketplace_items`, `v_my_orders`, `v_order_items` |
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
+| Notifications | `v_my_notifications` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
 
 `v_contractors` is the client's directory of verified contractors (migration 61): city, rating, `completed_project_count`, and `is_in_my_city` (the contractor's city is the city of the caller's latest saved address). Order by `is_in_my_city` first to show the client's city first.
+
+`v_public_profiles` also has `last_seen_at` and `is_online` (migration 66, §14).
 
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker).
 
@@ -228,7 +238,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `65_admin_requester_national_id`; the next is `66_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `68_notification_events`; `69_notification_pop_up` is in the repo and waits to be applied; the next is `70_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
@@ -241,3 +251,55 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 4. Use the Dart enum mirrors in `lib/core/enums/`. Never compare raw enum strings in features.
 5. Add tests for the model mapping and any non-trivial bloc.
 6. Run the checks from `AGENTS.md`.
+
+## 13. Notifications
+
+A notification is a row of `notifications` (migration 67). The server writes it; the app lists it, live; when the user doesn't have the app open, OneSignal also delivers it as a push to their phones and browsers.
+
+**To notify a user, insert a row**, from a `SECURITY DEFINER` function or trigger, in the migration that adds the event:
+
+```sql
+insert into public.notifications (user_id, title, body, data)
+values (v_user_id, '<title>', '<body>',
+        jsonb_build_object('type', '<event>', '<thing>_id', v_thing_id));
+```
+
+- `title` (1 to 200 characters) and `body` (1 to 1000) are shown as they are, in one language.
+- `data` says **what happened**, never where to go in the app: `type` names the event (`task_added`), and the ids of what changed come with it (`project_id`, `task_id`). Use the helper `private.notify(user_id, title, body, data)`, which skips closed accounts.
+- **Where a tap goes is the app's choice:** the feature that has the screen for that event links its `type` to a route with `AppNotificationLinks` (`docs/APP_ARCHITECTURE.md` §11). A tap on the toast, the push or the row in the list opens that screen and marks the notification read; a type nothing links yet opens the notifications list.
+- The app never inserts a notification, and never calls OneSignal's REST API or `send-push`.
+
+**What notifies people already** (migration 68, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
+
+| Event | Who is told | `data.type` (+ ids) | Pops up |
+|---|---|---|---|
+| A deed is verified / rejected | the project's owner | `deed_verified` / `deed_rejected` (`project_id`) | yes |
+| A task is added to a project | the other side of the project | `task_added` (`project_id`, `task_id`) | yes |
+| A task is accepted | the other side (the contractor, when the client accepts) | `task_accepted` (`project_id`, `task_id`) | yes |
+| A message is sent | everyone else in the chat | `message` (`chat_id`, `message_id`) | yes |
+
+A new event is one more trigger that calls `private.notify(user_id, title, body, data, pop_up)`, in its own migration.
+
+**Then:** the new row reaches the open app through Realtime (`notifications` is in the `supabase_realtime` publication), and the trigger `notifications_push` posts its id to the `send-push` Edge Function with the Vault secret `push_secret`. The function takes the row once (`push_claim`):
+
+| The user… | `push_status` | What they get |
+|---|---|---|
+| has the app open (`private.is_online()`, §14) | `in_app` | The app shows it, no push |
+| doesn't | `sent` | A push through OneSignal to their devices (`external_id` = the user id, set by the app's `OneSignal.login()` after sign-in) |
+| doesn't, and OneSignal refused it | `failed` | Nothing; the reason is in `push_error` |
+
+A failed push isn't retried; the notification is still in the app's list.
+
+**The app** starts OneSignal at launch (`startAppServices()`), signs the device in as the Supabase user with `OneSignal.login()` and out on sign-out, and asks permission when the bell first shows on a home. It reads `v_my_notifications` (newest first: order by `created_at` desc) and marks rows read with `mark_notifications_read(p_ids)`.
+
+**Secrets:** `ONESIGNAL_APP_ID` and `ONESIGNAL_REST_API_KEY` are secrets of `send-push` (`supabase secrets set`); the REST API key never leaves the server. The Android channels, made in OneSignal (Settings → Push & In-App → Android Notification Channels), are two more secrets: `ONESIGNAL_ANDROID_CHANNEL_POPUP` (importance **Urgent**: the push pops up over the screen, at high priority) for a notification whose `pop_up` is true, and `ONESIGNAL_ANDROID_CHANNEL_NORMAL` (sound and the drawer) for the rest. Both are Android-only. A pop-up is sent at priority 10; a normal one keeps OneSignal's default priority, so iOS, whose default is already high, delivers both at once as before. `private.notify(…, p_pop_up => true)` marks an event that should pop up (migration 69); every event of migration 68 does. The app knows only the App ID, which is public (`ONESIGNAL_APP_ID` in `.env`). Deploy the function with `supabase functions deploy send-push --no-verify-jwt`: it checks the secret itself. Its source is in `supabase/functions/send-push/`.
+
+## 14. Presence (online now, last seen)
+
+Migration 66. Two halves, kept up by the app on its own (`lib/core/`): screens only read them.
+
+- **Live:** Supabase Realtime Presence on the private channel `online`. Every signed-in user joins it and tracks `{ "user_id": <id> }`, so a screen can show "online now" as it changes. Only signed-in users may join (policies on `realtime.messages`), not anyone holding the public anon key.
+- **Saved:** `user_presence`. The app calls `set_my_presence(true)` every minute while it's open and `set_my_presence(false)` when it goes to the background. `last_seen_at` is the last call, and a user is online while `online_until` is in the future, so a phone that dies without saying so is offline within two minutes.
+
+Read them from `v_public_profiles.last_seen_at` and `.is_online`; every signed-in user may see them. The server uses `private.is_online()` to send an in-app notification instead of a push (§13).
+
