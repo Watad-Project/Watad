@@ -64,4 +64,26 @@ void main() {
     expect(find.byType(LinearProgressIndicator), findsNothing);
     expect(find.text('٠٪'), findsNothing);
   });
+
+  testWidgets('without progress or its label: no progress at all', (
+    tester,
+  ) async {
+    await pumpComponent(
+      tester,
+      const AppProjectCard(
+        title: 'فيلا سكنية',
+        subtitle: 'المدينة المنورة',
+        statusLabel: 'موثّق',
+        progress: null,
+        progressLabel: null,
+        percentLabel: '٠٪',
+        dateLabel: 'عرضان',
+        amountLabel: '٤٥٠٬٠٠٠ ر.س',
+      ),
+    );
+
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.text('٠٪'), findsNothing);
+    expect(find.text('عرضان'), findsOneWidget);
+  });
 }

@@ -11,8 +11,9 @@ import 'package:watad/features/projects/client/presentation/widgets/client_proje
 
 /// One of the client's projects, on the shared `AppProjectCard`: its first
 /// photo (the striped placeholder without one) with the status, title and
-/// place, the approved share of its tasks («قيد التخطيط» before there are
-/// any), and the amount. The bottom line says what matters now: why the
+/// place, the approved share of its tasks once the work started
+/// («قيد التخطيط» while it has none yet; nothing while it waits for the
+/// deed or for offers), and the amount. The bottom line says what matters now: why the
 /// deed was rejected, the offers waiting, or the contractor at work. A tap
 /// opens its offers, or a new deed's upload when the deed was rejected.
 class ClientProjectCard extends StatelessWidget {
@@ -39,15 +40,20 @@ class ClientProjectCard extends StatelessWidget {
       statusTone: status.tone,
       imageUrl: project.photoUrl,
       progress: progress,
-      progressLabel: progress == null
-          ? context.tr('projects.client.tasks_planning')
-          : context.tr(
-              'projects.client.tasks_progress',
-              args: [
-                context.formatNumber(project.approvedTaskCount),
-                context.formatNumber(project.taskCount),
-              ],
-            ),
+      progressLabel: switch (progress) {
+        null when project.status == ProjectStatus.inProgress => context.tr(
+          'projects.client.tasks_planning',
+        ),
+        // Waiting for the deed or for offers, or closed without tasks.
+        null => null,
+        _ => context.tr(
+          'projects.client.tasks_progress',
+          args: [
+            context.formatNumber(project.approvedTaskCount),
+            context.formatNumber(project.taskCount),
+          ],
+        ),
+      },
       percentLabel: context.tr(
         'projects.client.tasks_percent',
         args: [context.formatNumber(((progress ?? 0) * 100).round())],

@@ -40,8 +40,9 @@ class AppProjectCard extends StatelessWidget {
   /// no percentage; [progressLabel] says why, e.g. "Planning".
   final double? progress;
 
-  /// E.g. "3 of 5 tasks".
-  final String progressLabel;
+  /// E.g. "3 of 5 tasks". Null with a null [progress]: no progress at all
+  /// (a project still waiting for offers).
+  final String? progressLabel;
 
   /// E.g. "60%". Not shown without [progress].
   final String percentLabel;
@@ -97,7 +98,8 @@ class AppProjectCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption,
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                if (progress != null || progressLabel != null)
+                  const SizedBox(height: AppSpacing.sm),
                 if (progress case final progress?) ...[
                   ClipRRect(
                     borderRadius: const BorderRadius.all(
@@ -110,15 +112,19 @@ class AppProjectCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                 ],
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(progressLabel, style: AppTextStyles.caption),
-                    ),
-                    if (progress != null)
-                      Text(percentLabel, style: AppTextStyles.caption),
-                  ],
-                ),
+                if (progress != null || progressLabel != null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          progressLabel ?? '',
+                          style: AppTextStyles.caption,
+                        ),
+                      ),
+                      if (progress != null)
+                        Text(percentLabel, style: AppTextStyles.caption),
+                    ],
+                  ),
                 const Divider(height: AppSpacing.xl),
                 Row(
                   children: [

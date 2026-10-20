@@ -252,14 +252,13 @@ void main() {
     expect(find.text('٤٦٥٬٠٠٠ ر.س'), findsOneWidget);
   });
 
-  testWidgets('without tasks a card says the work is being planned', (
+  testWidgets('a waiting project shows no progress, and its placeholder', (
     tester,
   ) async {
     await openList(tester);
 
-    // Both waiting projects have no tasks yet, and no photo: the
-    // placeholder shows.
-    expect(find.text('قيد التخطيط'), findsNWidgets(2));
+    // Waiting for the deed or for offers: no work to measure yet.
+    expect(find.text('قيد التخطيط'), findsNothing);
     expect(
       find.descendant(
         of: find.byType(AppProjectCard),
@@ -267,11 +266,43 @@ void main() {
       ),
       findsNothing,
     );
+    // No photo: the striped placeholder.
     expect(
       tester
           .widgetList<AppProjectCard>(find.byType(AppProjectCard))
           .map((card) => card.imageUrl),
       everyElement(isNull),
+    );
+  });
+
+  testWidgets('started without tasks yet: «قيد التخطيط»', (tester) async {
+    repository.projectsResult = Success([
+      ClientProject(
+        id: 'p-3',
+        title: 'بناء ملحق',
+        status: ProjectStatus.inProgress,
+        city: 'جدة',
+        pendingOfferCount: 0,
+        contractorName: 'مؤسسة البناء المتين',
+        createdAt: DateTime.utc(2026, 10, 17),
+      ),
+    ]);
+    await openList(tester);
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('client_projects_filter')),
+        matching: find.text('قيد التنفيذ'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('قيد التخطيط'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AppProjectCard),
+        matching: find.byType(LinearProgressIndicator),
+      ),
+      findsNothing,
     );
   });
 
