@@ -96,8 +96,11 @@ Deno.serve(async (req: Request) => {
       // marks notification_id read.
       data: { ...row.data, notification_id: notificationId },
       // Pop up: high priority on the "pop up" channel, so Android shows it
-      // over the screen (heads-up). Otherwise normal, in the drawer.
-      priority: popUp ? 10 : 5,
+      // over the screen (heads-up). Otherwise OneSignal's default: normal on
+      // Android, in the drawer. iOS is unchanged either way: its default is
+      // already high, and a lower priority would let the iPhone delay it.
+      // The channel is Android-only.
+      ...(popUp ? { priority: 10 } : {}),
       ...(androidChannelId ? { android_channel_id: androidChannelId } : {}),
     }),
   });
