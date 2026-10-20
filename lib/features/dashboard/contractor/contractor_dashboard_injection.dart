@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
+import 'package:watad/core/di/app_slots.dart';
 import 'package:watad/core/router/routes/contractor_dashboard_routes.dart';
 import 'package:watad/features/dashboard/contractor/datasource/remote/contractor_dashboard_remote_data_source.dart';
 import 'package:watad/features/dashboard/contractor/datasource/repositories/contractor_dashboard_repository_impl.dart';
@@ -22,7 +23,14 @@ void registerContractorDashboardDependencies(GetIt getIt) {
       () => ContractorDashboardTab(
         bloc: getIt<ContractorDashboardBloc>()
           ..add(const ContractorDashboardFetched()),
+        bell: _bell(getIt),
       ),
       instanceName: ContractorDashboardRoutes.dashboardName,
     );
 }
+
+/// The notifications feature's bell, when it is registered.
+Widget? _bell(GetIt getIt) =>
+    getIt.isRegistered<Widget>(instanceName: AppSlots.notificationsBell)
+    ? getIt<Widget>(instanceName: AppSlots.notificationsBell)
+    : null;

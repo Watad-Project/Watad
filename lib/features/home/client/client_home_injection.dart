@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
+import 'package:watad/core/di/app_slots.dart';
 import 'package:watad/core/router/routes/client_home_routes.dart';
 import 'package:watad/features/home/client/datasource/remote/client_home_remote_data_source.dart';
 import 'package:watad/features/home/client/datasource/repositories/client_home_repository_impl.dart';
@@ -31,7 +32,14 @@ void registerClientHomeDependencies(GetIt getIt) {
     ..registerFactory<Widget>(
       () => ClientHomeTab(
         bloc: getIt<ClientHomeBloc>()..add(const ClientHomeStarted()),
+        bell: _bell(getIt),
       ),
       instanceName: ClientHomeRoutes.homeName,
     );
 }
+
+/// The notifications feature's bell, when it is registered.
+Widget? _bell(GetIt getIt) =>
+    getIt.isRegistered<Widget>(instanceName: AppSlots.notificationsBell)
+    ? getIt<Widget>(instanceName: AppSlots.notificationsBell)
+    : null;

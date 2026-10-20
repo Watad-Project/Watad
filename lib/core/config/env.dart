@@ -13,4 +13,12 @@ abstract final class Env {
   /// The publishable (anon) key. Never the secret key.
   static String get supabasePublishableKey =>
       dotenv.get('SUPABASE_PUBLISHABLE_KEY');
+
+  /// The OneSignal App ID, for push notifications. Public, like the URL;
+  /// the REST API key is a server secret and never here. Without it the
+  /// app runs without push (ARCHITECTURE.md §13).
+  static String? get oneSignalAppId {
+    final appId = dotenv.maybeGet('ONESIGNAL_APP_ID')?.trim();
+    return appId == null || appId.isEmpty ? null : appId;
+  }
 }

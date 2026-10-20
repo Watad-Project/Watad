@@ -30,7 +30,7 @@ Flutter app --(publishable key + user session)--> Supabase --(blockchain-sync Ed
 - **Updated on 2026-10-06** from Flutter 3.38.3. If you are still on the old version, run `flutter upgrade`, then `flutter pub get`. What changed is in [`docs/APP_PACKAGES.md`](docs/APP_PACKAGES.md) §1.
 - **Configuration lives in `.env`**, read with `flutter_dotenv`. After cloning, copy `.env.example` to `.env` and ask a maintainer for the values; the app does not build without it.
   - `.env` is git-ignored: never commit it.
-  - `.env` is bundled into the app, so it holds only public values: the Supabase URL and the publishable (anon) key.
+  - `.env` is bundled into the app, so it holds only public values: the Supabase URL, the publishable (anon) key and the OneSignal App ID (`ONESIGNAL_APP_ID`, for push; without it the app runs without push). The OneSignal REST API key is a server secret of `send-push`, never in `.env`.
 - **The Google Maps key** (map screens) lives in two more git-ignored files, also from a maintainer:
   - Android: `MAPS_API_KEY=…` in `android/local.properties`;
   - iOS: copy `ios/Flutter/Secrets.xcconfig.example` to `ios/Flutter/Secrets.xcconfig` and set `MAPS_API_KEY`. Without it, opening a map crashes the app on iOS.

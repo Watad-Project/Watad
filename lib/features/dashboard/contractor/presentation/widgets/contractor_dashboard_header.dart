@@ -9,6 +9,7 @@ import 'package:watad/features/dashboard/contractor/domain/entities/contractor_d
 
 class ContractorDashboardHeader extends StatelessWidget {
   const ContractorDashboardHeader({
+    this.bell,
     super.key,
     required this.profile,
     this.onVerificationStatusTap,
@@ -16,6 +17,9 @@ class ContractorDashboardHeader extends StatelessWidget {
 
   final ContractorDashboardProfile profile;
   final VoidCallback? onVerificationStatusTap;
+
+  /// The notifications bell, lent by that feature (AppSlots.notificationsBell).
+  final Widget? bell;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +83,7 @@ class ContractorDashboardHeader extends StatelessWidget {
             GestureDetector(onTap: onVerificationStatusTap, child: badge)
           else
             badge,
+          ?bell,
         ],
       ),
     );

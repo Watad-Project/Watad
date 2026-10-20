@@ -1,0 +1,115 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:watad/core/error/failure.dart';
+import 'package:watad/core/error/result.dart';
+import 'package:watad/core/usecase/usecase.dart';
+import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/get_notifications_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/mark_notifications_read_use_case.dart';
+import 'package:watad/features/notifications/shared/domain/usecases/watch_new_notifications_use_case.dart';
+
+part 'notifications_event.dart';
+part 'notifications_state.dart';
+
+/// «الإشعارات»: the user's notifications, newest first, live; opening one
+/// marks it read.
+class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
+  NotificationsBloc(this._getNotifications, this._markRead, this._watchNew)
+    : super(const NotificationsState()) {
+    on<NotificationsFetched>(_onFetched);
+    on<NotificationsArrivalsWatched>(_onArrivalsWatched);
+    on<NotificationsOpened>(_onOpened);
+    on<NotificationsAllRead>(_onAllRead);
+  }
+
+  final GetNotificationsUseCase _getNotifications;
+  final MarkNotificationsReadUseCase _markRead;
+  final WatchNewNotificationsUseCase _watchNew;
+
+  Future<void> _onFetched(
+    NotificationsFetched event,
+    Emitter<NotificationsState> emit,
+  ) async {
+    emit(state.copyWith(status: NotificationsStatus.loading));
+    final result = await _getNotifications(const NoParams());
+    switch (result) {
+      case Success(:final data):
+        emit(
+          state.copyWith(
+            status: NotificationsStatus.success,
+            notifications: data,
+            failure: () => null,
+          ),
+        );
+      case Failed(:final failure):
+        emit(
+          state.copyWith(
+            status: NotificationsStatus.failure,
+            failure: () => failure,
+          ),
+        );
+    }
+  }
+
+  Future<void> _onArrivalsWatched(
+    NotificationsArrivalsWatched event,
+    Emitter<NotificationsState> emit,
+  ) async {
+    final result = await _watchNew(const NoParams());
+    if (result case Success(data: final arrivals)) {
+      await emit.forEach(
+        arrivals,
+        onData: (arrival) => switch (arrival) {
+          Success(:final data) => state.copyWith(
+            notifications: [
+              data,
+              for (final n in state.notifications)
+                if (n.id != data.id) n,
+            ],
+          ),
+          Failed() => state,
+        },
+      );
+    }
+  }
+
+  /// Read on the spot; the list shows it read even if saving it failed, and
+  /// the next load shows the truth.
+  Future<void> _onOpened(
+    NotificationsOpened event,
+    Emitter<NotificationsState> emit,
+  ) async {
+    final opened = event.notification;
+    if (!opened.isRead) {
+      emit(state.copyWith(notifications: _readAll(only: opened.id)));
+      await _markRead([opened.id]);
+    }
+  }
+
+  Future<void> _onAllRead(
+    NotificationsAllRead event,
+    Emitter<NotificationsState> emit,
+  ) async {
+    if (state.unreadCount == 0) return;
+    emit(state.copyWith(notifications: _readAll()));
+    await _markRead(null);
+  }
+
+  /// The list with [only] (or every unread one) marked read now.
+  List<UserNotification> _readAll({String? only}) {
+    final now = DateTime.now().toUtc();
+    return [
+      for (final n in state.notifications)
+        if (!n.isRead && (only == null || n.id == only))
+          UserNotification(
+            id: n.id,
+            title: n.title,
+            body: n.body,
+            target: n.target,
+            readAt: now,
+            createdAt: n.createdAt,
+          )
+        else
+          n,
+    ];
+  }
+}

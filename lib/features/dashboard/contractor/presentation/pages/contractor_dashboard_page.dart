@@ -24,6 +24,7 @@ class ContractorDashboardPage extends StatelessWidget {
     this.onAllOffersTap,
     this.onProjectTap,
     this.onOfferTap,
+    this.bell,
   });
 
   final VoidCallback? onVerificationStatusTap;
@@ -32,6 +33,9 @@ class ContractorDashboardPage extends StatelessWidget {
   final VoidCallback? onAllOffersTap;
   final ValueChanged<String>? onProjectTap;
   final ValueChanged<String>? onOfferTap;
+
+  /// The notifications bell, for the header.
+  final Widget? bell;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +91,7 @@ class ContractorDashboardPage extends StatelessWidget {
                     children: [
                       ContractorDashboardHeader(
                         profile: data.profile,
+                        bell: bell,
                         onVerificationStatusTap:
                             onVerificationStatusTap ??
                             () => context.pushNamed(KycRoutes.statusName),
