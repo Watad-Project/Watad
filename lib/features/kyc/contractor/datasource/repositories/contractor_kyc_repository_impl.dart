@@ -20,4 +20,9 @@ class ContractorKycRepositoryImpl implements ContractorKycRepository {
       () => _remoteDataSource.uploadLicense(bytes: bytes, fileName: fileName),
     );
   }
+
+  @override
+  Future<Result<void>> signOut() {
+    return guardSupabaseCall(_remoteDataSource.signOut);
+  }
 }

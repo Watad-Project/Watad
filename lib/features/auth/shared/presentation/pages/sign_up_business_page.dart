@@ -67,7 +67,7 @@ class _SignUpBusinessPageState extends State<SignUpBusinessPage> {
           if (widget.onSuccess != null) {
             widget.onSuccess!(context);
           } else {
-            context.pushNamed(ContractorKycRoutes.licenseName);
+            context.goNamed(ContractorKycRoutes.licenseName);
           }
         }
       },

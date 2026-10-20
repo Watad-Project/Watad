@@ -30,3 +30,7 @@ final class ContractorLicenseLoadFailure extends ContractorLicenseState {
 
   final Failure failure;
 }
+
+final class ContractorLicenseSignOutSuccess extends ContractorLicenseState {
+  const ContractorLicenseSignOutSuccess();
+}

@@ -50,6 +50,9 @@ class _FakeKycRepository implements KycRepository {
     BusinessDocumentType documentType =
         BusinessDocumentType.commercialRegistration,
   ]) => const Stream.empty();
+
+  @override
+  Future<Result<void>> signOut() async => const Success(null);
 }
 
 void main() {

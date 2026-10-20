@@ -8,6 +8,8 @@ abstract interface class KycRemoteDataSource {
     BusinessDocumentType documentType =
         BusinessDocumentType.commercialRegistration,
   ]);
+
+  Future<void> signOut();
 }
 
 class KycRemoteDataSourceImpl implements KycRemoteDataSource {
@@ -34,5 +36,10 @@ class KycRemoteDataSourceImpl implements KycRemoteDataSource {
       documentType: documentType,
       status: VerificationStatus.unverified,
     );
+  }
+
+  @override
+  Future<void> signOut() async {
+    await _supabase.auth.signOut();
   }
 }

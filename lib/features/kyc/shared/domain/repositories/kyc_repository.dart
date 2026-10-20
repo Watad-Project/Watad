@@ -15,4 +15,7 @@ abstract interface class KycRepository {
     BusinessDocumentType documentType =
         BusinessDocumentType.commercialRegistration,
   ]);
+
+  /// Signs out the current user.
+  Future<Result<void>> signOut();
 }

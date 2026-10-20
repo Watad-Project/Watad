@@ -9,6 +9,8 @@ abstract interface class ContractorKycRemoteDataSource {
     required Uint8List bytes,
     required String fileName,
   });
+
+  Future<void> signOut();
 }
 
 class ContractorKycRemoteDataSourceImpl
@@ -46,5 +48,10 @@ class ContractorKycRemoteDataSourceImpl
     await _supabase.rpc<void>('request_business_verification');
 
     return ContractorLicenseSubmissionModel(storagePath: storagePath);
+  }
+
+  @override
+  Future<void> signOut() async {
+    await _supabase.auth.signOut();
   }
 }
