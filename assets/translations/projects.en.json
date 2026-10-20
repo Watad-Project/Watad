@@ -100,6 +100,10 @@
     "deed_reason_title": "Reason",
     "deed_send": "Send the deed",
     "deed_sent": "The deed was sent for review",
-    "deed_not_rejected": "This project doesn't need a new deed"
+    "deed_not_rejected": "This project doesn't need a new deed",
+    "filter_done": "Done",
+    "filter_waiting": "Waiting",
+    "filter_in_progress": "In progress",
+    "empty_filter": "No projects here yet"
   }
 }

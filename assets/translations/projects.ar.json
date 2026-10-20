@@ -100,6 +100,10 @@
     "deed_reason_title": "سبب الرفض",
     "deed_send": "إرسال الصك",
     "deed_sent": "أُرسل الصك للمراجعة",
-    "deed_not_rejected": "لا يحتاج هذا المشروع إلى صك جديد"
+    "deed_not_rejected": "لا يحتاج هذا المشروع إلى صك جديد",
+    "filter_done": "مكتملة",
+    "filter_waiting": "قيد الانتظار",
+    "filter_in_progress": "قيد التنفيذ",
+    "empty_filter": "لا مشاريع هنا بعد"
   }
 }

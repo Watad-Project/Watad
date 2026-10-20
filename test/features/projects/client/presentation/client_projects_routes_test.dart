@@ -137,6 +137,63 @@ void main() {
     expect(find.byType(ClientProjectOffersPage), findsOneWidget);
   });
 
+  testWidgets('the chips split the projects: done, waiting, in progress', (
+    tester,
+  ) async {
+    ClientProject withStatus(String id, String title, ProjectStatus status) =>
+        ClientProject(
+          id: id,
+          title: title,
+          status: status,
+          city: 'جدة',
+          pendingOfferCount: 0,
+          createdAt: DateTime.utc(2026, 10, 17),
+        );
+    repository.projectsResult = Success([
+      rejected,
+      project,
+      withStatus('p-3', 'بناء ملحق', ProjectStatus.inProgress),
+      withStatus('p-4', 'ترميم مطبخ', ProjectStatus.completed),
+    ]);
+    await openList(tester);
+    Future<void> tapChip(String label) async {
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('client_projects_filter')),
+          matching: find.text(label),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // It opens on «قيد الانتظار»: waiting for the deed, or for offers.
+    expect(find.text('ترميم الواجهة'), findsOneWidget);
+    expect(find.text('فيلا سكنية'), findsOneWidget);
+    expect(find.text('بناء ملحق'), findsNothing);
+    expect(find.text('ترميم مطبخ'), findsNothing);
+
+    await tapChip('قيد التنفيذ');
+    expect(find.text('بناء ملحق'), findsOneWidget);
+    expect(find.text('فيلا سكنية'), findsNothing);
+
+    await tapChip('مكتملة');
+    expect(find.text('ترميم مطبخ'), findsOneWidget);
+    expect(find.text('بناء ملحق'), findsNothing);
+  });
+
+  testWidgets('a chip without projects says so', (tester) async {
+    await openList(tester);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('client_projects_filter')),
+        matching: find.text('مكتملة'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('لا مشاريع هنا بعد'), findsOneWidget);
+  });
+
   testWidgets('no projects yet offers to post one', (tester) async {
     repository.projectsResult = const Success([]);
     await openList(tester);

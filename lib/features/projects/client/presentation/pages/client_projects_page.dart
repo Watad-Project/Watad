@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
+import 'package:watad/core/components/inputs/app_filter_chips.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
+import 'package:watad/features/projects/client/domain/entities/client_projects_filter.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_projects_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_project_card.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_projects_skeleton.dart';
@@ -50,6 +52,7 @@ class ClientProjectsPage extends StatelessWidget {
             key: const ValueKey('empty'),
             onRefresh: () async => bloc.add(const ClientProjectsFetched()),
             child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 AppEmptyView(
                   message: context.tr('projects.client.empty'),
@@ -72,33 +75,82 @@ class ClientProjectsPage extends StatelessWidget {
           return const ClientProjectsSkeleton(key: ValueKey('loading'));
       }
     }
-    return RefreshIndicator(
+    final projects = state.visibleProjects;
+    return Column(
       key: const ValueKey('projects'),
-      onRefresh: () async => bloc.add(const ClientProjectsFetched()),
-      child: ListView.separated(
-        padding: const EdgeInsetsDirectional.all(AppSpacing.md),
-        itemCount: state.projects.length,
-        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-        itemBuilder: (context, index) {
-          final project = state.projects[index];
-          return ClientProjectCard(
-            project: project,
-            onTap: () async {
-              // A rejected deed: upload a new one. Otherwise: the offers.
-              await context.pushNamed(
-                project.deedStatus == ClientDeedVerificationStatus.rejected
-                    ? ClientProjectsRoutes.projectDeedName
-                    : ClientProjectsRoutes.projectOffersName,
-                pathParameters: {'projectId': project.id},
-              );
-              // An accepted offer or a new deed changes the project.
-              bloc.add(const ClientProjectsFetched());
-            },
-          );
-        },
-      ),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            0,
+          ),
+          child: AppFilterChips(
+            key: const Key('client_projects_filter'),
+            labels: [
+              for (final filter in ClientProjectsFilter.values)
+                context.tr(_filterLabelKey(filter)),
+            ],
+            selectedIndex: state.filter.index,
+            onSelected: (index) => bloc.add(
+              ClientProjectsFilterChanged(ClientProjectsFilter.values[index]),
+            ),
+          ),
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async => bloc.add(const ClientProjectsFetched()),
+            child: projects.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      AppEmptyView(
+                        message: context.tr('projects.client.empty_filter'),
+                        icon: Icons.assignment_outlined,
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+                    itemCount: projects.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(height: AppSpacing.sm),
+                    itemBuilder: (context, index) {
+                      final project = projects[index];
+                      return ClientProjectCard(
+                        project: project,
+                        onTap: () async {
+                          // A rejected deed: upload a new one. Otherwise:
+                          // the offers.
+                          await context.pushNamed(
+                            project.deedStatus ==
+                                    ClientDeedVerificationStatus.rejected
+                                ? ClientProjectsRoutes.projectDeedName
+                                : ClientProjectsRoutes.projectOffersName,
+                            pathParameters: {'projectId': project.id},
+                          );
+                          // An accepted offer or a new deed changes the
+                          // project.
+                          bloc.add(const ClientProjectsFetched());
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ),
+      ],
     );
   }
+
+  static String _filterLabelKey(ClientProjectsFilter filter) =>
+      switch (filter) {
+        ClientProjectsFilter.done => 'projects.client.filter_done',
+        ClientProjectsFilter.waiting => 'projects.client.filter_waiting',
+        ClientProjectsFilter.inProgress => 'projects.client.filter_in_progress',
+      };
 
   Future<void> _postProject(
     BuildContext context,

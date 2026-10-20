@@ -9,3 +9,10 @@ sealed class ClientProjectsEvent {
 final class ClientProjectsFetched extends ClientProjectsEvent {
   const ClientProjectsFetched();
 }
+
+/// A chip was tapped: show only its projects.
+final class ClientProjectsFilterChanged extends ClientProjectsEvent {
+  const ClientProjectsFilterChanged(this.filter);
+
+  final ClientProjectsFilter filter;
+}
