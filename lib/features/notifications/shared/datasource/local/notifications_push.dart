@@ -13,8 +13,9 @@ abstract interface class NotificationsPush {
   factory NotificationsPush(String? appId, SupabaseClient client) =>
       appId == null ? const _NoPush() : platform.createPush(appId, client);
 
-  /// Starts OneSignal once, and keeps the device signed in as whoever is
-  /// signed in to Supabase.
+  /// Starts OneSignal once (at launch, from `startAppServices()`), and keeps
+  /// the device signed in as whoever is signed in to Supabase. Calling it
+  /// again returns the same start.
   Future<void> start();
 
   /// Asks the user, once, to allow notifications.

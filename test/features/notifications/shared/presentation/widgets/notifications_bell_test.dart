@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/router/routes/notifications_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
@@ -9,6 +10,7 @@ import 'package:watad/features/notifications/shared/domain/entities/user_notific
 import 'package:watad/features/notifications/shared/presentation/pages/notifications_page.dart';
 import 'package:watad/features/notifications/shared/presentation/widgets/notifications_bell.dart';
 
+import '../../../../../helpers/fake_admin_review_repository.dart';
 import '../../../../../helpers/fake_app_session.dart';
 import '../../../../../helpers/fake_client_home_repository.dart';
 import '../../../../../helpers/fake_notifications_repository.dart';
@@ -50,6 +52,19 @@ void main() {
     expect(find.text('٣'), findsOneWidget);
     expect(find.byTooltip('الإشعارات، ٣ إشعارات غير مقروءة'), findsOneWidget);
     expect(repository.pushStarts, 1);
+  });
+
+  testWidgets('the admin home has the bell too', (tester) async {
+    registerFakeAdminReview(FakeAdminReviewRepository());
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminNavigationRoutes.navigationName);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NotificationsBell), findsOneWidget);
+    expect(find.text('٣'), findsOneWidget);
   });
 
   testWidgets('the bell opens the list', (tester) async {

@@ -46,7 +46,8 @@ void configureDependencies() {
 }
 
 /// Called once from main(), after configureDependencies(): the services that
-/// run for the whole app, on their own.
+/// run for the whole app, on their own: presence and push.
 void startAppServices() {
   getIt<AppPresence>().start();
+  startNotificationsPush(getIt);
 }

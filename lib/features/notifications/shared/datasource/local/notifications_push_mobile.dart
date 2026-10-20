@@ -19,9 +19,13 @@ class NotificationsPushMobile implements NotificationsPush {
   Map<String, dynamic>? _pendingTap;
   String? _userId;
 
+  /// Started once: at launch, and the bell's call shares it.
+  Future<void>? _started;
+
   @override
-  Future<void> start() async {
-    if (_auth != null) return;
+  Future<void> start() => _started ??= _start();
+
+  Future<void> _start() async {
     await OneSignal.initialize(_appId);
     OneSignal.Notifications.addClickListener((event) {
       final data = event.notification.additionalData ?? const {};

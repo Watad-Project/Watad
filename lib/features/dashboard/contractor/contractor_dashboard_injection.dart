@@ -23,14 +23,8 @@ void registerContractorDashboardDependencies(GetIt getIt) {
       () => ContractorDashboardTab(
         bloc: getIt<ContractorDashboardBloc>()
           ..add(const ContractorDashboardFetched()),
-        bell: _bell(getIt),
+        bell: AppSlots.widget(getIt, AppSlots.notificationsBell),
       ),
       instanceName: ContractorDashboardRoutes.dashboardName,
     );
 }
-
-/// The notifications feature's bell, when it is registered.
-Widget? _bell(GetIt getIt) =>
-    getIt.isRegistered<Widget>(instanceName: AppSlots.notificationsBell)
-    ? getIt<Widget>(instanceName: AppSlots.notificationsBell)
-    : null;

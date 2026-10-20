@@ -19,14 +19,17 @@ import 'package:watad/features/review/admin/presentation/widgets/admin_review_sk
 /// first, in two columns. «التفاصيل» on a card opens the request, where the
 /// admin decides.
 class AdminReviewPage extends StatelessWidget {
-  const AdminReviewPage({super.key});
+  const AdminReviewPage({super.key, this.bell});
+
+  /// The notifications bell, lent by that feature (AppSlots.notificationsBell).
+  final Widget? bell;
 
   static const int _columns = 2;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppTopBar(title: context.tr('review.title')),
+      appBar: AppTopBar(title: context.tr('review.title'), actions: [?bell]),
       body: BlocBuilder<AdminReviewBloc, AdminReviewState>(
         // Loading, the grid and errors fade into each other.
         builder: (context, state) => AnimatedSwitcher(

@@ -13,7 +13,8 @@ part 'notifications_bell_state.dart';
 
 /// The bell on each home: the unread count, each notification arriving while
 /// the app is open (shown in the app, no push), and the pushes the user taps.
-/// Starting it also starts push on this device.
+/// Starting it asks permission to notify; OneSignal itself starts at launch
+/// (`startAppServices()`).
 class NotificationsBellBloc
     extends Bloc<NotificationsBellEvent, NotificationsBellState> {
   NotificationsBellBloc(

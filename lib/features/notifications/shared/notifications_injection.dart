@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:watad/core/config/env.dart';
@@ -47,4 +49,14 @@ void registerNotificationsDependencies(GetIt getIt) {
       ),
       instanceName: AppSlots.notificationsBell,
     );
+}
+
+/// Called once at launch by `startAppServices()`: OneSignal starts and keeps
+/// this device signed in as the Supabase user, for every role, before any
+/// screen. A tap on a push that opened the app waits for the bell. A failure
+/// here is retried when the bell starts push (ARCHITECTURE.md §13).
+void startNotificationsPush(GetIt getIt) {
+  unawaited(
+    getIt<NotificationsPush>().start().then<void>((_) {}, onError: (_) {}),
+  );
 }

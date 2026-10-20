@@ -4,7 +4,7 @@ sealed class NotificationsBellEvent {
   const NotificationsBellEvent();
 }
 
-/// The bell appeared: count, listen, and start push.
+/// The bell appeared: count, listen, and ask permission to notify.
 final class NotificationsBellStarted extends NotificationsBellEvent {
   const NotificationsBellStarted();
 }

@@ -277,7 +277,7 @@ values (v_user_id, '<title>', '<body>', jsonb_build_object('route', '<route name
 
 A failed push isn't retried; the notification is still in the app's list.
 
-**The app** reads `v_my_notifications` (newest first: order by `created_at` desc) and marks rows read with `mark_notifications_read(p_ids)`.
+**The app** starts OneSignal at launch (`startAppServices()`), signs the device in as the Supabase user with `OneSignal.login()` and out on sign-out, and asks permission when the bell first shows on a home. It reads `v_my_notifications` (newest first: order by `created_at` desc) and marks rows read with `mark_notifications_read(p_ids)`.
 
 **Secrets:** `ONESIGNAL_APP_ID` and `ONESIGNAL_REST_API_KEY` are secrets of `send-push` (`supabase secrets set`); the REST API key never leaves the server. The app knows only the App ID, which is public (`ONESIGNAL_APP_ID` in `.env`). Deploy the function with `supabase functions deploy send-push --no-verify-jwt`: it checks the secret itself. Its source is in `supabase/functions/send-push/`.
 

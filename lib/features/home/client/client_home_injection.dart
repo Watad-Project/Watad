@@ -32,14 +32,8 @@ void registerClientHomeDependencies(GetIt getIt) {
     ..registerFactory<Widget>(
       () => ClientHomeTab(
         bloc: getIt<ClientHomeBloc>()..add(const ClientHomeStarted()),
-        bell: _bell(getIt),
+        bell: AppSlots.widget(getIt, AppSlots.notificationsBell),
       ),
       instanceName: ClientHomeRoutes.homeName,
     );
 }
-
-/// The notifications feature's bell, when it is registered.
-Widget? _bell(GetIt getIt) =>
-    getIt.isRegistered<Widget>(instanceName: AppSlots.notificationsBell)
-    ? getIt<Widget>(instanceName: AppSlots.notificationsBell)
-    : null;
