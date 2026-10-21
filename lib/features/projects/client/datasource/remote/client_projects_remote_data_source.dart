@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/core/enums/project_status.dart';
+import 'package:watad/core/utils/money.dart';
+import 'package:watad/features/projects/client/datasource/models/client_project_model.dart';
+import 'package:watad/features/projects/client/datasource/models/client_project_offer_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_saved_address_model.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 
@@ -18,6 +21,21 @@ abstract interface class ClientProjectsRemoteDataSource {
   });
   Future<String> uploadProjectPhoto({required String filePath});
   Future<String> uploadDeedDocument({required String filePath});
+
+  /// The client's projects (`v_my_projects`, `my_role = 'owner'`), newest
+  /// first.
+  Future<List<ClientProjectModel>> getMyProjects();
+
+  Future<ClientProjectModel> getProject(String projectId);
+
+  /// The offers on a project (`v_project_offers`), cheapest first.
+  Future<List<ClientProjectOfferModel>> getOffers(String projectId);
+
+  Future<void> acceptOffer(String offerId, Money expectedAmount);
+
+  /// Uploads [filePath] to `project-deeds` and points the project at it; the
+  /// deed goes back to review (trigger on `deed_storage_path`).
+  Future<void> replaceDeed(String projectId, String filePath);
 }
 
 class ClientProjectsRemoteDataSourceImpl
@@ -177,5 +195,107 @@ class ClientProjectsRemoteDataSourceImpl
         .select()
         .single();
     return ClientSavedAddressModel.fromJson(response);
+  }
+
+  static const String _projectColumns =
+      'id, title, status, city, district, budget, pending_offer_count, '
+      'created_at, deed_status, deed_rejection_reason, photo_paths, '
+      'taker_company_name, agreed_amount';
+
+  @override
+  Future<List<ClientProjectModel>> getMyProjects() async {
+    final rows = await _client
+        .from('v_my_projects')
+        .select(_projectColumns)
+        .eq('my_role', 'owner')
+        .order('created_at', ascending: false);
+    return _withPhotosAndTasks(rows);
+  }
+
+  @override
+  Future<ClientProjectModel> getProject(String projectId) async {
+    final row = await _client
+        .from('v_my_projects')
+        .select(_projectColumns)
+        .eq('my_role', 'owner')
+        .eq('id', projectId)
+        .single();
+    return (await _withPhotosAndTasks([row])).single;
+  }
+
+  /// [rows] with their first photo's public URL (`images` is a public
+  /// bucket) and their tasks counted, in one `v_project_tasks` read.
+  Future<List<ClientProjectModel>> _withPhotosAndTasks(
+    List<Map<String, dynamic>> rows,
+  ) async {
+    final ids = [for (final row in rows) row['id'] as String];
+    final tasks = ids.isEmpty
+        ? const <Map<String, dynamic>>[]
+        : await _client
+              .from('v_project_tasks')
+              .select('project_id, status')
+              .inFilter('project_id', ids);
+    final counted = <String, int>{};
+    final approved = <String, int>{};
+    for (final task in tasks) {
+      final status = task['status'] as String?;
+      // A rejected task isn't part of the work.
+      if (status == 'rejected') continue;
+      final projectId = task['project_id'] as String;
+      counted.update(projectId, (n) => n + 1, ifAbsent: () => 1);
+      if (status == 'approved') {
+        approved.update(projectId, (n) => n + 1, ifAbsent: () => 1);
+      }
+    }
+    final images = _client.storage.from('images');
+    return [
+      for (final row in rows)
+        ClientProjectModel.fromJson({
+          ...row,
+          'photo_url': switch (row['photo_paths']) {
+            [final String first, ...] when first.isNotEmpty =>
+              images.getPublicUrl(first),
+            _ => null,
+          },
+          'task_count': counted[row['id']] ?? 0,
+          'approved_task_count': approved[row['id']] ?? 0,
+        }),
+    ];
+  }
+
+  @override
+  Future<List<ClientProjectOfferModel>> getOffers(String projectId) async {
+    final rows = await _client
+        .from('v_project_offers')
+        .select(
+          'id, project_id, amount, status, message, created_at, '
+          'provider_company_name, provider_is_verified, provider_rating_avg, '
+          'provider_rating_count',
+        )
+        .eq('project_id', projectId)
+        // Cheapest first, as in the design.
+        .order('amount', ascending: true);
+    return rows.map(ClientProjectOfferModel.fromJson).toList();
+  }
+
+  @override
+  Future<void> acceptOffer(String offerId, Money expectedAmount) async {
+    await _client.rpc<void>(
+      'accept_offer',
+      params: {
+        'p_offer_id': offerId,
+        'p_expected_amount': expectedAmount.toJson(),
+      },
+    );
+  }
+
+  @override
+  Future<void> replaceDeed(String projectId, String filePath) async {
+    final path = await uploadDeedDocument(filePath: filePath);
+    // Only the UPDATE column allowed on `projects` (ARCHITECTURE.md §3a).
+    await _client
+        .from('projects')
+        .update({'deed_storage_path': path})
+        .eq('id', projectId);
   }
 }
