@@ -98,8 +98,23 @@ class ContractorWorkRemoteDataSourceImpl
 
     final contractsPayload = await _fetchContractsAndTasks();
 
+    final images = _client.storage.from('images');
+    final processedOpenProjects = [
+      for (final row in openProjectsResponse)
+        () {
+          final map = Map<String, dynamic>.from(row as Map);
+          if (map['image_url'] == null) {
+            if (map['photo_paths'] case [final String first, ...]
+                when first.isNotEmpty) {
+              map['image_url'] = images.getPublicUrl(first);
+            }
+          }
+          return map;
+        }(),
+    ];
+
     return ContractorWorkOverviewModel.fromJson({
-      'open_projects': openProjectsResponse,
+      'open_projects': processedOpenProjects,
       'contracts': contractsPayload.contracts,
       'tasks': contractsPayload.tasks,
       'contracts_count': contractsPayload.contracts.length,
@@ -180,8 +195,22 @@ class ContractorWorkRemoteDataSourceImpl
         .limit(1)
         .maybeSingle();
 
+    final images = _client.storage.from('images');
+    final processedProjectRow = projectRow != null
+        ? () {
+            final map = Map<String, dynamic>.from(projectRow);
+            if (map['image_url'] == null) {
+              if (map['photo_paths'] case [final String first, ...]
+                  when first.isNotEmpty) {
+                map['image_url'] = images.getPublicUrl(first);
+              }
+            }
+            return map;
+          }()
+        : null;
+
     return ContractorBidDetailsModel.fromJson({
-      'project': projectRow,
+      'project': processedProjectRow,
       'verification_status': profileRow?['verification_status'] ?? 'unverified',
       'offer': offerRow,
     });

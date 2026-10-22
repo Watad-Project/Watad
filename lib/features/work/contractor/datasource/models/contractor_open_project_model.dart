@@ -35,6 +35,28 @@ class ContractorOpenProjectModel extends ContractorOpenProject {
           )
         : null;
 
+    final rawImageUrl =
+        json['image_url'] as String? ??
+        json['imageUrl'] as String? ??
+        json['photo_url'] as String? ??
+        json['photoUrl'] as String? ??
+        json['image'] as String? ??
+        json['photo'] as String?;
+
+    String? imageUrl = rawImageUrl?.trim();
+    if ((imageUrl == null || imageUrl.isEmpty) && json['photo_paths'] is List) {
+      final list = (json['photo_paths'] as List)
+          .whereType<String>()
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+      if (list.isNotEmpty &&
+          (list.first.startsWith('http://') ||
+              list.first.startsWith('https://'))) {
+        imageUrl = list.first;
+      }
+    }
+
     return ContractorOpenProjectModel(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
@@ -45,7 +67,7 @@ class ContractorOpenProjectModel extends ContractorOpenProject {
       },
       city: json['city'] as String? ?? '',
       district: json['district'] as String?,
-      imageUrl: json['image_url'] as String?,
+      imageUrl: imageUrl != null && imageUrl.isNotEmpty ? imageUrl : null,
       createdAt: createdAt,
       ownerName: json['owner_name'] as String? ?? '',
       offerCount: (json['offer_count'] as num?)?.toInt() ?? 0,

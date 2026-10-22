@@ -77,5 +77,31 @@ void main() {
       expect(model.hasMyOffer, isFalse);
       expect(model.isMyOfferPending, isFalse);
     });
+
+    test('parses image url across various naming conventions', () {
+      final withImageUrl = ContractorOpenProjectModel.fromJson({
+        'id': 'p-1',
+        'title': 'Test',
+        'city': 'Riyadh',
+        'image_url': 'https://example.com/1.jpg',
+      });
+      expect(withImageUrl.imageUrl, 'https://example.com/1.jpg');
+
+      final withPhotoUrl = ContractorOpenProjectModel.fromJson({
+        'id': 'p-2',
+        'title': 'Test',
+        'city': 'Riyadh',
+        'photo_url': 'https://example.com/2.jpg',
+      });
+      expect(withPhotoUrl.imageUrl, 'https://example.com/2.jpg');
+
+      final withPhotoPaths = ContractorOpenProjectModel.fromJson({
+        'id': 'p-3',
+        'title': 'Test',
+        'city': 'Riyadh',
+        'photo_paths': ['https://example.com/3.jpg'],
+      });
+      expect(withPhotoPaths.imageUrl, 'https://example.com/3.jpg');
+    });
   });
 }
