@@ -223,8 +223,8 @@ class _Waiting extends StatelessWidget {
   }
 }
 
-/// Clients and businesses as parts of the users, then how many businesses
-/// are verified.
+/// Who is online now and who can sign in, clients and businesses as parts
+/// of the users, then how many businesses are verified.
 class _Users extends StatelessWidget {
   const _Users({required this.stats});
 
@@ -239,14 +239,14 @@ class _Users extends StatelessWidget {
         AdminDashboardTileGrid(
           children: [
             AppStatTile(
+              label: context.tr('dashboard.admin.online_users'),
+              value: context.formatNumber(stats.onlineUsers),
+              icon: Icons.wifi_tethering,
+            ),
+            AppStatTile(
               label: context.tr('dashboard.admin.active_users'),
               value: context.formatNumber(stats.activeUsers),
               icon: Icons.person_outline,
-            ),
-            AppStatTile(
-              label: context.tr('dashboard.admin.businesses'),
-              value: context.formatNumber(stats.businesses),
-              icon: Icons.business_outlined,
             ),
           ],
         ),

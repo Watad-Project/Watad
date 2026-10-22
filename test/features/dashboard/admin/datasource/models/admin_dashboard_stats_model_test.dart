@@ -19,6 +19,7 @@ void main() {
       'pending_licenses': 7,
       'pending_deeds': 3,
       'open_reports': 5,
+      'online_users': 37,
     });
 
     expect(model.activeUsers, 1240);
@@ -36,6 +37,7 @@ void main() {
     expect(model.pendingLicenses, 7);
     expect(model.pendingDeeds, 3);
     expect(model.openReports, 5);
+    expect(model.onlineUsers, 37);
   });
 
   test('a missing count reads as zero', () {

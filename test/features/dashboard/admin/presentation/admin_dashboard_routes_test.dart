@@ -62,6 +62,9 @@ void main() {
 
     await tester.tap(find.text('المستخدمون'));
     await tester.pumpAndSettle();
+    // Who is online now, and who can sign in.
+    expect(find.text('متصلون الآن'), findsOneWidget);
+    expect(find.text('٣٧'), findsOneWidget);
     // Arabic-Indic digits with separators: the active users, and the
     // clients and businesses in the middle of the ring.
     expect(find.text('١٬٢١٠'), findsOneWidget);
