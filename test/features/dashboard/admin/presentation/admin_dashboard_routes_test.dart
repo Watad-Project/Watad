@@ -8,9 +8,11 @@ import 'package:watad/core/router/routes/admin_dashboard_routes.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/dashboard/admin/presentation/pages/admin_dashboard_page.dart';
+import 'package:watad/features/reports/admin/presentation/pages/admin_reports_page.dart';
 import 'package:watad/features/review/admin/presentation/pages/admin_review_page.dart';
 
 import '../../../../helpers/fake_admin_dashboard_repository.dart';
+import '../../../../helpers/fake_admin_reports_repository.dart';
 import '../../../../helpers/fake_admin_review_repository.dart';
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_splash_repository.dart';
@@ -26,6 +28,7 @@ void main() {
     repository = FakeAdminDashboardRepository();
     registerFakeAdminDashboard(repository);
     registerFakeAdminReview(FakeAdminReviewRepository());
+    registerFakeAdminReports(FakeAdminReportsRepository());
   });
 
   tearDown(getIt.reset);
@@ -83,6 +86,28 @@ void main() {
     await tester.tap(find.text('رخص بانتظار التوثيق'));
     await tester.pumpAndSettle();
     expect(find.byType(AdminReviewPage), findsOneWidget);
+  });
+
+  testWidgets('the open tickets open «البلاغات», and back reads again', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminNavigationRoutes.navigationName);
+    await tester.pumpAndSettle();
+    expect(find.text('٥'), findsOneWidget);
+    final reads = repository.reads;
+
+    await tester.tap(find.text('بلاغات مفتوحة'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminReportsPage), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminDashboardPage), findsOneWidget);
+    expect(repository.reads, reads + 1);
   });
 
   testWidgets('the management buttons wait for their screens', (tester) async {

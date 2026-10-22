@@ -32,6 +32,7 @@
     "waiting": "Waiting for review",
     "pending_licenses": "Licenses to verify",
     "pending_deeds": "Deeds to verify",
+    "open_reports": "Open reports",
     "users": "Users",
     "active_users": "Active users",
     "clients": "Clients",

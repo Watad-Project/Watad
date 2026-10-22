@@ -14,13 +14,22 @@ import 'package:watad/features/dashboard/admin/presentation/widgets/admin_dashbo
 import 'package:watad/features/dashboard/admin/presentation/widgets/admin_dashboard_skeleton.dart';
 import 'package:watad/features/dashboard/admin/presentation/widgets/admin_dashboard_tile_grid.dart';
 
-/// «الرئيسية» — the admin's home: what waits for review, the platform's
-/// users, projects and market in numbers, and the management screens.
+/// «الرئيسية» — the admin's home: what waits for review (licenses, deeds
+/// and open tickets), the platform's users, projects and market in numbers,
+/// and the management screens.
 class AdminDashboardPage extends StatelessWidget {
-  const AdminDashboardPage({this.onReviewTap, this.bell, super.key});
+  const AdminDashboardPage({
+    this.onReviewTap,
+    this.onReportsTap,
+    this.bell,
+    super.key,
+  });
 
   /// Opens the «التوثيق» tab, from the pending licenses and deeds.
   final VoidCallback? onReviewTap;
+
+  /// Opens the tickets («البلاغات»), from the open tickets.
+  final VoidCallback? onReportsTap;
 
   /// The notifications bell, lent by that feature (AppSlots.notificationsBell).
   final Widget? bell;
@@ -70,7 +79,11 @@ class AdminDashboardPage extends StatelessWidget {
         ),
         children: [
           const _Section(titleKey: 'dashboard.admin.waiting'),
-          _Waiting(stats: stats, onReviewTap: onReviewTap),
+          _Waiting(
+            stats: stats,
+            onReviewTap: onReviewTap,
+            onReportsTap: onReportsTap,
+          ),
           const _Section(titleKey: 'dashboard.admin.users'),
           _Users(stats: stats),
           const _Section(titleKey: 'dashboard.admin.projects'),
@@ -108,12 +121,18 @@ class _Section extends StatelessWidget {
   );
 }
 
-/// The licenses and deeds waiting in «التوثيق».
+/// The licenses and deeds waiting in «التوثيق», and the tickets nobody
+/// took yet.
 class _Waiting extends StatelessWidget {
-  const _Waiting({required this.stats, required this.onReviewTap});
+  const _Waiting({
+    required this.stats,
+    required this.onReviewTap,
+    required this.onReportsTap,
+  });
 
   final AdminDashboardStats stats;
   final VoidCallback? onReviewTap;
+  final VoidCallback? onReportsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +151,13 @@ class _Waiting extends StatelessWidget {
           icon: Icons.description_outlined,
           isHighlighted: stats.pendingDeeds > 0,
           onTap: onReviewTap,
+        ),
+        AppStatTile(
+          label: context.tr('dashboard.admin.open_reports'),
+          value: context.formatNumber(stats.openReports),
+          icon: Icons.flag_outlined,
+          isHighlighted: stats.openReports > 0,
+          onTap: onReportsTap,
         ),
       ],
     );

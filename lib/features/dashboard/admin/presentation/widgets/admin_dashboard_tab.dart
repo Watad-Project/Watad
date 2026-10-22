@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
+import 'package:watad/core/router/routes/admin_reports_routes.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
 import 'package:watad/features/dashboard/admin/presentation/bloc/admin_dashboard_bloc.dart';
 import 'package:watad/features/dashboard/admin/presentation/pages/admin_dashboard_page.dart';
@@ -54,6 +55,11 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           AdminNavigationRoutes.navigationName,
           queryParameters: {'tab': AdminReviewRoutes.reviewName},
         ),
+        onReportsTap: () async {
+          await context.pushNamed(AdminReportsRoutes.reportsName);
+          // What the admin did there changes the numbers.
+          widget.bloc.add(const AdminDashboardFetched());
+        },
       ),
     );
   }
