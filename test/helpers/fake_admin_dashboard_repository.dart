@@ -21,6 +21,7 @@ const AdminDashboardStats fakeAdminDashboardStats = AdminDashboardStats(
   pendingLicenses: 7,
   pendingDeeds: 4,
   openReports: 5,
+  onlineUsers: 37,
 );
 
 /// A hand-written [AdminDashboardRepository]: it answers with the result you

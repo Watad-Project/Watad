@@ -17,6 +17,7 @@ class AdminDashboardStatsModel extends AdminDashboardStats {
     required super.pendingLicenses,
     required super.pendingDeeds,
     required super.openReports,
+    required super.onlineUsers,
   });
 
   /// Maps the `v_admin_dashboard` row selected in
@@ -39,6 +40,7 @@ class AdminDashboardStatsModel extends AdminDashboardStats {
       pendingLicenses: count('pending_licenses'),
       pendingDeeds: count('pending_deeds'),
       openReports: count('open_reports'),
+      onlineUsers: count('online_users'),
     );
   }
 }

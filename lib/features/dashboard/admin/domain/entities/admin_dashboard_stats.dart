@@ -17,6 +17,7 @@ class AdminDashboardStats {
     required this.pendingLicenses,
     required this.pendingDeeds,
     required this.openReports,
+    required this.onlineUsers,
   });
 
   /// Not deleted and not suspended, admins left out.
@@ -48,4 +49,8 @@ class AdminDashboardStats {
 
   /// Support tickets and reports nobody has taken yet.
   final int openReports;
+
+  /// Users with the app open now (the rule of `is_online`), admins left
+  /// out.
+  final int onlineUsers;
 }

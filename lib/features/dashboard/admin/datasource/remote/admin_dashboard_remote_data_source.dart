@@ -20,7 +20,8 @@ class AdminDashboardRemoteDataSourceImpl
           'active_users, clients, businesses, verified_businesses, projects, '
           'projects_draft, projects_open, projects_in_progress, '
           'projects_completed, projects_cancelled, market_items, '
-          'market_items_live, pending_licenses, pending_deeds, open_reports',
+          'market_items_live, pending_licenses, pending_deeds, open_reports, '
+          'online_users',
         )
         .single();
     return AdminDashboardStatsModel.fromJson(row);
