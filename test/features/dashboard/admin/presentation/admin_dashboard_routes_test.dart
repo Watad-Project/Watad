@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/display/app_donut_chart.dart';
@@ -8,8 +9,10 @@ import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/admin_dashboard_routes.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
+import 'package:watad/core/supabase/app_presence.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/dashboard/admin/presentation/pages/admin_dashboard_page.dart';
+import 'package:watad/features/dashboard/admin/presentation/widgets/admin_dashboard_tab.dart';
 import 'package:watad/features/reports/admin/presentation/pages/admin_reports_page.dart';
 import 'package:watad/features/review/admin/presentation/pages/admin_review_page.dart';
 
@@ -115,6 +118,45 @@ void main() {
     expect(repository.reads, 2);
   });
 
+  testWidgets('someone opening the app, and every minute, reads again', (
+    tester,
+  ) async {
+    final presence = _FakeAppPresence();
+    getIt.registerSingleton<AppPresence>(presence);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminNavigationRoutes.navigationName);
+    await tester.pumpAndSettle();
+    expect(repository.reads, 1);
+
+    // A client opens the app: the numbers are read a moment later.
+    presence.online.value = {'admin-1', 'client-1'};
+    await tester.pump(AdminDashboardTab.presenceSettle);
+    await tester.pumpAndSettle();
+    expect(repository.reads, 2);
+
+    await tester.pump(AdminDashboardTab.refreshEvery);
+    await tester.pumpAndSettle();
+    expect(repository.reads, 3);
+
+    // Hidden behind another tab, it waits.
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(AppBottomNav),
+            matching: find.byType(InkWell),
+          )
+          .at(1),
+    );
+    await tester.pumpAndSettle();
+    presence.online.value = {'admin-1'};
+    await tester.pump(AdminDashboardTab.refreshEvery);
+    await tester.pumpAndSettle();
+    expect(repository.reads, 3);
+  });
+
   testWidgets('a pending count opens the «التوثيق» tab', (tester) async {
     final router = await pumpAppRouter(
       tester,
@@ -197,4 +239,18 @@ void main() {
       expect(tester.takeException(), isNull, reason: chip);
     }
   });
+}
+
+/// The app's presence, with [online] set by the test.
+class _FakeAppPresence implements AppPresence {
+  final ValueNotifier<Set<String>> online = ValueNotifier({'admin-1'});
+
+  @override
+  ValueListenable<Set<String>> get onlineUserIds => online;
+
+  @override
+  void start() {}
+
+  @override
+  Future<void> stop() async {}
 }
