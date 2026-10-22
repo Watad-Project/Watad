@@ -4,7 +4,8 @@ sealed class AdminReportsEvent {
   const AdminReportsEvent();
 }
 
-/// Load the reports, at the start and on pull to refresh.
+/// Load the tickets: at the start, on pull to refresh and back from a
+/// ticket's details.
 final class AdminReportsFetched extends AdminReportsEvent {
   const AdminReportsFetched();
 }
@@ -30,9 +31,23 @@ final class AdminReportUserSuspended extends AdminReportsEvent {
   final AdminReportDecision decision;
 }
 
-/// «إغلاق» or «رفض البلاغ».
+/// «إغلاق» or «رفض البلاغ», after the admin wrote the answer.
 final class AdminReportClosed extends AdminReportsEvent {
   const AdminReportClosed(this.closure);
 
   final AdminReportClosure closure;
+}
+
+/// A status chip was picked.
+final class AdminReportsStatusFilterChanged extends AdminReportsEvent {
+  const AdminReportsStatusFilterChanged(this.filter);
+
+  final AdminReportsStatusFilter filter;
+}
+
+/// All, support or moderation was picked.
+final class AdminReportsTypeFilterChanged extends AdminReportsEvent {
+  const AdminReportsTypeFilterChanged(this.filter);
+
+  final AdminReportsTypeFilter filter;
 }

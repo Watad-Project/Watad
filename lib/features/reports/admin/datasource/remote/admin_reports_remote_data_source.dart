@@ -3,7 +3,10 @@ import 'package:watad/core/enums/report_status.dart';
 import 'package:watad/features/reports/admin/datasource/models/admin_report_model.dart';
 
 abstract interface class AdminReportsRemoteDataSource {
-  Future<List<AdminReportModel>> getOpenReports();
+  Future<List<AdminReportModel>> getReports();
+
+  /// Throws PGRST116 (not found) when no ticket has [reportId].
+  Future<AdminReportModel> getReport(String reportId);
 
   Future<void> assignToMe(String reportId);
 
@@ -11,7 +14,11 @@ abstract interface class AdminReportsRemoteDataSource {
 
   Future<void> suspendUser(String userId, String reason);
 
-  Future<void> close(String reportId, ReportStatus status, {String? note});
+  Future<void> close(
+    String reportId,
+    ReportStatus status, {
+    required String note,
+  });
 }
 
 class AdminReportsRemoteDataSourceImpl implements AdminReportsRemoteDataSource {
@@ -19,20 +26,41 @@ class AdminReportsRemoteDataSourceImpl implements AdminReportsRemoteDataSource {
 
   final SupabaseClient _client;
 
+  static const String _columns =
+      'id, report_type, description, status, target_type, target_id, '
+      'evidence_snapshot, reporter_name, target_user_id, target_user_name, '
+      'assigned_admin_id, assigned_admin_name, resolution_note, created_at, '
+      'resolved_at';
+
+  /// [row] with `assigned_to_me`, for «مسندة لي»: whether it is assigned
+  /// to the signed-in admin.
+  Map<String, dynamic> _withMine(Map<String, dynamic> row) {
+    final myId = _client.auth.currentUser?.id;
+    return {
+      ...row,
+      'assigned_to_me': myId != null && row['assigned_admin_id'] == myId,
+    };
+  }
+
   @override
-  Future<List<AdminReportModel>> getOpenReports() async {
+  Future<List<AdminReportModel>> getReports() async {
     final rows = await _client
         .from('v_admin_help_reports')
-        .select(
-          'id, report_type, status, target_type, target_id, reporter_name, '
-          'target_user_id, target_user_name, created_at',
-        )
-        .inFilter('status', [
-          ReportStatus.open.toJson(),
-          ReportStatus.inReview.toJson(),
-        ])
+        .select(_columns)
         .order('created_at', ascending: false);
-    return rows.map(AdminReportModel.fromJson).toList();
+    return rows
+        .map((row) => AdminReportModel.fromJson(_withMine(row)))
+        .toList();
+  }
+
+  @override
+  Future<AdminReportModel> getReport(String reportId) async {
+    final row = await _client
+        .from('v_admin_help_reports')
+        .select(_columns)
+        .eq('id', reportId)
+        .single();
+    return AdminReportModel.fromJson(_withMine(row));
   }
 
   @override
@@ -64,7 +92,7 @@ class AdminReportsRemoteDataSourceImpl implements AdminReportsRemoteDataSource {
   Future<void> close(
     String reportId,
     ReportStatus status, {
-    String? note,
+    required String note,
   }) async {
     await _client.rpc<void>(
       'admin_resolve_help_report',

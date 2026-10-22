@@ -1,5 +1,6 @@
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/enums/report_status.dart';
+import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report.dart';
@@ -9,6 +10,11 @@ import 'package:watad/features/reports/admin/domain/repositories/admin_reports_r
 /// set and records every call, in order (APP_ARCHITECTURE.md §16).
 class FakeAdminReportsRepository implements AdminReportsRepository {
   Result<List<AdminReport>> reportsResult = const Success([]);
+
+  /// Answers [getReport]: the report of [reportsResult] with that id, or
+  /// [NotFoundFailure], unless set.
+  Result<AdminReport>? reportResult;
+
   Result<void> actionResult = const Success(null);
 
   /// Answers [close]; [actionResult] unless set.
@@ -18,13 +24,27 @@ class FakeAdminReportsRepository implements AdminReportsRepository {
   /// `close r-1 resolved: reason`.
   final List<String> calls = [];
 
-  /// How many times the reports were read.
+  /// How many times the reports, or one report, were read.
   int reads = 0;
 
   @override
-  Future<Result<List<AdminReport>>> getOpenReports() async {
+  Future<Result<List<AdminReport>>> getReports() async {
     reads++;
     return reportsResult;
+  }
+
+  @override
+  Future<Result<AdminReport>> getReport(String reportId) async {
+    reads++;
+    if (reportResult case final result?) return result;
+    final reports = switch (reportsResult) {
+      Success(:final data) => data,
+      Failed() => const <AdminReport>[],
+    };
+    for (final report in reports) {
+      if (report.id == reportId) return Success(report);
+    }
+    return const Failed(NotFoundFailure());
   }
 
   @override
@@ -49,15 +69,14 @@ class FakeAdminReportsRepository implements AdminReportsRepository {
   Future<Result<void>> close(
     String reportId,
     ReportStatus status, {
-    String? note,
+    required String note,
   }) async {
     calls.add('close $reportId ${status.toJson()}: $note');
     return closeResult ?? actionResult;
   }
 }
 
-/// For tests that open the admin's navigation (its «البلاغات» tab) or the
-/// reports route: the real registrations, with [repository] in place of
+/// For tests that open the reports routes: the real registrations, with [repository] in place of
 /// Supabase. Reset getIt after the test.
 void registerFakeAdminReports(FakeAdminReportsRepository repository) {
   registerAdminReportsDependencies(getIt);

@@ -7,6 +7,8 @@ import 'package:watad/features/reports/admin/domain/entities/admin_report.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report_closure.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report_decision.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report_target.dart';
+import 'package:watad/features/reports/admin/domain/entities/admin_reports_status_filter.dart';
+import 'package:watad/features/reports/admin/domain/entities/admin_reports_type_filter.dart';
 import 'package:watad/features/reports/admin/domain/usecases/admin_assign_report_use_case.dart';
 import 'package:watad/features/reports/admin/domain/usecases/admin_close_report_use_case.dart';
 import 'package:watad/features/reports/admin/domain/usecases/admin_get_reports_use_case.dart';
@@ -151,7 +153,11 @@ void main() {
 
     bloc.add(
       const AdminReportClosed(
-        AdminReportClosure(reportId: 'r-1', status: ReportStatus.dismissed),
+        AdminReportClosure(
+          reportId: 'r-1',
+          status: ReportStatus.dismissed,
+          note: 'لا مخالفة',
+        ),
       ),
     );
     var state = await bloc.stream.firstWhere((s) => s.message != null);
@@ -159,15 +165,19 @@ void main() {
 
     bloc.add(
       const AdminReportClosed(
-        AdminReportClosure(reportId: 'r-1', status: ReportStatus.resolved),
+        AdminReportClosure(
+          reportId: 'r-1',
+          status: ReportStatus.resolved,
+          note: 'تم الحل',
+        ),
       ),
     );
     state = await bloc.stream.firstWhere(
       (s) => s.message?.key == 'reports.closed',
     );
     expect(repository.calls, [
-      'close r-1 dismissed: null',
-      'close r-1 resolved: null',
+      'close r-1 dismissed: لا مخالفة',
+      'close r-1 resolved: تم الحل',
     ]);
     await bloc.close();
   });
@@ -182,6 +192,76 @@ void main() {
     expect(state.busyReportId, isNull);
     expect(state.message?.key, 'errors.not_found');
     expect(state.message?.isError, isTrue);
+    await bloc.close();
+  });
+
+  test('the chips and the type show only their tickets, with counts', () async {
+    final mine = AdminReport(
+      id: 'r-2',
+      type: ReportType.fraud,
+      status: ReportStatus.inReview,
+      isAssignedToMe: true,
+      createdAt: DateTime.utc(2026, 10, 19),
+    );
+    final closedFirst = AdminReport(
+      id: 'r-3',
+      type: ReportType.technicalIssue,
+      status: ReportStatus.resolved,
+      createdAt: DateTime.utc(2026, 10, 20),
+      resolvedAt: DateTime.utc(2026, 10, 20, 1),
+    );
+    final closedLast = AdminReport(
+      id: 'r-4',
+      type: ReportType.spam,
+      status: ReportStatus.dismissed,
+      createdAt: DateTime.utc(2026, 10, 17),
+      resolvedAt: DateTime.utc(2026, 10, 21),
+    );
+    repository.reportsResult = Success([closedFirst, mine, open, closedLast]);
+    final bloc = buildBloc()..add(const AdminReportsFetched());
+    final loaded = await bloc.stream.firstWhere(
+      (s) => s.status == AdminReportsStatus.success,
+    );
+    // It opens on «مفتوحة», all types.
+    expect(loaded.visibleReports, [open]);
+    expect(loaded.countOf(AdminReportsStatusFilter.open), 1);
+    expect(loaded.countOf(AdminReportsStatusFilter.inReview), 1);
+    expect(loaded.countOf(AdminReportsStatusFilter.assignedToMe), 1);
+    expect(loaded.countOf(AdminReportsStatusFilter.closed), 2);
+
+    bloc.add(
+      const AdminReportsStatusFilterChanged(AdminReportsStatusFilter.closed),
+    );
+    var state = await bloc.stream.first;
+    // By when they were closed, the latest first.
+    expect(state.visibleReports, [closedLast, closedFirst]);
+
+    bloc.add(
+      const AdminReportsTypeFilterChanged(AdminReportsTypeFilter.support),
+    );
+    state = await bloc.stream.first;
+    expect(state.visibleReports, [closedFirst]);
+    expect(state.countOf(AdminReportsStatusFilter.open), 1);
+    expect(state.countOf(AdminReportsStatusFilter.assignedToMe), 0);
+
+    bloc.add(
+      const AdminReportsStatusFilterChanged(
+        AdminReportsStatusFilter.assignedToMe,
+      ),
+    );
+    bloc.add(
+      const AdminReportsTypeFilterChanged(AdminReportsTypeFilter.moderation),
+    );
+    state = await bloc.stream.elementAt(1);
+    expect(state.visibleReports, [mine]);
+
+    // A reload keeps the chip and the type.
+    bloc.add(const AdminReportsFetched());
+    state = await bloc.stream.firstWhere(
+      (s) => s.status == AdminReportsStatus.success,
+    );
+    expect(state.statusFilter, AdminReportsStatusFilter.assignedToMe);
+    expect(state.typeFilter, AdminReportsTypeFilter.moderation);
     await bloc.close();
   });
 }

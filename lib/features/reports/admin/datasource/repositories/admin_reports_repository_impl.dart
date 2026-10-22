@@ -11,8 +11,12 @@ class AdminReportsRepositoryImpl implements AdminReportsRepository {
   final AdminReportsRemoteDataSource _remote;
 
   @override
-  Future<Result<List<AdminReport>>> getOpenReports() =>
-      guardSupabaseCall(_remote.getOpenReports);
+  Future<Result<List<AdminReport>>> getReports() =>
+      guardSupabaseCall(_remote.getReports);
+
+  @override
+  Future<Result<AdminReport>> getReport(String reportId) =>
+      guardSupabaseCall(() => _remote.getReport(reportId));
 
   @override
   Future<Result<void>> assignToMe(String reportId) =>
@@ -30,6 +34,6 @@ class AdminReportsRepositoryImpl implements AdminReportsRepository {
   Future<Result<void>> close(
     String reportId,
     ReportStatus status, {
-    String? note,
+    required String note,
   }) => guardSupabaseCall(() => _remote.close(reportId, status, note: note));
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:watad/core/router/routes/admin_reports_routes.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
@@ -22,12 +21,7 @@ class AdminNavigationPage extends StatelessWidget {
       selectedIcon: Icons.verified_user,
       routeName: AdminReviewRoutes.reviewName,
     ),
-    NavigationTab(
-      labelKey: 'reports.tab',
-      icon: Icons.flag_outlined,
-      selectedIcon: Icons.flag,
-      routeName: AdminReportsRoutes.reportsName,
-    ),
+    NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),

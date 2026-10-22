@@ -3,10 +3,13 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report.dart';
 
 abstract interface class AdminReportsRepository {
-  /// Open and in-review reports, newest first.
-  Future<Result<List<AdminReport>>> getOpenReports();
+  /// Every ticket, closed ones included, newest first.
+  Future<Result<List<AdminReport>>> getReports();
 
-  /// Assigns the report to the signed-in admin; an open report moves to in
+  /// One ticket; [NotFoundFailure] when there is none with [reportId].
+  Future<Result<AdminReport>> getReport(String reportId);
+
+  /// Assigns the ticket to the signed-in admin; an open ticket moves to in
   /// review.
   Future<Result<void>> assignToMe(String reportId);
 
@@ -17,10 +20,11 @@ abstract interface class AdminReportsRepository {
   /// The user reads [reason].
   Future<Result<void>> suspendUser(String userId, String reason);
 
-  /// [status] is [ReportStatus.resolved] or [ReportStatus.dismissed].
+  /// [status] is [ReportStatus.resolved] or [ReportStatus.dismissed]; the
+  /// user who sent it reads [note].
   Future<Result<void>> close(
     String reportId,
     ReportStatus status, {
-    String? note,
+    required String note,
   });
 }

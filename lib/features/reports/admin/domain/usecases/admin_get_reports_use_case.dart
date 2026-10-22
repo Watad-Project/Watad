@@ -3,7 +3,7 @@ import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report.dart';
 import 'package:watad/features/reports/admin/domain/repositories/admin_reports_repository.dart';
 
-/// The reports still to handle, newest first.
+/// Every ticket, closed ones included, newest first.
 class AdminGetReportsUseCase implements UseCase<List<AdminReport>, NoParams> {
   const AdminGetReportsUseCase(this._repository);
 
@@ -11,5 +11,5 @@ class AdminGetReportsUseCase implements UseCase<List<AdminReport>, NoParams> {
 
   @override
   Future<Result<List<AdminReport>>> call(NoParams params) =>
-      _repository.getOpenReports();
+      _repository.getReports();
 }

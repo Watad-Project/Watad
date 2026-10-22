@@ -67,4 +67,54 @@ void main() {
     expect(model.target, isNull);
     expect(model.reporterName, isNull);
   });
+
+  test('fromJson maps a closed ticket with everything on it', () {
+    final model = AdminReportModel.fromJson({
+      'id': 'r-4',
+      'report_type': 'harassment',
+      'description': 'يرسل رسائل مسيئة بعد رفض عرضه',
+      'status': 'resolved',
+      'target_type': 'message',
+      'target_id': 'm-1',
+      'evidence_snapshot': 'نص الرسالة كما كان وقت البلاغ',
+      'reporter_name': 'سارة',
+      'target_user_id': null,
+      'target_user_name': null,
+      'assigned_admin_id': 'a-1',
+      'assigned_admin_name': 'عمر',
+      'resolution_note': 'أُوقف المرسل',
+      'created_at': '2026-10-18T21:05:00+00:00',
+      'resolved_at': '2026-10-19T08:30:00+00:00',
+      'assigned_to_me': true,
+    });
+
+    expect(model.description, 'يرسل رسائل مسيئة بعد رفض عرضه');
+    expect(model.status, ReportStatus.resolved);
+    expect(model.isClosed, isTrue);
+    expect(model.target, AdminReportTarget.message);
+    expect(model.evidence, 'نص الرسالة كما كان وقت البلاغ');
+    expect(model.assignedAdminName, 'عمر');
+    expect(model.isAssignedToMe, isTrue);
+    expect(model.resolutionNote, 'أُوقف المرسل');
+    expect(model.resolvedAt, DateTime.utc(2026, 10, 19, 8, 30));
+  });
+
+  test('a ticket nobody took is not assigned to me', () {
+    final model = AdminReportModel.fromJson({
+      'id': 'r-5',
+      'report_type': 'other',
+      'description': 'لا أستطيع رفع الصك',
+      'status': 'open',
+      'assigned_admin_id': null,
+      'assigned_admin_name': null,
+      'created_at': '2026-10-18T21:05:00+00:00',
+      'resolved_at': null,
+      'assigned_to_me': false,
+    });
+
+    expect(model.isAssignedToMe, isFalse);
+    expect(model.assignedAdminName, isNull);
+    expect(model.isClosed, isFalse);
+    expect(model.resolvedAt, isNull);
+  });
 }

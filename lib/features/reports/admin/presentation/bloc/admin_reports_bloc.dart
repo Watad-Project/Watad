@@ -6,6 +6,8 @@ import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report_closure.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report_decision.dart';
+import 'package:watad/features/reports/admin/domain/entities/admin_reports_status_filter.dart';
+import 'package:watad/features/reports/admin/domain/entities/admin_reports_type_filter.dart';
 import 'package:watad/features/reports/admin/domain/usecases/admin_assign_report_use_case.dart';
 import 'package:watad/features/reports/admin/domain/usecases/admin_close_report_use_case.dart';
 import 'package:watad/features/reports/admin/domain/usecases/admin_get_reports_use_case.dart';
@@ -15,9 +17,9 @@ import 'package:watad/features/reports/admin/domain/usecases/admin_suspend_repor
 part 'admin_reports_event.dart';
 part 'admin_reports_state.dart';
 
-/// The reports an admin handles, newest first, and the actions on them.
-/// After every action the list is read again, so statuses come from the
-/// server.
+/// Every ticket an admin handles, filtered by status and type, and the
+/// quick actions on them. After every action the list is read again, so
+/// statuses come from the server.
 class AdminReportsBloc extends Bloc<AdminReportsEvent, AdminReportsState> {
   AdminReportsBloc(
     this._getReports,
@@ -27,6 +29,12 @@ class AdminReportsBloc extends Bloc<AdminReportsEvent, AdminReportsState> {
     this._close,
   ) : super(const AdminReportsState()) {
     on<AdminReportsFetched>(_onFetched);
+    on<AdminReportsStatusFilterChanged>(
+      (event, emit) => emit(state.copyWith(statusFilter: event.filter)),
+    );
+    on<AdminReportsTypeFilterChanged>(
+      (event, emit) => emit(state.copyWith(typeFilter: event.filter)),
+    );
     on<AdminReportAssigned>(
       (event, emit) => _act(
         emit,

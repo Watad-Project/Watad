@@ -5,7 +5,9 @@ import 'package:watad/core/usecase/usecase.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report_closure.dart';
 import 'package:watad/features/reports/admin/domain/repositories/admin_reports_repository.dart';
 
-/// «إغلاق» (resolved) or «رفض البلاغ» (dismissed).
+/// «تم الحل» (resolved) or «رفض» (dismissed), with the answer the user
+/// reads: required, and at most [AdminReportClosure.maxNoteLength]
+/// characters.
 class AdminCloseReportUseCase implements UseCase<void, AdminReportClosure> {
   const AdminCloseReportUseCase(this._repository);
 
@@ -17,6 +19,13 @@ class AdminCloseReportUseCase implements UseCase<void, AdminReportClosure> {
         params.status != ReportStatus.dismissed) {
       return const Failed(ValidationFailure('validation.invalid'));
     }
-    return _repository.close(params.reportId, params.status);
+    final note = params.note.trim();
+    if (note.isEmpty) {
+      return const Failed(ValidationFailure('reports.note_required'));
+    }
+    if (note.length > AdminReportClosure.maxNoteLength) {
+      return const Failed(ValidationFailure('reports.note_too_long'));
+    }
+    return _repository.close(params.reportId, params.status, note: note);
   }
 }

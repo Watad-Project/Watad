@@ -4,16 +4,17 @@ import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
 import 'package:watad/core/enums/report_status.dart';
-import 'package:watad/core/enums/report_type.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
-import 'package:watad/core/theme/app_tone.dart';
 import 'package:watad/features/reports/admin/domain/entities/admin_report.dart';
-import 'package:watad/features/reports/admin/domain/entities/admin_report_target.dart';
+import 'package:watad/features/reports/admin/presentation/widgets/admin_report_labels.dart';
 import 'package:watad/features/reports/admin/presentation/widgets/admin_reports_time_ago.dart';
 
-/// One report: «النوع — الهدف», who sent it and when, who was reported, its
-/// status, and the actions its status and target allow:
+/// One ticket: «النوع — الهدف», who sent it and when, who was reported, its
+/// status and who it is assigned to. A tap opens its details.
+///
+/// A ticket still to handle also has the quick actions its status and
+/// target allow (a closed one has none):
 ///
 /// - open: «إسناد لي»;
 /// - a listing in review: «حذف الإعلان» and «إغلاق»;
@@ -24,6 +25,7 @@ class AdminReportCard extends StatelessWidget {
     required this.report,
     required this.now,
     required this.isBusy,
+    required this.onTap,
     required this.onAssign,
     required this.onRemoveListing,
     required this.onSuspendUser,
@@ -35,57 +37,37 @@ class AdminReportCard extends StatelessWidget {
   final AdminReport report;
   final DateTime now;
 
-  /// An action on this report is being sent.
+  /// An action on this ticket is being sent.
   final bool isBusy;
+  final VoidCallback onTap;
   final VoidCallback onAssign;
   final ValueChanged<String> onRemoveListing;
   final ValueChanged<String> onSuspendUser;
   final VoidCallback onClose;
   final VoidCallback onDismiss;
 
-  static String _typeKey(ReportType type) => switch (type) {
-    ReportType.fraud => 'reports.type_fraud',
-    ReportType.scam => 'reports.type_scam',
-    ReportType.harassment => 'reports.type_harassment',
-    ReportType.spam => 'reports.type_spam',
-    ReportType.inappropriateContent => 'reports.type_inappropriate_content',
-    ReportType.paymentIssue => 'reports.type_payment_issue',
-    ReportType.technicalIssue => 'reports.type_technical_issue',
-    ReportType.other => 'reports.type_other',
-  };
-
-  static String _targetKey(AdminReportTarget target) => switch (target) {
-    AdminReportTarget.user => 'reports.target_user',
-    AdminReportTarget.project => 'reports.target_project',
-    AdminReportTarget.marketplaceItem => 'reports.target_marketplace_item',
-    AdminReportTarget.order => 'reports.target_order',
-    AdminReportTarget.review => 'reports.target_review',
-    AdminReportTarget.message => 'reports.target_message',
-  };
-
   @override
   Widget build(BuildContext context) {
-    final type = context.tr(_typeKey(report.type));
-    final target = report.target;
-    final title = target == null
-        ? type
-        : '$type — ${context.tr(_targetKey(target))}';
     final time = AdminReportsTimeAgo.format(context, report.createdAt, now);
     final reporter = report.reporterName;
     final reported = report.targetUserName;
-    final isOpen = report.status == ReportStatus.open;
     return AppCard(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              Expanded(child: Text(title, style: AppTextStyles.label)),
-              AppStatusBadge(
-                label: context.tr(
-                  isOpen ? 'reports.status_open' : 'reports.status_in_review',
+              Expanded(
+                child: Text(
+                  AdminReportLabels.title(context, report),
+                  style: AppTextStyles.label,
                 ),
-                tone: isOpen ? AppTone.attention : AppTone.neutral,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              AppStatusBadge(
+                label: context.tr(AdminReportLabels.statusKey(report.status)),
+                tone: AdminReportLabels.statusTone(report.status),
               ),
             ],
           ),
@@ -101,8 +83,14 @@ class AdminReportCard extends StatelessWidget {
               context.tr('reports.reported_user', args: [reported]),
               style: AppTextStyles.caption,
             ),
-          const SizedBox(height: AppSpacing.md),
-          _actions(context),
+          Text(
+            AdminReportLabels.assignee(context, report),
+            style: AppTextStyles.caption,
+          ),
+          if (!report.isClosed) ...[
+            const SizedBox(height: AppSpacing.md),
+            _actions(context),
+          ],
         ],
       ),
     );
