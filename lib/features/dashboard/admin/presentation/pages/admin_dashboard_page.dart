@@ -141,11 +141,19 @@ class AdminDashboardPage extends StatelessWidget {
   }
 }
 
-/// «٥٧ · ١٤٪»: a count and its share of [total], in the app's digits.
+/// «٥٧، ١٤٪»: a count and its share of [total], in the app's digits.
 String _countAndShare(BuildContext context, int count, int total) {
   final share = total == 0 ? 0 : (count * 100 / total).round();
-  return '${context.formatNumber(count)} · '
-      '${context.tr('dashboard.admin.percent', args: [context.formatNumber(share)])}';
+  return context.tr(
+    'dashboard.admin.count_share',
+    args: [
+      context.formatNumber(count),
+      context.tr(
+        'dashboard.admin.percent',
+        args: [context.formatNumber(share)],
+      ),
+    ],
+  );
 }
 
 /// A chart in a card, under its title.
