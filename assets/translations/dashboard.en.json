@@ -37,9 +37,7 @@
     "active_users": "Active users",
     "clients": "Clients",
     "businesses": "Businesses",
-    "verified_count": "{} verified",
     "projects": "Projects",
-    "projects_total": "All projects",
     "status_draft": "Draft",
     "status_open": "Open",
     "status_in_progress": "In progress",
@@ -51,6 +49,12 @@
     "manage": "Management",
     "manage_users": "Manage users",
     "manage_market": "Manage market items",
-    "coming_soon": "Soon"
+    "coming_soon": "Soon",
+    "users_chart": "Clients and businesses",
+    "verified_businesses": "Verified businesses",
+    "projects_chart": "Projects by status",
+    "market_items_hidden": "Not on the market",
+    "of_total": "{} of {}",
+    "percent": "{}%"
   }
 }

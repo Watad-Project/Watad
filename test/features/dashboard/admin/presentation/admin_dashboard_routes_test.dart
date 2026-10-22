@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/components/display/app_donut_chart.dart';
+import 'package:watad/core/components/display/app_meter.dart';
 import 'package:watad/core/components/layout/app_bottom_nav.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/failure.dart';
@@ -43,9 +45,44 @@ void main() {
 
     expect(currentPath(router), AdminDashboardRoutes.dashboardPath);
     expect(find.byType(AdminDashboardPage), findsOneWidget);
-    // Arabic-Indic digits with separators.
+    // It opens on what waits for review.
+    expect(find.text('رخص بانتظار التوثيق'), findsOneWidget);
+    expect(find.text('٧'), findsOneWidget);
+  });
+
+  testWidgets('the chips switch to the users, projects and market charts', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminDashboardRoutes.dashboardName);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('المستخدمون'));
+    await tester.pumpAndSettle();
+    // Arabic-Indic digits with separators: the active users, and the
+    // clients and businesses in the middle of the ring.
+    expect(find.text('١٬٢١٠'), findsOneWidget);
     expect(find.text('١٬٢٤٠'), findsOneWidget);
-    expect(find.text('٢١٢ موثّقة'), findsOneWidget);
+    expect(find.byType(AppDonutChart), findsOneWidget);
+    // 980 clients of 1,240 users.
+    expect(find.text('٩٨٠ · ٧٩٪'), findsOneWidget);
+    expect(find.text('٢١٢ من ٢٦٠'), findsOneWidget);
+
+    await tester.tap(find.text('المشاريع').first);
+    await tester.pumpAndSettle();
+    expect(find.text('المشاريع حسب الحالة'), findsOneWidget);
+    // 219 of 418 projects are completed.
+    expect(find.text('٢١٩ · ٥٢٪'), findsOneWidget);
+
+    await tester.tap(find.text('السوق'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppMeter), findsOneWidget);
+    expect(find.text('٥٨٨ · ٩٢٪'), findsOneWidget);
+    // 640 listed, 588 on the market.
+    expect(find.text('٥٢'), findsOneWidget);
   });
 
   testWidgets('admins land on it, and it reads again each time it shows', (
@@ -118,7 +155,8 @@ void main() {
     router.goNamed(AdminDashboardRoutes.dashboardName);
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(find.text('إدارة منتجات السوق'), 200);
+    await tester.ensureVisible(find.text('إدارة منتجات السوق'));
+    await tester.pumpAndSettle();
     expect(find.text('قريباً'), findsNWidgets(2));
   });
 
@@ -134,10 +172,10 @@ void main() {
     repository.statsResult = const Success(fakeAdminDashboardStats);
     await tester.tap(find.text('إعادة المحاولة'));
     await tester.pumpAndSettle();
-    expect(find.text('١٬٢٤٠'), findsOneWidget);
+    expect(find.text('رخص بانتظار التوثيق'), findsOneWidget);
   });
 
-  testWidgets('fits large bold text', (tester) async {
+  testWidgets('fits large bold text, on every chip', (tester) async {
     final router = await pumpAppRouter(
       tester,
       session: FakeAppSession()..signIn(AppRole.admin),
@@ -146,8 +184,14 @@ void main() {
     );
     router.goNamed(AdminDashboardRoutes.dashboardName);
     await tester.pumpAndSettle();
-
     expect(find.byType(AdminDashboardPage), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    for (final chip in ['المستخدمون', 'المشاريع', 'السوق']) {
+      await tester.ensureVisible(find.text(chip).first);
+      await tester.tap(find.text(chip).first);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: chip);
+    }
   });
 }

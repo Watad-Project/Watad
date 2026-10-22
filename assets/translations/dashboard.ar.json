@@ -37,9 +37,7 @@
     "active_users": "المستخدمون النشطون",
     "clients": "العملاء",
     "businesses": "المنشآت",
-    "verified_count": "{} موثّقة",
     "projects": "المشاريع",
-    "projects_total": "كل المشاريع",
     "status_draft": "مسودة",
     "status_open": "مفتوح",
     "status_in_progress": "قيد التنفيذ",
@@ -51,6 +49,12 @@
     "manage": "الإدارة",
     "manage_users": "إدارة المستخدمين",
     "manage_market": "إدارة منتجات السوق",
-    "coming_soon": "قريباً"
+    "coming_soon": "قريباً",
+    "users_chart": "العملاء والمنشآت",
+    "verified_businesses": "المنشآت الموثّقة",
+    "projects_chart": "المشاريع حسب الحالة",
+    "market_items_hidden": "غير معروضة",
+    "of_total": "{} من {}",
+    "percent": "{}٪"
   }
 }
