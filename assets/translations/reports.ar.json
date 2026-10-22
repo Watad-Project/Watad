@@ -5,6 +5,7 @@
   "status_in_review": "قيد المراجعة",
   "reporter": "المُبلِّغ: {}",
   "reported_user": "المُبلَّغ عنه: {}",
+  "reporter_and_time": "{}، {}",
   "type_fraud": "احتيال",
   "type_scam": "نصب",
   "type_harassment": "إزعاج",

@@ -5,6 +5,7 @@
   "status_in_review": "In review",
   "reporter": "Reported by {}",
   "reported_user": "Reported: {}",
+  "reporter_and_time": "{} · {}",
   "type_fraud": "Fraud",
   "type_scam": "Scam",
   "type_harassment": "Harassment",

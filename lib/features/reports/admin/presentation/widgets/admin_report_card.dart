@@ -75,7 +75,13 @@ class AdminReportCard extends StatelessWidget {
           Text(
             reporter == null
                 ? time
-                : '${context.tr('reports.reporter', args: [reporter])} · $time',
+                : context.tr(
+                    'reports.reporter_and_time',
+                    args: [
+                      context.tr('reports.reporter', args: [reporter]),
+                      time,
+                    ],
+                  ),
             style: AppTextStyles.caption,
           ),
           if (reported != null)
