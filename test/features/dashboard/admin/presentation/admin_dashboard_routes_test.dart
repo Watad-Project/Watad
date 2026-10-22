@@ -201,7 +201,7 @@ void main() {
     expect(repository.reads, reads + 1);
   });
 
-  testWidgets('users management is open; the market waits for GRA-46', (
+  testWidgets('every management button is open, none says «قريباً»', (
     tester,
   ) async {
     final router = await pumpAppRouter(
@@ -214,7 +214,8 @@ void main() {
 
     await tester.ensureVisible(find.text('إدارة منتجات السوق'));
     await tester.pumpAndSettle();
-    expect(find.text('قريباً'), findsOneWidget);
+    expect(find.text('إدارة المستخدمين'), findsOneWidget);
+    expect(find.text('قريباً'), findsNothing);
   });
 
   testWidgets('a failed read offers to try again', (tester) async {

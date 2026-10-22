@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:watad/core/router/routes/admin_marketplace_routes.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/admin_reports_routes.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
@@ -109,6 +110,11 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           AdminNavigationRoutes.navigationName,
           queryParameters: {'tab': AdminReviewRoutes.reviewName},
         ),
+        onMarketTap: () async {
+          await context.pushNamed(AdminMarketplaceRoutes.marketplaceName);
+          // A removed listing changes the market numbers.
+          _fetch();
+        },
         onUsersTap: () async {
           await context.pushNamed(AdminUsersRoutes.usersName);
           // A suspension or a new admin changes the numbers.

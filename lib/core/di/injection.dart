@@ -9,6 +9,7 @@ import 'package:watad/features/home/client/client_home_injection.dart';
 import 'package:watad/features/kyc/contractor/contractor_kyc_injection.dart';
 import 'package:watad/features/kyc/shared/kyc_injection.dart';
 import 'package:watad/features/location/shared/location_injection.dart';
+import 'package:watad/features/marketplace/admin/admin_marketplace_injection.dart';
 import 'package:watad/features/notifications/shared/notifications_injection.dart';
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
@@ -35,6 +36,7 @@ void configureDependencies() {
 
   // Features: one line per role folder, in alphabetical order.
   registerAdminDashboardDependencies(getIt);
+  registerAdminMarketplaceDependencies(getIt);
   registerAdminReportsDependencies(getIt);
   registerAdminReviewDependencies(getIt);
   registerAdminUsersDependencies(getIt);

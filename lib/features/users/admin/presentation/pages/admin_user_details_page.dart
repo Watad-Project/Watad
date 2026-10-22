@@ -78,10 +78,12 @@ class AdminUserDetailsPage extends StatelessWidget {
             }
           },
         ),
-        null => const Padding(
-          key: ValueKey('loading'),
-          padding: EdgeInsetsDirectional.all(AppSpacing.md),
-          child: AdminUsersSkeleton(),
+        // A list, so the skeleton never runs off a small screen.
+        null => ListView(
+          key: const ValueKey('loading'),
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+          children: const [AdminUsersSkeleton()],
         ),
       };
     }

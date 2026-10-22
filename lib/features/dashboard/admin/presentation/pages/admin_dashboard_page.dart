@@ -27,6 +27,7 @@ class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({
     this.onReviewTap,
     this.onUsersTap,
+    this.onMarketTap,
     this.onReportsTap,
     this.bell,
     super.key,
@@ -37,6 +38,9 @@ class AdminDashboardPage extends StatelessWidget {
 
   /// Opens «إدارة المستخدمين».
   final VoidCallback? onUsersTap;
+
+  /// Opens «إدارة منتجات السوق».
+  final VoidCallback? onMarketTap;
 
   /// Opens the tickets («البلاغات»), from the open tickets.
   final VoidCallback? onReportsTap;
@@ -148,6 +152,7 @@ class AdminDashboardPage extends StatelessWidget {
           AdminDashboardShortcut(
             label: context.tr('dashboard.admin.manage_market'),
             icon: Icons.storefront_outlined,
+            onTap: onMarketTap,
           ),
         ],
       ),
