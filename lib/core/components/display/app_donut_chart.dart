@@ -18,7 +18,7 @@ class AppDonutSlice {
   final String label;
   final int value;
 
-  /// [value] written for the app's language, e.g. «٥٧ · ١٤٪».
+  /// [value] written for the app's language, e.g. «٥٧، ١٤٪».
   final String valueLabel;
 }
 

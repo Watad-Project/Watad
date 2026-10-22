@@ -71,19 +71,19 @@ void main() {
     expect(find.text('١٬٢٤٠'), findsOneWidget);
     expect(find.byType(AppDonutChart), findsOneWidget);
     // 980 clients of 1,240 users.
-    expect(find.text('٩٨٠ · ٧٩٪'), findsOneWidget);
+    expect(find.text('٩٨٠، ٧٩٪'), findsOneWidget);
     expect(find.text('٢١٢ من ٢٦٠'), findsOneWidget);
 
     await tester.tap(find.text('المشاريع').first);
     await tester.pumpAndSettle();
     expect(find.text('المشاريع حسب الحالة'), findsOneWidget);
     // 219 of 418 projects are completed.
-    expect(find.text('٢١٩ · ٥٢٪'), findsOneWidget);
+    expect(find.text('٢١٩، ٥٢٪'), findsOneWidget);
 
     await tester.tap(find.text('السوق'));
     await tester.pumpAndSettle();
     expect(find.byType(AppMeter), findsOneWidget);
-    expect(find.text('٥٨٨ · ٩٢٪'), findsOneWidget);
+    expect(find.text('٥٨٨، ٩٢٪'), findsOneWidget);
     // 640 listed, 588 on the market.
     expect(find.text('٥٢'), findsOneWidget);
   });

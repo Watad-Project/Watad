@@ -12,13 +12,13 @@ void main() {
       tester,
       const AppMeter(
         label: 'معروضة الآن',
-        valueLabel: '٥٨٨ من ٦٤٠ · ٩٢٪',
+        valueLabel: '٥٨٨ من ٦٤٠، ٩٢٪',
         fraction: 0.92,
       ),
     );
 
     expect(find.text('معروضة الآن'), findsOneWidget);
-    expect(find.text('٥٨٨ من ٦٤٠ · ٩٢٪'), findsOneWidget);
+    expect(find.text('٥٨٨ من ٦٤٠، ٩٢٪'), findsOneWidget);
     final bar = tester.widget<LinearProgressIndicator>(
       find.byType(LinearProgressIndicator),
     );

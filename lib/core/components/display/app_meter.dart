@@ -16,7 +16,7 @@ class AppMeter extends StatelessWidget {
   /// What the share is, e.g. «معروضة الآن».
   final String label;
 
-  /// The share in words, for the app's language, e.g. «٥٨٨ من ٦٤٠ · ٩٢٪».
+  /// The share in words, for the app's language, e.g. «٥٨٨ من ٦٤٠، ٩٢٪».
   final String valueLabel;
 
   /// 0 to 1; anything outside is clamped.

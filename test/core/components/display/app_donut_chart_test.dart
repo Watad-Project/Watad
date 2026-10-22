@@ -7,9 +7,9 @@ import '../../../helpers/pump_component.dart';
 
 void main() {
   const slices = [
-    AppDonutSlice(label: 'مسودة', value: 31, valueLabel: '٣١ · ٧٪'),
-    AppDonutSlice(label: 'مفتوح', value: 57, valueLabel: '٥٧ · ١٤٪'),
-    AppDonutSlice(label: 'ملغي', value: 0, valueLabel: '٠ · ٠٪'),
+    AppDonutSlice(label: 'مسودة', value: 31, valueLabel: '٣١، ٧٪'),
+    AppDonutSlice(label: 'مفتوح', value: 57, valueLabel: '٥٧، ١٤٪'),
+    AppDonutSlice(label: 'ملغي', value: 0, valueLabel: '٠، ٠٪'),
   ];
 
   testWidgets('names every slice with its number, and the total', (
@@ -61,8 +61,8 @@ void main() {
         body: SingleChildScrollView(
           child: AppDonutChart(
             slices: [
-              AppDonutSlice(label: 'العملاء', value: 0, valueLabel: '٠ · ٠٪'),
-              AppDonutSlice(label: 'المنشآت', value: 0, valueLabel: '٠ · ٠٪'),
+              AppDonutSlice(label: 'العملاء', value: 0, valueLabel: '٠، ٠٪'),
+              AppDonutSlice(label: 'المنشآت', value: 0, valueLabel: '٠، ٠٪'),
             ],
             centerValue: '٠',
             centerLabel: 'المستخدمون',
