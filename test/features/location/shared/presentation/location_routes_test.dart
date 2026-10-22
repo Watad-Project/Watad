@@ -6,14 +6,19 @@ import 'package:watad/core/router/routes/location_routes.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
 import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
 import 'package:watad/features/location/shared/domain/usecases/geocode_coordinates_use_case.dart';
+import 'package:watad/features/location/shared/domain/usecases/get_place_use_case.dart';
 import 'package:watad/features/location/shared/domain/usecases/save_address_use_case.dart';
+import 'package:watad/features/location/shared/domain/usecases/search_places_use_case.dart';
 import 'package:watad/features/location/shared/presentation/bloc/location_bloc.dart';
 import 'package:watad/features/location/shared/presentation/pages/location_page.dart';
 
 import '../../../../helpers/fake_auth_repository.dart';
+import '../../../../helpers/fake_place_search.dart';
 import '../../../../helpers/pump_router.dart';
 
-class _FakeLocationRepository implements LocationRepository {
+class _FakeLocationRepository
+    with FakePlaceSearch
+    implements LocationRepository {
   @override
   Future<Result<List<LocationAddress>>> getSavedAddresses() async =>
       const Success([]);
@@ -60,6 +65,8 @@ void main() {
       () => LocationBloc(
         SaveAddressUseCase(repo),
         GeocodeCoordinatesUseCase(repo),
+        SearchPlacesUseCase(repo),
+        GetPlaceUseCase(repo),
       ),
     );
   });

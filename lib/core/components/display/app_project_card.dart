@@ -36,13 +36,15 @@ class AppProjectCard extends StatelessWidget {
   final String statusLabel;
   final AppTone statusTone;
 
-  /// From 0 to 1.
-  final double progress;
+  /// From 0 to 1. Null: nothing to measure yet (no tasks), so no bar and
+  /// no percentage; [progressLabel] says why, e.g. "Planning".
+  final double? progress;
 
-  /// E.g. "3 of 5 tasks".
-  final String progressLabel;
+  /// E.g. "3 of 5 tasks". Null with a null [progress]: no progress at all
+  /// (a project still waiting for offers).
+  final String? progressLabel;
 
-  /// E.g. "60%".
+  /// E.g. "60%". Not shown without [progress].
   final String percentLabel;
 
   /// E.g. "January → August 2026".
@@ -96,25 +98,33 @@ class AppProjectCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption,
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                ClipRRect(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(AppRadius.pill),
-                  ),
-                  child: LinearProgressIndicator(
-                    value: progress.clamp(0, 1),
-                    minHeight: 6,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(progressLabel, style: AppTextStyles.caption),
+                if (progress != null || progressLabel != null)
+                  const SizedBox(height: AppSpacing.sm),
+                if (progress case final progress?) ...[
+                  ClipRRect(
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(AppRadius.pill),
                     ),
-                    Text(percentLabel, style: AppTextStyles.caption),
-                  ],
-                ),
+                    child: LinearProgressIndicator(
+                      value: progress.clamp(0, 1),
+                      minHeight: 6,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                ],
+                if (progress != null || progressLabel != null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          progressLabel ?? '',
+                          style: AppTextStyles.caption,
+                        ),
+                      ),
+                      if (progress != null)
+                        Text(percentLabel, style: AppTextStyles.caption),
+                    ],
+                  ),
                 const Divider(height: AppSpacing.xl),
                 Row(
                   children: [

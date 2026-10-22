@@ -13,16 +13,26 @@ final class LocationStarted extends LocationEvent {
   final bool showSaveToggle;
 }
 
-/// The user typed in the search bar.
+/// The user typed in the search bar: a city, district or street.
 final class LocationSearchQueryChanged extends LocationEvent {
-  const LocationSearchQueryChanged(this.query);
+  const LocationSearchQueryChanged(this.query, {this.language = 'ar'});
 
   final String query;
+
+  /// The app's language, for the suggestions' names.
+  final String language;
 }
 
-/// The user submitted the search field.
+/// The user pressed the keyboard's search key.
 final class LocationSearchSubmitted extends LocationEvent {
   const LocationSearchSubmitted();
+}
+
+/// The user picked a suggestion: the map moves there.
+final class LocationSuggestionSelected extends LocationEvent {
+  const LocationSuggestionSelected(this.suggestion);
+
+  final LocationSuggestion suggestion;
 }
 
 /// The pin position or map center changed.

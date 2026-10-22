@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/features/projects/client/domain/entities/client_accept_offer_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
+import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_create_address_use_case.dart';
@@ -34,6 +38,27 @@ class _FakeClientProjectsRepository implements ClientProjectsRepository {
     required String buildingNumber,
     required String postalCode,
   }) async => Success(createdAddress);
+
+  // Not used by these tests (GRA-24's «مشاريعي»).
+  @override
+  Future<Result<List<ClientProject>>> getMyProjects() =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<ClientProject>> getProject(String projectId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<List<ClientProjectOffer>>> getOffers(String projectId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<void>> acceptOffer(ClientAcceptOfferParams params) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<void>> replaceDeed(ClientReplaceDeedParams params) =>
+      throw UnimplementedError();
 }
 
 void main() {
