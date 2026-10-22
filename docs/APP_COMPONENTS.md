@@ -79,6 +79,7 @@ A Registry row looks like this. Put the type names in backticks in the first col
 | `AppBusinessMiniCard` | `display/app_business_mini_card.dart` | Small business card for horizontal lists: the photo in a circle (`AppAvatar`, the default avatar without one), verified name, rating, projects, and a `location` line (e.g. the city); `heightOf(context, withLocation:)` gives the height a row or grid needs at the phone's text size | `name`, `ratingLabel`, `projectsLabel`, `isVerified`, `imageUrl`, `location`, `onTap` | 2026-10-19 |
 | `AppKeyValueList`, `AppKeyValueRow` | `display/app_key_value_list.dart` | Label-value lines in a quiet panel, with an optional copy action (bank transfer, receipt, order details) | `rows` (`label`, `value`, `isMonospace`, `isCopyable`, `copyValue`), `onCopied` | 2026-10-09 |
 | `AppMoneyText` | `display/app_money_text.dart` | An amount in SAR for the app's language («٤٦٥٬٠٠٠ ر.س», "465,000 SAR"), the currency smaller; `AppMoneyText.format()` for inside other text | `money`, `style` | 2026-10-19 |
+| `AppStatTile` | `display/app_stat_tile.dart` | One number at a glance: a label, the number in large type, an optional line under it; with `onTap`, an arrow and it opens what it counts (admin dashboard) | `label`, `value` (already formatted), `caption`, `icon`, `isHighlighted`, `onTap` | 2026-10-22 |
 | `AppStateStepper` | `display/app_state_stepper.dart` | The states something goes through, in a row, reached ones in orange (task: proposed → paid) | `labels`, `currentIndex` | 2026-10-09 |
 | `AppStatusCard` | `feedback/app_status_card.dart` | Where a submission stands: pending, rejected with reason and retry, accepted (receipts, task updates, refunds, verification) | `tone`, `title`, `subtitle`, `reasonTitle`, `reasonText`, `action` | 2026-10-09 |
 | `AppSnackBar`, `AppSnackBarContext` | `feedback/app_snack_bar.dart` | Short messages at the bottom: `context.showSnackBar()`, `showSuccessSnackBar()`, `showErrorSnackBar()` (6 s; `onRetry` adds "Try again"), `hideSnackBar()`. A new one replaces the one on screen. The doc comment says how to write the message | `message`, `tone`, `actionLabel`, `onAction`, `duration`, `onRetry` | 2026-10-09 |
@@ -126,5 +127,6 @@ Almost every screen needs these components. Some exist already (see the Registry
 | User or business avatar (takes an image URL) | `AppAvatar` | `display/app_avatar.dart` |
 | Status chip for project, offer, task, payment and order statuses | `AppStatusBadge` | `display/app_status_badge.dart` |
 | An amount in SAR (formats `Money`) | `AppMoneyText` | `display/app_money_text.dart` |
+| A number at a glance (dashboards) | `AppStatTile` | `display/app_stat_tile.dart` |
 | Network image with placeholder and error state | `AppNetworkImage` | `display/app_network_image.dart` |
 | Star rating, to show or to pick | `AppRatingStars` | `display/app_rating_stars.dart` |

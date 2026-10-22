@@ -25,5 +25,31 @@
     "verification_unverified": "غير موثّق",
     "verification_verified": "رخصة موثّقة",
     "your_offer": "عرضك {amount} {currency}"
+  },
+  "admin": {
+    "tab": "الرئيسية",
+    "title": "الرئيسية",
+    "waiting": "بانتظار المراجعة",
+    "pending_licenses": "رخص بانتظار التوثيق",
+    "pending_deeds": "صكوك بانتظار التوثيق",
+    "users": "المستخدمون",
+    "active_users": "المستخدمون النشطون",
+    "clients": "العملاء",
+    "businesses": "المنشآت",
+    "verified_count": "{} موثّقة",
+    "projects": "المشاريع",
+    "projects_total": "كل المشاريع",
+    "status_draft": "مسودة",
+    "status_open": "مفتوح",
+    "status_in_progress": "قيد التنفيذ",
+    "status_completed": "مكتمل",
+    "status_cancelled": "ملغي",
+    "market": "السوق",
+    "market_items": "منتجات السوق",
+    "market_items_live": "معروضة الآن",
+    "manage": "الإدارة",
+    "manage_users": "إدارة المستخدمين",
+    "manage_market": "إدارة منتجات السوق",
+    "coming_soon": "قريباً"
   }
 }

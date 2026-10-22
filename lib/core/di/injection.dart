@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/core/supabase/app_presence.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/auth_injection.dart';
+import 'package:watad/features/dashboard/admin/admin_dashboard_injection.dart';
 import 'package:watad/features/dashboard/contractor/contractor_dashboard_injection.dart';
 import 'package:watad/features/home/client/client_home_injection.dart';
 import 'package:watad/features/kyc/contractor/contractor_kyc_injection.dart';
@@ -32,6 +33,7 @@ void configureDependencies() {
     ..registerLazySingleton<AppPresence>(() => SupabaseAppPresence(getIt()));
 
   // Features: one line per role folder, in alphabetical order.
+  registerAdminDashboardDependencies(getIt);
   registerAdminReportsDependencies(getIt);
   registerAdminReviewDependencies(getIt);
   registerAuthDependencies(getIt);
