@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/location/shared/datasource/models/location_address_model.dart';
+import 'package:watad/features/location/shared/datasource/models/location_place_model.dart';
+import 'package:watad/features/location/shared/datasource/models/location_suggestion_model.dart';
 
 /// Remote data source for user saved addresses in Supabase.
 abstract interface class LocationRemoteDataSource {
@@ -29,6 +31,18 @@ abstract interface class LocationRemoteDataSource {
     required double lat,
     required double lng,
   });
+
+  /// The `geocode` Edge Function's search: places matching [query], near
+  /// [nearLatitude], [nearLongitude] when given.
+  Future<List<LocationSuggestionModel>> searchPlaces({
+    required String query,
+    required String language,
+    double? nearLatitude,
+    double? nearLongitude,
+  });
+
+  /// The `geocode` Edge Function's place request: where [placeId] is.
+  Future<LocationPlaceModel> getPlace(String placeId);
 }
 
 /// Implementation of [LocationRemoteDataSource] using [SupabaseClient].
@@ -126,5 +140,42 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
       return Map<String, dynamic>.from(data);
     }
     return <String, dynamic>{};
+  }
+
+  @override
+  Future<List<LocationSuggestionModel>> searchPlaces({
+    required String query,
+    required String language,
+    double? nearLatitude,
+    double? nearLongitude,
+  }) async {
+    final response = await _client.functions.invoke(
+      'geocode',
+      body: {
+        'query': query,
+        'language': language,
+        'lat': ?nearLatitude,
+        'lng': ?nearLongitude,
+      },
+    );
+    final data = Map<String, dynamic>.from(response.data as Map);
+    return (data['suggestions'] as List<dynamic>? ?? const [])
+        .map(
+          (row) => LocationSuggestionModel.fromJson(
+            Map<String, dynamic>.from(row as Map),
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<LocationPlaceModel> getPlace(String placeId) async {
+    final response = await _client.functions.invoke(
+      'geocode',
+      body: {'place_id': placeId},
+    );
+    return LocationPlaceModel.fromJson(
+      Map<String, dynamic>.from(response.data as Map),
+    );
   }
 }

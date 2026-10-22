@@ -5,70 +5,68 @@ import 'package:watad/core/components/feedback/app_confirm_dialog.dart';
 import '../../../helpers/pump_component.dart';
 
 void main() {
-  testWidgets('AppConfirmDialog.show returns true when confirmed', (
-    tester,
-  ) async {
-    bool? result;
+  /// Opens the dialog from a button and keeps what it returns.
+  Future<List<String?>> open(WidgetTester tester, {String? reasonLabel}) async {
+    final results = <String?>[];
     await pumpLocalizedApp(
       tester,
       Scaffold(
         body: Builder(
           builder: (context) => TextButton(
-            onPressed: () async {
-              result = await AppConfirmDialog.show(
+            onPressed: () async => results.add(
+              await AppConfirmDialog.show(
                 context,
-                title: 'سحب العرض',
-                message: 'هل أنت متأكد من سحب العرض؟',
-                confirmLabel: 'سحب',
-              );
-            },
+                title: 'إيقاف المستخدم؟',
+                message: 'سيرى المستخدم السبب.',
+                confirmLabel: 'إيقاف',
+                reasonLabel: reasonLabel,
+              ),
+            ),
             child: const Text('open'),
           ),
         ),
       ),
     );
-
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
+    return results;
+  }
 
-    expect(find.text('سحب العرض'), findsOneWidget);
-    expect(find.text('هل أنت متأكد من سحب العرض؟'), findsOneWidget);
+  testWidgets('confirming without a reason field returns an empty reason', (
+    tester,
+  ) async {
+    final results = await open(tester);
 
-    await tester.tap(find.text('سحب'));
+    expect(find.text('إيقاف المستخدم؟'), findsOneWidget);
+    expect(find.text('سيرى المستخدم السبب.'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+    await tester.tap(find.text('إيقاف'));
     await tester.pumpAndSettle();
-
-    expect(result, isTrue);
+    expect(results, ['']);
   });
 
-  testWidgets('AppConfirmDialog.show returns false when cancelled', (
+  testWidgets('a required reason must be written before confirming', (
     tester,
   ) async {
-    bool? result;
-    await pumpLocalizedApp(
-      tester,
-      Scaffold(
-        body: Builder(
-          builder: (context) => TextButton(
-            onPressed: () async {
-              result = await AppConfirmDialog.show(
-                context,
-                title: 'سحب العرض',
-                message: 'هل أنت متأكد من سحب العرض؟',
-                confirmLabel: 'سحب',
-              );
-            },
-            child: const Text('open'),
-          ),
-        ),
-      ),
-    );
+    final results = await open(tester, reasonLabel: 'السبب');
 
-    await tester.tap(find.text('open'));
+    await tester.tap(find.text('إيقاف'));
+    await tester.pump();
+    expect(find.text('السبب مطلوب قبل الإرسال'), findsOneWidget);
+    expect(results, isEmpty);
+
+    await tester.enterText(find.byType(TextField), '  رسائل مسيئة ');
+    await tester.tap(find.text('إيقاف'));
     await tester.pumpAndSettle();
+    expect(results, ['رسائل مسيئة']);
+  });
 
-    await tester.tap(find.text('إغلاق'));
+  testWidgets('cancelling returns null', (tester) async {
+    final results = await open(tester, reasonLabel: 'السبب');
+
+    await tester.tap(find.text('إلغاء'));
     await tester.pumpAndSettle();
-
-    expect(result, isFalse);
+    expect(find.byType(AppConfirmDialog), findsNothing);
+    expect(results, [null]);
   });
 }

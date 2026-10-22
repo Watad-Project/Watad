@@ -11,7 +11,7 @@
   "page_title": "تحديد الموقع",
   "postal_code_label": "الرمز البريدي",
   "save_to_my_addresses": "حفظ في عناويني",
-  "search_hint": "ابحث عن حي أو شارع",
+  "search_hint": "ابحث عن مدينة أو حي أو شارع",
   "street_label": "الشارع",
   "mock_current_city": "الرياض",
   "mock_current_district": "حي النرجس",
@@ -19,5 +19,6 @@
   "mock_current_building": "4210",
   "mock_current_postal_code": "13324",
   "additional_number_label": "الرقم الإضافي",
-  "short_address_label": "العنوان الوطني المختصر"
+  "short_address_label": "العنوان الوطني المختصر",
+  "search_no_results": "لا يوجد مكان بهذا الاسم"
 }

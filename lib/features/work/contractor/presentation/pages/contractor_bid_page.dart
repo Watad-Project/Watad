@@ -82,7 +82,7 @@ class _ContractorBidPageState extends State<ContractorBidPage> {
       message: context.tr('work.contractor.withdraw_confirm_message'),
       confirmLabel: context.tr('work.contractor.withdraw_confirm_action'),
     );
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed != null && context.mounted) {
       context.read<ContractorBidBloc>().add(const ContractorBidWithdrawn());
     }
   }

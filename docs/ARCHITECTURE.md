@@ -55,7 +55,8 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
 | Projects | `projects` | insert as owner; edits limited | `taker_id` only by `accept_offer()`. `status` only by `set_project_status()` / `accept_offer()`. `deed_storage_path`: the ownership deed in the private `project-deeds` bucket; must be inside the owner's folder (`projects_deed_path_in_owner_folder`). `deed_status`: `none → under_review → verified | rejected`, decided by `admin_set_project_deed_verification()`; `deed_submitted_at` is when the deed was sent. A project whose deed is `under_review` or `rejected` can't be `open` (migration 64): it starts as a draft, and verifying the deed publishes it. |
 | | `project_offers` | insert/edit while `pending` | Decided by `accept_offer()`, `reject_offer()`, `withdraw_offer()`. |
-| | `project_tasks` | propose as taker | `status` only by `set_task_status()`. |
+| | `project_tasks` | propose as taker | `status` only by `set_task_status()`, `submit_task_update()`, `decide_task_update()`. |
+| | `project_task_updates` | RO | Sent by `submit_task_update()`; decided by `decide_task_update()`. At most one `pending` update per task. Evidence photos in the private `task-evidence` bucket. Realtime enabled. |
 | | `project_reports` | insert (taker, while project in progress) | "publishUpdate". |
 | | `project_payments` | RO | Stages created by `add_payment_stage()`. |
 | | `bank_transfers` | RO | Receipts in the private `bank-transfer-receipts` bucket. |
@@ -100,6 +101,8 @@ Every other table is read-only from the app. `projects.status` can be set on ins
 | `project_status` | `draft`, `open`, `in_progress`, `completed`, `cancelled` |
 | `offer_status` | `pending`, `accepted`, `rejected`, `withdrawn` |
 | `task_status` | `proposed`, `accepted`, `done`, `approved`, `rejected` |
+| `task_update_state` | `in_progress`, `done` |
+| `task_update_decision` | `pending`, `accepted`, `rejected` |
 | `payment_status` (project stage) | `pending`, `processing`, `paid`, `failed`, `refunded`, `cancelled` |
 | `project_payment_method` | `gateway`, `wallet`, `bank_transfer` |
 | `bank_transfer_status` | `pending`, `confirmed`, `rejected`, `cancelled` |
@@ -116,7 +119,7 @@ The Dart mirrors live in `lib/core/enums/` (see `APP_ARCHITECTURE.md` §6).
 1. The owner inserts a project (`projects`, as `draft` or `open`). A draft is published with `set_project_status()`. Open projects appear in `v_open_projects`. A project with an ownership deed always starts as a draft: an admin reviews the deed in `v_admin_deed_queue`, and `admin_set_project_deed_verification()` publishes the project when it verifies the deed. Until then nobody can publish it (`deed_not_verified`). A rejected deed keeps the project a draft; a new `deed_storage_path` sends it back to review.
 2. A business sends an offer (`project_offers`) and may edit or `withdraw_offer()` while it is `pending`.
 3. The owner calls `accept_offer(p_offer_id, p_expected_amount)`. The expected amount protects against the offer changing at the last second. This assigns the taker. From here the project can be synced to the blockchain.
-4. The taker proposes tasks (`project_tasks`). `set_task_status()` moves them `proposed → accepted → done → approved` (or `rejected`). Approving a priced task creates its payment stage. `start_date` / `finish_date` are optional Riyadh calendar days.
+4. The taker proposes tasks (`project_tasks`). `set_task_status()` moves them `proposed → accepted | rejected` (and supports direct status moves). On an accepted task, the taker sends updates with `submit_task_update(p_task_id, p_proposed_state, p_note, p_photo_paths)`: an `in_progress` update is recorded as `accepted` immediately; a `done` update requires at least one evidence photo in `task-evidence`, starts as `pending` (at most one pending per task), and moves the task `accepted → done`. The owner decides a pending update with `decide_task_update(p_update_id, p_decision, p_rejection_reason, p_rejection_details)`: accepting moves the task `done → approved` and creates its payment stage when priced; rejecting with a reason moves the task back `done → accepted`. `start_date` / `finish_date` are optional Riyadh calendar days.
 5. Payment stages are created by `add_payment_stage()` and paid by gateway (`attach_payment_intent()` then the webhook calls `record_payment_event()`), wallet, or bank transfer (`submit_bank_transfer()` then `confirm_bank_transfer()` / `reject_bank_transfer()`). `cancel_payment_stage()` cancels an unpaid stage.
 6. While the project is in progress the taker posts `project_reports`.
 7. When completed, both parties can leave a `reviews` row.
@@ -128,7 +131,7 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Area | Functions |
 |------|-----------|
 | Projects and offers | `accept_offer(p_offer_id, p_expected_amount)`, `reject_offer(p_offer_id)`, `withdraw_offer(p_offer_id)`, `set_project_status(p_project_id, p_status)` |
-| Tasks | `set_task_status(p_task_id, p_status)` |
+| Tasks | `set_task_status(p_task_id, p_status)`, `submit_task_update(p_task_id, p_proposed_state, p_note, p_photo_paths)`, `decide_task_update(p_update_id, p_decision, p_rejection_reason, p_rejection_details)` |
 | Project payments | `add_payment_stage(p_project_id, p_amount, p_description)`, `cancel_payment_stage(p_payment_id)`, `attach_payment_intent(p_gateway_reference, p_order_id, p_project_payment_id, p_method)`, `submit_bank_transfer(p_payment_id, p_storage_path, p_bank_reference)`, `confirm_bank_transfer(p_transfer_id)`, `reject_bank_transfer(p_transfer_id, p_reason)` |
 | Webhook (server) | `record_payment_event(...)` |
 | Marketplace | `checkout(p_items jsonb, p_payment_method)`, `cancel_order(p_order_id)`, `mark_order_shipped(p_order_id)`, `confirm_order_delivered(p_order_id)`, `expire_stale_orders(p_older_than)` |
@@ -148,8 +151,10 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Function | Body | Returns |
 |----------|------|---------|
 | `geocode` | `lat`, `lng` (numbers), optional `language` (`ar` default, or `en`) | The address of that point, from Google: `city`, `district`, `street`, `building_number`, `postal_code` (the `addresses` columns of §3a), plus `additional_number` and `short_address` (the Saudi national address, e.g. `RAYB6780`) and `formatted_address`. A field Google doesn't know is `null`; the user types it. Errors: `400` `invalid_body` / `invalid_coordinates`, `401` `unauthorized` (signed-in users only), `502` `geocoder_unavailable`. |
+| `geocode` (search) | `query` (2 to 100 characters: a city, district or street), optional `language`, optional `lat`, `lng` (preferred nearby, within 50 km) | `suggestions`: places in Saudi Arabia matching it, from Google Places Autocomplete, each `place_id`, `title` (e.g. «العزيزية») and `subtitle` (where it is, or `null`). Errors: `400` `invalid_query`, then as above. |
+| `geocode` (place) | `place_id` (from a suggestion) | Where it is: `lat`, `lng`, and `viewport` (`south`, `west`, `north`, `east`: wide for a city, narrow for a street) or `null`. Errors: `400` `invalid_place`, then as above. |
 
-`geocode` holds the Google key as the server secret `GOOGLE_MAPS_SERVER_KEY`; the app never sees it. It is deployed with `verify_jwt` off and checks the caller's session itself. Its source is in `supabase/functions/geocode/`.
+`geocode` holds the Google key as the server secret `GOOGLE_MAPS_SERVER_KEY`; the app never sees it. The search and the place need the **Places API (New)** enabled for that key, besides the Geocoding API. It is deployed with `verify_jwt` off and checks the caller's session itself. Its source is in `supabase/functions/geocode/`.
 
 `send-push` is not one of them: the database calls it after every new notification (§13).
 
@@ -161,7 +166,7 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 |--------|-------|
 | Profile | `v_my_profile`, `v_public_profiles`, `v_my_addresses`, `v_my_identity` |
 | Business | `v_business_documents`, `v_admin_verification_queue`, `v_contractors` |
-| Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_reports`, `v_project_payments`, `v_bank_transfers`, `v_admin_deed_queue` |
+| Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_task_updates`, `v_project_reports`, `v_project_payments`, `v_bank_transfers`, `v_admin_deed_queue` |
 | Marketplace | `v_marketplace_items`, `v_my_orders`, `v_order_items` |
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
@@ -173,7 +178,7 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 
 `v_public_profiles` also has `last_seen_at` and `is_online` (migration 66, §14).
 
-`v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker).
+`v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker). Both sides get `photo_paths` (migration 71): the project's photos as paths in the public `images` bucket, an empty array when there are none; show one with the bucket's public URL.
 
 `v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo, `member_since` and `owner_national_id` (their ID/iqama number, null when they never gave one), never their phone.
 
@@ -188,6 +193,7 @@ This file does not list view columns. Never guess a column name: read it from th
 | `business-documents` | **no** | verification documents | path saved in `business_documents.storage_path` |
 | `bank-transfer-receipts` | **no** | transfer receipts | path saved in `bank_transfers.storage_path` |
 | `project-deeds` | **no** | ownership deeds of projects (legal documents) | `<owner id>/<file name>`, saved in `projects.deed_storage_path` |
+| `task-evidence` | **no** | task update evidence photos (JPEG, PNG, WebP up to 10 MB) | `<taker id>/<file name>`, saved in `project_task_updates.photo_paths` |
 
 Use signed URLs for the private buckets. Never make them public.
 
@@ -238,7 +244,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `68_notification_events`; `69_notification_pop_up` is in the repo and waits to be applied; the next is `70_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `68_notification_events`; `69_notification_pop_up` and `70_task_updates` are in the repo and wait to be applied; the next is `71_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
@@ -269,14 +275,19 @@ values (v_user_id, '<title>', '<body>',
 - **Where a tap goes is the app's choice:** the feature that has the screen for that event links its `type` to a route with `AppNotificationLinks` (`docs/APP_ARCHITECTURE.md` §11). A tap on the toast, the push or the row in the list opens that screen and marks the notification read; a type nothing links yet opens the notifications list.
 - The app never inserts a notification, and never calls OneSignal's REST API or `send-push`.
 
-**What notifies people already** (migration 68, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
+**What notifies people already** (migrations 68 and 70, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
 
 | Event | Who is told | `data.type` (+ ids) | Pops up |
 |---|---|---|---|
 | A deed is verified / rejected | the project's owner | `deed_verified` / `deed_rejected` (`project_id`) | yes |
 | A task is added to a project | the other side of the project | `task_added` (`project_id`, `task_id`) | yes |
 | A task is accepted | the other side (the contractor, when the client accepts) | `task_accepted` (`project_id`, `task_id`) | yes |
+| A task update is sent | the project's owner | `task_update_sent` (`project_id`, `task_id`, `update_id`) | yes |
+| A task update is decided | the contractor (`author_id`) | `task_update_accepted` / `task_update_rejected` (`project_id`, `task_id`, `update_id`) | yes |
 | A message is sent | everyone else in the chat | `message` (`chat_id`, `message_id`) | yes |
+| A contractor sends an offer | the project's owner | `offer_received` (`project_id`, `offer_id`) | yes |
+| An offer is accepted | the contractor who sent it | `offer_accepted` (`project_id`, `offer_id`) | yes |
+| An offer is rejected (by the owner, or because `accept_offer()` took another) | the contractor who sent it | `offer_rejected` (`project_id`, `offer_id`) | no |
 
 A new event is one more trigger that calls `private.notify(user_id, title, body, data, pop_up)`, in its own migration.
 

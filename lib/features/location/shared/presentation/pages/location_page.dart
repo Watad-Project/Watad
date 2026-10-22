@@ -14,7 +14,10 @@ import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
+import 'package:watad/features/location/shared/domain/entities/location_place.dart';
+import 'package:watad/features/location/shared/domain/entities/location_suggestion.dart';
 import 'package:watad/features/location/shared/presentation/bloc/location_bloc.dart';
+import 'package:watad/features/location/shared/presentation/widgets/location_search_suggestions.dart';
 
 /// The shared map location picker page across client and contractor roles.
 class LocationPage extends StatefulWidget {
@@ -42,6 +45,12 @@ class _LocationPageState extends State<LocationPage> {
   late final TextEditingController _buildingController;
   late final TextEditingController _postalCodeController;
   late final TextEditingController _nameController;
+
+  /// Moves the map to a place picked from the search.
+  final AppMapCamera _camera = AppMapCamera();
+
+  /// The picked place the map was last moved to.
+  LocationPlace? _shownPlace;
 
   @override
   void initState() {
@@ -76,6 +85,7 @@ class _LocationPageState extends State<LocationPage> {
     _buildingController.dispose();
     _postalCodeController.dispose();
     _nameController.dispose();
+    _camera.dispose();
     super.dispose();
   }
 
@@ -98,6 +108,32 @@ class _LocationPageState extends State<LocationPage> {
     if (_nameController.text != state.address.name) {
       _nameController.text = state.address.name;
     }
+    // A picked suggestion's name replaces what was typed.
+    if (_searchController.text != state.searchQuery) {
+      _searchController.value = TextEditingValue(
+        text: state.searchQuery,
+        selection: TextSelection.collapsed(offset: state.searchQuery.length),
+      );
+    }
+  }
+
+  /// Moves the map to a newly picked place; its pin then fills the address.
+  void _showPlace(LocationPlace? place) {
+    if (place == null || identical(place, _shownPlace)) return;
+    _shownPlace = place;
+    final area = place.viewport;
+    _camera.show(
+      latitude: place.latitude,
+      longitude: place.longitude,
+      area: area == null
+          ? null
+          : (
+              south: area.south,
+              west: area.west,
+              north: area.north,
+              east: area.east,
+            ),
+    );
   }
 
   @override
@@ -105,6 +141,7 @@ class _LocationPageState extends State<LocationPage> {
     return BlocConsumer<LocationBloc, LocationState>(
       listener: (context, state) {
         _syncControllersWithState(state);
+        _showPlace(state.place);
         if (state.status == LocationStatus.success &&
             state.confirmedAddress != null) {
           // The saved address's id, so the flow that opened the picker can
@@ -147,10 +184,27 @@ class _LocationPageState extends State<LocationPage> {
                   Expanded(
                     flex: 5,
                     child: _MapMockupSection(
+                      camera: _camera,
                       searchController: _searchController,
+                      suggestions: state.suggestions,
+                      isSearching: state.isSearching,
+                      searchMessage: state.hasNoResults
+                          ? context.tr('location.search_no_results')
+                          : switch (state.searchFailure) {
+                              final failure? => context.tr(failure.messageKey),
+                              null => null,
+                            },
+                      onSuggestionSelected: (suggestion) {
+                        context.read<LocationBloc>().add(
+                          LocationSuggestionSelected(suggestion),
+                        );
+                      },
                       onSearchChanged: (q) {
                         context.read<LocationBloc>().add(
-                          LocationSearchQueryChanged(q),
+                          LocationSearchQueryChanged(
+                            q,
+                            language: context.locale.languageCode,
+                          ),
                         );
                       },
                       onSearchSubmitted: () {
@@ -207,14 +261,16 @@ class _LocationPageState extends State<LocationPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Header row: "العنوان" + "يُعبأ تلقائياً من الخريطة"
-                            Row(
+                            // Header: "العنوان" + "يُعبأ تلقائياً من الخريطة",
+                            // the second under the first when text is large.
+                            Wrap(
+                              spacing: AppSpacing.xs,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Text(
                                   context.tr('location.address_section_title'),
                                   style: AppTextStyles.h2,
                                 ),
-                                const SizedBox(width: AppSpacing.xs),
                                 Text(
                                   context.tr(
                                     'location.address_section_subtitle',
@@ -510,14 +566,24 @@ class _LocationPageState extends State<LocationPage> {
 
 class _MapMockupSection extends StatelessWidget {
   const _MapMockupSection({
+    required this.camera,
     required this.searchController,
+    required this.suggestions,
+    required this.isSearching,
+    required this.searchMessage,
+    required this.onSuggestionSelected,
     required this.onSearchChanged,
     required this.onSearchSubmitted,
     required this.onCurrentLocationTap,
     required this.onDragEnd,
   });
 
+  final AppMapCamera camera;
   final TextEditingController searchController;
+  final List<LocationSuggestion> suggestions;
+  final bool isSearching;
+  final String? searchMessage;
+  final ValueChanged<LocationSuggestion> onSuggestionSelected;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onSearchSubmitted;
   final VoidCallback onCurrentLocationTap;
@@ -531,6 +597,7 @@ class _MapMockupSection extends StatelessWidget {
         children: [
           // Google Map Background (ARCHITECTURE.md §3a)
           AppGoogleMap(
+            camera: camera,
             initialLatitude: 24.7136,
             initialLongitude: 46.6753,
             onCameraIdle: (latLng) =>
@@ -580,29 +647,6 @@ class _MapMockupSection extends StatelessWidget {
             ),
           ),
 
-          // Search Field floating at top
-          Positioned.directional(
-            textDirection: Directionality.of(context),
-            top: AppSpacing.sm,
-            start: AppSpacing.md,
-            end: AppSpacing.md,
-            child: Material(
-              elevation: 3,
-              shadowColor: Colors.black26,
-              borderRadius: const BorderRadius.all(
-                Radius.circular(AppRadius.md),
-              ),
-              child: AppTextField(
-                key: const Key('location_search_input'),
-                controller: searchController,
-                hint: context.tr('location.search_hint'),
-                textInputAction: TextInputAction.search,
-                onChanged: onSearchChanged,
-                onSubmitted: (_) => onSearchSubmitted(),
-              ),
-            ),
-          ),
-
           // "موقعي الحالي" (Current Location) pill button
           Positioned.directional(
             textDirection: Directionality.of(context),
@@ -644,6 +688,45 @@ class _MapMockupSection extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
+          ),
+
+          // The search at the top, its suggestions under it, over the map.
+          // The empty space below lets the map be dragged.
+          Positioned.directional(
+            textDirection: Directionality.of(context),
+            top: AppSpacing.sm,
+            bottom: AppSpacing.sm,
+            start: AppSpacing.md,
+            end: AppSpacing.md,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Material(
+                  elevation: 3,
+                  shadowColor: Colors.black26,
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(AppRadius.md),
+                  ),
+                  child: AppTextField(
+                    key: const Key('location_search_input'),
+                    controller: searchController,
+                    hint: context.tr('location.search_hint'),
+                    textInputAction: TextInputAction.search,
+                    onChanged: onSearchChanged,
+                    onSubmitted: (_) => onSearchSubmitted(),
+                  ),
+                ),
+                Flexible(
+                  child: LocationSearchSuggestions(
+                    key: const Key('location_search_suggestions'),
+                    suggestions: suggestions,
+                    isSearching: isSearching,
+                    message: searchMessage,
+                    onSelected: onSuggestionSelected,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -4,12 +4,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/location/shared/domain/entities/location_address.dart';
+import 'package:watad/features/location/shared/domain/entities/location_place.dart';
+import 'package:watad/features/location/shared/domain/entities/location_suggestion.dart';
+import 'package:watad/features/location/shared/domain/entities/location_viewport.dart';
 import 'package:watad/features/location/shared/domain/repositories/location_repository.dart';
 import 'package:watad/features/location/shared/domain/usecases/geocode_coordinates_use_case.dart';
+import 'package:watad/features/location/shared/domain/usecases/get_place_use_case.dart';
 import 'package:watad/features/location/shared/domain/usecases/save_address_use_case.dart';
+import 'package:watad/features/location/shared/domain/usecases/search_places_use_case.dart';
 import 'package:watad/features/location/shared/presentation/bloc/location_bloc.dart';
 
-class _FakeLocationRepository implements LocationRepository {
+import '../../../../../helpers/fake_place_search.dart';
+
+class _FakeLocationRepository
+    with FakePlaceSearch
+    implements LocationRepository {
   LocationAddress? savedAddress;
 
   @override
@@ -62,7 +71,13 @@ void main() {
     repo = _FakeLocationRepository();
     saveAddressUseCase = SaveAddressUseCase(repo);
     geocodeCoordinatesUseCase = GeocodeCoordinatesUseCase(repo);
-    bloc = LocationBloc(saveAddressUseCase, geocodeCoordinatesUseCase);
+    bloc = LocationBloc(
+      saveAddressUseCase,
+      geocodeCoordinatesUseCase,
+      SearchPlacesUseCase(repo),
+      GetPlaceUseCase(repo),
+      searchDelay: Duration.zero,
+    );
   });
 
   tearDown(() => bloc.close());
@@ -183,6 +198,8 @@ void main() {
     final failingBloc = LocationBloc(
       SaveAddressUseCase(failingRepo),
       GeocodeCoordinatesUseCase(failingRepo),
+      SearchPlacesUseCase(failingRepo),
+      GetPlaceUseCase(failingRepo),
     );
 
     failingBloc.add(const LocationCityChanged('Riyadh'));
@@ -213,6 +230,8 @@ void main() {
     final delayedBloc = LocationBloc(
       SaveAddressUseCase(delayedRepo),
       GeocodeCoordinatesUseCase(delayedRepo),
+      SearchPlacesUseCase(delayedRepo),
+      GetPlaceUseCase(delayedRepo),
     );
 
     delayedBloc.add(
@@ -260,6 +279,8 @@ void main() {
     final failingBloc = LocationBloc(
       SaveAddressUseCase(failingRepo),
       GeocodeCoordinatesUseCase(failingRepo),
+      SearchPlacesUseCase(failingRepo),
+      GetPlaceUseCase(failingRepo),
     );
 
     failingBloc.add(
@@ -278,6 +299,123 @@ void main() {
 
     await failingBloc.close();
   });
+
+  group('search', () {
+    const aziziyah = LocationSuggestion(
+      placeId: 'place-aziziyah',
+      title: 'العزيزية',
+      subtitle: 'المدينة المنورة، السعودية',
+    );
+    const jeddah = LocationSuggestion(placeId: 'place-jeddah', title: 'جدة');
+
+    test('typing suggests places, in the app\'s language', () async {
+      repo.searchResult = const Success([aziziyah, jeddah]);
+
+      bloc.add(const LocationSearchQueryChanged('العزي', language: 'ar'));
+      final state = await bloc.stream.firstWhere((s) => !s.isSearching);
+
+      expect(state.suggestions, [aziziyah, jeddah]);
+      expect(state.hasNoResults, isFalse);
+      expect(repo.searched, [('العزي', 'ar')]);
+    });
+
+    test('only the last of quick letters is searched', () async {
+      final slowBloc = LocationBloc(
+        SaveAddressUseCase(repo),
+        GeocodeCoordinatesUseCase(repo),
+        SearchPlacesUseCase(repo),
+        GetPlaceUseCase(repo),
+        searchDelay: const Duration(milliseconds: 20),
+      );
+      repo.searchResult = const Success([jeddah]);
+
+      slowBloc
+        ..add(const LocationSearchQueryChanged('جد'))
+        ..add(const LocationSearchQueryChanged('جدة'));
+      await slowBloc.stream.firstWhere((s) => s.suggestions.isNotEmpty);
+
+      expect(repo.searched, [('جدة', 'ar')]);
+      await slowBloc.close();
+    });
+
+    test('one letter searches nothing', () async {
+      bloc.add(const LocationSearchQueryChanged('ج'));
+      await pumpEventQueue();
+
+      expect(repo.searched, isEmpty);
+      expect(bloc.state.isSearching, isFalse);
+    });
+
+    test('a name nothing matches says so', () async {
+      bloc.add(const LocationSearchQueryChanged('مكان غير موجود'));
+      final state = await bloc.stream.firstWhere((s) => !s.isSearching);
+
+      expect(state.suggestions, isEmpty);
+      expect(state.hasNoResults, isTrue);
+    });
+
+    test('a failed search keeps the reason to show', () async {
+      repo.searchResult = const Failed(NetworkFailure());
+
+      bloc.add(const LocationSearchQueryChanged('جدة'));
+      final state = await bloc.stream.firstWhere((s) => !s.isSearching);
+
+      expect(state.searchFailure, isA<NetworkFailure>());
+      expect(state.suggestions, isEmpty);
+    });
+
+    test('a picked suggestion becomes the place to show', () async {
+      repo
+        ..searchResult = const Success([aziziyah])
+        ..placeResult = const Success(
+          LocationPlace(
+            latitude: 24.4386,
+            longitude: 39.6252,
+            viewport: LocationViewport(
+              south: 24.42,
+              west: 39.60,
+              north: 24.46,
+              east: 39.65,
+            ),
+          ),
+        );
+      bloc.add(const LocationSearchQueryChanged('العزي'));
+      await bloc.stream.firstWhere((s) => s.suggestions.isNotEmpty);
+
+      bloc.add(const LocationSuggestionSelected(aziziyah));
+      final state = await bloc.stream.firstWhere((s) => s.place != null);
+
+      expect(repo.placesAsked, ['place-aziziyah']);
+      expect(state.place?.latitude, 24.4386);
+      expect(state.place?.viewport?.north, 24.46);
+      // The field shows the place's name; the list closes.
+      expect(state.searchQuery, 'العزيزية');
+      expect(state.suggestions, isEmpty);
+    });
+
+    test('the search key picks the first suggestion', () async {
+      repo.searchResult = const Success([jeddah, aziziyah]);
+      bloc.add(const LocationSearchQueryChanged('جد'));
+      await bloc.stream.firstWhere((s) => s.suggestions.isNotEmpty);
+
+      bloc.add(const LocationSearchSubmitted());
+      await bloc.stream.firstWhere((s) => s.place != null);
+
+      expect(repo.placesAsked, ['place-jeddah']);
+    });
+
+    test('a place that cannot be found keeps the reason to show', () async {
+      repo.placeResult = const Failed(NetworkFailure());
+
+      bloc.add(const LocationSuggestionSelected(jeddah));
+      final state = await bloc.stream.firstWhere(
+        (s) => s.searchFailure != null,
+      );
+
+      expect(state.place, isNull);
+      expect(state.searchQuery, 'جدة');
+    });
+  });
 }
 
 class _DelayedLocationRepository extends _FakeLocationRepository {
@@ -290,7 +428,9 @@ class _DelayedLocationRepository extends _FakeLocationRepository {
   }) => completer.future;
 }
 
-class _FailingLocationRepository implements LocationRepository {
+class _FailingLocationRepository
+    with FakePlaceSearch
+    implements LocationRepository {
   @override
   Future<Result<List<LocationAddress>>> getSavedAddresses() async =>
       const Success([]);
