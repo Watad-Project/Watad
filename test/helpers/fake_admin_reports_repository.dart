@@ -76,7 +76,8 @@ class FakeAdminReportsRepository implements AdminReportsRepository {
   }
 }
 
-/// For tests that open the reports routes: the real registrations, with [repository] in place of
+/// For tests that open the admin's navigation (its «البلاغات» tab) or the
+/// reports routes: the real registrations, with [repository] in place of
 /// Supabase. Reset getIt after the test.
 void registerFakeAdminReports(FakeAdminReportsRepository repository) {
   registerAdminReportsDependencies(getIt);

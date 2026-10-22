@@ -170,7 +170,7 @@ void main() {
     expect(find.byType(AdminReviewPage), findsOneWidget);
   });
 
-  testWidgets('the open tickets open «البلاغات», and back reads again', (
+  testWidgets('the open tickets open the «البلاغات» tab; back reads again', (
     tester,
   ) async {
     final router = await pumpAppRouter(
@@ -185,8 +185,17 @@ void main() {
     await tester.tap(find.text('بلاغات مفتوحة'));
     await tester.pumpAndSettle();
     expect(find.byType(AdminReportsPage), findsOneWidget);
+    // A tab: no back arrow.
+    expect(find.byIcon(Icons.arrow_back), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(AppBottomNav),
+            matching: find.byType(InkWell),
+          )
+          .first,
+    );
     await tester.pumpAndSettle();
     expect(find.byType(AdminDashboardPage), findsOneWidget);
     expect(repository.reads, reads + 1);

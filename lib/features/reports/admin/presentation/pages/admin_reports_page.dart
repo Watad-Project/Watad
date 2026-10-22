@@ -24,17 +24,24 @@ import 'package:watad/features/reports/admin/presentation/widgets/admin_report_c
 import 'package:watad/features/reports/admin/presentation/widgets/admin_reports_skeleton.dart';
 
 /// «البلاغات» — every ticket users sent, filtered by status and type, with
-/// quick actions; a tap opens a ticket's details. The admin dashboard opens
-/// it.
+/// quick actions; a tap opens a ticket's details. It is the admin's
+/// «البلاغات» tab, and a page of its own at /admin/reports.
 class AdminReportsPage extends StatelessWidget {
-  const AdminReportsPage({super.key});
+  const AdminReportsPage({this.isTab = false, this.bell, super.key});
+
+  /// Shown as the admin's tab: no back arrow.
+  final bool isTab;
+
+  /// The notifications bell, lent by that feature (AppSlots.notificationsBell).
+  final Widget? bell;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppTopBar(
         title: context.tr('reports.tab'),
-        onBack: () => context.pop(),
+        onBack: isTab ? null : () => context.pop(),
+        actions: [?bell],
       ),
       body: BlocConsumer<AdminReportsBloc, AdminReportsState>(
         listenWhen: (previous, current) =>

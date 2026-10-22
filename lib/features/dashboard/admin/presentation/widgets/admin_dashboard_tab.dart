@@ -108,11 +108,11 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           AdminNavigationRoutes.navigationName,
           queryParameters: {'tab': AdminReviewRoutes.reviewName},
         ),
-        onReportsTap: () async {
-          await context.pushNamed(AdminReportsRoutes.reportsName);
-          // What the admin did there changes the numbers.
-          widget.bloc.add(const AdminDashboardFetched());
-        },
+        // The «البلاغات» tab; coming back here reads the numbers again.
+        onReportsTap: () => context.goNamed(
+          AdminNavigationRoutes.navigationName,
+          queryParameters: {'tab': AdminReportsRoutes.reportsName},
+        ),
       ),
     );
   }
