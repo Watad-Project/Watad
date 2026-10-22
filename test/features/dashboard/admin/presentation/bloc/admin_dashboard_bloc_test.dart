@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/features/dashboard/admin/domain/entities/admin_dashboard_section.dart';
 import 'package:watad/features/dashboard/admin/domain/usecases/admin_get_dashboard_stats_use_case.dart';
 import 'package:watad/features/dashboard/admin/presentation/bloc/admin_dashboard_bloc.dart';
 
@@ -59,6 +60,25 @@ void main() {
       (s) => s.status == AdminDashboardStatus.failure,
     );
     expect(state.stats, fakeAdminDashboardStats);
+    await bloc.close();
+  });
+
+  test('a chip picks the section, and a reload keeps it', () async {
+    final bloc = buildBloc()..add(const AdminDashboardFetched());
+    final loaded = await bloc.stream.firstWhere(
+      (s) => s.status == AdminDashboardStatus.success,
+    );
+    expect(loaded.section, AdminDashboardSection.waiting);
+
+    bloc.add(const AdminDashboardSectionChanged(AdminDashboardSection.market));
+    final picked = await bloc.stream.first;
+    expect(picked.section, AdminDashboardSection.market);
+
+    bloc.add(const AdminDashboardFetched());
+    final reloaded = await bloc.stream.firstWhere(
+      (s) => s.status == AdminDashboardStatus.success,
+    );
+    expect(reloaded.section, AdminDashboardSection.market);
     await bloc.close();
   });
 }

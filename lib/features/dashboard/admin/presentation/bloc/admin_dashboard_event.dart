@@ -9,3 +9,10 @@ sealed class AdminDashboardEvent {
 final class AdminDashboardFetched extends AdminDashboardEvent {
   const AdminDashboardFetched();
 }
+
+/// A chip was picked: waiting for review, users, projects or market.
+final class AdminDashboardSectionChanged extends AdminDashboardEvent {
+  const AdminDashboardSectionChanged(this.section);
+
+  final AdminDashboardSection section;
+}

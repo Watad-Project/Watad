@@ -6,7 +6,7 @@ import 'package:watad/features/dashboard/admin/domain/repositories/admin_dashboa
 
 /// Numbers that are all different, so a test can find each one.
 const AdminDashboardStats fakeAdminDashboardStats = AdminDashboardStats(
-  activeUsers: 1240,
+  activeUsers: 1210,
   clients: 980,
   businesses: 260,
   verifiedBusinesses: 212,
