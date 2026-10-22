@@ -93,3 +93,26 @@ abstract final class AppColors {
 
   static const Color placeholderStripe = Color(0xFFE3DDD6);
 }
+
+/// The colors of charts (AppDonutChart, AppMeter). They aren't on the design
+/// sheet: they are the data-visualization palette, checked for color
+/// blindness (adjacent slices stay apart under protanopia, deuteranopia and
+/// tritanopia) and for normal vision.
+///
+/// - [series] is used in this order, never shuffled or cycled: a chart's
+///   first category takes the first color, and so on. At most five.
+/// - Three of them (green, yellow, pink) are below 3:1 on white, so a chart
+///   always names each slice in its legend, with its number.
+abstract final class AppChartColors {
+  static const List<Color> series = [
+    Color(0xFF2A78D6), // blue
+    Color(0xFFEB6834), // orange
+    Color(0xFF1BAF7A), // aqua
+    Color(0xFFEDA100), // yellow
+    Color(0xFFE87BA4), // magenta
+  ];
+
+  /// A meter's filled part, and the track behind it (one hue, two steps).
+  static const Color meterFill = Color(0xFF2A78D6);
+  static const Color meterTrack = Color(0xFFCDE2FB);
+}

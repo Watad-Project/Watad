@@ -72,7 +72,10 @@ class _Chip extends StatelessWidget {
       button: true,
       child: SizedBox(
         height: AppSizes.minTapTarget,
-        child: Center(
+        // Centered in the tap target's height, as wide as its label: in a
+        // Wrap a plain Center would stretch the chip to the whole line.
+        child: Align(
+          widthFactor: 1,
           child: Material(
             color: selected ? AppColors.ink : AppColors.surface,
             shape: StadiumBorder(
@@ -85,13 +88,15 @@ class _Chip extends StatelessWidget {
               onTap: onTap,
               child: Container(
                 height: 38,
-                alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: Text(
-                  label,
-                  style: AppTextStyles.label.copyWith(
-                    fontSize: 14,
-                    color: selected ? AppColors.white : AppColors.ink,
+                child: Center(
+                  widthFactor: 1,
+                  child: Text(
+                    label,
+                    style: AppTextStyles.label.copyWith(
+                      fontSize: 14,
+                      color: selected ? AppColors.white : AppColors.ink,
+                    ),
                   ),
                 ),
               ),

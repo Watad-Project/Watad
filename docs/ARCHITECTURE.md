@@ -49,7 +49,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | Identity | `users` | update `full_name`, `avatar_path` only | `role` locked. Anonymised, never deleted. |
 | | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. `city`: where the business works, set by the contractor from the location picker. |
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
-| | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Admins see the ID number (not the phone) of someone waiting for review, as `owner_national_id` in the two admin queues, through `private.admin_national_id()` (migration 65). Personal data: never log it. |
+| | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Admins see the ID number of someone waiting for review, as `owner_national_id` in the two admin queues, through `private.admin_national_id()` (migration 65), and, since migration 76, the ID number, phone and email of every user in `v_admin_users` (a maintainer's decision, 2026-10-22). Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
 | | `user_presence` | RO | When each user was last seen, and whether they have the app open (`online_until` in the future). Written only by `set_my_presence()`; read through `v_public_profiles` (§14). |
 | | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
@@ -171,6 +171,7 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
 | Notifications | `v_my_notifications` |
+| Admin | `v_admin_dashboard`, `v_admin_users`, `v_admin_marketplace_items` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
 
@@ -181,6 +182,12 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker). Both sides get `photo_paths` (migration 71): the project's photos as paths in the public `images` bucket, an empty array when there are none; show one with the bucket's public URL.
 
 `v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo, `member_since` and `owner_national_id` (their ID/iqama number, null when they never gave one), never their phone.
+
+`v_admin_dashboard` (migration 73) is one row of the platform's counts for the admin dashboard, returned to admins only (no row for anyone else): active users (not deleted, not suspended, without admins), clients (users with no business who aren't admins), businesses and verified businesses, projects in total and per status, marketplace items listed and on the market now, pending licenses and deeds (the same rules as the two queues above, so the numbers always match the review tab), open support tickets (`help_reports` still `open`) and, since migration 74, `online_users`: users with the app open now by the rule of `is_online` (§14), admins left out.
+
+`v_admin_users` (migration 75) is every user as an admin sees them, closed accounts included, returned to admins only: name, photo, `role`, `member_since`, last seen and online, `is_deleted`, `is_me` (the admin reading it), the business (company, specialty, city and `verification_status`, any status), the open suspension (`is_suspended`, reason, `suspended_at`, `suspended_by_name`) and activity counts (projects as a client and as a contractor, listings not deleted, reports about them still open or in review). Since migration 76 it also has `email` (from Supabase Auth), `phone` and `national_id` (from `user_identity`; null for someone who never finished sign-up or whose account is closed), through the admin-only lookups `private.admin_user_email()`, `private.admin_user_phone()` and `private.admin_national_id()`. The actions are `admin_set_user_suspension()` and `admin_set_user_role()`.
+
+`v_admin_marketplace_items` (migration 77) is every listing not deleted by its seller, hidden and removed ones included, returned to admins only: the item, its seller (name, photo, verified business, rating, from `v_public_profiles`), one `status` (`removed` by an admin, `hidden` by the seller, `out_of_stock` or `live`, in that order), the removal (`removed_at`, `removal_reason`, `removed_by_name`) and counts (`order_count`, `open_report_count` still open or in review). Removing a listing is `admin_remove_listing()`.
 
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 
