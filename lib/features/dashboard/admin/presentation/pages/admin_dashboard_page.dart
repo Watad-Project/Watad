@@ -24,10 +24,18 @@ import 'package:watad/features/dashboard/admin/presentation/widgets/admin_dashbo
 /// review, the users, the projects and the market, each as numbers and a
 /// chart; the management screens are under them.
 class AdminDashboardPage extends StatelessWidget {
-  const AdminDashboardPage({this.onReviewTap, this.bell, super.key});
+  const AdminDashboardPage({
+    this.onReviewTap,
+    this.onUsersTap,
+    this.bell,
+    super.key,
+  });
 
   /// Opens the «التوثيق» tab, from the pending licenses and deeds.
   final VoidCallback? onReviewTap;
+
+  /// Opens «إدارة المستخدمين».
+  final VoidCallback? onUsersTap;
 
   /// The notifications bell, lent by that feature (AppSlots.notificationsBell).
   final Widget? bell;
@@ -129,6 +137,7 @@ class AdminDashboardPage extends StatelessWidget {
           AdminDashboardShortcut(
             label: context.tr('dashboard.admin.manage_users'),
             icon: Icons.people_alt_outlined,
+            onTap: onUsersTap,
           ),
           const SizedBox(height: AppSpacing.sm),
           AdminDashboardShortcut(

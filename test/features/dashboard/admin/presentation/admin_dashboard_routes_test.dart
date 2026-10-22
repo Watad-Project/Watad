@@ -167,17 +167,20 @@ void main() {
     expect(find.byType(AdminReviewPage), findsOneWidget);
   });
 
-  testWidgets('the management buttons wait for their screens', (tester) async {
+  testWidgets('users management is open; the market waits for GRA-46', (
+    tester,
+  ) async {
     final router = await pumpAppRouter(
       tester,
       session: FakeAppSession()..signIn(AppRole.admin),
     );
-    router.goNamed(AdminDashboardRoutes.dashboardName);
+    // The «الرئيسية» tab, which connects the buttons.
+    router.goNamed(AdminNavigationRoutes.navigationName);
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('إدارة منتجات السوق'));
     await tester.pumpAndSettle();
-    expect(find.text('قريباً'), findsNWidgets(2));
+    expect(find.text('قريباً'), findsOneWidget);
   });
 
   testWidgets('a failed read offers to try again', (tester) async {

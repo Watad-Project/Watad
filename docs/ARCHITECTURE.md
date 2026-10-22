@@ -171,7 +171,7 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
 | Notifications | `v_my_notifications` |
-| Admin | `v_admin_dashboard` |
+| Admin | `v_admin_dashboard`, `v_admin_users` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
 
@@ -184,6 +184,8 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 `v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo, `member_since` and `owner_national_id` (their ID/iqama number, null when they never gave one), never their phone.
 
 `v_admin_dashboard` (migration 73) is one row of the platform's counts for the admin dashboard, returned to admins only (no row for anyone else): active users (not deleted, not suspended, without admins), clients (users with no business who aren't admins), businesses and verified businesses, projects in total and per status, marketplace items listed and on the market now, pending licenses and deeds (the same rules as the two queues above, so the numbers always match the review tab), open support tickets (`help_reports` still `open`) and, since migration 74, `online_users`: users with the app open now by the rule of `is_online` (§14), admins left out.
+
+`v_admin_users` (migration 75) is every user as an admin sees them, closed accounts included, returned to admins only: name, photo, `role`, `member_since`, last seen and online, `is_deleted`, `is_me` (the admin reading it), the business (company, specialty, city and `verification_status`, any status), the open suspension (`is_suspended`, reason, `suspended_at`, `suspended_by_name`) and activity counts (projects as a client and as a contractor, listings not deleted, reports about them still open or in review). It has no ID number and no phone. The actions are `admin_set_user_suspension()` and `admin_set_user_role()`.
 
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 

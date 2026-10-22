@@ -15,6 +15,7 @@ import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
 import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
+import 'package:watad/features/users/admin/admin_users_injection.dart';
 
 /// The app's only service locator. Use it only in *_injection.dart and
 /// *_routes.dart files (APP_ARCHITECTURE.md §12).
@@ -34,6 +35,7 @@ void configureDependencies() {
   // Features: one line per role folder, in alphabetical order.
   registerAdminDashboardDependencies(getIt);
   registerAdminReviewDependencies(getIt);
+  registerAdminUsersDependencies(getIt);
   registerAuthDependencies(getIt);
   registerClientHomeDependencies(getIt);
   registerClientProjectsDependencies(getIt);
