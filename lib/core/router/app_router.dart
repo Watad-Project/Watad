@@ -12,6 +12,7 @@ import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
+import 'package:watad/features/dashboard/admin/presentation/admin_dashboard_routes.dart';
 import 'package:watad/features/dashboard/contractor/presentation/contractor_dashboard_routes.dart';
 import 'package:watad/features/home/client/presentation/client_home_routes.dart';
 import 'package:watad/features/kyc/contractor/presentation/contractor_kyc_routes.dart';
@@ -53,6 +54,7 @@ GoRouter createAppRouter({
     routes: [
       // One line per role folder, sorted by file name. Each folder's names
       // and paths live in lib/core/router/routes/.
+      ...adminDashboardRoutes,
       ...adminNavigationRoutes,
       ...adminReviewRoutes,
       ...authRoutes,

@@ -168,6 +168,7 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
 | Notifications | `v_my_notifications` |
+| Admin | `v_admin_dashboard` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
 
@@ -178,6 +179,8 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker). Both sides get `photo_paths` (migration 71): the project's photos as paths in the public `images` bucket, an empty array when there are none; show one with the bucket's public URL.
 
 `v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo, `member_since` and `owner_national_id` (their ID/iqama number, null when they never gave one), never their phone.
+
+`v_admin_dashboard` (migration 73) is one row of the platform's counts for the admin dashboard, returned to admins only (no row for anyone else): active users (not deleted, not suspended, without admins), clients (users with no business who aren't admins), businesses and verified businesses, projects in total and per status, marketplace items listed and on the market now, pending licenses and deeds (the same rules as the two queues above, so the numbers always match the review tab) and open support tickets (`help_reports` still `open`).
 
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 

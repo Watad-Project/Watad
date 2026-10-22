@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:watad/core/router/routes/admin_dashboard_routes.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
@@ -15,13 +16,19 @@ class AdminNavigationPage extends StatelessWidget {
   /// How a feature becomes a tab: see
   /// `ClientNavigationPage.tabs`.
   static const List<NavigationTab> tabs = [
+    // First, so admins land here after signing in.
+    NavigationTab(
+      labelKey: 'dashboard.admin.tab',
+      icon: Icons.dashboard_outlined,
+      selectedIcon: Icons.dashboard,
+      routeName: AdminDashboardRoutes.dashboardName,
+    ),
     NavigationTab(
       labelKey: 'review.tab',
       icon: Icons.verified_user_outlined,
       selectedIcon: Icons.verified_user,
       routeName: AdminReviewRoutes.reviewName,
     ),
-    NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
