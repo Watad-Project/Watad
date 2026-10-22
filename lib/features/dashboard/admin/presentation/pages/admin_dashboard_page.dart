@@ -27,6 +27,7 @@ class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({
     this.onReviewTap,
     this.onUsersTap,
+    this.onReportsTap,
     this.bell,
     super.key,
   });
@@ -36,6 +37,9 @@ class AdminDashboardPage extends StatelessWidget {
 
   /// Opens «إدارة المستخدمين».
   final VoidCallback? onUsersTap;
+
+  /// Opens the tickets («البلاغات»), from the open tickets.
+  final VoidCallback? onReportsTap;
 
   /// The notifications bell, lent by that feature (AppSlots.notificationsBell).
   final Widget? bell;
@@ -120,6 +124,7 @@ class AdminDashboardPage extends StatelessWidget {
                 AdminDashboardSection.waiting => _Waiting(
                   stats: stats,
                   onReviewTap: onReviewTap,
+                  onReportsTap: onReportsTap,
                 ),
                 AdminDashboardSection.users => _Users(stats: stats),
                 AdminDashboardSection.projects => _Projects(stats: stats),
@@ -187,13 +192,19 @@ class _ChartCard extends StatelessWidget {
   }
 }
 
-/// The licenses and deeds waiting in «التوثيق»: single numbers that open
-/// the tab, so tiles rather than a chart.
+/// The licenses and deeds waiting in «التوثيق», and the tickets nobody
+/// took yet: single numbers that open their screens, so tiles rather than
+/// a chart.
 class _Waiting extends StatelessWidget {
-  const _Waiting({required this.stats, required this.onReviewTap});
+  const _Waiting({
+    required this.stats,
+    required this.onReviewTap,
+    required this.onReportsTap,
+  });
 
   final AdminDashboardStats stats;
   final VoidCallback? onReviewTap;
+  final VoidCallback? onReportsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -212,6 +223,13 @@ class _Waiting extends StatelessWidget {
           icon: Icons.description_outlined,
           isHighlighted: stats.pendingDeeds > 0,
           onTap: onReviewTap,
+        ),
+        AppStatTile(
+          label: context.tr('dashboard.admin.open_reports'),
+          value: context.formatNumber(stats.openReports),
+          icon: Icons.flag_outlined,
+          isHighlighted: stats.openReports > 0,
+          onTap: onReportsTap,
         ),
       ],
     );

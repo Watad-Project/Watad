@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
+import 'package:watad/core/router/routes/admin_reports_routes.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
 import 'package:watad/core/router/routes/admin_users_routes.dart';
 import 'package:watad/features/dashboard/admin/presentation/bloc/admin_dashboard_bloc.dart';
@@ -113,6 +114,11 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           // A suspension or a new admin changes the numbers.
           _fetch();
         },
+        // The «البلاغات» tab; coming back here reads the numbers again.
+        onReportsTap: () => context.goNamed(
+          AdminNavigationRoutes.navigationName,
+          queryParameters: {'tab': AdminReportsRoutes.reportsName},
+        ),
       ),
     );
   }

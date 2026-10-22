@@ -13,6 +13,7 @@ import 'package:watad/features/notifications/shared/notifications_injection.dart
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
 import 'package:watad/features/projects/client/client_projects_injection.dart';
+import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
 import 'package:watad/features/users/admin/admin_users_injection.dart';
@@ -34,6 +35,7 @@ void configureDependencies() {
 
   // Features: one line per role folder, in alphabetical order.
   registerAdminDashboardDependencies(getIt);
+  registerAdminReportsDependencies(getIt);
   registerAdminReviewDependencies(getIt);
   registerAdminUsersDependencies(getIt);
   registerAuthDependencies(getIt);
