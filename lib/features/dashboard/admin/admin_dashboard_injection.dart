@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:watad/core/di/app_slots.dart';
 import 'package:watad/core/router/routes/admin_dashboard_routes.dart';
+import 'package:watad/core/supabase/app_presence.dart';
 import 'package:watad/features/dashboard/admin/datasource/remote/admin_dashboard_remote_data_source.dart';
 import 'package:watad/features/dashboard/admin/datasource/repositories/admin_dashboard_repository_impl.dart';
 import 'package:watad/features/dashboard/admin/domain/repositories/admin_dashboard_repository.dart';
@@ -21,10 +22,14 @@ void registerAdminDashboardDependencies(GetIt getIt) {
     ..registerLazySingleton(() => AdminGetDashboardStatsUseCase(getIt()))
     ..registerFactory(() => AdminDashboardBloc(getIt()))
     // The admin's navigation shows this as its «الرئيسية» tab; the tab reads
-    // the numbers each time it shows.
+    // the numbers each time it shows, and again when someone opens or closes
+    // the app (the live presence).
     ..registerFactory<Widget>(
       () => AdminDashboardTab(
         bloc: getIt<AdminDashboardBloc>(),
+        onlineUserIds: getIt.isRegistered<AppPresence>()
+            ? getIt<AppPresence>().onlineUserIds
+            : null,
         bell: AppSlots.widget(getIt, AppSlots.notificationsBell),
       ),
       instanceName: AdminDashboardRoutes.dashboardName,
