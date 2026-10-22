@@ -34,7 +34,7 @@ void main() {
     expect(state.hasMore, isFalse);
     expect(state.counts!.of(AdminUsersFilter.all), 6);
     expect(state.counts!.of(AdminUsersFilter.clients), 3);
-    expect(state.counts!.of(AdminUsersFilter.businesses), 1);
+    expect(state.counts!.of(AdminUsersFilter.contractors), 1);
     expect(state.counts!.of(AdminUsersFilter.admins), 2);
     expect(state.counts!.of(AdminUsersFilter.suspended), 1);
     await bloc.close();

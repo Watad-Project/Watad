@@ -8,12 +8,12 @@ import 'package:watad/features/users/admin/domain/entities/admin_user.dart';
 /// How a user's kind, business verification, presence and dates read, in
 /// the list and on their page.
 abstract final class AdminUsersLabels {
-  /// «مشرف», «منشأة» or «عميل».
+  /// «مشرف», «مقاول» or «عميل»: one of them, never two.
   static String kind(BuildContext context, AdminUser user) => context.tr(
     user.isAdmin
         ? 'users.kind_admin'
-        : user.isBusiness
-        ? 'users.kind_business'
+        : user.isContractor
+        ? 'users.kind_contractor'
         : 'users.kind_client',
   );
 

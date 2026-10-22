@@ -29,9 +29,16 @@ void main() {
       'contractor_project_count': 4,
       'listing_count': 6,
       'open_report_count': 2,
+      'email': 'khalid@example.com',
+      'phone': '+966512345678',
+      'national_id': '1012345678',
     });
 
     expect(model.name, 'خالد الحربي');
+    expect(model.isContractor, isTrue);
+    expect(model.email, 'khalid@example.com');
+    expect(model.phone, '+966512345678');
+    expect(model.nationalId, '1012345678');
     expect(model.avatarUrl, endsWith('u-1/avatar.jpg'));
     expect(model.role, UserRole.user);
     expect(model.memberSince, DateTime.utc(2026, 8, 20, 9));
@@ -80,5 +87,9 @@ void main() {
     expect(model.verificationStatus, isNull);
     expect(model.isSuspended, isFalse);
     expect(model.suspendedAt, isNull);
+    // Not given: never finished sign-up, or the account is closed.
+    expect(model.email, isNull);
+    expect(model.phone, isNull);
+    expect(model.nationalId, isNull);
   });
 }

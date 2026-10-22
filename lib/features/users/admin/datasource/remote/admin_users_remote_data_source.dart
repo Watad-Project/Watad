@@ -31,7 +31,8 @@ class AdminUsersRemoteDataSourceImpl implements AdminUsersRemoteDataSource {
       'last_seen_at, is_online, is_business, company_name, specialized_field, '
       'business_city, verification_status, is_suspended, suspension_reason, '
       'suspended_at, suspended_by_name, client_project_count, '
-      'contractor_project_count, listing_count, open_report_count';
+      'contractor_project_count, listing_count, open_report_count, email, '
+      'phone, national_id';
 
   @override
   Future<List<AdminUserModel>> getUsers(AdminUsersQuery query) async {
@@ -108,7 +109,7 @@ class AdminUsersRemoteDataSourceImpl implements AdminUsersRemoteDataSource {
       AdminUsersFilter.all => request,
       AdminUsersFilter.clients =>
         request.eq('role', UserRole.user.toJson()).eq('is_business', false),
-      AdminUsersFilter.businesses => request.eq('is_business', true),
+      AdminUsersFilter.contractors => request.eq('is_business', true),
       AdminUsersFilter.admins => request.eq('role', UserRole.admin.toJson()),
       AdminUsersFilter.suspended => request.eq('is_suspended', true),
     };

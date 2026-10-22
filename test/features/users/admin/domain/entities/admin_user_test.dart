@@ -24,7 +24,7 @@ void main() {
     expect(AdminUsersFilter.clients.matches(fakeClient), isTrue);
     expect(AdminUsersFilter.clients.matches(fakeBusiness), isFalse);
     expect(AdminUsersFilter.clients.matches(fakeAdmin), isFalse);
-    expect(AdminUsersFilter.businesses.matches(fakeBusiness), isTrue);
+    expect(AdminUsersFilter.contractors.matches(fakeBusiness), isTrue);
     expect(AdminUsersFilter.admins.matches(fakeMe), isTrue);
     expect(AdminUsersFilter.suspended.matches(fakeSuspended), isTrue);
     expect(AdminUsersFilter.suspended.matches(fakeClient), isFalse);

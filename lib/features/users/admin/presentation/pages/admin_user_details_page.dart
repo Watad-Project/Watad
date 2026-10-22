@@ -92,6 +92,8 @@ class AdminUserDetailsPage extends StatelessWidget {
         AdminUserProfile(
           user: user,
           now: DateTime.now(),
+          onCopied: (_) =>
+              context.showSuccessSnackBar(context.tr('users.copied')),
           onOpenReview: () => context.goNamed(
             AdminNavigationRoutes.navigationName,
             queryParameters: {'tab': AdminReviewRoutes.reviewName},

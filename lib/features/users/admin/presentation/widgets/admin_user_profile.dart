@@ -14,19 +14,25 @@ import 'package:watad/core/theme/app_tone.dart';
 import 'package:watad/features/users/admin/domain/entities/admin_user.dart';
 import 'package:watad/features/users/admin/presentation/widgets/admin_users_labels.dart';
 
-/// Everything about one user: photo, name, kind, member since and last
-/// seen; their business and its verification (a pending license opens
-/// «التوثيق»); and their activity.
+/// Everything about one user: photo, name, kind (client, contractor or
+/// admin), member since and last seen; how to reach them and who they are
+/// (email, phone, ID number, account id); their business and its
+/// verification (a pending license opens «التوثيق»); and their activity as
+/// a client or as a contractor.
 class AdminUserProfile extends StatelessWidget {
   const AdminUserProfile({
     required this.user,
     required this.now,
     this.onOpenReview,
+    this.onCopied,
     super.key,
   });
 
   final AdminUser user;
   final DateTime now;
+
+  /// After a value was copied, e.g. to say so.
+  final ValueChanged<String>? onCopied;
 
   /// Opens the «التوثيق» tab, for a business whose license waits there.
   final VoidCallback? onOpenReview;
@@ -94,6 +100,11 @@ class AdminUserProfile extends StatelessWidget {
             ),
           ],
         ),
+        AppSectionHeader(
+          title: context.tr('users.account'),
+          padding: _sectionPadding,
+        ),
+        _Account(user: user, onCopied: onCopied),
         if (user.isBusiness) ...[
           AppSectionHeader(
             title: context.tr('users.business'),
@@ -107,14 +118,17 @@ class AdminUserProfile extends StatelessWidget {
         ),
         AppKeyValueList(
           rows: [
-            AppKeyValueRow(
-              label: context.tr('users.client_projects'),
-              value: count(user.clientProjectCount),
-            ),
-            AppKeyValueRow(
-              label: context.tr('users.contractor_projects'),
-              value: count(user.contractorProjectCount),
-            ),
+            // Their projects as what they are: a contractor or a client.
+            if (user.isContractor)
+              AppKeyValueRow(
+                label: context.tr('users.contractor_projects'),
+                value: count(user.contractorProjectCount),
+              )
+            else
+              AppKeyValueRow(
+                label: context.tr('users.client_projects'),
+                value: count(user.clientProjectCount),
+              ),
             AppKeyValueRow(
               label: context.tr('users.listings'),
               value: count(user.listingCount),
@@ -125,6 +139,35 @@ class AdminUserProfile extends StatelessWidget {
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// Email, phone, ID number and account id, each with «نسخ».
+class _Account extends StatelessWidget {
+  const _Account({required this.user, required this.onCopied});
+
+  final AdminUser user;
+  final ValueChanged<String>? onCopied;
+
+  @override
+  Widget build(BuildContext context) {
+    final missing = context.tr('users.not_given');
+    AppKeyValueRow row(String key, String? value, {bool isMonospace = false}) =>
+        AppKeyValueRow(
+          label: context.tr(key),
+          value: value ?? missing,
+          isMonospace: isMonospace && value != null,
+          isCopyable: value != null,
+        );
+    return AppKeyValueList(
+      onCopied: onCopied,
+      rows: [
+        row('users.email', user.email, isMonospace: true),
+        row('users.phone', user.phone, isMonospace: true),
+        row('users.national_id', user.nationalId, isMonospace: true),
+        row('users.account_id', user.id, isMonospace: true),
       ],
     );
   }

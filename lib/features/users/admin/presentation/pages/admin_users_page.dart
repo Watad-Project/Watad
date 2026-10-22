@@ -25,7 +25,7 @@ class AdminUsersPage extends StatelessWidget {
   static String _filterKey(AdminUsersFilter filter) => switch (filter) {
     AdminUsersFilter.all => 'users.filter_all',
     AdminUsersFilter.clients => 'users.filter_clients',
-    AdminUsersFilter.businesses => 'users.filter_businesses',
+    AdminUsersFilter.contractors => 'users.filter_contractors',
     AdminUsersFilter.admins => 'users.filter_admins',
     AdminUsersFilter.suspended => 'users.filter_suspended',
   };

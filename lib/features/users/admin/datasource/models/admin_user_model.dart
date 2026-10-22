@@ -26,6 +26,9 @@ class AdminUserModel extends AdminUser {
     super.contractorProjectCount,
     super.listingCount,
     super.openReportCount,
+    super.email,
+    super.phone,
+    super.nationalId,
   });
 
   /// Maps the `v_admin_users` columns selected in
@@ -63,6 +66,9 @@ class AdminUserModel extends AdminUser {
       contractorProjectCount: count('contractor_project_count'),
       listingCount: count('listing_count'),
       openReportCount: count('open_report_count'),
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
+      nationalId: json['national_id'] as String?,
     );
   }
 }

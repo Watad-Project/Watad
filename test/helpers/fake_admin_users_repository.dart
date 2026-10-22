@@ -18,6 +18,9 @@ final AdminUser fakeClient = AdminUser(
   memberSince: DateTime.utc(2026, 9, 1),
   isOnline: true,
   clientProjectCount: 3,
+  email: 'sara@example.com',
+  phone: '+966512345678',
+  nationalId: '1012345678',
 );
 
 /// A business waiting for its license to be verified.
@@ -32,8 +35,10 @@ final AdminUser fakeBusiness = AdminUser(
   specialty: 'ترميم',
   businessCity: 'الخبر',
   verificationStatus: VerificationStatus.pending,
+  clientProjectCount: 1,
   contractorProjectCount: 2,
   listingCount: 4,
+  email: 'khalid@example.com',
 );
 
 /// Another admin.

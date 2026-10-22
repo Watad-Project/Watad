@@ -60,6 +60,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Scrolls the page until [finder] shows.
+  Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+    await tester.dragUntilVisible(
+      finder,
+      find.byType(ListView).first,
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+  }
+
   Future<void> confirm(WidgetTester tester, String label) async {
     await tester.tap(
       find.descendant(
@@ -133,6 +143,38 @@ void main() {
     expect(currentPath(router), '/admin/users/u-client');
     expect(find.byType(AdminUserDetailsPage), findsOneWidget);
     expect(find.text('سارة العتيبي'), findsOneWidget);
+    // One kind, and how to reach them.
+    expect(find.text('عميل'), findsOneWidget);
+    expect(find.text('sara@example.com'), findsOneWidget);
+    expect(find.text('+966512345678'), findsOneWidget);
+    expect(find.text('1012345678'), findsOneWidget);
+    expect(find.text('u-client'), findsOneWidget);
+    // Their projects as a client only.
+    await tester.dragUntilVisible(
+      find.text('مشاريع كعميل'),
+      find.byType(ListView).first,
+      const Offset(0, -200),
+    );
+    expect(find.text('مشاريع كمقاول'), findsNothing);
+  });
+
+  testWidgets('a contractor is a contractor only', (tester) async {
+    await open(
+      tester,
+      AdminUsersRoutes.userDetailsName,
+      pathParameters: {'userId': 'u-business'},
+    );
+
+    expect(find.text('مقاول'), findsOneWidget);
+    expect(find.text('عميل'), findsNothing);
+    // Never gave a phone or an ID number.
+    expect(find.text('غير متوفر'), findsNWidgets(2));
+    await tester.dragUntilVisible(
+      find.text('مشاريع كمقاول'),
+      find.byType(ListView).first,
+      const Offset(0, -200),
+    );
+    expect(find.text('مشاريع كعميل'), findsNothing);
   });
 
   testWidgets('suspending asks for a reason first', (tester) async {
@@ -166,6 +208,7 @@ void main() {
       pathParameters: {'userId': 'u-suspended'},
     );
 
+    await scrollTo(tester, find.text('رسائل مسيئة متكررة'));
     expect(find.text('رسائل مسيئة متكررة'), findsOneWidget);
     expect(find.textContaining('عمر ملا'), findsOneWidget);
     expect(find.text('إيقاف المستخدم'), findsNothing);
@@ -183,6 +226,7 @@ void main() {
     );
 
     expect(find.text('إيقاف المستخدم'), findsNothing);
+    await scrollTo(tester, find.text('لإيقاف مشرف، أزل صلاحيته أولًا.'));
     expect(find.text('لإيقاف مشرف، أزل صلاحيته أولًا.'), findsOneWidget);
     await tapButton(tester, 'إزالة صلاحية المشرف');
     await confirm(tester, 'إزالة صلاحية المشرف');
@@ -196,6 +240,8 @@ void main() {
       pathParameters: {'userId': 'u-me'},
     );
 
+    const note = 'هذا حسابك: لا يمكنك إيقافه ولا إزالة صلاحيتك.';
+    await scrollTo(tester, find.text(note));
     expect(find.text('إيقاف المستخدم'), findsNothing);
     expect(find.text('إزالة صلاحية المشرف'), findsNothing);
     expect(
@@ -211,6 +257,7 @@ void main() {
       pathParameters: {'userId': 'u-closed'},
     );
 
+    await scrollTo(tester, find.byType(AppStatusCard));
     expect(find.byType(AppStatusCard), findsOneWidget);
     expect(find.text('تعيين كمشرف'), findsNothing);
     expect(find.text('إيقاف المستخدم'), findsNothing);

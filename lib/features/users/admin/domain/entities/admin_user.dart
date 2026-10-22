@@ -26,6 +26,9 @@ class AdminUser {
     this.contractorProjectCount = 0,
     this.listingCount = 0,
     this.openReportCount = 0,
+    this.email,
+    this.phone,
+    this.nationalId,
   });
 
   final String id;
@@ -65,6 +68,17 @@ class AdminUser {
   final int contractorProjectCount;
   final int listingCount;
   final int openReportCount;
+
+  /// How to reach them and who they are: null when unknown (a phone and an
+  /// ID number come with finishing sign-up, and go with closing the
+  /// account). Personal data: never log it.
+  final String? email;
+  final String? phone;
+  final String? nationalId;
+
+  /// A user with a business is a contractor; everyone else is a client
+  /// (ARCHITECTURE.md §2). Admins are shown as admins.
+  bool get isContractor => isBusiness;
 
   bool get isAdmin => role == UserRole.admin;
 
