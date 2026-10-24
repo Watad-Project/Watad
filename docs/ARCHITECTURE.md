@@ -60,6 +60,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `project_reports` | insert (taker, while project in progress) | "publishUpdate". |
 | | `project_payments` | RO | Stages created by `add_payment_stage()`. |
 | | `bank_transfers` | RO | Receipts in the private `bank-transfer-receipts` bucket. |
+| | `contractor_bank_details` | RW (own row, contractor; no delete) | Where clients send bank transfers: one row per contractor (PK is the contractor's user id) with `beneficiary_name`, `bank_name` and `iban`. Only a user with a business, while their account is active (not closed or suspended), writes it. Saudi IBANs only: spaces and dashes are removed, Arabic-Indic digits become 0-9 and letters are upper-cased, then the shape (`SA` + 22 characters) and the check digits are verified. Invalid input raises `22023` (`invalid_iban`, `invalid_beneficiary_name`, `invalid_bank_name`). Read through `v_contractor_bank_details` (§7). Deleted when the account is closed (migration 78). Personal data: never log it. |
 | Marketplace | `marketplace_items` | RW (seller) | Stock reduced only by `checkout()`. Delete = set `deleted_at`. |
 | | `orders`, `order_items` | RO | Created by `checkout()`. Paid only by the payment webhook. Price and name are snapshots. |
 | Social | `chats`, `chat_members` | RO | Via `start_chat()`, `add_chat_member()`, `remove_chat_member()`, `mark_chat_read()`. |
@@ -84,6 +85,7 @@ Writes are limited twice: by RLS (which rows) and by column-level grants (which 
 | `project_offers` | `project_id`, `amount`, `message` | `amount`, `message` | no |
 | `project_tasks` | `project_id`, `title`, `description`, `amount`, `start_date` | none (use `set_task_status()`) | no |
 | `project_reports` | `project_id`, `title`, `content` | `title`, `content` | no |
+| `contractor_bank_details` | `beneficiary_name`, `bank_name`, `iban` | same three | no |
 | `marketplace_items` | `item_name`, `description`, `price`, `stock_quantity`, `is_active` | same five, plus `deleted_at` (soft delete) | no |
 | `messages` | `chat_id`, `content` | none | no |
 | `reviews` | `target_user_id`, `project_id` or `order_id`, `rating`, `comment` | `rating`, `comment` | yes |
@@ -120,7 +122,7 @@ The Dart mirrors live in `lib/core/enums/` (see `APP_ARCHITECTURE.md` §6).
 2. A business sends an offer (`project_offers`) and may edit or `withdraw_offer()` while it is `pending`.
 3. The owner calls `accept_offer(p_offer_id, p_expected_amount)`. The expected amount protects against the offer changing at the last second. This assigns the taker. From here the project can be synced to the blockchain.
 4. The taker proposes tasks (`project_tasks`). `set_task_status()` moves them `proposed → accepted | rejected` (and supports direct status moves). On an accepted task, the taker sends updates with `submit_task_update(p_task_id, p_proposed_state, p_note, p_photo_paths)`: an `in_progress` update is recorded as `accepted` immediately; a `done` update requires at least one evidence photo in `task-evidence`, starts as `pending` (at most one pending per task), and moves the task `accepted → done`. The owner decides a pending update with `decide_task_update(p_update_id, p_decision, p_rejection_reason, p_rejection_details)`: accepting moves the task `done → approved` and creates its payment stage when priced; rejecting with a reason moves the task back `done → accepted`. `start_date` / `finish_date` are optional Riyadh calendar days.
-5. Payment stages are created by `add_payment_stage()` and paid by gateway (`attach_payment_intent()` then the webhook calls `record_payment_event()`), wallet, or bank transfer (`submit_bank_transfer()` then `confirm_bank_transfer()` / `reject_bank_transfer()`). `cancel_payment_stage()` cancels an unpaid stage.
+5. Payment stages are created by `add_payment_stage()` and paid by gateway (`attach_payment_intent()` then the webhook calls `record_payment_event()`), wallet, or bank transfer to the contractor's account in `v_contractor_bank_details` (`submit_bank_transfer()` then `confirm_bank_transfer()` / `reject_bank_transfer()`). `cancel_payment_stage()` cancels an unpaid stage.
 6. While the project is in progress the taker posts `project_reports`.
 7. When completed, both parties can leave a `reviews` row.
 
@@ -166,7 +168,7 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 |--------|-------|
 | Profile | `v_my_profile`, `v_public_profiles`, `v_my_addresses`, `v_my_identity` |
 | Business | `v_business_documents`, `v_admin_verification_queue`, `v_contractors` |
-| Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_task_updates`, `v_project_reports`, `v_project_payments`, `v_bank_transfers`, `v_admin_deed_queue` |
+| Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_task_updates`, `v_project_reports`, `v_project_payments`, `v_bank_transfers`, `v_contractor_bank_details`, `v_admin_deed_queue` |
 | Marketplace | `v_marketplace_items`, `v_my_orders`, `v_order_items` |
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
@@ -180,6 +182,8 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 `v_public_profiles` also has `last_seen_at` and `is_online` (migration 66, §14).
 
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker). Both sides get `photo_paths` (migration 71): the project's photos as paths in the public `images` bucket, an empty array when there are none; show one with the bucket's public URL.
+
+`v_contractor_bank_details` (migration 78) is the bank account a contractor is paid on by bank transfer: `contractor_id`, `beneficiary_name`, `bank_name`, `iban` (clean: `SA` and 22 characters, no spaces), `created_at`, `updated_at` and `is_mine`. The contractor sees their own row (`is_mine`), the owner of a project sees its taker's row while the project is `in_progress` or `completed` (filter by `contractor_id` = `v_my_projects.taker_id`), and admins see every row. No row means the contractor hasn't added their details yet. The contractor saves them by inserting the three columns of §3a the first time and updating them afterwards; the row can't be deleted.
 
 `v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo, `member_since` and `owner_national_id` (their ID/iqama number, null when they never gave one), never their phone.
 
