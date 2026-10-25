@@ -12,6 +12,7 @@ import 'package:watad/features/notifications/shared/domain/entities/user_notific
 import 'package:watad/features/notifications/shared/presentation/pages/notifications_page.dart';
 import 'package:watad/features/notifications/shared/presentation/widgets/notifications_bell.dart';
 
+import '../../../../../helpers/fake_admin_dashboard_repository.dart';
 import '../../../../../helpers/fake_admin_review_repository.dart';
 import '../../../../../helpers/fake_app_session.dart';
 import '../../../../../helpers/fake_client_home_repository.dart';
@@ -62,6 +63,7 @@ void main() {
   });
 
   testWidgets('the admin home has the bell too', (tester) async {
+    registerFakeAdminDashboard(FakeAdminDashboardRepository());
     registerFakeAdminReview(FakeAdminReviewRepository());
     final router = await pumpAppRouter(
       tester,

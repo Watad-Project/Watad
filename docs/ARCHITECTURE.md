@@ -49,7 +49,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | Identity | `users` | update `full_name`, `avatar_path` only | `role` locked. Anonymised, never deleted. |
 | | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. `city`: where the business works, set by the contractor from the location picker. |
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
-| | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Admins see the ID number (not the phone) of someone waiting for review, as `owner_national_id` in the two admin queues, through `private.admin_national_id()` (migration 65). Personal data: never log it. |
+| | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Admins see the ID number of someone waiting for review, as `owner_national_id` in the two admin queues, through `private.admin_national_id()` (migration 65), and, since migration 76, the ID number, phone and email of every user in `v_admin_users` (a maintainer's decision, 2026-10-22). Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
 | | `user_presence` | RO | When each user was last seen, and whether they have the app open (`online_until` in the future). Written only by `set_my_presence()`; read through `v_public_profiles` (§14). |
 | | `addresses` | RW (owner only, delete allowed) | Private. A project's taker sees the site address only through the internal helper `private.project_site_address()` (private schema, not callable from the app). Both sides read it as `v_my_projects.site_address`; `v_my_projects.address_id` is returned to the owner only. |
@@ -60,6 +60,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `project_reports` | insert (taker, while project in progress) | "publishUpdate". |
 | | `project_payments` | RO | Stages created by `add_payment_stage()`. |
 | | `bank_transfers` | RO | Receipts in the private `bank-transfer-receipts` bucket. |
+| | `contractor_bank_details` | RW (own row, contractor; no delete) | Where clients send bank transfers: one row per contractor (PK is the contractor's user id) with `beneficiary_name`, `bank_name` and `iban`. Only a user with a business, while their account is active (not closed or suspended), writes it. Saudi IBANs only: spaces and dashes are removed, Arabic-Indic digits become 0-9 and letters are upper-cased, then the shape (`SA` + 22 characters) and the check digits are verified. Invalid input raises `22023` (`invalid_iban`, `invalid_beneficiary_name`, `invalid_bank_name`). Read through `v_contractor_bank_details` (§7). Deleted when the account is closed (migration 78). Personal data: never log it. |
 | Marketplace | `marketplace_items` | RW (seller) | Stock reduced only by `checkout()`. Delete = set `deleted_at`. |
 | | `orders`, `order_items` | RO | Created by `checkout()`. Paid only by the payment webhook. Price and name are snapshots. |
 | Social | `chats`, `chat_members` | RO | Via `start_chat()`, `add_chat_member()`, `remove_chat_member()`, `mark_chat_read()`. |
@@ -84,6 +85,7 @@ Writes are limited twice: by RLS (which rows) and by column-level grants (which 
 | `project_offers` | `project_id`, `amount`, `message` | `amount`, `message` | no |
 | `project_tasks` | `project_id`, `title`, `description`, `amount`, `start_date` | none (use `set_task_status()`) | no |
 | `project_reports` | `project_id`, `title`, `content` | `title`, `content` | no |
+| `contractor_bank_details` | `beneficiary_name`, `bank_name`, `iban` | same three | no |
 | `marketplace_items` | `item_name`, `description`, `price`, `stock_quantity`, `is_active` | same five, plus `deleted_at` (soft delete) | no |
 | `messages` | `chat_id`, `content` | none | no |
 | `reviews` | `target_user_id`, `project_id` or `order_id`, `rating`, `comment` | `rating`, `comment` | yes |
@@ -120,7 +122,7 @@ The Dart mirrors live in `lib/core/enums/` (see `APP_ARCHITECTURE.md` §6).
 2. A business sends an offer (`project_offers`) and may edit or `withdraw_offer()` while it is `pending`.
 3. The owner calls `accept_offer(p_offer_id, p_expected_amount)`. The expected amount protects against the offer changing at the last second. This assigns the taker. From here the project can be synced to the blockchain.
 4. The taker proposes tasks (`project_tasks`). `set_task_status()` moves them `proposed → accepted | rejected` (and supports direct status moves). On an accepted task, the taker sends updates with `submit_task_update(p_task_id, p_proposed_state, p_note, p_photo_paths)`: an `in_progress` update is recorded as `accepted` immediately; a `done` update requires at least one evidence photo in `task-evidence`, starts as `pending` (at most one pending per task), and moves the task `accepted → done`. The owner decides a pending update with `decide_task_update(p_update_id, p_decision, p_rejection_reason, p_rejection_details)`: accepting moves the task `done → approved` and creates its payment stage when priced; rejecting with a reason moves the task back `done → accepted`. `start_date` / `finish_date` are optional Riyadh calendar days.
-5. Payment stages are created by `add_payment_stage()` and paid by gateway (`attach_payment_intent()` then the webhook calls `record_payment_event()`), wallet, or bank transfer (`submit_bank_transfer()` then `confirm_bank_transfer()` / `reject_bank_transfer()`). `cancel_payment_stage()` cancels an unpaid stage.
+5. Payment stages are created by `add_payment_stage()` and paid by gateway (`attach_payment_intent()` then the webhook calls `record_payment_event()`), wallet, or bank transfer to the contractor's account in `v_contractor_bank_details` (`submit_bank_transfer()` then `confirm_bank_transfer()` / `reject_bank_transfer()`). `cancel_payment_stage()` cancels an unpaid stage.
 6. While the project is in progress the taker posts `project_reports`.
 7. When completed, both parties can leave a `reviews` row.
 
@@ -166,11 +168,12 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 |--------|-------|
 | Profile | `v_my_profile`, `v_public_profiles`, `v_my_addresses`, `v_my_identity` |
 | Business | `v_business_documents`, `v_admin_verification_queue`, `v_contractors` |
-| Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_task_updates`, `v_project_reports`, `v_project_payments`, `v_bank_transfers`, `v_admin_deed_queue` |
+| Projects | `v_open_projects`, `v_my_projects`, `v_project_offers`, `v_project_tasks`, `v_project_task_updates`, `v_project_reports`, `v_project_payments`, `v_bank_transfers`, `v_contractor_bank_details`, `v_admin_deed_queue` |
 | Marketplace | `v_marketplace_items`, `v_my_orders`, `v_order_items` |
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
 | Notifications | `v_my_notifications` |
+| Admin | `v_admin_dashboard`, `v_admin_users`, `v_admin_marketplace_items` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
 
@@ -180,7 +183,15 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker). Both sides get `photo_paths` (migration 71): the project's photos as paths in the public `images` bucket, an empty array when there are none; show one with the bucket's public URL.
 
+`v_contractor_bank_details` (migration 78) is the bank account a contractor is paid on by bank transfer: `contractor_id`, `beneficiary_name`, `bank_name`, `iban` (clean: `SA` and 22 characters, no spaces), `created_at`, `updated_at` and `is_mine`. The contractor sees their own row (`is_mine`), the owner of a project sees its taker's row while the project is `in_progress` or `completed` (filter by `contractor_id` = `v_my_projects.taker_id`), and admins see every row. No row means the contractor hasn't added their details yet. The contractor saves them by inserting the three columns of §3a the first time and updating them afterwards; the row can't be deleted.
+
 `v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo, `member_since` and `owner_national_id` (their ID/iqama number, null when they never gave one), never their phone.
+
+`v_admin_dashboard` (migration 73) is one row of the platform's counts for the admin dashboard, returned to admins only (no row for anyone else): active users (not deleted, not suspended, without admins), clients (users with no business who aren't admins), businesses and verified businesses, projects in total and per status, marketplace items listed and on the market now, pending licenses and deeds (the same rules as the two queues above, so the numbers always match the review tab), open support tickets (`help_reports` still `open`) and, since migration 74, `online_users`: users with the app open now by the rule of `is_online` (§14), admins left out.
+
+`v_admin_users` (migration 75) is every user as an admin sees them, closed accounts included, returned to admins only: name, photo, `role`, `member_since`, last seen and online, `is_deleted`, `is_me` (the admin reading it), the business (company, specialty, city and `verification_status`, any status), the open suspension (`is_suspended`, reason, `suspended_at`, `suspended_by_name`) and activity counts (projects as a client and as a contractor, listings not deleted, reports about them still open or in review). Since migration 76 it also has `email` (from Supabase Auth), `phone` and `national_id` (from `user_identity`; null for someone who never finished sign-up or whose account is closed), through the admin-only lookups `private.admin_user_email()`, `private.admin_user_phone()` and `private.admin_national_id()`. The actions are `admin_set_user_suspension()` and `admin_set_user_role()`.
+
+`v_admin_marketplace_items` (migration 77) is every listing not deleted by its seller, hidden and removed ones included, returned to admins only: the item, its seller (name, photo, verified business, rating, from `v_public_profiles`), one `status` (`removed` by an admin, `hidden` by the seller, `out_of_stock` or `live`, in that order), the removal (`removed_at`, `removal_reason`, `removed_by_name`) and counts (`order_count`, `open_report_count` still open or in review). Removing a listing is `admin_remove_listing()`.
 
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 

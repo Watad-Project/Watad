@@ -12,11 +12,13 @@ import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/auth/shared/presentation/auth_routes.dart';
+import 'package:watad/features/dashboard/admin/presentation/admin_dashboard_routes.dart';
 import 'package:watad/features/dashboard/contractor/presentation/contractor_dashboard_routes.dart';
 import 'package:watad/features/home/client/presentation/client_home_routes.dart';
 import 'package:watad/features/kyc/contractor/presentation/contractor_kyc_routes.dart';
 import 'package:watad/features/kyc/shared/presentation/kyc_routes.dart';
 import 'package:watad/features/location/shared/presentation/location_routes.dart';
+import 'package:watad/features/marketplace/admin/presentation/admin_marketplace_routes.dart';
 import 'package:watad/features/navigation/admin/presentation/admin_navigation_routes.dart';
 import 'package:watad/features/navigation/client/presentation/client_navigation_routes.dart';
 import 'package:watad/features/navigation/contractor/presentation/contractor_navigation_routes.dart';
@@ -24,9 +26,11 @@ import 'package:watad/features/notifications/shared/presentation/notifications_r
 import 'package:watad/features/onboarding/contractor/presentation/contractor_onboarding_routes.dart';
 import 'package:watad/features/onboarding/shared/presentation/onboarding_routes.dart';
 import 'package:watad/features/projects/client/presentation/client_projects_routes.dart';
+import 'package:watad/features/reports/admin/presentation/admin_reports_routes.dart';
 import 'package:watad/features/review/admin/presentation/admin_review_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
 import 'package:watad/features/work/contractor/presentation/contractor_work_routes.dart';
+import 'package:watad/features/users/admin/presentation/admin_users_routes.dart';
 
 /// The app's only router, used by `WatadApp`.
 final GoRouter appRouter = createAppRouter(session: getIt<AppSession>());
@@ -54,8 +58,12 @@ GoRouter createAppRouter({
     routes: [
       // One line per role folder, sorted by file name. Each folder's names
       // and paths live in lib/core/router/routes/.
+      ...adminDashboardRoutes,
+      ...adminMarketplaceRoutes,
       ...adminNavigationRoutes,
+      ...adminReportsRoutes,
       ...adminReviewRoutes,
+      ...adminUsersRoutes,
       ...authRoutes,
       ...clientHomeRoutes,
       ...clientNavigationRoutes,
