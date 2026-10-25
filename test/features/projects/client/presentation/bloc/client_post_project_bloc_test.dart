@@ -11,6 +11,8 @@ import 'package:watad/features/projects/client/domain/entities/client_project_ta
 import 'package:watad/features/projects/client/domain/entities/client_project_type.dart';
 import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_create_address_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_create_project_use_case.dart';
@@ -531,5 +533,21 @@ class _FakeClientProjectsRepository implements ClientProjectsRepository {
 
   @override
   Future<Result<List<ClientProjectTask>>> getProjectTasks(String projectId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<ClientProjectTask>> getProjectTask(String taskId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<void>> setTaskStatus(ClientTaskStatusParams params) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<ClientTaskUpdate>> getTaskUpdate(String updateId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<void>> acceptTaskUpdate(String updateId) =>
       throw UnimplementedError();
 }

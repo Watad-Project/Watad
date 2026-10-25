@@ -1,3 +1,4 @@
+import 'package:watad/core/enums/task_update_decision.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/supabase/supabase_guard.dart';
 import 'package:watad/features/projects/client/datasource/remote/client_projects_remote_data_source.dart';
@@ -8,6 +9,8 @@ import 'package:watad/features/projects/client/domain/entities/client_project_of
 import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
 import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
 
 class ClientProjectsRepositoryImpl implements ClientProjectsRepository {
@@ -69,4 +72,23 @@ class ClientProjectsRepositoryImpl implements ClientProjectsRepository {
   @override
   Future<Result<List<ClientProjectTask>>> getProjectTasks(String projectId) =>
       guardSupabaseCall(() => _remote.getProjectTasks(projectId));
+
+  @override
+  Future<Result<ClientProjectTask>> getProjectTask(String taskId) =>
+      guardSupabaseCall(() => _remote.getProjectTask(taskId));
+
+  @override
+  Future<Result<void>> setTaskStatus(ClientTaskStatusParams params) =>
+      guardSupabaseCall(
+        () => _remote.setTaskStatus(params.taskId, params.status),
+      );
+
+  @override
+  Future<Result<ClientTaskUpdate>> getTaskUpdate(String updateId) =>
+      guardSupabaseCall(() => _remote.getTaskUpdate(updateId));
+
+  @override
+  Future<Result<void>> acceptTaskUpdate(String updateId) => guardSupabaseCall(
+    () => _remote.decideTaskUpdate(updateId, TaskUpdateDecision.accepted),
+  );
 }

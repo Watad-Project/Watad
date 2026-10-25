@@ -3,13 +3,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/display/app_photo_tile.dart';
 import 'package:watad/core/components/display/app_project_card.dart';
+import 'package:watad/core/components/display/app_state_stepper.dart';
 import 'package:watad/core/components/feedback/app_confirm_dialog.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/enums/offer_status.dart';
 import 'package:watad/core/enums/payment_status.dart';
 import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/core/enums/task_status.dart';
+import 'package:watad/core/enums/task_update_decision.dart';
+import 'package:watad/core/enums/task_update_state.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
@@ -19,6 +23,7 @@ import 'package:watad/features/projects/client/domain/entities/client_deed_verif
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_project_deed_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_project_tasks_bloc.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_post_project_page.dart';
@@ -26,10 +31,13 @@ import 'package:watad/features/projects/client/presentation/pages/client_project
 import 'package:watad/features/projects/client/presentation/pages/client_project_offers_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_project_tasks_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_projects_page.dart';
+import 'package:watad/features/projects/client/presentation/pages/client_task_details_page.dart';
+import 'package:watad/features/projects/client/presentation/pages/client_task_update_page.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_task_date.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
+import '../../../../helpers/fake_network_images.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -133,6 +141,30 @@ void main() {
       amount: Money.halalas(500000),
     ),
   ];
+  // The «منجزة» update of t-3, with three evidence photos.
+  ClientTaskUpdate taskUpdate([
+    TaskUpdateDecision decision = TaskUpdateDecision.pending,
+  ]) => ClientTaskUpdate(
+    id: 'u-3',
+    taskTitle: 'اللياسة الداخلية',
+    proposedState: TaskUpdateState.done,
+    decision: decision,
+    createdAt: DateTime.utc(2026, 10, 24, 6, 40),
+    projectStatus: ProjectStatus.inProgress,
+    taskAmount: const Money.halalas(1500000),
+    note: 'انتهت لياسة الدور الأرضي كاملة',
+    photoUrls: [
+      for (final photo in ['a', 'b', 'c'])
+        'https://example.supabase.co/storage/v1/object/sign/task-evidence/b-1/$photo.jpg?token=t',
+    ],
+    contractorName: 'مؤسسة البناء المتين',
+    rejectionReason: decision == TaskUpdateDecision.rejected
+        ? 'الأدلة غير كافية'
+        : null,
+    rejectionDetails: decision == TaskUpdateDecision.rejected
+        ? 'لا تظهر زوايا السقف.'
+        : null,
+  );
 
   late FakeClientProjectsRepository repository;
 
@@ -632,6 +664,14 @@ void main() {
     expect(linkOf('offer_received')?.pathParameters, {'projectId': 'p-1'});
     expect(linkOf('task_added')?.name, ClientProjectsRoutes.projectTasksName);
     expect(linkOf('task_added')?.pathParameters, {'projectId': 'p-1'});
+    final update = AppNotificationLinks.linkOf({
+      'type': 'task_update_sent',
+      'project_id': 'p-1',
+      'task_id': 't-1',
+      'update_id': 'u-1',
+    });
+    expect(update?.name, ClientProjectsRoutes.taskUpdateName);
+    expect(update?.pathParameters, {'projectId': 'p-1', 'updateId': 'u-1'});
   });
 
   testWidgets('every projects page fits large, bold text', (tester) async {
@@ -663,5 +703,227 @@ void main() {
 
     expect(find.byType(ClientProjectTasksPage), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  Future<GoRouter> openUpdate(
+    WidgetTester tester, {
+    double textScale = 1,
+    bool boldText = false,
+  }) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+      textScale: textScale,
+      boldText: boldText,
+    );
+    router.goNamed(
+      ClientProjectsRoutes.taskUpdateName,
+      pathParameters: {'projectId': 'p-3', 'updateId': 'u-3'},
+    );
+    await tester.pumpAndSettle();
+    return router;
+  }
+
+  // Opens a task's «التفاصيل» on the timeline, as the client does.
+  Future<void> openDetails(WidgetTester tester, String taskId) async {
+    final details = find.byKey(ValueKey('client_task_details_$taskId'));
+    await tester.ensureVisible(details);
+    await tester.pumpAndSettle();
+    await tester.tap(details);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('client-task-update shows the update at its path', (
+    tester,
+  ) async {
+    repository.taskUpdateResult = Success(taskUpdate());
+    await withFakeNetworkImages(() async {
+      final router = await openUpdate(tester);
+
+      expect(currentPath(router), '/client/projects/p-3/updates/u-3');
+      expect(find.byType(ClientTaskUpdatePage), findsOneWidget);
+      expect(find.text('اللياسة الداخلية'), findsOneWidget);
+      expect(find.text('مؤسسة البناء المتين'), findsOneWidget);
+      expect(find.text('انتهت لياسة الدور الأرضي كاملة'), findsOneWidget);
+      expect(find.byType(AppPhotoTile), findsNWidgets(3));
+      expect(find.text('١٥٬٠٠٠ ر.س'), findsOneWidget);
+      // The status filled in up to «منجزة».
+      expect(
+        tester.widget<AppStateStepper>(find.byType(AppStateStepper)),
+        isA<AppStateStepper>()
+            .having((s) => s.currentIndex, 'currentIndex', 1)
+            .having((s) => s.animateFrom, 'animateFrom', 0),
+      );
+      expect(
+        find.byKey(const Key('client_task_update_accept')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('client_task_update_reject')),
+        findsOneWidget,
+      );
+    });
+  });
+
+  testWidgets('accepting approves the task; the status fills to «معتمدة»', (
+    tester,
+  ) async {
+    repository
+      ..taskUpdateResult = Success(taskUpdate())
+      ..taskUpdateAfterAccept = Success(
+        taskUpdate(TaskUpdateDecision.accepted),
+      );
+    await withFakeNetworkImages(() async {
+      await openUpdate(tester);
+      await tester.tap(find.byKey(const Key('client_task_update_accept')));
+      await tester.pumpAndSettle();
+
+      expect(repository.acceptedUpdates, ['u-3']);
+      expect(find.text('اعتُمدت المهمة'), findsOneWidget);
+      expect(find.text('اعتمدتَ هذه المهمة'), findsOneWidget);
+      expect(
+        tester
+            .widget<AppStateStepper>(find.byType(AppStateStepper))
+            .currentIndex,
+        2,
+      );
+      expect(find.byKey(const Key('client_task_update_accept')), findsNothing);
+    });
+  });
+
+  testWidgets('a rejected update only reads, with the client\'s reason', (
+    tester,
+  ) async {
+    repository.taskUpdateResult = Success(
+      taskUpdate(TaskUpdateDecision.rejected),
+    );
+    await withFakeNetworkImages(() async {
+      await openUpdate(tester);
+
+      expect(find.text('رفضتَ هذا التحديث'), findsOneWidget);
+      expect(
+        find.text('الأدلة غير كافية\nلا تظهر زوايا السقف.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('client_task_update_accept')), findsNothing);
+      expect(find.byKey(const Key('client_task_update_reject')), findsNothing);
+    });
+  });
+
+  testWidgets(
+    'a task with updates opens its latest one; the others, the task',
+    (tester) async {
+      repository
+        ..taskUpdateResult = Success(taskUpdate())
+        ..projectTaskResult = Success(tasks[4]);
+      await withFakeNetworkImages(() async {
+        final router = await openTasks(tester);
+
+        await openDetails(tester, 't-3');
+        expect(
+          tester
+              .widget<ClientTaskUpdatePage>(find.byType(ClientTaskUpdatePage))
+              .updateId,
+          'u-3',
+        );
+
+        router.pop();
+        await tester.pumpAndSettle();
+        await openDetails(tester, 't-5');
+        expect(
+          tester
+              .widget<ClientTaskDetailsPage>(find.byType(ClientTaskDetailsPage))
+              .taskId,
+          't-5',
+        );
+      });
+    },
+  );
+
+  testWidgets('accepting a proposed task goes back to the timeline', (
+    tester,
+  ) async {
+    repository.projectTaskResult = Success(tasks[4]);
+    await openTasks(tester);
+    await openDetails(tester, 't-5');
+    expect(find.text('دهان الجدران الداخلية'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('client_task_accept')));
+    await tester.pumpAndSettle();
+
+    expect(repository.taskStatuses, [('t-5', TaskStatus.accepted)]);
+    expect(find.text('قُبلت المهمة'), findsOneWidget);
+    expect(find.byType(ClientTaskDetailsPage), findsNothing);
+    expect(find.byType(ClientProjectTasksPage), findsOneWidget);
+  });
+
+  testWidgets('rejecting a proposed task asks first', (tester) async {
+    repository.projectTaskResult = Success(tasks[4]);
+    await openTasks(tester);
+    await openDetails(tester, 't-5');
+
+    await tester.tap(find.byKey(const Key('client_task_reject')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppConfirmDialog), findsOneWidget);
+    expect(repository.taskStatuses, isEmpty);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppConfirmDialog),
+        matching: find.text('رفض المهمة'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(repository.taskStatuses, [('t-5', TaskStatus.rejected)]);
+    expect(find.text('رُفضت المهمة'), findsOneWidget);
+    expect(find.byType(ClientProjectTasksPage), findsOneWidget);
+  });
+
+  testWidgets('client-task-details only reads a task that is not proposed', (
+    tester,
+  ) async {
+    repository
+      ..projectResult = Success(started)
+      ..projectTaskResult = Success(tasks[3]);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
+    router.goNamed(
+      ClientProjectsRoutes.taskDetailsName,
+      pathParameters: {'projectId': 'p-3', 'taskId': 't-4'},
+    );
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), '/client/projects/p-3/tasks/t-4');
+    expect(find.text('تمديد نقاط الكهرباء'), findsOneWidget);
+    expect(find.text('قيد التنفيذ'), findsOneWidget);
+    expect(find.text('٩٬٠٠٠ ر.س'), findsOneWidget);
+    expect(find.byKey(const Key('client_task_accept')), findsNothing);
+    expect(find.byKey(const Key('client_task_reject')), findsNothing);
+  });
+
+  testWidgets('the update and task pages fit large, bold text', (tester) async {
+    repository
+      ..taskUpdateResult = Success(taskUpdate())
+      ..projectResult = Success(started)
+      ..projectTaskResult = Success(tasks[4]);
+    await withFakeNetworkImages(() async {
+      final router = await openUpdate(
+        tester,
+        textScale: largeTextScale,
+        boldText: true,
+      );
+      expect(find.byType(ClientTaskUpdatePage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      router.goNamed(
+        ClientProjectsRoutes.taskDetailsName,
+        pathParameters: {'projectId': 'p-3', 'taskId': 't-5'},
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(ClientTaskDetailsPage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

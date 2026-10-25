@@ -9,6 +9,11 @@ abstract final class ClientTaskDate {
   static String day(BuildContext context, DateTime day) =>
       DateFormat.yMMMd(_locale(context)).format(day);
 
+  /// A moment (a `timestamptz` column), e.g. «٢٤ أكتوبر ٢٠٢٦ ٩:٤٠ ص», on
+  /// the phone's clock.
+  static String moment(BuildContext context, DateTime time) =>
+      DateFormat.yMMMd(_locale(context)).add_jm().format(time.toLocal());
+
   /// A task's days: «١٢ أكتوبر ٢٠٢٦ – ٢٠ أكتوبر ٢٠٢٦» once it's done, «يبدأ
   /// ١٢ أكتوبر ٢٠٢٦» before, or that it has none yet.
   static String days(BuildContext context, DateTime? start, DateTime? finish) =>

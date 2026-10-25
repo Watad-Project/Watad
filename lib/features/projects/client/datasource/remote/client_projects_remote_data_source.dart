@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/core/enums/project_status.dart';
+import 'package:watad/core/enums/task_status.dart';
+import 'package:watad/core/enums/task_update_decision.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_offer_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_task_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_saved_address_model.dart';
+import 'package:watad/features/projects/client/datasource/models/client_task_update_model.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 
 abstract interface class ClientProjectsRemoteDataSource {
@@ -41,6 +44,25 @@ abstract interface class ClientProjectsRemoteDataSource {
   /// The tasks of a project (`v_project_tasks`, `my_role = 'owner'`), by
   /// start date (tasks without one last), then by when they were added.
   Future<List<ClientProjectTaskModel>> getProjectTasks(String projectId);
+
+  /// One task (`v_project_tasks`, `my_role = 'owner'`).
+  Future<ClientProjectTaskModel> getProjectTask(String taskId);
+
+  /// `set_task_status`: the client's answer to a proposed task.
+  Future<void> setTaskStatus(String taskId, TaskStatus status);
+
+  /// One update (`v_project_task_updates`, `my_role = 'owner'`), with the
+  /// project's status and contractor (`v_my_projects`) and signed links to
+  /// its evidence photos (`task-evidence`).
+  Future<ClientTaskUpdateModel> getTaskUpdate(String updateId);
+
+  /// `decide_task_update`: accepts or rejects a pending update.
+  Future<void> decideTaskUpdate(
+    String updateId,
+    TaskUpdateDecision decision, {
+    String? rejectionReason,
+    String? rejectionDetails,
+  });
 }
 
 class ClientProjectsRemoteDataSourceImpl
@@ -319,5 +341,91 @@ class ClientProjectsRemoteDataSourceImpl
         .order('start_date', ascending: true)
         .order('created_at', ascending: true);
     return rows.map(ClientProjectTaskModel.fromJson).toList();
+  }
+
+  @override
+  Future<ClientProjectTaskModel> getProjectTask(String taskId) async {
+    final row = await _client
+        .from('v_project_tasks')
+        .select(_taskColumns)
+        .eq('id', taskId)
+        .eq('my_role', 'owner')
+        .single();
+    return ClientProjectTaskModel.fromJson(row);
+  }
+
+  @override
+  Future<void> setTaskStatus(String taskId, TaskStatus status) async {
+    await _client.rpc<void>(
+      'set_task_status',
+      params: {'p_task_id': taskId, 'p_status': status.toJson()},
+    );
+  }
+
+  static const String _updateColumns =
+      'id, project_id, task_title, task_amount, proposed_state, note, '
+      'photo_paths, decision, rejection_reason, rejection_details, created_at';
+
+  /// How long a link to an evidence photo works.
+  static const int _signedUrlSeconds = 10 * 60;
+
+  @override
+  Future<ClientTaskUpdateModel> getTaskUpdate(String updateId) async {
+    final row = await _client
+        .from('v_project_task_updates')
+        .select(_updateColumns)
+        .eq('id', updateId)
+        .eq('my_role', 'owner')
+        .single();
+    final project = await _client
+        .from('v_my_projects')
+        .select('status, taker_company_name, taker_avatar_path')
+        .eq('id', row['project_id'] as String)
+        .eq('my_role', 'owner')
+        .single();
+    final evidence = _client.storage.from('task-evidence');
+    final paths = [
+      for (final path in row['photo_paths'] as List<dynamic>? ?? const [])
+        path as String,
+    ];
+    final links = await Future.wait(
+      paths.map((path) => _signedUrl(evidence, path)),
+    );
+    final avatar = project['taker_avatar_path'] as String?;
+    return ClientTaskUpdateModel.fromJson({
+      ...row,
+      'photo_urls': [for (final link in links) ?link],
+      'project_status': project['status'],
+      'contractor_name': project['taker_company_name'],
+      // Photos of people are in the public `avatars` bucket.
+      'contractor_avatar_url': avatar == null || avatar.isEmpty
+          ? null
+          : _client.storage.from('avatars').getPublicUrl(avatar),
+    });
+  }
+
+  /// A short-lived link to [path] in a private bucket, or null when the
+  /// file isn't there (never uploaded, or removed): the rest still shows.
+  Future<String?> _signedUrl(StorageFileApi bucket, String path) async =>
+      await bucket.exists(path)
+      ? await bucket.createSignedUrl(path, _signedUrlSeconds)
+      : null;
+
+  @override
+  Future<void> decideTaskUpdate(
+    String updateId,
+    TaskUpdateDecision decision, {
+    String? rejectionReason,
+    String? rejectionDetails,
+  }) async {
+    await _client.rpc<void>(
+      'decide_task_update',
+      params: {
+        'p_update_id': updateId,
+        'p_decision': decision.toJson(),
+        'p_rejection_reason': rejectionReason,
+        'p_rejection_details': rejectionDetails,
+      },
+    );
   }
 }

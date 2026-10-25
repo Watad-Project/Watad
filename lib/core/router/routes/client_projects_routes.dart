@@ -15,4 +15,12 @@ abstract final class ClientProjectsRoutes {
 
   static const String projectDeedName = 'client-project-deed';
   static const String projectDeedPath = '/client/projects/:projectId/deed';
+
+  static const String taskDetailsName = 'client-task-details';
+  static const String taskDetailsPath =
+      '/client/projects/:projectId/tasks/:taskId';
+
+  static const String taskUpdateName = 'client-task-update';
+  static const String taskUpdatePath =
+      '/client/projects/:projectId/updates/:updateId';
 }

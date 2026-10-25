@@ -11,6 +11,7 @@ import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -121,7 +122,7 @@ class ClientProjectTasksPage extends StatelessWidget {
     );
   }
 
-  static AppTimelineItem _item(BuildContext context, ClientProjectTask task) {
+  AppTimelineItem _item(BuildContext context, ClientProjectTask task) {
     final amount = task.amount;
     return AppTimelineItem(
       title: task.title,
@@ -130,7 +131,27 @@ class ClientProjectTasksPage extends StatelessWidget {
       trailing: amount == null
           ? context.tr('projects.client.task_no_amount')
           : AppMoneyText.format(context, amount),
-      tag: ClientTaskTag(task: task, onDetails: null),
+      tag: ClientTaskTag(task: task, onDetails: () => _openTask(context, task)),
     );
+  }
+
+  /// A task with updates opens its latest one, where the client decides; the
+  /// others (proposed, accepted without updates, rejected) open the task.
+  Future<void> _openTask(BuildContext context, ClientProjectTask task) async {
+    final bloc = context.read<ClientProjectTasksBloc>();
+    final updateId = task.lastUpdateId;
+    if (updateId == null) {
+      await context.pushNamed(
+        ClientProjectsRoutes.taskDetailsName,
+        pathParameters: {'projectId': projectId, 'taskId': task.id},
+      );
+    } else {
+      await context.pushNamed(
+        ClientProjectsRoutes.taskUpdateName,
+        pathParameters: {'projectId': projectId, 'updateId': updateId},
+      );
+    }
+    // A decision there changes the tasks.
+    bloc.add(ClientProjectTasksFetched(projectId));
   }
 }

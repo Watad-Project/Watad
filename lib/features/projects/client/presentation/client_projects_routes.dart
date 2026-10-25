@@ -7,11 +7,15 @@ import 'package:watad/features/projects/client/presentation/bloc/client_project_
 import 'package:watad/features/projects/client/presentation/bloc/client_project_offers_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_project_tasks_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_projects_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_task_details_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_task_update_bloc.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_post_project_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_project_deed_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_project_offers_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_project_tasks_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_projects_page.dart';
+import 'package:watad/features/projects/client/presentation/pages/client_task_details_page.dart';
+import 'package:watad/features/projects/client/presentation/pages/client_task_update_page.dart';
 
 final List<RouteBase> clientProjectsRoutes = [
   // Before the project's tasks: '/client/projects/:projectId' would also
@@ -69,6 +73,33 @@ final List<RouteBase> clientProjectsRoutes = [
             getIt<ClientProjectDeedBloc>()
               ..add(ClientProjectDeedFetched(projectId)),
         child: ClientProjectDeedPage(projectId: projectId),
+      );
+    },
+  ),
+  GoRoute(
+    name: ClientProjectsRoutes.taskDetailsName,
+    path: ClientProjectsRoutes.taskDetailsPath,
+    builder: (context, state) {
+      final projectId = state.pathParameters['projectId']!;
+      final taskId = state.pathParameters['taskId']!;
+      return BlocProvider(
+        create: (_) => getIt<ClientTaskDetailsBloc>()
+          ..add(ClientTaskDetailsFetched(projectId: projectId, taskId: taskId)),
+        child: ClientTaskDetailsPage(projectId: projectId, taskId: taskId),
+      );
+    },
+  ),
+  GoRoute(
+    name: ClientProjectsRoutes.taskUpdateName,
+    path: ClientProjectsRoutes.taskUpdatePath,
+    builder: (context, state) {
+      final projectId = state.pathParameters['projectId']!;
+      final updateId = state.pathParameters['updateId']!;
+      return BlocProvider(
+        create: (_) =>
+            getIt<ClientTaskUpdateBloc>()
+              ..add(ClientTaskUpdateFetched(updateId)),
+        child: ClientTaskUpdatePage(projectId: projectId, updateId: updateId),
       );
     },
   ),
