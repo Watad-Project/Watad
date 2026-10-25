@@ -13,6 +13,7 @@ import 'package:watad/features/marketplace/admin/admin_marketplace_injection.dar
 import 'package:watad/features/notifications/shared/notifications_injection.dart';
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
+import 'package:watad/features/payments/client/client_payments_injection.dart';
 import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
@@ -42,6 +43,7 @@ void configureDependencies() {
   registerAdminUsersDependencies(getIt);
   registerAuthDependencies(getIt);
   registerClientHomeDependencies(getIt);
+  registerClientPaymentsDependencies(getIt);
   registerClientProjectsDependencies(getIt);
   registerContractorDashboardDependencies(getIt);
   registerContractorKycDependencies(getIt);

@@ -20,6 +20,7 @@ import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
+import 'package:watad/features/payments/client/presentation/pages/client_new_payment_page.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
@@ -38,6 +39,7 @@ import 'package:watad/features/projects/client/presentation/pages/client_task_up
 import 'package:watad/features/projects/client/presentation/widgets/client_task_date.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_client_payments_repository.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
 import '../../../../helpers/fake_network_images.dart';
 import '../../../../helpers/fake_splash_repository.dart';
@@ -1052,5 +1054,22 @@ void main() {
 
     expect(find.byType(ClientTaskUpdateRejectPage), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('«الدفع للمقاول» opens the choice of tasks to pay', (
+    tester,
+  ) async {
+    registerFakeClientPayments();
+    await openTasks(tester);
+
+    await tester.tap(find.byKey(const Key('client_project_tasks_pay')));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<ClientNewPaymentPage>(find.byType(ClientNewPaymentPage))
+          .projectId,
+      'p-3',
+    );
   });
 }

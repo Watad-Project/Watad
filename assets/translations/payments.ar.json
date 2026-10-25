@@ -1,0 +1,15 @@
+{
+  "client": {
+    "new_title": "الدفع للمقاول",
+    "new_subtitle": "اختر المهام المكتملة والمعتمدة التي تريد دفعها.",
+    "reason_paid": "مدفوعة",
+    "reason_awaiting_contractor": "بانتظار تأكيد المقاول",
+    "reason_not_approved": "لم تُعتمد بعد",
+    "reason_no_amount": "لا يوجد مبلغ لدفعه",
+    "reason_unavailable": "غير متاحة للدفع",
+    "no_amount": "بلا مبلغ",
+    "total": "الإجمالي",
+    "continue": "متابعة",
+    "empty": "لا توجد مهام جاهزة للدفع بعد"
+  }
+}

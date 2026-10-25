@@ -11,6 +11,7 @@ import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/client_payments_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -69,7 +70,7 @@ class ClientProjectTasksPage extends StatelessWidget {
                   primary: AppButton(
                     key: const Key('client_project_tasks_pay'),
                     label: context.tr('projects.client.pay_contractor'),
-                    onPressed: null,
+                    onPressed: () => _pay(context),
                   ),
                 )
               : null,
@@ -152,6 +153,17 @@ class ClientProjectTasksPage extends StatelessWidget {
       );
     }
     // A decision there changes the tasks.
+    bloc.add(ClientProjectTasksFetched(projectId));
+  }
+
+  /// «الدفع للمقاول»: choosing the tasks to pay, then the bank transfer.
+  Future<void> _pay(BuildContext context) async {
+    final bloc = context.read<ClientProjectTasksBloc>();
+    await context.pushNamed(
+      ClientPaymentsRoutes.newPaymentName,
+      pathParameters: {'projectId': projectId},
+    );
+    // A receipt sent changes the tasks' payments.
     bloc.add(ClientProjectTasksFetched(projectId));
   }
 }

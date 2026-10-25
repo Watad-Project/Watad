@@ -1,0 +1,15 @@
+{
+  "client": {
+    "new_title": "Pay contractor",
+    "new_subtitle": "Choose the finished, approved tasks you want to pay for.",
+    "reason_paid": "Paid",
+    "reason_awaiting_contractor": "Waiting for the contractor to confirm",
+    "reason_not_approved": "Not approved yet",
+    "reason_no_amount": "No amount to pay",
+    "reason_unavailable": "Not available to pay",
+    "no_amount": "No amount",
+    "total": "Total",
+    "continue": "Continue",
+    "empty": "No task is ready to pay yet"
+  }
+}
