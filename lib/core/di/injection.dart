@@ -17,6 +17,7 @@ import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
+import 'package:watad/features/work/contractor/contractor_work_injection.dart';
 import 'package:watad/features/users/admin/admin_users_injection.dart';
 import 'package:watad/features/work/contractor/contractor_work_injection.dart';
 
