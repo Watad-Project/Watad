@@ -14,6 +14,9 @@ class ClientReceipt {
   /// The most the `bank-transfer-receipts` bucket takes: 10 MB.
   static const int maxBytes = 10 * 1024 * 1024;
 
+  /// The file extensions [type] knows, for the file picker.
+  static const List<String> extensions = ['pdf', 'jpg', 'jpeg', 'png'];
+
   /// PDF, JPEG or PNG, from the name's extension; null for anything else
   /// (e.g. an iPhone's HEIC photo).
   ClientReceiptType? get type => switch (name.split('.').last.toLowerCase()) {

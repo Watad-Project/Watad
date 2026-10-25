@@ -26,6 +26,16 @@ void main() {
     }
   });
 
+  test('takes every extension the file picker offers', () async {
+    for (final extension in ClientReceipt.extensions) {
+      final result = await check(
+        ClientReceipt(bytes: bytes, name: 'receipt.$extension'),
+      );
+
+      expect(result, isA<Success<ClientReceipt>>(), reason: extension);
+    }
+  });
+
   test('refuses any other kind of file, e.g. an iPhone\'s HEIC', () async {
     for (final name in ['IMG_0001.HEIC', 'animation.gif', 'receipt']) {
       final result = await check(ClientReceipt(bytes: bytes, name: name));

@@ -134,7 +134,7 @@ class ClientBankTransferPage extends StatelessWidget {
   static Future<ClientReceipt?> _pickFile() async {
     final file = await FilePicker.pickFile(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      allowedExtensions: ClientReceipt.extensions,
     );
     if (file == null) return null;
     return ClientReceipt(bytes: await file.readAsBytes(), name: file.name);
@@ -147,9 +147,9 @@ class ClientBankTransferPage extends StatelessWidget {
   static Future<ClientReceipt?> _pickPhoto() async {
     final photo = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      imageQuality: 85,
-      maxWidth: 2048,
-      maxHeight: 2048,
+      imageQuality: 80,
+      maxWidth: 1920,
+      maxHeight: 1920,
     );
     if (photo == null) return null;
     return ClientReceipt(bytes: await photo.readAsBytes(), name: photo.name);
