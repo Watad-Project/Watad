@@ -15,7 +15,7 @@ void main() {
         body: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              result = await AppConfirmDialog.show(
+              await AppConfirmDialog.show(
                 context,
                 title: 'سحب العرض',
                 message: 'هل أنت متأكد من سحب العرض؟',
@@ -50,7 +50,7 @@ void main() {
         body: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              result = await AppConfirmDialog.show(
+              await AppConfirmDialog.show(
                 context,
                 title: 'سحب العرض',
                 message: 'هل أنت متأكد من سحب العرض؟',
