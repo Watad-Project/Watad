@@ -12,6 +12,7 @@ import 'package:watad/core/components/feedback/app_loading_indicator.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/client_payments_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -64,13 +65,38 @@ class ClientNewPaymentPage extends StatelessWidget {
                   primary: AppButton(
                     key: const Key('client_new_payment_continue'),
                     label: context.tr('payments.client.continue'),
-                    onPressed: null,
+                    onPressed: state.canContinue
+                        ? () => _continue(context, state)
+                        : null,
                   ),
                 )
               : null,
         );
       },
     );
+  }
+
+  /// «متابعة»: the bank transfer for the selected tasks, passed as their ids.
+  /// Once the receipt went, this page closes too, back to the timeline,
+  /// which reloads; back without sending, the tasks are read again.
+  Future<void> _continue(
+    BuildContext context,
+    ClientNewPaymentState state,
+  ) async {
+    final bloc = context.read<ClientNewPaymentBloc>();
+    final sent = await context.pushNamed<bool>(
+      ClientPaymentsRoutes.bankTransferName,
+      pathParameters: {'projectId': projectId},
+      queryParameters: {
+        'taskIds': [for (final task in state.selectedTasks) task.id].join(','),
+      },
+    );
+    if (!context.mounted) return;
+    if (sent == true) {
+      context.pop(true);
+    } else {
+      bloc.add(ClientNewPaymentFetched(projectId));
+    }
   }
 
   /// Loading, or why it couldn't load.

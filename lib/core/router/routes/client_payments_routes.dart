@@ -3,4 +3,7 @@
 abstract final class ClientPaymentsRoutes {
   static const String newPaymentName = 'client-new-payment';
   static const String newPaymentPath = '/client/payments/:projectId/new';
+
+  static const String bankTransferName = 'client-bank-transfer';
+  static const String bankTransferPath = '/client/payments/:projectId/transfer';
 }
