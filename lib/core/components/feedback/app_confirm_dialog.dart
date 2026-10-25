@@ -2,102 +2,137 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/feedback/app_popup.dart';
+import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 
-/// A dialog that asks the user to confirm an action before proceeding
-/// (e.g. withdrawing an offer or deleting an item).
+/// Asks before a serious action (remove a listing, suspend a user): what
+/// will happen, then confirm or cancel. With [reasonLabel], a reason is
+/// required before confirming, e.g. one the other person will read.
 ///
-/// Open it with [AppConfirmDialog.show], which uses [AppPopup.dialog] and
-/// resolves to `true` when confirmed or `false`/`null` when cancelled.
-class AppConfirmDialog extends StatelessWidget {
+/// Open it with [AppConfirmDialog.show]:
+///
+/// ```dart
+/// final reason = await AppConfirmDialog.show(
+///   context,
+///   title: context.tr('reports.remove_title'),
+///   message: context.tr('reports.remove_message'),
+///   confirmLabel: context.tr('reports.remove_listing'),
+///   reasonLabel: context.tr('common.reason'),
+/// );
+/// if (reason != null) bloc.add(...);
+/// ```
+class AppConfirmDialog extends StatefulWidget {
   const AppConfirmDialog({
     required this.title,
     required this.message,
     required this.confirmLabel,
-    this.cancelLabel,
-    this.confirmVariant = AppButtonVariant.dark,
-    this.onConfirm,
-    this.onCancel,
+    this.reasonLabel,
     super.key,
   });
 
   final String title;
+
+  /// What will happen, in a sentence or two.
   final String message;
   final String confirmLabel;
 
-  /// Defaults to `common.close` when omitted.
-  final String? cancelLabel;
-  final AppButtonVariant confirmVariant;
-  final VoidCallback? onConfirm;
-  final VoidCallback? onCancel;
+  /// The label of the required reason field. Null asks for no reason.
+  final String? reasonLabel;
 
-  /// Opens the confirmation dialog and returns `true` only when the user
-  /// taps the confirm button.
-  static Future<bool?> show(
+  /// Shows the dialog. Returns the trimmed reason (empty without
+  /// [reasonLabel]) when confirmed, or null when cancelled.
+  static Future<String?> show(
     BuildContext context, {
     required String title,
     required String message,
     required String confirmLabel,
-    String? cancelLabel,
-    AppButtonVariant confirmVariant = AppButtonVariant.dark,
+    String? reasonLabel,
   }) {
-    return AppPopup.dialog<bool>(
+    return AppPopup.dialog<String>(
       context,
-      builder: (dialogContext) => AppConfirmDialog(
+      builder: (_) => AppConfirmDialog(
         title: title,
         message: message,
         confirmLabel: confirmLabel,
-        cancelLabel: cancelLabel,
-        confirmVariant: confirmVariant,
-        onConfirm: () => Navigator.of(dialogContext).pop(true),
-        onCancel: () => Navigator.of(dialogContext).pop(false),
+        reasonLabel: reasonLabel,
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final effectiveCancelLabel = cancelLabel ?? context.tr('common.close');
+  State<AppConfirmDialog> createState() => _AppConfirmDialogState();
+}
 
+class _AppConfirmDialogState extends State<AppConfirmDialog> {
+  final TextEditingController _reason = TextEditingController();
+  bool _showError = false;
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    final reason = _reason.text.trim();
+    if (widget.reasonLabel != null && reason.isEmpty) {
+      setState(() => _showError = true);
+      return;
+    }
+    Navigator.of(context).pop(reason);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(AppRadius.lg)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsetsDirectional.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(title, style: AppTextStyles.h2),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              message,
-              style: AppTextStyles.body.copyWith(
-                color: AppColors.textSecondary,
+            Text(widget.title, style: AppTextStyles.h2),
+            const SizedBox(height: AppSpacing.xs),
+            Text(widget.message, style: AppTextStyles.body),
+            if (widget.reasonLabel case final label?) ...[
+              const SizedBox(height: AppSpacing.md),
+              AppTextField(
+                label: label,
+                isRequired: true,
+                controller: _reason,
+                hint: context.tr('common.write_reason'),
+                errorText: _showError
+                    ? context.tr('common.reason_required')
+                    : null,
+                minLines: 2,
+                maxLines: 4,
+                onChanged: (_) {
+                  if (_showError) setState(() => _showError = false);
+                },
               ),
-            ),
+            ],
             const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
                 Expanded(
                   child: AppButton(
-                    label: confirmLabel,
-                    variant: confirmVariant,
-                    onPressed:
-                        onConfirm ?? () => Navigator.of(context).pop(true),
+                    label: widget.confirmLabel,
+                    variant: AppButtonVariant.dark,
+                    onPressed: _confirm,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: AppButton(
-                    label: effectiveCancelLabel,
+                    label: context.tr('common.cancel'),
                     variant: AppButtonVariant.secondary,
-                    onPressed:
-                        onCancel ?? () => Navigator.of(context).pop(false),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
               ],
