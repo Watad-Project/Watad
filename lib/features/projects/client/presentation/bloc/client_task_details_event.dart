@@ -15,7 +15,7 @@ final class ClientTaskDetailsFetched extends ClientTaskDetailsEvent {
   final String taskId;
 }
 
-/// «قبول المهمة», or «رفض المهمة» after the client confirmed.
+/// «قبول», or «رفض» after the client confirmed «رفض المهمة».
 final class ClientTaskDetailsAnswered extends ClientTaskDetailsEvent {
   const ClientTaskDetailsAnswered(this.status);
 

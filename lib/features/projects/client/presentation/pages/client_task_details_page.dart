@@ -86,7 +86,7 @@ class ClientTaskDetailsPage extends StatelessWidget {
                   ),
                   secondary: AppButton(
                     key: const Key('client_task_reject'),
-                    label: context.tr('projects.client.task_reject'),
+                    label: context.tr('projects.client.task_reject_short'),
                     variant: AppButtonVariant.secondary,
                     isLoading: answering == TaskStatus.rejected,
                     onPressed: answering == null

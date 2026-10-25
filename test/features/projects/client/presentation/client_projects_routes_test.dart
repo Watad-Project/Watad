@@ -851,6 +851,16 @@ void main() {
     await openTasks(tester);
     await openDetails(tester, 't-5');
     expect(find.text('دهان الجدران الداخلية'), findsOneWidget);
+    // Short labels, so both fit the action bar.
+    for (final (key, label) in [
+      ('client_task_accept', 'قبول'),
+      ('client_task_reject', 'رفض'),
+    ]) {
+      expect(
+        find.descendant(of: find.byKey(Key(key)), matching: find.text(label)),
+        findsOneWidget,
+      );
+    }
 
     await tester.tap(find.byKey(const Key('client_task_accept')));
     await tester.pumpAndSettle();
