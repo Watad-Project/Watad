@@ -149,6 +149,17 @@
     "update_decision_accepted": "You approved this task",
     "update_decision_rejected": "You rejected this update",
     "update_cannot_decide": "This update can't be decided now",
-    "update_project_not_in_progress": "The project is no longer in progress."
+    "update_project_not_in_progress": "The project is no longer in progress.",
+    "reject_title": "Reject the update",
+    "reject_subtitle": "Pick a reason and write the details, so the contractor can fix the work and send a new update.",
+    "reject_reason_evidence": "Insufficient evidence",
+    "reject_reason_incomplete": "Work is incomplete",
+    "reject_reason_quality": "Quality doesn't match what was agreed",
+    "reject_reason_status": "Wrong status",
+    "reject_reason_other": "Other",
+    "reject_details_hint": "Write what the contractor needs to fix...",
+    "reject_send": "Send rejection to contractor",
+    "reject_sent": "The rejection was sent to the contractor",
+    "reject_details_too_long": "Keep the details to 1,000 characters or fewer."
   }
 }

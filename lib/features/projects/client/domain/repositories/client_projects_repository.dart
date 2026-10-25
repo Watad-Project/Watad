@@ -8,6 +8,7 @@ import 'package:watad/features/projects/client/domain/entities/client_replace_de
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update_rejection.dart';
 
 abstract interface class ClientProjectsRepository {
   Future<Result<void>> createProject(ClientNewProject project);
@@ -54,4 +55,8 @@ abstract interface class ClientProjectsRepository {
   /// Accepts a pending update: the task is approved, and a task with an
   /// amount gets its payment stage.
   Future<Result<void>> acceptTaskUpdate(String updateId);
+
+  /// Rejects a pending update with a reason and details: the task goes back
+  /// to the contractor.
+  Future<Result<void>> rejectTaskUpdate(ClientTaskUpdateRejection rejection);
 }

@@ -9,6 +9,7 @@ import 'package:watad/features/projects/client/presentation/bloc/client_project_
 import 'package:watad/features/projects/client/presentation/bloc/client_projects_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_task_details_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_task_update_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_task_update_reject_bloc.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_post_project_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_project_deed_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_project_offers_page.dart';
@@ -16,6 +17,7 @@ import 'package:watad/features/projects/client/presentation/pages/client_project
 import 'package:watad/features/projects/client/presentation/pages/client_projects_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_task_details_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_task_update_page.dart';
+import 'package:watad/features/projects/client/presentation/pages/client_task_update_reject_page.dart';
 
 final List<RouteBase> clientProjectsRoutes = [
   // Before the project's tasks: '/client/projects/:projectId' would also
@@ -102,5 +104,16 @@ final List<RouteBase> clientProjectsRoutes = [
         child: ClientTaskUpdatePage(projectId: projectId, updateId: updateId),
       );
     },
+  ),
+  GoRoute(
+    name: ClientProjectsRoutes.taskUpdateRejectName,
+    path: ClientProjectsRoutes.taskUpdateRejectPath,
+    builder: (context, state) => BlocProvider(
+      create: (_) => getIt<ClientTaskUpdateRejectBloc>(),
+      child: ClientTaskUpdateRejectPage(
+        projectId: state.pathParameters['projectId']!,
+        updateId: state.pathParameters['updateId']!,
+      ),
+    ),
   ),
 ];

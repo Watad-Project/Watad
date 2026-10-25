@@ -11,6 +11,7 @@ import 'package:watad/features/projects/client/domain/entities/client_replace_de
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update_rejection.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
 
 /// A hand-written [ClientProjectsRepository]: it answers with the results
@@ -40,6 +41,11 @@ class FakeClientProjectsRepository implements ClientProjectsRepository {
 
   /// The updates accepted.
   final List<String> acceptedUpdates = [];
+
+  Result<void> rejectTaskUpdateResult = const Success(null);
+
+  /// The rejections sent, as (update id, reason, details).
+  final List<(String, String, String)> rejections = [];
 
   /// The offers accepted, as (offer id, expected amount in halalas).
   final List<(String, int)> accepted = [];
@@ -116,6 +122,14 @@ class FakeClientProjectsRepository implements ClientProjectsRepository {
       taskUpdateResult = taskUpdateAfterAccept ?? taskUpdateResult;
     }
     return acceptTaskUpdateResult;
+  }
+
+  @override
+  Future<Result<void>> rejectTaskUpdate(
+    ClientTaskUpdateRejection rejection,
+  ) async {
+    rejections.add((rejection.updateId, rejection.reason, rejection.details));
+    return rejectTaskUpdateResult;
   }
 }
 

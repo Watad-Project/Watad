@@ -14,6 +14,7 @@ import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/core/enums/task_status.dart';
 import 'package:watad/core/enums/task_update_decision.dart';
 import 'package:watad/core/enums/task_update_state.dart';
+import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
@@ -33,6 +34,7 @@ import 'package:watad/features/projects/client/presentation/pages/client_project
 import 'package:watad/features/projects/client/presentation/pages/client_projects_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_task_details_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_task_update_page.dart';
+import 'package:watad/features/projects/client/presentation/pages/client_task_update_reject_page.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_task_date.dart';
 
 import '../../../../helpers/fake_app_session.dart';
@@ -925,5 +927,130 @@ void main() {
       expect(find.byType(ClientTaskDetailsPage), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+  });
+
+  // The send button of the rejection form.
+  Finder rejectSend() => find.widgetWithText(AppButton, 'إرسال الرفض للمقاول');
+
+  testWidgets('client-task-update-reject opens the form at its path', (
+    tester,
+  ) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
+    router.goNamed(
+      ClientProjectsRoutes.taskUpdateRejectName,
+      pathParameters: {'projectId': 'p-3', 'updateId': 'u-3'},
+    );
+    await tester.pumpAndSettle();
+
+    expect(currentPath(router), '/client/projects/p-3/updates/u-3/reject');
+    expect(find.byType(ClientTaskUpdateRejectPage), findsOneWidget);
+    for (final reason in [
+      'الأدلة غير كافية',
+      'العمل غير مكتمل',
+      'الجودة لا تطابق المتفق عليه',
+      'الحالة غير صحيحة',
+      'أخرى',
+    ]) {
+      expect(find.text(reason), findsOneWidget);
+    }
+
+    // Nothing to send before a reason and the details.
+    expect(tester.widget<AppButton>(rejectSend()).onPressed, isNull);
+    await tester.tap(find.text('العمل غير مكتمل'));
+    await tester.pump();
+    expect(tester.widget<AppButton>(rejectSend()).onPressed, isNull);
+    await tester.enterText(
+      find.byType(TextFormField),
+      'لم تكتمل الواجهة الشرقية',
+    );
+    await tester.pump();
+    expect(tester.widget<AppButton>(rejectSend()).onPressed, isNotNull);
+  });
+
+  testWidgets('rejecting sends the reason as read, then back to the timeline', (
+    tester,
+  ) async {
+    repository.taskUpdateResult = Success(taskUpdate());
+    await withFakeNetworkImages(() async {
+      await openTasks(tester);
+      await openDetails(tester, 't-3');
+      await tester.tap(find.byKey(const Key('client_task_update_reject')));
+      await tester.pumpAndSettle();
+      expect(find.byType(ClientTaskUpdateRejectPage), findsOneWidget);
+
+      await tester.tap(find.text('الأدلة غير كافية'));
+      await tester.pump();
+      await tester.enterText(
+        find.byType(TextFormField),
+        '  لا تظهر زوايا السقف في الصور  ',
+      );
+      await tester.pump();
+      await tester.ensureVisible(rejectSend());
+      await tester.pumpAndSettle();
+      await tester.tap(rejectSend());
+      await tester.pumpAndSettle();
+
+      expect(repository.rejections, [
+        ('u-3', 'الأدلة غير كافية', 'لا تظهر زوايا السقف في الصور'),
+      ]);
+      expect(find.text('أُرسل الرفض للمقاول'), findsOneWidget);
+      // Both pages closed: the timeline reads the tasks again.
+      expect(find.byType(ClientTaskUpdateRejectPage), findsNothing);
+      expect(find.byType(ClientTaskUpdatePage), findsNothing);
+      expect(find.byType(ClientProjectTasksPage), findsOneWidget);
+    });
+  });
+
+  testWidgets('a refused rejection stays on the form and says why', (
+    tester,
+  ) async {
+    repository
+      ..taskUpdateResult = Success(taskUpdate())
+      ..rejectTaskUpdateResult = const Failed(ConflictFailure());
+    await withFakeNetworkImages(() async {
+      await openTasks(tester);
+      await openDetails(tester, 't-3');
+      await tester.tap(find.byKey(const Key('client_task_update_reject')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('الحالة غير صحيحة'));
+      await tester.pump();
+      await tester.enterText(find.byType(TextFormField), 'المهمة لم تبدأ');
+      await tester.pump();
+      await tester.ensureVisible(rejectSend());
+      await tester.pumpAndSettle();
+      await tester.tap(rejectSend());
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'تغيّرت البيانات في هذه الأثناء. حدّث الصفحة وحاول مرة أخرى.',
+        ),
+        findsOneWidget,
+      );
+      // Still on the form, with what the client wrote.
+      expect(find.byType(ClientTaskUpdateRejectPage), findsOneWidget);
+      expect(find.text('المهمة لم تبدأ'), findsOneWidget);
+    });
+  });
+
+  testWidgets('the reject page fits large, bold text', (tester) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+      textScale: largeTextScale,
+      boldText: true,
+    );
+    router.goNamed(
+      ClientProjectsRoutes.taskUpdateRejectName,
+      pathParameters: {'projectId': 'p-3', 'updateId': 'u-3'},
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ClientTaskUpdateRejectPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

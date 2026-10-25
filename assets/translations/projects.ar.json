@@ -149,6 +149,17 @@
     "update_decision_accepted": "اعتمدتَ هذه المهمة",
     "update_decision_rejected": "رفضتَ هذا التحديث",
     "update_cannot_decide": "لا يمكن البتّ في هذا التحديث الآن",
-    "update_project_not_in_progress": "لم يعد المشروع قيد التنفيذ."
+    "update_project_not_in_progress": "لم يعد المشروع قيد التنفيذ.",
+    "reject_title": "رفض التحديث",
+    "reject_subtitle": "اختر سبب الرفض واكتب التفاصيل، ليُصلح المقاول العمل ويرسل تحديثًا جديدًا.",
+    "reject_reason_evidence": "الأدلة غير كافية",
+    "reject_reason_incomplete": "العمل غير مكتمل",
+    "reject_reason_quality": "الجودة لا تطابق المتفق عليه",
+    "reject_reason_status": "الحالة غير صحيحة",
+    "reject_reason_other": "أخرى",
+    "reject_details_hint": "اكتب ما يجب على المقاول إصلاحه...",
+    "reject_send": "إرسال الرفض للمقاول",
+    "reject_sent": "أُرسل الرفض للمقاول",
+    "reject_details_too_long": "اكتب التفاصيل في ١٠٠٠ حرف أو أقل."
   }
 }

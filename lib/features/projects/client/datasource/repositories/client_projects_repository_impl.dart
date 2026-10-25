@@ -11,6 +11,7 @@ import 'package:watad/features/projects/client/domain/entities/client_replace_de
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update_rejection.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
 
 class ClientProjectsRepositoryImpl implements ClientProjectsRepository {
@@ -91,4 +92,15 @@ class ClientProjectsRepositoryImpl implements ClientProjectsRepository {
   Future<Result<void>> acceptTaskUpdate(String updateId) => guardSupabaseCall(
     () => _remote.decideTaskUpdate(updateId, TaskUpdateDecision.accepted),
   );
+
+  @override
+  Future<Result<void>> rejectTaskUpdate(ClientTaskUpdateRejection rejection) =>
+      guardSupabaseCall(
+        () => _remote.decideTaskUpdate(
+          rejection.updateId,
+          TaskUpdateDecision.rejected,
+          rejectionReason: rejection.reason,
+          rejectionDetails: rejection.details,
+        ),
+      );
 }

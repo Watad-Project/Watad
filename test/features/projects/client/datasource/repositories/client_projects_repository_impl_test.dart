@@ -17,6 +17,7 @@ import 'package:watad/features/projects/client/domain/entities/client_replace_de
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update_rejection.dart';
 
 class _FakeClientProjectsRemoteDataSource
     implements ClientProjectsRemoteDataSource {
@@ -362,6 +363,45 @@ void main() {
       expect(fakeRemote.decisions, [
         ('u-3', TaskUpdateDecision.accepted, null, null),
       ]);
+    });
+
+    test('rejectTaskUpdate sends the reason and the details', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource();
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .rejectTaskUpdate(
+            const ClientTaskUpdateRejection(
+              updateId: 'u-3',
+              reason: 'الأدلة غير كافية',
+              details: 'لا تظهر زوايا السقف.',
+            ),
+          );
+
+      expect(result, isA<Success<void>>());
+      expect(fakeRemote.decisions, [
+        (
+          'u-3',
+          TaskUpdateDecision.rejected,
+          'الأدلة غير كافية',
+          'لا تظهر زوايا السقف.',
+        ),
+      ]);
+    });
+
+    test('rejectTaskUpdate returns Failed when the server refuses', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource()
+        ..error = Exception('task_update_already_decided');
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .rejectTaskUpdate(
+            const ClientTaskUpdateRejection(
+              updateId: 'u-3',
+              reason: 'أخرى',
+              details: 'تفاصيل',
+            ),
+          );
+
+      expect(result, isA<Failed<void>>());
     });
   });
 }

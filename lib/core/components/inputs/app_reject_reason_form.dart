@@ -11,7 +11,8 @@ import 'package:watad/core/theme/app_text_styles.dart';
 ///
 /// The send button turns on once a reason is picked. Sending with empty
 /// details shows "Write a reason before you send" instead of calling
-/// [onSubmit].
+/// [onSubmit]. With [disableUntilFilled], the button waits for the details
+/// too.
 ///
 /// With [otherReasonIndex] (e.g. «أخرى» last in the list), the details field
 /// shows and is required only for that reason; the others send right away,
@@ -29,6 +30,7 @@ class AppRejectReasonForm extends StatefulWidget {
     this.submitLabel,
     this.otherReasonIndex,
     this.isSubmitting = false,
+    this.disableUntilFilled = false,
   });
 
   /// The translated reasons to choose from.
@@ -46,6 +48,11 @@ class AppRejectReasonForm extends StatefulWidget {
   final String? detailsHint;
   final String? submitLabel;
   final bool isSubmitting;
+
+  /// Whether the send button stays off until a reason is picked and, when
+  /// that reason needs them, the details are written, instead of asking for
+  /// the details on send. False by default.
+  final bool disableUntilFilled;
 
   @override
   State<AppRejectReasonForm> createState() => _AppRejectReasonFormState();
@@ -79,6 +86,11 @@ class _AppRejectReasonFormState extends State<AppRejectReasonForm> {
 
   @override
   Widget build(BuildContext context) {
+    final isFilled =
+        _reason != null &&
+        (!widget.disableUntilFilled ||
+            !_needsDetails ||
+            _details.text.trim().isNotEmpty);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -111,7 +123,10 @@ class _AppRejectReasonFormState extends State<AppRejectReasonForm> {
             enabled: !widget.isSubmitting,
             errorText: _showError ? context.tr('common.reason_required') : null,
             onChanged: (_) {
-              if (_showError) setState(() => _showError = false);
+              // With disableUntilFilled, the send button follows the text.
+              if (_showError || widget.disableUntilFilled) {
+                setState(() => _showError = false);
+              }
             },
           ),
         ],
@@ -120,7 +135,7 @@ class _AppRejectReasonFormState extends State<AppRejectReasonForm> {
           label: widget.submitLabel ?? context.tr('common.send_rejection'),
           variant: AppButtonVariant.dark,
           isLoading: widget.isSubmitting,
-          onPressed: _reason == null ? null : _submit,
+          onPressed: isFilled ? _submit : null,
         ),
       ],
     );

@@ -101,4 +101,39 @@ void main() {
       expect(submitted, [(1, 'الختم غير ظاهر')]);
     });
   });
+
+  testWidgets('with disableUntilFilled, sending waits for the details too', (
+    tester,
+  ) async {
+    final submitted = <(int, String)>[];
+    await pumpComponent(
+      tester,
+      AppRejectReasonForm(
+        reasons: const ['الأدلة غير كافية', 'العمل غير مكتمل'],
+        disableUntilFilled: true,
+        onSubmit: (reason, details) => submitted.add((reason, details)),
+      ),
+    );
+
+    expect(submitButton(tester).onPressed, isNull);
+    await tester.tap(find.text('العمل غير مكتمل'));
+    await tester.pump();
+    expect(submitButton(tester).onPressed, isNull);
+
+    // Spaces aren't details.
+    await tester.enterText(find.byType(TextFormField), '   ');
+    await tester.pump();
+    expect(submitButton(tester).onPressed, isNull);
+
+    await tester.enterText(find.byType(TextFormField), ' لا تظهر الزوايا ');
+    await tester.pump();
+    expect(submitButton(tester).onPressed, isNotNull);
+    await tester.tap(find.text('إرسال الرفض'));
+    expect(submitted, [(1, 'لا تظهر الزوايا')]);
+
+    // Emptied again: the button turns off.
+    await tester.enterText(find.byType(TextFormField), '');
+    await tester.pump();
+    expect(submitButton(tester).onPressed, isNull);
+  });
 }

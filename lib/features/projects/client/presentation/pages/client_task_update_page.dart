@@ -8,6 +8,7 @@ import 'package:watad/core/components/feedback/app_loading_indicator.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_task_update_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_task_update_details.dart';
@@ -78,12 +79,24 @@ class ClientTaskUpdatePage extends StatelessWidget {
                     key: const Key('client_task_update_reject'),
                     label: context.tr('projects.client.update_reject'),
                     variant: AppButtonVariant.secondary,
-                    onPressed: null,
+                    onPressed: state.isAccepting
+                        ? null
+                        : () => _reject(context),
                   ),
                 )
               : null,
         );
       },
     );
+  }
+
+  /// «رفض»: the rejection screen. Once it sent the rejection, this page
+  /// closes too, back to the timeline, which reads the tasks again.
+  Future<void> _reject(BuildContext context) async {
+    final rejected = await context.pushNamed<bool>(
+      ClientProjectsRoutes.taskUpdateRejectName,
+      pathParameters: {'projectId': projectId, 'updateId': updateId},
+    );
+    if (rejected == true && context.mounted) context.pop(true);
   }
 }

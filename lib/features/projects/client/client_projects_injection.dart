@@ -16,6 +16,7 @@ import 'package:watad/features/projects/client/domain/usecases/client_get_projec
 import 'package:watad/features/projects/client/domain/usecases/client_get_project_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_get_saved_addresses_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_get_task_update_use_case.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_reject_task_update_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_replace_deed_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_set_task_status_use_case.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
@@ -25,6 +26,7 @@ import 'package:watad/features/projects/client/presentation/bloc/client_project_
 import 'package:watad/features/projects/client/presentation/bloc/client_projects_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_task_details_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_task_update_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_task_update_reject_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_projects_tab.dart';
 
 /// Registers the types of lib/features/projects/client/ into [getIt].
@@ -74,6 +76,9 @@ void registerClientProjectsDependencies(GetIt getIt) {
     ..registerLazySingleton(() => ClientAcceptTaskUpdateUseCase(getIt()))
     ..registerFactory(() => ClientTaskDetailsBloc(getIt(), getIt(), getIt()))
     ..registerFactory(() => ClientTaskUpdateBloc(getIt(), getIt()))
+    // Rejecting an update, with a reason and details (GRA-51).
+    ..registerLazySingleton(() => ClientRejectTaskUpdateUseCase(getIt()))
+    ..registerFactory(() => ClientTaskUpdateRejectBloc(getIt()))
     // The client's navigation shows this as its «مشاريعي» tab.
     ..registerFactory<Widget>(
       () => ClientProjectsTab(

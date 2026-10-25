@@ -23,4 +23,8 @@ abstract final class ClientProjectsRoutes {
   static const String taskUpdateName = 'client-task-update';
   static const String taskUpdatePath =
       '/client/projects/:projectId/updates/:updateId';
+
+  static const String taskUpdateRejectName = 'client-task-update-reject';
+  static const String taskUpdateRejectPath =
+      '/client/projects/:projectId/updates/:updateId/reject';
 }
