@@ -3,6 +3,7 @@ import 'package:watad/features/projects/client/domain/entities/client_accept_off
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
 import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 
@@ -33,4 +34,8 @@ abstract interface class ClientProjectsRepository {
   /// Uploads a new ownership deed for a project whose deed was rejected:
   /// it goes back to review.
   Future<Result<void>> replaceDeed(ClientReplaceDeedParams params);
+
+  /// The tasks of one of the client's projects, by start date (tasks
+  /// without one last), then by when the contractor added them.
+  Future<Result<List<ClientProjectTask>>> getProjectTasks(String projectId);
 }

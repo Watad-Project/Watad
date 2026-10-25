@@ -7,7 +7,9 @@ import 'package:watad/core/components/display/app_project_card.dart';
 import 'package:watad/core/components/feedback/app_confirm_dialog.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/enums/offer_status.dart';
+import 'package:watad/core/enums/payment_status.dart';
 import 'package:watad/core/enums/project_status.dart';
+import 'package:watad/core/enums/task_status.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
@@ -16,11 +18,15 @@ import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_project_deed_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_project_tasks_bloc.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_post_project_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_project_deed_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_project_offers_page.dart';
+import 'package:watad/features/projects/client/presentation/pages/client_project_tasks_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_projects_page.dart';
+import 'package:watad/features/projects/client/presentation/widgets/client_task_date.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
@@ -62,6 +68,71 @@ void main() {
     message: 'يشمل التشطيب الخارجي',
     createdAt: DateTime.utc(2026, 10, 18),
   );
+  final started = ClientProject(
+    id: 'p-3',
+    title: 'بناء ملحق',
+    status: ProjectStatus.inProgress,
+    city: 'جدة',
+    pendingOfferCount: 0,
+    contractorName: 'مؤسسة البناء المتين',
+    createdAt: DateTime.utc(2026, 10, 17),
+  );
+  // One task in each state, as the contractor's work moves on.
+  final tasks = [
+    ClientProjectTask(
+      id: 't-1',
+      title: 'الحفر والأساسات',
+      description: 'حفر الموقع وصب الأساسات',
+      status: TaskStatus.approved,
+      amount: const Money.halalas(2400000),
+      paymentStatus: PaymentStatus.paid,
+      startDate: DateTime.utc(2026, 10, 1),
+      finishDate: DateTime.utc(2026, 10, 8),
+      lastUpdateId: 'u-1',
+    ),
+    ClientProjectTask(
+      id: 't-2',
+      title: 'الهيكل الخرساني',
+      description: 'صب الأعمدة والسقف',
+      status: TaskStatus.approved,
+      amount: const Money.halalas(3000000),
+      paymentStatus: PaymentStatus.processing,
+      startDate: DateTime.utc(2026, 10, 9),
+      finishDate: DateTime.utc(2026, 10, 11),
+      lastUpdateId: 'u-2',
+    ),
+    ClientProjectTask(
+      id: 't-3',
+      title: 'اللياسة الداخلية',
+      description: 'لياسة الجدران الداخلية',
+      status: TaskStatus.done,
+      amount: const Money.halalas(1500000),
+      startDate: DateTime.utc(2026, 10, 12),
+      finishDate: DateTime.utc(2026, 10, 20),
+      lastUpdateId: 'u-3',
+    ),
+    ClientProjectTask(
+      id: 't-4',
+      title: 'تمديدات الكهرباء',
+      description: 'تمديد نقاط الكهرباء',
+      status: TaskStatus.accepted,
+      amount: const Money.halalas(900000),
+      startDate: DateTime.utc(2026, 10, 22),
+    ),
+    const ClientProjectTask(
+      id: 't-5',
+      title: 'الدهانات',
+      description: 'دهان الجدران الداخلية',
+      status: TaskStatus.proposed,
+    ),
+    const ClientProjectTask(
+      id: 't-6',
+      title: 'العزل المائي',
+      description: 'عزل سطح الملحق',
+      status: TaskStatus.rejected,
+      amount: Money.halalas(500000),
+    ),
+  ];
 
   late FakeClientProjectsRepository repository;
 
@@ -89,6 +160,28 @@ void main() {
       boldText: boldText,
     );
     router.goNamed(ClientProjectsRoutes.projectsName);
+    await tester.pumpAndSettle();
+    return router;
+  }
+
+  Future<GoRouter> openTasks(
+    WidgetTester tester, {
+    double textScale = 1,
+    bool boldText = false,
+  }) async {
+    repository
+      ..projectResult = Success(started)
+      ..projectTasksResult = Success(tasks);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+      textScale: textScale,
+      boldText: boldText,
+    );
+    router.goNamed(
+      ClientProjectsRoutes.projectTasksName,
+      pathParameters: {'projectId': 'p-3'},
+    );
     await tester.pumpAndSettle();
     return router;
   }
@@ -177,17 +270,126 @@ void main() {
     await tapChip('قيد التنفيذ');
     expect(find.text('بناء ملحق'), findsOneWidget);
     expect(find.text('فيلا سكنية'), findsNothing);
-    // Its screen comes with a later feature: a tap opens nothing yet.
-    await tester.tap(find.text('بناء ملحق'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ClientProjectOffersPage), findsNothing);
 
     await tapChip('مكتملة');
     expect(find.text('ترميم مطبخ'), findsOneWidget);
     expect(find.text('بناء ملحق'), findsNothing);
-    await tester.tap(find.text('ترميم مطبخ'));
+  });
+
+  testWidgets(
+    'started and done projects open their tasks; cancelled, nothing',
+    (tester) async {
+      ClientProject withStatus(String id, String title, ProjectStatus status) =>
+          ClientProject(
+            id: id,
+            title: title,
+            status: status,
+            city: 'جدة',
+            pendingOfferCount: 0,
+            createdAt: DateTime.utc(2026, 10, 17),
+          );
+      repository
+        ..projectsResult = Success([
+          withStatus('p-3', 'بناء ملحق', ProjectStatus.inProgress),
+          withStatus('p-4', 'ترميم مطبخ', ProjectStatus.completed),
+          withStatus('p-5', 'ترميم السور', ProjectStatus.cancelled),
+        ])
+        ..projectResult = Success(started);
+      final router = await openList(tester);
+      Future<void> tapChip(String label) async {
+        await tester.tap(
+          find.descendant(
+            of: find.byKey(const Key('client_projects_filter')),
+            matching: find.text(label),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      // A pushed page doesn't change the router's location: check which
+      // project the page opened for.
+      String openedProject() => tester
+          .widget<ClientProjectTasksPage>(find.byType(ClientProjectTasksPage))
+          .projectId;
+
+      await tapChip('قيد التنفيذ');
+      await tester.tap(find.text('بناء ملحق'));
+      await tester.pumpAndSettle();
+      expect(openedProject(), 'p-3');
+
+      // Back to «مشاريعي», which reads the projects again.
+      router.pop();
+      await tester.pumpAndSettle();
+      await tapChip('مكتملة');
+      await tester.tap(find.text('ترميم مطبخ'));
+      await tester.pumpAndSettle();
+      expect(openedProject(), 'p-4');
+
+      router.pop();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ترميم السور'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ClientProjectTasksPage), findsNothing);
+      expect(find.byType(ClientProjectsPage), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'client-project-tasks shows the tasks as a timeline at its path',
+    (tester) async {
+      final router = await openTasks(tester);
+
+      expect(currentPath(router), '/client/projects/p-3');
+      expect(find.byType(ClientProjectTasksPage), findsOneWidget);
+      expect(find.text('بناء ملحق'), findsOneWidget);
+      expect(find.text('مؤسسة البناء المتين'), findsOneWidget);
+      // Every state reads as the issue says.
+      expect(find.text('مكتملة ومعتمدة'), findsNWidgets(2));
+      expect(find.text('مدفوعة'), findsOneWidget);
+      expect(find.text('بانتظار تأكيد المقاول'), findsOneWidget);
+      expect(find.text('بانتظار موافقتك'), findsOneWidget);
+      expect(find.text('قيد التنفيذ'), findsOneWidget);
+      expect(find.text('مقترحة — بانتظار قبولك'), findsOneWidget);
+      expect(find.text('مرفوضة'), findsOneWidget);
+      // Amounts and dates.
+      expect(find.text('٢٤٬٠٠٠ ر.س'), findsOneWidget);
+      expect(find.text('بلا مبلغ'), findsOneWidget);
+      final context = tester.element(find.byType(ClientProjectTasksPage));
+      expect(
+        find.text(
+          ClientTaskDate.days(
+            context,
+            DateTime.utc(2026, 10, 12),
+            DateTime.utc(2026, 10, 20),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          ClientTaskDate.days(context, DateTime.utc(2026, 10, 22), null),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('بلا موعد بعد'), findsNWidgets(2));
+      // «التفاصيل» beside each task and «الدفع للمقاول» at the bottom: no
+      // approve or reject buttons on this screen.
+      expect(find.widgetWithText(AppButton, 'التفاصيل'), findsNWidgets(6));
+      expect(find.byKey(const Key('client_project_tasks_pay')), findsOneWidget);
+      expect(find.byType(AppButton), findsNWidgets(7));
+    },
+  );
+
+  testWidgets('a project without tasks says so', (tester) async {
+    await openTasks(tester);
+    repository.projectTasksResult = const Success([]);
+    tester
+        .element(find.byType(ClientProjectTasksPage))
+        .read<ClientProjectTasksBloc>()
+        .add(const ClientProjectTasksFetched('p-3'));
     await tester.pumpAndSettle();
-    expect(find.byType(ClientProjectOffersPage), findsNothing);
+
+    expect(find.text('لم يضف المقاول مهام لهذا المشروع بعد'), findsOneWidget);
   });
 
   testWidgets('a chip without projects says so', (tester) async {
@@ -428,6 +630,8 @@ void main() {
     );
     expect(linkOf('deed_rejected')?.name, ClientProjectsRoutes.projectDeedName);
     expect(linkOf('offer_received')?.pathParameters, {'projectId': 'p-1'});
+    expect(linkOf('task_added')?.name, ClientProjectsRoutes.projectTasksName);
+    expect(linkOf('task_added')?.pathParameters, {'projectId': 'p-1'});
   });
 
   testWidgets('every projects page fits large, bold text', (tester) async {
@@ -451,6 +655,13 @@ void main() {
       pathParameters: {'projectId': 'p-2'},
     );
     await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the tasks timeline fits large, bold text', (tester) async {
+    await openTasks(tester, textScale: largeTextScale, boldText: true);
+
+    expect(find.byType(ClientProjectTasksPage), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

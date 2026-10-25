@@ -5,6 +5,7 @@ import 'package:watad/features/projects/client/domain/entities/client_accept_off
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
 import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
@@ -21,6 +22,7 @@ class FakeClientProjectsRepository implements ClientProjectsRepository {
   Result<List<ClientProjectOffer>> offersResult = const Success([]);
   Result<void> acceptResult = const Success(null);
   Result<void> replaceDeedResult = const Success(null);
+  Result<List<ClientProjectTask>> projectTasksResult = const Success([]);
 
   /// The offers accepted, as (offer id, expected amount in halalas).
   final List<(String, int)> accepted = [];
@@ -70,6 +72,11 @@ class FakeClientProjectsRepository implements ClientProjectsRepository {
     replacedDeeds.add((params.projectId, params.filePath));
     return replaceDeedResult;
   }
+
+  @override
+  Future<Result<List<ClientProjectTask>>> getProjectTasks(
+    String projectId,
+  ) async => projectTasksResult;
 }
 
 /// For tests that open the client's navigation (its «مشاريعي» tab) or the

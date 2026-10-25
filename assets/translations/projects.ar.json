@@ -107,6 +107,20 @@
     "empty_filter": "لا مشاريع هنا بعد",
     "tasks_planning": "قيد التخطيط",
     "tasks_progress": "{} من {} مهام",
-    "tasks_percent": "{}٪"
+    "tasks_percent": "{}٪",
+    "tasks_title": "مهام المشروع",
+    "tasks_empty": "لم يضف المقاول مهام لهذا المشروع بعد",
+    "task_status_approved": "مكتملة ومعتمدة",
+    "task_status_paid": "مدفوعة",
+    "task_status_awaiting_contractor": "بانتظار تأكيد المقاول",
+    "task_status_done": "بانتظار موافقتك",
+    "task_status_proposed": "مقترحة — بانتظار قبولك",
+    "task_status_accepted": "قيد التنفيذ",
+    "task_status_rejected": "مرفوضة",
+    "task_dates": "{} – {}",
+    "task_starts": "يبدأ {}",
+    "task_no_dates": "بلا موعد بعد",
+    "task_no_amount": "بلا مبلغ",
+    "pay_contractor": "الدفع للمقاول"
   }
 }

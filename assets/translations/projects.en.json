@@ -107,6 +107,20 @@
     "empty_filter": "No projects here yet",
     "tasks_planning": "Planning",
     "tasks_progress": "{} of {} tasks",
-    "tasks_percent": "{}%"
+    "tasks_percent": "{}%",
+    "tasks_title": "Project tasks",
+    "tasks_empty": "The contractor hasn't added tasks to this project yet",
+    "task_status_approved": "Completed and approved",
+    "task_status_paid": "Paid",
+    "task_status_awaiting_contractor": "Waiting for the contractor to confirm",
+    "task_status_done": "Waiting for your approval",
+    "task_status_proposed": "Proposed — waiting for you to accept",
+    "task_status_accepted": "In progress",
+    "task_status_rejected": "Rejected",
+    "task_dates": "{} – {}",
+    "task_starts": "Starts {}",
+    "task_no_dates": "No dates yet",
+    "task_no_amount": "No amount",
+    "pay_contractor": "Pay contractor"
   }
 }

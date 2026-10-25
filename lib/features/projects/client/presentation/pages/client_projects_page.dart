@@ -7,10 +7,12 @@ import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/inputs/app_filter_chips.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_projects_filter.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_projects_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_project_card.dart';
@@ -120,25 +122,18 @@ class ClientProjectsPage extends StatelessWidget {
                         const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (context, index) {
                       final project = projects[index];
+                      final route = _routeOf(project);
                       return ClientProjectCard(
                         project: project,
-                        // Only a waiting project opens, for now: the
-                        // screens of projects in progress and done come
-                        // with later features.
-                        onTap: !ClientProjectsFilter.waiting.matches(project)
+                        onTap: route == null
                             ? null
                             : () async {
-                                // A rejected deed: upload a new one. Otherwise:
-                                // the offers.
                                 await context.pushNamed(
-                                  project.deedStatus ==
-                                          ClientDeedVerificationStatus.rejected
-                                      ? ClientProjectsRoutes.projectDeedName
-                                      : ClientProjectsRoutes.projectOffersName,
+                                  route,
                                   pathParameters: {'projectId': project.id},
                                 );
-                                // An accepted offer or a new deed changes the
-                                // project.
+                                // An accepted offer, a new deed or a decision
+                                // on a task changes the project.
                                 bloc.add(const ClientProjectsFetched());
                               },
                       );
@@ -149,6 +144,19 @@ class ClientProjectsPage extends StatelessWidget {
       ],
     );
   }
+
+  /// Where a tap on [project] goes: a rejected deed, its upload; waiting for
+  /// offers, the offers; started or done, its tasks (GRA-47). A cancelled
+  /// project opens nothing.
+  static String? _routeOf(ClientProject project) => switch (project.status) {
+    ProjectStatus.draft || ProjectStatus.open =>
+      project.deedStatus == ClientDeedVerificationStatus.rejected
+          ? ClientProjectsRoutes.projectDeedName
+          : ClientProjectsRoutes.projectOffersName,
+    ProjectStatus.inProgress ||
+    ProjectStatus.completed => ClientProjectsRoutes.projectTasksName,
+    ProjectStatus.cancelled => null,
+  };
 
   static String _filterLabelKey(ClientProjectsFilter filter) =>
       switch (filter) {

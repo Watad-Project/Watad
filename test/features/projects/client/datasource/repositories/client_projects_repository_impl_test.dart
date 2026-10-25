@@ -3,11 +3,13 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_offer_model.dart';
+import 'package:watad/features/projects/client/datasource/models/client_project_task_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_saved_address_model.dart';
 import 'package:watad/features/projects/client/datasource/remote/client_projects_remote_data_source.dart';
 import 'package:watad/features/projects/client/datasource/repositories/client_projects_repository_impl.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
 import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
 
@@ -98,6 +100,15 @@ class _FakeClientProjectsRemoteDataSource
     final err = error;
     if (err != null) throw err;
     replacedDeeds.add((projectId, filePath));
+  }
+
+  List<ClientProjectTaskModel> tasks = [];
+
+  @override
+  Future<List<ClientProjectTaskModel>> getProjectTasks(String projectId) async {
+    final err = error;
+    if (err != null) throw err;
+    return tasks;
   }
 }
 
@@ -219,6 +230,37 @@ void main() {
       );
 
       expect(result, isA<Failed<void>>());
+    });
+
+    test('getProjectTasks returns the tasks', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource()
+        ..tasks = [
+          ClientProjectTaskModel.fromJson(const {
+            'id': 't-1',
+            'title': 'اللياسة الداخلية',
+            'description': 'لياسة الجدران الداخلية',
+            'status': 'accepted',
+          }),
+        ];
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .getProjectTasks('p-1');
+
+      expect(result, isA<Success<List<ClientProjectTask>>>());
+      expect(
+        (result as Success<List<ClientProjectTask>>).data.single.id,
+        't-1',
+      );
+    });
+
+    test('getProjectTasks returns Failed when the read fails', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource()
+        ..error = Exception('Network error');
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .getProjectTasks('p-1');
+
+      expect(result, isA<Failed<List<ClientProjectTask>>>());
     });
   });
 }

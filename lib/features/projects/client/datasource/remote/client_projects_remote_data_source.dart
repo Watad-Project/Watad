@@ -5,6 +5,7 @@ import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_offer_model.dart';
+import 'package:watad/features/projects/client/datasource/models/client_project_task_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_saved_address_model.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 
@@ -36,6 +37,10 @@ abstract interface class ClientProjectsRemoteDataSource {
   /// Uploads [filePath] to `project-deeds` and points the project at it; the
   /// deed goes back to review (trigger on `deed_storage_path`).
   Future<void> replaceDeed(String projectId, String filePath);
+
+  /// The tasks of a project (`v_project_tasks`, `my_role = 'owner'`), by
+  /// start date (tasks without one last), then by when they were added.
+  Future<List<ClientProjectTaskModel>> getProjectTasks(String projectId);
 }
 
 class ClientProjectsRemoteDataSourceImpl
@@ -297,5 +302,22 @@ class ClientProjectsRemoteDataSourceImpl
         .from('projects')
         .update({'deed_storage_path': path})
         .eq('id', projectId);
+  }
+
+  static const String _taskColumns =
+      'id, title, description, amount, status, payment_status, start_date, '
+      'finish_date, last_update_id';
+
+  @override
+  Future<List<ClientProjectTaskModel>> getProjectTasks(String projectId) async {
+    final rows = await _client
+        .from('v_project_tasks')
+        .select(_taskColumns)
+        .eq('project_id', projectId)
+        .eq('my_role', 'owner')
+        // Postgrest sorts descending unless asked; empty start dates last.
+        .order('start_date', ascending: true)
+        .order('created_at', ascending: true);
+    return rows.map(ClientProjectTaskModel.fromJson).toList();
   }
 }
