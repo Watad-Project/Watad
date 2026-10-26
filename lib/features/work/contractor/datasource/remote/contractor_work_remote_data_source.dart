@@ -44,7 +44,7 @@ class ContractorWorkRemoteDataSourceImpl
         .select(
           'id, title, description, budget, city, district, created_at, '
           'owner_name, owner_avatar_path, offer_count, my_offer_id, my_offer_amount, '
-          'my_offer_status, is_mine',
+          'my_offer_status, is_mine, photo_paths',
         )
         .eq('is_mine', false);
 
@@ -186,7 +186,7 @@ class ContractorWorkRemoteDataSourceImpl
         .select(
           'id, title, description, budget, city, district, created_at, '
           'owner_name, owner_avatar_path, offer_count, my_offer_id, my_offer_amount, '
-          'my_offer_status, is_mine',
+          'my_offer_status, is_mine, photo_paths',
         )
         .eq('id', projectId)
         .maybeSingle();
