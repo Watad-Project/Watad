@@ -1,0 +1,39 @@
+{
+  "contractor": {
+    "client_and_amount": "العميل: {} · {}",
+    "client_only": "العميل: {}",
+    "empty_tasks": "لم تضف مهام لهذا العقد بعد — ابدأ بإضافة المهمة الأولى",
+    "date_started_and_finished": "بدأت {} · أُنجزت {}",
+    "date_finished": "أُنجزت {}",
+    "date_starts": "تبدأ {}",
+    "date_started": "بدأت {}",
+    "status_approved_paid": "معتمدة ومدفوعة",
+    "status_approved_processing": "معتمدة · قيد التحويل",
+    "status_approved_pending": "معتمدة · بانتظار الدفع",
+    "status_approved": "معتمدة",
+    "status_done": "منجزة — بانتظار اعتماد العميل",
+    "status_update_rejected": "رفض العميل التحديث — يحتاج تعديل",
+    "status_in_progress": "قيد التنفيذ",
+    "status_accepted": "مقبولة",
+    "status_proposed": "مقترحة — بانتظار قبول العميل",
+    "status_rejected": "مرفوضة",
+    "summary_done": {
+      "zero": "لا مهام بانتظار اعتماد العميل",
+      "one": "{} مهمة بانتظار اعتماد العميل",
+      "two": "مهمتان بانتظار اعتماد العميل",
+      "few": "{} مهام بانتظار اعتماد العميل",
+      "many": "{} مهمة بانتظار اعتماد العميل",
+      "other": "{} مهمة بانتظار اعتماد العميل"
+    },
+    "summary_proposed": {
+      "zero": "لا مهام مقترحة",
+      "one": "{} مهمة مقترحة",
+      "two": "مهمتان مقترحتان",
+      "few": "{} مهام مقترحة",
+      "many": "{} مهمة مقترحة",
+      "other": "{} مهمة مقترحة"
+    },
+    "add_task": "+ إضافة مهمة",
+    "update_task": "تحديث مهمة"
+  }
+}
