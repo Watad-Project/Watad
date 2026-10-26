@@ -23,6 +23,8 @@ import 'package:watad/features/work/contractor/presentation/widgets/contractor_c
 import 'package:watad/features/work/contractor/presentation/widgets/contractor_open_project_card.dart';
 import 'package:watad/features/work/contractor/presentation/widgets/contractor_work_filter_sheet.dart';
 
+const _sidePadding = EdgeInsetsDirectional.symmetric(horizontal: AppSpacing.lg);
+
 class ContractorWorkPage extends StatefulWidget {
   const ContractorWorkPage({
     this.onSubmitOffer,
@@ -217,48 +219,65 @@ class _WorkContent extends StatelessWidget {
       namedArgs: {'count': '${overview.completedContractsCount}'},
     );
 
+    // The chip rows scroll from edge to edge, so the side padding is on
+    // each of the other children instead of on the list.
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsetsDirectional.fromSTEB(
+        0,
         AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
+        0,
         AppSpacing.xxl,
       ),
       children: [
-        Text(context.tr('work.contractor.title'), style: AppTextStyles.h1),
-        const SizedBox(height: AppSpacing.md),
-        AppSegmentedTabs(
-          labels: [opportunitiesTabLabel, contractsTabLabel],
-          selectedIndex: selectedTabIndex,
-          onChanged: (index) => context.read<ContractorWorkBloc>().add(
-            ContractorWorkTabChanged(index),
+        Padding(
+          padding: _sidePadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                context.tr('work.contractor.title'),
+                style: AppTextStyles.h1,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppSegmentedTabs(
+                labels: [opportunitiesTabLabel, contractsTabLabel],
+                selectedIndex: selectedTabIndex,
+                onChanged: (index) => context.read<ContractorWorkBloc>().add(
+                  ContractorWorkTabChanged(index),
+                ),
+              ),
+            ],
           ),
         ),
         if (selectedTabIndex == 0) ...[
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: AppTextField(
-                  controller: searchController,
-                  hint: context.tr('work.contractor.search_hint'),
-                  textInputAction: TextInputAction.search,
-                  onChanged: onSearchChanged,
-                  onSubmitted: onSearchChanged,
+          Padding(
+            padding: _sidePadding,
+            child: Row(
+              children: [
+                Expanded(
+                  child: AppTextField(
+                    controller: searchController,
+                    hint: context.tr('work.contractor.search_hint'),
+                    textInputAction: TextInputAction.search,
+                    onChanged: onSearchChanged,
+                    onSubmitted: onSearchChanged,
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              AppIconButton(
-                icon: Icons.tune,
-                variant: AppIconButtonVariant.filled,
-                tooltip: context.tr('work.contractor.filter_title'),
-                onPressed: onOpenFilterSheet,
-              ),
-            ],
+                const SizedBox(width: AppSpacing.sm),
+                AppIconButton(
+                  icon: Icons.tune,
+                  variant: AppIconButtonVariant.filled,
+                  tooltip: context.tr('work.contractor.filter_title'),
+                  onPressed: onOpenFilterSheet,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           AppFilterChips(
+            padding: _sidePadding,
             labels: [
               context.tr('work.contractor.filter_type_all'),
               context.tr('work.contractor.filter_type_foundation'),
@@ -270,32 +289,41 @@ class _WorkContent extends StatelessWidget {
             onSelected: (index) => _onProjectTypeSelected(context, index),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            context.tr('work.contractor.deed_hint'),
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.textSecondary,
+          Padding(
+            padding: _sidePadding,
+            child: Text(
+              context.tr('work.contractor.deed_hint'),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
           if (overview.openProjects.isEmpty) ...[
-            AppEmptyView(
-              message: context.tr('work.contractor.empty_opportunities'),
-              icon: Icons.work_outline,
+            Padding(
+              padding: _sidePadding,
+              child: AppEmptyView(
+                message: context.tr('work.contractor.empty_opportunities'),
+                icon: Icons.work_outline,
+              ),
             ),
             if (filter.hasActiveFilters ||
                 filter.searchQuery.trim().isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
-              AppButton(
-                label: context.tr('work.contractor.filter_reset_button'),
-                variant: AppButtonVariant.secondary,
-                onPressed: onResetFilter,
+              Padding(
+                padding: _sidePadding,
+                child: AppButton(
+                  label: context.tr('work.contractor.filter_reset_button'),
+                  variant: AppButtonVariant.secondary,
+                  onPressed: onResetFilter,
+                ),
               ),
             ],
           ] else
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
+              padding: _sidePadding,
               itemCount: overview.openProjects.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -317,6 +345,7 @@ class _WorkContent extends StatelessWidget {
         ] else ...[
           const SizedBox(height: AppSpacing.md),
           AppFilterChips(
+            padding: _sidePadding,
             labels: [inProgressFilterLabel, completedFilterLabel],
             selectedIndex: selectedContractFilterIndex,
             onSelected: (index) => context.read<ContractorWorkBloc>().add(
@@ -325,26 +354,37 @@ class _WorkContent extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           if (filteredContracts.isEmpty) ...[
-            AppEmptyView(
-              message: context.tr('work.contractor.empty_contracts'),
-              icon: Icons.assignment_outlined,
+            Padding(
+              padding: _sidePadding,
+              child: AppEmptyView(
+                message: context.tr('work.contractor.empty_contracts'),
+                icon: Icons.assignment_outlined,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            AppButton(
-              label: context.tr('work.contractor.browse_opportunities_action'),
-              variant: AppButtonVariant.secondary,
-              onPressed: () => context.read<ContractorWorkBloc>().add(
-                const ContractorWorkTabChanged(0),
+            Padding(
+              padding: _sidePadding,
+              child: AppButton(
+                label: context.tr(
+                  'work.contractor.browse_opportunities_action',
+                ),
+                variant: AppButtonVariant.secondary,
+                onPressed: () => context.read<ContractorWorkBloc>().add(
+                  const ContractorWorkTabChanged(0),
+                ),
               ),
             ),
           ] else
             for (var index = 0; index < filteredContracts.length; index++) ...[
               if (index > 0) const SizedBox(height: AppSpacing.md),
-              ContractorContractCard(
-                contract: filteredContracts[index],
-                onTap: onContractTap != null
-                    ? () => onContractTap!(filteredContracts[index])
-                    : null,
+              Padding(
+                padding: _sidePadding,
+                child: ContractorContractCard(
+                  contract: filteredContracts[index],
+                  onTap: onContractTap != null
+                      ? () => onContractTap!(filteredContracts[index])
+                      : null,
+                ),
               ),
             ],
         ],
