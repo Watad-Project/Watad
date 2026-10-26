@@ -5,17 +5,17 @@ import 'package:watad/core/components/feedback/app_confirm_dialog.dart';
 import '../../../helpers/pump_component.dart';
 
 void main() {
-  testWidgets('AppConfirmDialog.show returns true when confirmed', (
+  testWidgets('AppConfirmDialog.show returns empty string when confirmed', (
     tester,
   ) async {
-    bool? result;
+    String? result;
     await pumpLocalizedApp(
       tester,
       Scaffold(
         body: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              await AppConfirmDialog.show(
+              result = await AppConfirmDialog.show(
                 context,
                 title: 'سحب العرض',
                 message: 'هل أنت متأكد من سحب العرض؟',
@@ -37,20 +37,21 @@ void main() {
     await tester.tap(find.text('سحب'));
     await tester.pumpAndSettle();
 
-    expect(result, isTrue);
+    expect(result, isNotNull);
+    expect(result, isEmpty);
   });
 
-  testWidgets('AppConfirmDialog.show returns false when cancelled', (
+  testWidgets('AppConfirmDialog.show returns null when cancelled', (
     tester,
   ) async {
-    bool? result;
+    String? result = 'initial';
     await pumpLocalizedApp(
       tester,
       Scaffold(
         body: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              await AppConfirmDialog.show(
+              result = await AppConfirmDialog.show(
                 context,
                 title: 'سحب العرض',
                 message: 'هل أنت متأكد من سحب العرض؟',
@@ -66,9 +67,9 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('إغلاق'));
+    await tester.tap(find.text('إلغاء'));
     await tester.pumpAndSettle();
 
-    expect(result, isFalse);
+    expect(result, isNull);
   });
 }
