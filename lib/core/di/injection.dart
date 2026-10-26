@@ -18,6 +18,7 @@ import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
 import 'package:watad/features/users/admin/admin_users_injection.dart';
+import 'package:watad/features/work/contractor/contractor_work_injection.dart';
 
 /// The app's only service locator. Use it only in *_injection.dart and
 /// *_routes.dart files (APP_ARCHITECTURE.md §12).
@@ -46,6 +47,7 @@ void configureDependencies() {
   registerContractorDashboardDependencies(getIt);
   registerContractorKycDependencies(getIt);
   registerContractorOnboardingDependencies(getIt);
+  registerContractorWorkDependencies(getIt);
   registerKycDependencies(getIt);
   registerLocationDependencies(getIt);
   registerNotificationsDependencies(getIt);
