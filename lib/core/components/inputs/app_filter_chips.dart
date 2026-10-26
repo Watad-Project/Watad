@@ -12,6 +12,7 @@ class AppFilterChips extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelected,
     this.isWrapped = false,
+    this.padding = EdgeInsetsDirectional.zero,
   });
 
   final List<String> labels;
@@ -19,24 +20,33 @@ class AppFilterChips extends StatelessWidget {
   final ValueChanged<int> onSelected;
   final bool isWrapped;
 
+  /// Space around the chips, inside the scrolling row. To scroll from edge
+  /// to edge, place the row outside the page's side padding and pass that
+  /// padding here.
+  final EdgeInsetsGeometry padding;
+
   @override
   Widget build(BuildContext context) {
     if (isWrapped) {
-      return Wrap(
-        spacing: AppSpacing.xs,
-        runSpacing: AppSpacing.xs,
-        children: [
-          for (var i = 0; i < labels.length; i++)
-            _Chip(
-              label: labels[i],
-              selected: i == selectedIndex,
-              onTap: () => onSelected(i),
-            ),
-        ],
+      return Padding(
+        padding: padding,
+        child: Wrap(
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
+          children: [
+            for (var i = 0; i < labels.length; i++)
+              _Chip(
+                label: labels[i],
+                selected: i == selectedIndex,
+                onTap: () => onSelected(i),
+              ),
+          ],
+        ),
       );
     }
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      padding: padding,
       child: Row(
         children: [
           for (var i = 0; i < labels.length; i++) ...[
