@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/enums/offer_status.dart';
@@ -100,6 +101,8 @@ void main() {
     expect(find.text('الرياض · حي الياسمين'), findsOneWidget);
     expect(find.text('المتطلبات'), findsOneWidget);
     expect(find.text('بناء عظم بالمواد.'), findsOneWidget);
+    expect(find.byType(AppAvatar), findsOneWidget);
+    expect(find.text('العميل: فهد الشمري'), findsOneWidget);
     expect(find.byIcon(Icons.home_work_rounded), findsOneWidget);
     expect(
       find.text('يمكنك تعديل العرض أو سحبه ما دام قيد الانتظار.'),

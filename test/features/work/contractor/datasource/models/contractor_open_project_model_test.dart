@@ -102,6 +102,15 @@ void main() {
         'photo_paths': ['https://example.com/3.jpg'],
       });
       expect(withPhotoPaths.imageUrl, 'https://example.com/3.jpg');
+
+      final withOwnerAvatar = ContractorOpenProjectModel.fromJson({
+        'id': 'p-4',
+        'title': 'Test',
+        'city': 'Riyadh',
+        'owner_name': 'سلطان',
+        'owner_avatar_url': 'https://example.com/avatar.jpg',
+      });
+      expect(withOwnerAvatar.ownerAvatarUrl, 'https://example.com/avatar.jpg');
     });
   });
 }

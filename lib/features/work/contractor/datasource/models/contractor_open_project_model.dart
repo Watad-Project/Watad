@@ -11,6 +11,7 @@ class ContractorOpenProjectModel extends ContractorOpenProject {
     required super.createdAt,
     required super.ownerName,
     required super.offerCount,
+    super.ownerAvatarUrl,
     super.budget,
     super.district,
     super.imageUrl,
@@ -57,6 +58,18 @@ class ContractorOpenProjectModel extends ContractorOpenProject {
       }
     }
 
+    final rawAvatarUrl =
+        json['owner_avatar_url'] as String? ??
+        json['ownerAvatarUrl'] as String?;
+    final avatarPath = json['owner_avatar_path'] as String?;
+    final ownerAvatarUrl =
+        rawAvatarUrl?.trim() ??
+        (avatarPath != null &&
+                avatarPath.trim().isNotEmpty &&
+                avatarPath.trim().startsWith('http')
+            ? avatarPath.trim()
+            : null);
+
     return ContractorOpenProjectModel(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
@@ -70,6 +83,7 @@ class ContractorOpenProjectModel extends ContractorOpenProject {
       imageUrl: imageUrl != null && imageUrl.isNotEmpty ? imageUrl : null,
       createdAt: createdAt,
       ownerName: json['owner_name'] as String? ?? '',
+      ownerAvatarUrl: ownerAvatarUrl,
       offerCount: (json['offer_count'] as num?)?.toInt() ?? 0,
       myOfferId: json['my_offer_id'] as String?,
       myOfferAmount: switch (json['my_offer_amount']) {

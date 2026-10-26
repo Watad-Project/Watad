@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/display/app_icon_tag.dart';
 import 'package:watad/core/components/feedback/app_confirm_dialog.dart';
@@ -358,6 +359,41 @@ class _BidFormContent extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       const Divider(height: 1, color: AppColors.border),
+                      if (project.ownerName.trim().isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Row(
+                          children: [
+                            AppAvatar(
+                              url: project.ownerAvatarUrl,
+                              size: 44,
+                              semanticLabel: project.ownerName,
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    context.tr(
+                                      'work.contractor.client_label',
+                                      namedArgs: {'name': project.ownerName},
+                                    ),
+                                    style: AppTextStyles.label.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.ink,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        const Divider(height: 1, color: AppColors.border),
+                      ],
                       const SizedBox(height: AppSpacing.md),
                       Text(
                         context.tr('work.contractor.project_address_title'),

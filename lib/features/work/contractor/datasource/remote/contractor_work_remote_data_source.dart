@@ -43,7 +43,7 @@ class ContractorWorkRemoteDataSourceImpl
         .from('v_open_projects')
         .select(
           'id, title, description, budget, city, district, created_at, '
-          'owner_name, offer_count, my_offer_id, my_offer_amount, '
+          'owner_name, owner_avatar_path, offer_count, my_offer_id, my_offer_amount, '
           'my_offer_status, is_mine',
         )
         .eq('is_mine', false);
@@ -99,6 +99,7 @@ class ContractorWorkRemoteDataSourceImpl
     final contractsPayload = await _fetchContractsAndTasks();
 
     final images = _client.storage.from('images');
+    final avatars = _client.storage.from('avatars');
     final processedOpenProjects = [
       for (final row in openProjectsResponse)
         () {
@@ -107,6 +108,15 @@ class ContractorWorkRemoteDataSourceImpl
             if (map['photo_paths'] case [final String first, ...]
                 when first.isNotEmpty) {
               map['image_url'] = images.getPublicUrl(first);
+            }
+          }
+          if (map['owner_avatar_url'] == null &&
+              map['owner_avatar_path'] is String) {
+            final path = (map['owner_avatar_path'] as String).trim();
+            if (path.isNotEmpty) {
+              map['owner_avatar_url'] = path.startsWith('http')
+                  ? path
+                  : avatars.getPublicUrl(path);
             }
           }
           return map;
@@ -175,7 +185,7 @@ class ContractorWorkRemoteDataSourceImpl
         .from('v_open_projects')
         .select(
           'id, title, description, budget, city, district, created_at, '
-          'owner_name, offer_count, my_offer_id, my_offer_amount, '
+          'owner_name, owner_avatar_path, offer_count, my_offer_id, my_offer_amount, '
           'my_offer_status, is_mine',
         )
         .eq('id', projectId)
@@ -196,6 +206,7 @@ class ContractorWorkRemoteDataSourceImpl
         .maybeSingle();
 
     final images = _client.storage.from('images');
+    final avatars = _client.storage.from('avatars');
     final processedProjectRow = projectRow != null
         ? () {
             final map = Map<String, dynamic>.from(projectRow);
@@ -203,6 +214,15 @@ class ContractorWorkRemoteDataSourceImpl
               if (map['photo_paths'] case [final String first, ...]
                   when first.isNotEmpty) {
                 map['image_url'] = images.getPublicUrl(first);
+              }
+            }
+            if (map['owner_avatar_url'] == null &&
+                map['owner_avatar_path'] is String) {
+              final path = (map['owner_avatar_path'] as String).trim();
+              if (path.isNotEmpty) {
+                map['owner_avatar_url'] = path.startsWith('http')
+                    ? path
+                    : avatars.getPublicUrl(path);
               }
             }
             return map;

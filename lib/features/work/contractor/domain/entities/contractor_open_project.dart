@@ -11,6 +11,7 @@ class ContractorOpenProject {
     required this.createdAt,
     required this.ownerName,
     required this.offerCount,
+    this.ownerAvatarUrl,
     this.budget,
     this.district,
     this.imageUrl,
@@ -29,6 +30,7 @@ class ContractorOpenProject {
   final String? imageUrl;
   final DateTime createdAt;
   final String ownerName;
+  final String? ownerAvatarUrl;
   final int offerCount;
   final String? myOfferId;
   final Money? myOfferAmount;
