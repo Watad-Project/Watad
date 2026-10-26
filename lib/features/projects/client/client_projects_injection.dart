@@ -6,17 +6,27 @@ import 'package:watad/features/projects/client/datasource/remote/client_projects
 import 'package:watad/features/projects/client/datasource/repositories/client_projects_repository_impl.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_accept_offer_use_case.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_accept_task_update_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_create_address_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_create_project_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_get_my_projects_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_get_project_offers_use_case.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_get_project_task_use_case.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_get_project_tasks_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_get_project_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_get_saved_addresses_use_case.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_get_task_update_use_case.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_reject_task_update_use_case.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_replace_deed_use_case.dart';
+import 'package:watad/features/projects/client/domain/usecases/client_set_task_status_use_case.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_post_project_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_project_deed_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_project_offers_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_project_tasks_bloc.dart';
 import 'package:watad/features/projects/client/presentation/bloc/client_projects_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_task_details_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_task_update_bloc.dart';
+import 'package:watad/features/projects/client/presentation/bloc/client_task_update_reject_bloc.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_projects_tab.dart';
 
 /// Registers the types of lib/features/projects/client/ into [getIt].
@@ -56,6 +66,19 @@ void registerClientProjectsDependencies(GetIt getIt) {
     ..registerFactory(() => ClientProjectsBloc(getIt()))
     ..registerFactory(() => ClientProjectOffersBloc(getIt(), getIt(), getIt()))
     ..registerFactory(() => ClientProjectDeedBloc(getIt(), getIt()))
+    // A project's tasks (GRA-47).
+    ..registerLazySingleton(() => ClientGetProjectTasksUseCase(getIt()))
+    ..registerFactory(() => ClientProjectTasksBloc(getIt(), getIt()))
+    // A task without updates, and an update the contractor sent (GRA-49).
+    ..registerLazySingleton(() => ClientGetProjectTaskUseCase(getIt()))
+    ..registerLazySingleton(() => ClientSetTaskStatusUseCase(getIt()))
+    ..registerLazySingleton(() => ClientGetTaskUpdateUseCase(getIt()))
+    ..registerLazySingleton(() => ClientAcceptTaskUpdateUseCase(getIt()))
+    ..registerFactory(() => ClientTaskDetailsBloc(getIt(), getIt(), getIt()))
+    ..registerFactory(() => ClientTaskUpdateBloc(getIt(), getIt()))
+    // Rejecting an update, with a reason and details (GRA-51).
+    ..registerLazySingleton(() => ClientRejectTaskUpdateUseCase(getIt()))
+    ..registerFactory(() => ClientTaskUpdateRejectBloc(getIt()))
     // The client's navigation shows this as its «مشاريعي» tab.
     ..registerFactory<Widget>(
       () => ClientProjectsTab(
@@ -86,6 +109,27 @@ void registerClientProjectsDependencies(GetIt getIt) {
     (data) => (
       name: ClientProjectsRoutes.projectOffersName,
       pathParameters: {'projectId': '${data['project_id']}'},
+    ),
+  );
+  // A task the contractor added opens the project's tasks (migration 68).
+  // Only the client gets it: tasks are proposed by the contractor.
+  AppNotificationLinks.register(
+    'task_added',
+    (data) => (
+      name: ClientProjectsRoutes.projectTasksName,
+      pathParameters: {'projectId': '${data['project_id']}'},
+    ),
+  );
+  // An update the contractor sent opens it, to decide it (migration 72).
+  // Only the client gets it.
+  AppNotificationLinks.register(
+    'task_update_sent',
+    (data) => (
+      name: ClientProjectsRoutes.taskUpdateName,
+      pathParameters: {
+        'projectId': '${data['project_id']}',
+        'updateId': '${data['update_id']}',
+      },
     ),
   );
 }

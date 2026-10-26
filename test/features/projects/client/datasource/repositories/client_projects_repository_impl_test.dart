@@ -1,15 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:watad/core/enums/task_status.dart';
+import 'package:watad/core/enums/task_update_decision.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_project_offer_model.dart';
+import 'package:watad/features/projects/client/datasource/models/client_project_task_model.dart';
 import 'package:watad/features/projects/client/datasource/models/client_saved_address_model.dart';
+import 'package:watad/features/projects/client/datasource/models/client_task_update_model.dart';
 import 'package:watad/features/projects/client/datasource/remote/client_projects_remote_data_source.dart';
 import 'package:watad/features/projects/client/datasource/repositories/client_projects_repository_impl.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
 import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update_rejection.dart';
 
 class _FakeClientProjectsRemoteDataSource
     implements ClientProjectsRemoteDataSource {
@@ -98,6 +106,56 @@ class _FakeClientProjectsRemoteDataSource
     final err = error;
     if (err != null) throw err;
     replacedDeeds.add((projectId, filePath));
+  }
+
+  List<ClientProjectTaskModel> tasks = [];
+
+  @override
+  Future<List<ClientProjectTaskModel>> getProjectTasks(String projectId) async {
+    final err = error;
+    if (err != null) throw err;
+    return tasks;
+  }
+
+  @override
+  Future<ClientProjectTaskModel> getProjectTask(String taskId) async {
+    final err = error;
+    if (err != null) throw err;
+    return tasks.firstWhere((t) => t.id == taskId);
+  }
+
+  /// The answers sent to proposed tasks, as (task id, status).
+  final List<(String, TaskStatus)> taskStatuses = [];
+
+  @override
+  Future<void> setTaskStatus(String taskId, TaskStatus status) async {
+    final err = error;
+    if (err != null) throw err;
+    taskStatuses.add((taskId, status));
+  }
+
+  ClientTaskUpdateModel? taskUpdate;
+
+  @override
+  Future<ClientTaskUpdateModel> getTaskUpdate(String updateId) async {
+    final err = error;
+    if (err != null) throw err;
+    return taskUpdate ?? (throw StateError('Set taskUpdate first'));
+  }
+
+  /// The decisions sent, as (update id, decision, reason, details).
+  final List<(String, TaskUpdateDecision, String?, String?)> decisions = [];
+
+  @override
+  Future<void> decideTaskUpdate(
+    String updateId,
+    TaskUpdateDecision decision, {
+    String? rejectionReason,
+    String? rejectionDetails,
+  }) async {
+    final err = error;
+    if (err != null) throw err;
+    decisions.add((updateId, decision, rejectionReason, rejectionDetails));
   }
 }
 
@@ -217,6 +275,131 @@ void main() {
           filePath: '/tmp/deed.pdf',
         ),
       );
+
+      expect(result, isA<Failed<void>>());
+    });
+
+    test('getProjectTasks returns the tasks', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource()
+        ..tasks = [
+          ClientProjectTaskModel.fromJson(const {
+            'id': 't-1',
+            'title': 'اللياسة الداخلية',
+            'description': 'لياسة الجدران الداخلية',
+            'status': 'accepted',
+          }),
+        ];
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .getProjectTasks('p-1');
+
+      expect(result, isA<Success<List<ClientProjectTask>>>());
+      expect(
+        (result as Success<List<ClientProjectTask>>).data.single.id,
+        't-1',
+      );
+    });
+
+    test('getProjectTasks returns Failed when the read fails', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource()
+        ..error = Exception('Network error');
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .getProjectTasks('p-1');
+
+      expect(result, isA<Failed<List<ClientProjectTask>>>());
+    });
+
+    test('setTaskStatus sends the client\'s answer', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource();
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .setTaskStatus(
+            const ClientTaskStatusParams(
+              taskId: 't-5',
+              status: TaskStatus.accepted,
+            ),
+          );
+
+      expect(result, isA<Success<void>>());
+      expect(fakeRemote.taskStatuses, [('t-5', TaskStatus.accepted)]);
+    });
+
+    test('getTaskUpdate returns the update', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource()
+        ..taskUpdate = ClientTaskUpdateModel.fromJson(const {
+          'id': 'u-3',
+          'task_title': 'اللياسة الداخلية',
+          'proposed_state': 'done',
+          'decision': 'pending',
+          'created_at': '2026-10-24T06:40:00+00:00',
+          'project_status': 'in_progress',
+        });
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .getTaskUpdate('u-3');
+
+      expect(result, isA<Success<ClientTaskUpdate>>());
+      expect((result as Success<ClientTaskUpdate>).data.id, 'u-3');
+    });
+
+    test('getTaskUpdate returns Failed when the read fails', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource()
+        ..error = Exception('Network error');
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .getTaskUpdate('u-3');
+
+      expect(result, isA<Failed<ClientTaskUpdate>>());
+    });
+
+    test('acceptTaskUpdate accepts it, without a reason', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource();
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .acceptTaskUpdate('u-3');
+
+      expect(result, isA<Success<void>>());
+      expect(fakeRemote.decisions, [
+        ('u-3', TaskUpdateDecision.accepted, null, null),
+      ]);
+    });
+
+    test('rejectTaskUpdate sends the reason and the details', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource();
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .rejectTaskUpdate(
+            const ClientTaskUpdateRejection(
+              updateId: 'u-3',
+              reason: 'الأدلة غير كافية',
+              details: 'لا تظهر زوايا السقف.',
+            ),
+          );
+
+      expect(result, isA<Success<void>>());
+      expect(fakeRemote.decisions, [
+        (
+          'u-3',
+          TaskUpdateDecision.rejected,
+          'الأدلة غير كافية',
+          'لا تظهر زوايا السقف.',
+        ),
+      ]);
+    });
+
+    test('rejectTaskUpdate returns Failed when the server refuses', () async {
+      final fakeRemote = _FakeClientProjectsRemoteDataSource()
+        ..error = Exception('task_update_already_decided');
+
+      final result = await ClientProjectsRepositoryImpl(fakeRemote)
+          .rejectTaskUpdate(
+            const ClientTaskUpdateRejection(
+              updateId: 'u-3',
+              reason: 'أخرى',
+              details: 'تفاصيل',
+            ),
+          );
 
       expect(result, isA<Failed<void>>());
     });

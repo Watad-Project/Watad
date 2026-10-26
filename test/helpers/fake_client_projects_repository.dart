@@ -1,12 +1,17 @@
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/enums/task_status.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/projects/client/domain/entities/client_accept_offer_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
 import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update_rejection.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
 
 /// A hand-written [ClientProjectsRepository]: it answers with the results
@@ -21,6 +26,26 @@ class FakeClientProjectsRepository implements ClientProjectsRepository {
   Result<List<ClientProjectOffer>> offersResult = const Success([]);
   Result<void> acceptResult = const Success(null);
   Result<void> replaceDeedResult = const Success(null);
+  Result<List<ClientProjectTask>> projectTasksResult = const Success([]);
+  Result<ClientProjectTask>? projectTaskResult;
+  Result<void> setTaskStatusResult = const Success(null);
+  Result<ClientTaskUpdate>? taskUpdateResult;
+
+  /// What getTaskUpdate answers once the update was accepted, as the server
+  /// would.
+  Result<ClientTaskUpdate>? taskUpdateAfterAccept;
+  Result<void> acceptTaskUpdateResult = const Success(null);
+
+  /// The answers to proposed tasks, as (task id, status).
+  final List<(String, TaskStatus)> taskStatuses = [];
+
+  /// The updates accepted.
+  final List<String> acceptedUpdates = [];
+
+  Result<void> rejectTaskUpdateResult = const Success(null);
+
+  /// The rejections sent, as (update id, reason, details).
+  final List<(String, String, String)> rejections = [];
 
   /// The offers accepted, as (offer id, expected amount in halalas).
   final List<(String, int)> accepted = [];
@@ -69,6 +94,42 @@ class FakeClientProjectsRepository implements ClientProjectsRepository {
   Future<Result<void>> replaceDeed(ClientReplaceDeedParams params) async {
     replacedDeeds.add((params.projectId, params.filePath));
     return replaceDeedResult;
+  }
+
+  @override
+  Future<Result<List<ClientProjectTask>>> getProjectTasks(
+    String projectId,
+  ) async => projectTasksResult;
+
+  @override
+  Future<Result<ClientProjectTask>> getProjectTask(String taskId) async =>
+      projectTaskResult ?? (throw StateError('Set projectTaskResult first'));
+
+  @override
+  Future<Result<void>> setTaskStatus(ClientTaskStatusParams params) async {
+    taskStatuses.add((params.taskId, params.status));
+    return setTaskStatusResult;
+  }
+
+  @override
+  Future<Result<ClientTaskUpdate>> getTaskUpdate(String updateId) async =>
+      taskUpdateResult ?? (throw StateError('Set taskUpdateResult first'));
+
+  @override
+  Future<Result<void>> acceptTaskUpdate(String updateId) async {
+    acceptedUpdates.add(updateId);
+    if (acceptTaskUpdateResult is Success) {
+      taskUpdateResult = taskUpdateAfterAccept ?? taskUpdateResult;
+    }
+    return acceptTaskUpdateResult;
+  }
+
+  @override
+  Future<Result<void>> rejectTaskUpdate(
+    ClientTaskUpdateRejection rejection,
+  ) async {
+    rejections.add((rejection.updateId, rejection.reason, rejection.details));
+    return rejectTaskUpdateResult;
   }
 }
 

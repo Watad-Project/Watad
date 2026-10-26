@@ -4,8 +4,12 @@ import 'package:watad/features/projects/client/domain/entities/client_accept_off
 import 'package:watad/features/projects/client/domain/entities/client_new_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
+import 'package:watad/features/projects/client/domain/entities/client_project_task.dart';
 import 'package:watad/features/projects/client/domain/entities/client_replace_deed_params.dart';
 import 'package:watad/features/projects/client/domain/entities/client_saved_address.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_status_params.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update.dart';
+import 'package:watad/features/projects/client/domain/entities/client_task_update_rejection.dart';
 import 'package:watad/features/projects/client/domain/repositories/client_projects_repository.dart';
 import 'package:watad/features/projects/client/domain/usecases/client_get_saved_addresses_use_case.dart';
 
@@ -56,6 +60,30 @@ class _FakeClientProjectsRepository implements ClientProjectsRepository {
 
   @override
   Future<Result<void>> replaceDeed(ClientReplaceDeedParams params) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<List<ClientProjectTask>>> getProjectTasks(String projectId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<ClientProjectTask>> getProjectTask(String taskId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<void>> setTaskStatus(ClientTaskStatusParams params) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<ClientTaskUpdate>> getTaskUpdate(String updateId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<void>> acceptTaskUpdate(String updateId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<void>> rejectTaskUpdate(ClientTaskUpdateRejection rejection) =>
       throw UnimplementedError();
 }
 
