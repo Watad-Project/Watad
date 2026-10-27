@@ -1,3 +1,5 @@
+// Shared by blockchain-sync (what to write) and project-evidence (what matches), so both use the same rules.
+//
 // Pure logic (no network): given the record the database wants on the chain and the record the chain holds,
 // decide which blockchain calls bring the chain in step. Doing "compare, then write the difference" (instead of
 // "replay the change") makes every run safe to repeat: a retry, a duplicate call or a lost call can never
@@ -48,7 +50,7 @@ export interface Plan {
 const cents = (n: number): number => Math.round(Number(n) * 100);
 const orNull = (v: string | null | undefined): string | null => (v === undefined || v === null || v === '' ? null : v);
 
-function sameTask(a: Task, b: Task): boolean {
+export function sameTask(a: Task, b: Task): boolean {
   return a.description === b.description
     && orNull(a.startDate) === orNull(b.startDate)
     && orNull(a.finishDate) === orNull(b.finishDate)
@@ -69,7 +71,7 @@ export function sameProjectData(want: Project, have: Project): boolean {
     && want.milestone.every((t, i) => sameTask(t, have.milestone[i]));
 }
 
-function samePayment(a: Payment, b: Payment): boolean {
+export function samePayment(a: Payment, b: Payment): boolean {
   return cents(a.amount) === cents(b.amount) && a.date === b.date && (a.note ?? '') === (b.note ?? '');
 }
 

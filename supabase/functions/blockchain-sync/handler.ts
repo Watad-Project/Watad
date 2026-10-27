@@ -11,7 +11,7 @@
 // Body {}              -> sync everything that is waiting
 // Body {"check": true} -> only test the secret and the connection to the blockchain server (writes nothing)
 
-import { describe, plan, type Project, type Step } from './reconcile.ts';
+import { describe, plan, type Project, type Step } from '../_shared/reconcile.ts';
 
 const CHAIN_TIMEOUT_MS = 25_000;
 const DB_TIMEOUT_MS = 15_000;

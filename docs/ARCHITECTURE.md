@@ -66,6 +66,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `orders`, `order_items` | RO | Created by `checkout()`. Paid only by the payment webhook, or by the demo payment (§15). Price, name and `orders.delivery_address` are snapshots. |
 | Social | `chats`, `chat_members` | RO | Via `start_chat()`, `add_chat_member()`, `remove_chat_member()`, `mark_chat_read()`. |
 | | `messages` | insert only | Insert `{chat_id, content}`, a photo `{chat_id, attachment_path, attachment_mime}`, or both; `sender_id` comes from the session. A message has text, a photo, or both (migration 83). |
+| | `project_evidence_exports` | RO | Every signed export of a project's evidence (GRA-72's PDF): project, who, when, `fingerprint`, `signature`, `key_id`. Inserted only by the `project-evidence` Edge Function; read through `v_project_evidence_exports` (§7). Migration 84. |
 | | `notifications` | RO (own rows) | Written by the server only: insert a row to notify a user (§13). Read through `v_my_notifications`; `read_at` set by `mark_notifications_read()`. |
 | | `reviews` | insert | Only between the two parties of a completed project or delivered order. |
 | Moderation | `help_reports` | insert (reporter) | Set at most one `target_*` column. Admins use `admin_assign_help_report()` / `admin_resolve_help_report()`. |
@@ -146,6 +147,7 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Presence | `set_my_presence(p_online)`: `true` every minute while the app is open, `false` when it goes to the background (§14) |
 | Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_set_project_deed_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing`, `admin_blockchain_resync(p_project_id)` |
 | Blockchain sync (server only) | `blockchain_sync_claim`, `blockchain_sync_snapshot`, `blockchain_sync_complete`. They need the shared secret. **The app never calls these.** |
+| Project evidence (server only) | `project_evidence_collect`, `project_evidence_record`, for the `project-evidence` Edge Function (migration 84). They need the shared secret `project_evidence_secret` and are granted to `service_role` only. **The app never calls these.** |
 | Push (server only) | `push_claim`, `push_complete`, for the `send-push` Edge Function (§13). They need the shared secret. **The app never calls these.** |
 
 ### Edge Functions the app calls
@@ -158,10 +160,13 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | `geocode` (search) | `query` (2 to 100 characters: a city, district or street), optional `language`, optional `lat`, `lng` (preferred nearby, within 50 km) | `suggestions`: places in Saudi Arabia matching it, from Google Places Autocomplete, each `place_id`, `title` (e.g. «العزيزية») and `subtitle` (where it is, or `null`). Errors: `400` `invalid_query`, then as above. |
 | `geocode` (place) | `place_id` (from a suggestion) | Where it is: `lat`, `lng`, and `viewport` (`south`, `west`, `north`, `east`: wide for a city, narrow for a street) or `null`. Errors: `400` `invalid_place`, then as above. |
 | `blockchain-health` | none (`{}`) | Admins only: whether the blockchain answers, from the Fabric REST API's `GET /health`: `reachable` (it answered 200), `http_status` and `latency_ms` (`null` when it didn't answer), `checked_at` (when this check ran, UTC), `details` (the API's JSON answer, or `null`) and `error` (`null`, `timeout`, `unreachable` or `bad_status`). The ledger being down is a `200` with `reachable: false`. Errors: `401` `unauthorized`, `403` `forbidden` (not an admin), `500` `not_configured`. |
+| `project-evidence` | `project_id` | A project's signed evidence, for its PDF (GRA-72): `export_id`, `exported_at`, `evidence` (the project, client, contractor, agreed price, tasks with their last update, payments with their method and bank transfer, the sync state, the record the sync sends, the chain's copy and the `comparison`), `comparison` (`matches`, then each field, milestone and payment with `database`, `chain` and `matches`), `fingerprint` (SHA-256 of the evidence's canonical JSON, hex), `signature` (Ed25519 of the same JSON, base64), `key_id` and `public_key` (base64url). Only the project's owner, its taker or an admin. Errors: `400` `invalid_body`, `401` `unauthorized`, `403` `not_allowed`, `404` `project_not_found`, `409` `not_on_chain` (no accepted offer) / `not_on_chain_yet` (the sync hasn't copied it), `502` `ledger_unavailable`, `504` `timeout`, `500` `not_configured`. It never answers without the chain's copy. |
 
 `geocode` holds the Google key as the server secret `GOOGLE_MAPS_SERVER_KEY`; the app never sees it. The search and the place need the **Places API (New)** enabled for that key, besides the Geocoding API. It is deployed with `verify_jwt` off and checks the caller's session itself. Its source is in `supabase/functions/geocode/`.
 
 `blockchain-health` reads the blockchain secrets `BLOCKCHAIN_API_URL` and `BLOCKCHAIN_API_KEY`, shared with `blockchain-sync` (§9); the app never sees them. It is deployed with `verify_jwt` off and checks the caller's session and `v_my_profile.is_admin` itself. Its source is in `supabase/functions/blockchain-health/`.
+
+`project-evidence` (migration 84) reads the database through `project_evidence_collect()` with the service role and the shared secret `PROJECT_EVIDENCE_SECRET` (the Vault secret `project_evidence_secret`), reads the chain like `blockchain-sync` (`BLOCKCHAIN_API_URL`, `BLOCKCHAIN_API_KEY`, `X-Org: platform`), compares the two with `blockchain-sync`'s own rules (`supabase/functions/_shared/reconcile.ts`), and signs with the Ed25519 key `EVIDENCE_SIGNING_KEY` (PKCS#8 DER, base64) under the name `EVIDENCE_SIGNING_KEY_ID`. To check a PDF: take its `evidence`, write it as canonical JSON (every object's keys sorted, no spaces), compare its SHA-256 with `fingerprint` and with the export's row in `v_project_evidence_exports`, and verify `signature` over the same text with the public key. Deployed with `verify_jwt` off; it checks the caller's session itself. Its source is in `supabase/functions/project-evidence/`.
 
 `send-push` and `blockchain-sync` are not among them: the database calls them (§13, §9).
 
@@ -178,7 +183,7 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
 | Notifications | `v_my_notifications` |
-| Blockchain | `v_admin_blockchain_sync`, `v_admin_blockchain_summary` |
+| Blockchain | `v_admin_blockchain_sync`, `v_admin_blockchain_summary`, `v_project_evidence_exports` |
 | Admin | `v_admin_dashboard`, `v_admin_users`, `v_admin_marketplace_items` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
@@ -210,6 +215,8 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 `v_chat_messages` has `attachment_path` and `attachment_mime` since migration 83 (null for a message without a photo), and `content` is null for a photo without text. Show the photo through a short-lived signed URL of `chat-attachments` (§8), never a public link. `v_my_chats.last_message` reads «📷 صورة» for a photo without text, and so does the body of its `message` notification (§13).
 
 **Sending a photo (migration 83).** Upload it to `chat-attachments` at `<chat id>/<file id>.<ext>` (`jpg`, `jpeg`, `png` or `webp`), then insert the message with `attachment_path` set to that path and `attachment_mime` to `image/jpeg`, `image/png` or `image/webp`, with or without `content`. A path outside that chat's own folder, a path without its type, or a message with neither text nor a photo is refused (`23514`).
+
+`v_project_evidence_exports` (migration 84) is every signed evidence export of a project, for its owner, its taker and admins: `id` (the PDF's export id), `project_id`, `exported_by`, `exported_by_name`, `exported_at`, `fingerprint`, `signature` and `key_id`. A PDF matches its export when its fingerprint is the row's.
 
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 
@@ -270,7 +277,9 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6); it calls `blockchain_sync.resync()` for that project only. `blockchain_sync.resync()` without a project marks every contracted project; the app doesn't offer that. The admin checks whether the API answers with the `blockchain-health` Edge Function (§6).
 
-**Source:** `supabase/functions/blockchain-sync/` (`index.ts`, `handler.ts`, and `reconcile.ts`, which decides what to write and what needs attention). Deploy it with `supabase functions deploy blockchain-sync --no-verify-jwt`. Its body `{"check": true}` tests the secret and calls the API's `GET /health` without writing anything.
+**Source:** `supabase/functions/blockchain-sync/` (`index.ts`, `handler.ts`) and `supabase/functions/_shared/reconcile.ts`, which decides what to write and what needs attention, shared with `project-evidence` (§6) so both use the same comparison rules. Deploy it with `supabase functions deploy blockchain-sync --no-verify-jwt`. Its body `{"check": true}` tests the secret and calls the API's `GET /health` without writing anything.
+
+**Evidence:** the `project-evidence` Edge Function (§6, migration 84) reads a project's chain record (`GET /projects/{id}`) next to what the sync sends, marks each field, milestone and payment as matching or not, and signs the result for the project's PDF. The database still stores no blockchain transaction id.
 
 **On-chain project record:** `id`, `owner`, `ownerId`, `ownerEmail`, `contractor`, `contractorId`, `contractorEmail`, `agreedPrice`, `currency` (SAR), `milestone[]` (`description`, `startDate`, `finishDate`, `status`), `payments[]` (`id`, `amount`, `date`, `note`). Task `start_date` and `finish_date` map to `startDate` and `finishDate`. Changing this shape needs a maintainer's approval, the Fabric chaincode and REST API change together with the Edge Function.
 
@@ -287,7 +296,7 @@ An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6);
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `82_marketplace_photos_categories_orders` are applied; `83_chat_attachments` is in the repo and waits to be applied; the next is `84_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `83_chat_attachments` are applied; `84_project_evidence_exports` is in the repo and waits to be applied; the next is `85_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
