@@ -9,3 +9,9 @@ final class ContractorTaskUpdateFetched extends ContractorTaskUpdateEvent {
 
   final String projectId;
 }
+
+final class ContractorTaskUpdateSubmitted extends ContractorTaskUpdateEvent {
+  const ContractorTaskUpdateSubmitted(this.params);
+
+  final ContractorSubmitTaskUpdateParams params;
+}
