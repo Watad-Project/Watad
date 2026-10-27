@@ -10,6 +10,7 @@ import 'package:watad/core/components/feedback/app_loading_indicator.dart';
 import 'package:watad/core/components/inputs/app_filter_chips.dart';
 import 'package:watad/core/components/inputs/app_segmented_tabs.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
+import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
 import 'package:watad/core/router/routes/contractor_work_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -59,6 +60,19 @@ class _ContractorWorkPageState extends State<ContractorWorkPage> {
       pathParameters: {'projectId': project.id},
     );
     if ((changed ?? false) && context.mounted) {
+      context.read<ContractorWorkBloc>().add(const ContractorWorkRefreshed());
+    }
+  }
+
+  Future<void> _openContractSchedule(
+    BuildContext context,
+    ContractorContractProject contract,
+  ) async {
+    await context.pushNamed<void>(
+      ContractorTasksRoutes.projectTasksName,
+      pathParameters: {'projectId': contract.id},
+    );
+    if (context.mounted) {
       context.read<ContractorWorkBloc>().add(const ContractorWorkRefreshed());
     }
   }
@@ -133,7 +147,9 @@ class _ContractorWorkPageState extends State<ContractorWorkPage> {
                     onPendingOfferTap:
                         widget.onPendingOfferTap ??
                         (project) => _openBidScreen(context, project),
-                    onContractTap: widget.onContractTap,
+                    onContractTap:
+                        widget.onContractTap ??
+                        (contract) => _openContractSchedule(context, contract),
                   ),
                 ),
             };

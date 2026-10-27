@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/router/routes/contractor_navigation_routes.dart';
+import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
 import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -36,6 +37,21 @@ class ContractorDashboardPage extends StatelessWidget {
 
   /// The notifications bell, for the header.
   final Widget? bell;
+
+  Future<void> _openProjectSchedule(
+    BuildContext context,
+    String projectId,
+  ) async {
+    await context.pushNamed<void>(
+      ContractorTasksRoutes.projectTasksName,
+      pathParameters: {'projectId': projectId},
+    );
+    if (context.mounted) {
+      context.read<ContractorDashboardBloc>().add(
+        const ContractorDashboardRefreshed(),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +132,10 @@ class ContractorDashboardPage extends StatelessWidget {
                               ContractorNavigationRoutes.navigationName,
                               queryParameters: {'tab': 'contractor-work'},
                             ),
-                        onProjectTap: onProjectTap,
+                        onProjectTap:
+                            onProjectTap ??
+                            (projectId) =>
+                                _openProjectSchedule(context, projectId),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       ContractorDashboardOffers(

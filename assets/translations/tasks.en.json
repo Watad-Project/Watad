@@ -1,0 +1,39 @@
+{
+  "contractor": {
+    "client_and_amount": "Client: {} · {}",
+    "client_only": "Client: {}",
+    "empty_tasks": "No tasks added to this contract yet — start by adding the first task",
+    "date_started_and_finished": "Started {} · Finished {}",
+    "date_finished": "Finished {}",
+    "date_starts": "Starts {}",
+    "date_started": "Started {}",
+    "status_approved_paid": "Approved & paid",
+    "status_approved_processing": "Approved · Transfer in progress",
+    "status_approved_pending": "Approved · Awaiting payment",
+    "status_approved": "Approved",
+    "status_done": "Done — awaiting client approval",
+    "status_update_rejected": "Client rejected update — needs revision",
+    "status_in_progress": "In progress",
+    "status_accepted": "Accepted",
+    "status_proposed": "Proposed — awaiting client acceptance",
+    "status_rejected": "Rejected",
+    "summary_done": {
+      "zero": "No tasks awaiting client approval",
+      "one": "{} task awaiting client approval",
+      "two": "{} tasks awaiting client approval",
+      "few": "{} tasks awaiting client approval",
+      "many": "{} tasks awaiting client approval",
+      "other": "{} tasks awaiting client approval"
+    },
+    "summary_proposed": {
+      "zero": "No proposed tasks",
+      "one": "{} proposed task",
+      "two": "{} proposed tasks",
+      "few": "{} proposed tasks",
+      "many": "{} proposed tasks",
+      "other": "{} proposed tasks"
+    },
+    "add_task": "+ Add task",
+    "update_task": "Update task"
+  }
+}
