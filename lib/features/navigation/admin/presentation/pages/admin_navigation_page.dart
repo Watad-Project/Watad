@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:watad/core/router/routes/admin_blockchain_routes.dart';
 import 'package:watad/core/router/routes/admin_dashboard_routes.dart';
 import 'package:watad/core/router/routes/admin_reports_routes.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
@@ -36,7 +37,12 @@ class AdminNavigationPage extends StatelessWidget {
       selectedIcon: Icons.flag,
       routeName: AdminReportsRoutes.reportsName,
     ),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'blockchain.admin.tab',
+      icon: Icons.hub_outlined,
+      selectedIcon: Icons.hub,
+      routeName: AdminBlockchainRoutes.blockchainName,
+    ),
     NavigationTab.placeholder(),
   ];
 

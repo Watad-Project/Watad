@@ -38,6 +38,20 @@ void main() {
     expect(model.pendingDeeds, 3);
     expect(model.openReports, 5);
     expect(model.onlineUsers, 37);
+    expect(model.blockchainFailed, 0);
+    expect(model.blockchainPending, 0);
+  });
+
+  test('the blockchain row gives the card its counts', () {
+    final model = AdminDashboardStatsModel.fromJson(const {
+      'projects': 5,
+      'blockchain_waiting': 1,
+      'blockchain_retrying': 2,
+      'blockchain_failed': 1,
+    });
+
+    expect(model.blockchainFailed, 1);
+    expect(model.blockchainPending, 3);
   });
 
   test('a missing count reads as zero', () {

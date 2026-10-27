@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:watad/core/router/routes/admin_blockchain_routes.dart';
 import 'package:watad/core/router/routes/admin_marketplace_routes.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/admin_reports_routes.dart';
@@ -124,6 +125,11 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
         onReportsTap: () => context.goNamed(
           AdminNavigationRoutes.navigationName,
           queryParameters: {'tab': AdminReportsRoutes.reportsName},
+        ),
+        // The «البلوك تشين» tab.
+        onBlockchainTap: () => context.goNamed(
+          AdminNavigationRoutes.navigationName,
+          queryParameters: {'tab': AdminBlockchainRoutes.blockchainName},
         ),
       ),
     );

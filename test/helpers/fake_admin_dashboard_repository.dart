@@ -22,6 +22,8 @@ const AdminDashboardStats fakeAdminDashboardStats = AdminDashboardStats(
   pendingDeeds: 4,
   openReports: 5,
   onlineUsers: 37,
+  blockchainFailed: 1,
+  blockchainPending: 2,
 );
 
 /// A hand-written [AdminDashboardRepository]: it answers with the result you

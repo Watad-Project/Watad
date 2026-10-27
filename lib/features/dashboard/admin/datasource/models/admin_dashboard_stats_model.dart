@@ -18,10 +18,13 @@ class AdminDashboardStatsModel extends AdminDashboardStats {
     required super.pendingDeeds,
     required super.openReports,
     required super.onlineUsers,
+    required super.blockchainFailed,
+    required super.blockchainPending,
   });
 
   /// Maps the `v_admin_dashboard` row selected in
-  /// AdminDashboardRemoteDataSourceImpl.
+  /// AdminDashboardRemoteDataSourceImpl, with the `v_admin_blockchain_summary`
+  /// counts it adds as `blockchain_<column>`.
   factory AdminDashboardStatsModel.fromJson(Map<String, dynamic> json) {
     int count(String column) => (json[column] as num?)?.toInt() ?? 0;
     return AdminDashboardStatsModel(
@@ -41,6 +44,9 @@ class AdminDashboardStatsModel extends AdminDashboardStats {
       pendingDeeds: count('pending_deeds'),
       openReports: count('open_reports'),
       onlineUsers: count('online_users'),
+      blockchainFailed: count('blockchain_failed'),
+      blockchainPending:
+          count('blockchain_waiting') + count('blockchain_retrying'),
     );
   }
 }

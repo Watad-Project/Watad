@@ -24,6 +24,15 @@ class AdminDashboardRemoteDataSourceImpl
           'online_users',
         )
         .single();
-    return AdminDashboardStatsModel.fromJson(row);
+    // The blockchain card: the same counts as the «البلوك تشين» tab.
+    final blockchain = await _client
+        .from('v_admin_blockchain_summary')
+        .select('waiting, retrying, failed')
+        .single();
+    return AdminDashboardStatsModel.fromJson({
+      ...row,
+      for (final MapEntry(:key, :value) in blockchain.entries)
+        'blockchain_$key': value,
+    });
   }
 }

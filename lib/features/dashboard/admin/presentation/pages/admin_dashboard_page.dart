@@ -29,6 +29,7 @@ class AdminDashboardPage extends StatelessWidget {
     this.onUsersTap,
     this.onMarketTap,
     this.onReportsTap,
+    this.onBlockchainTap,
     this.bell,
     super.key,
   });
@@ -44,6 +45,9 @@ class AdminDashboardPage extends StatelessWidget {
 
   /// Opens the tickets («البلاغات»), from the open tickets.
   final VoidCallback? onReportsTap;
+
+  /// Opens the «البلوك تشين» tab, from the blockchain card.
+  final VoidCallback? onBlockchainTap;
 
   /// The notifications bell, lent by that feature (AppSlots.notificationsBell).
   final Widget? bell;
@@ -129,6 +133,7 @@ class AdminDashboardPage extends StatelessWidget {
                   stats: stats,
                   onReviewTap: onReviewTap,
                   onReportsTap: onReportsTap,
+                  onBlockchainTap: onBlockchainTap,
                 ),
                 AdminDashboardSection.users => _Users(stats: stats),
                 AdminDashboardSection.projects => _Projects(stats: stats),
@@ -205,11 +210,13 @@ class _Waiting extends StatelessWidget {
     required this.stats,
     required this.onReviewTap,
     required this.onReportsTap,
+    required this.onBlockchainTap,
   });
 
   final AdminDashboardStats stats;
   final VoidCallback? onReviewTap;
   final VoidCallback? onReportsTap;
+  final VoidCallback? onBlockchainTap;
 
   @override
   Widget build(BuildContext context) {
@@ -235,6 +242,29 @@ class _Waiting extends StatelessWidget {
           icon: Icons.flag_outlined,
           isHighlighted: stats.openReports > 0,
           onTap: onReportsTap,
+        ),
+        // «متزامن», or what needs a person, then what waits.
+        AppStatTile(
+          key: const Key('admin_dashboard_blockchain'),
+          label: context.tr('dashboard.admin.blockchain'),
+          value: switch (stats) {
+            AdminDashboardStats(:final blockchainFailed)
+                when blockchainFailed > 0 =>
+              context.tr(
+                'dashboard.admin.blockchain_attention',
+                args: [context.formatNumber(blockchainFailed)],
+              ),
+            AdminDashboardStats(:final blockchainPending)
+                when blockchainPending > 0 =>
+              context.tr(
+                'dashboard.admin.blockchain_pending',
+                args: [context.formatNumber(blockchainPending)],
+              ),
+            _ => context.tr('dashboard.admin.blockchain_synced'),
+          },
+          icon: Icons.hub_outlined,
+          isHighlighted: stats.blockchainFailed > 0,
+          onTap: onBlockchainTap,
         ),
       ],
     );
