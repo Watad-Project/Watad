@@ -18,6 +18,8 @@ class AdminDashboardStats {
     required this.pendingDeeds,
     required this.openReports,
     required this.onlineUsers,
+    required this.blockchainFailed,
+    required this.blockchainPending,
   });
 
   /// Not deleted and not suspended, admins left out.
@@ -53,4 +55,12 @@ class AdminDashboardStats {
   /// Users with the app open now (the rule of `is_online`), admins left
   /// out.
   final int onlineUsers;
+
+  /// Contracted projects whose blockchain sync needs a person
+  /// (`v_admin_blockchain_summary.failed`).
+  final int blockchainFailed;
+
+  /// Contracted projects waiting to sync or retrying (`waiting` +
+  /// `retrying`).
+  final int blockchainPending;
 }

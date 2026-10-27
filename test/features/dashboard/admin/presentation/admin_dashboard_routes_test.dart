@@ -11,11 +11,14 @@ import 'package:watad/core/router/routes/admin_dashboard_routes.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/supabase/app_presence.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/blockchain/admin/presentation/pages/admin_blockchain_page.dart';
+import 'package:watad/features/dashboard/admin/domain/entities/admin_dashboard_stats.dart';
 import 'package:watad/features/dashboard/admin/presentation/pages/admin_dashboard_page.dart';
 import 'package:watad/features/dashboard/admin/presentation/widgets/admin_dashboard_tab.dart';
 import 'package:watad/features/reports/admin/presentation/pages/admin_reports_page.dart';
 import 'package:watad/features/review/admin/presentation/pages/admin_review_page.dart';
 
+import '../../../../helpers/fake_admin_blockchain_repository.dart';
 import '../../../../helpers/fake_admin_dashboard_repository.dart';
 import '../../../../helpers/fake_admin_reports_repository.dart';
 import '../../../../helpers/fake_admin_review_repository.dart';
@@ -34,6 +37,7 @@ void main() {
     registerFakeAdminDashboard(repository);
     registerFakeAdminReview(FakeAdminReviewRepository());
     registerFakeAdminReports(FakeAdminReportsRepository());
+    registerFakeAdminBlockchain(FakeAdminBlockchainRepository());
   });
 
   tearDown(getIt.reset);
@@ -199,6 +203,69 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(AdminDashboardPage), findsOneWidget);
     expect(repository.reads, reads + 1);
+  });
+
+  testWidgets('the blockchain card says what needs attention and opens the '
+      '«البلوك تشين» tab', (tester) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminNavigationRoutes.navigationName);
+    await tester.pumpAndSettle();
+    final card = find.byKey(const Key('admin_dashboard_blockchain'));
+    await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+    // One project needs a person; that comes before the two waiting.
+    expect(
+      find.descendant(of: card, matching: find.text('١ يحتاج مراجعة')),
+      findsOneWidget,
+    );
+
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminBlockchainPage), findsOneWidget);
+  });
+
+  testWidgets('the blockchain card reads «متزامن» when nothing waits', (
+    tester,
+  ) async {
+    repository.statsResult = const Success(
+      AdminDashboardStats(
+        activeUsers: 1,
+        clients: 1,
+        businesses: 1,
+        verifiedBusinesses: 1,
+        projects: 1,
+        draftProjects: 0,
+        openProjects: 0,
+        inProgressProjects: 1,
+        completedProjects: 0,
+        cancelledProjects: 0,
+        marketItems: 0,
+        liveMarketItems: 0,
+        pendingLicenses: 0,
+        pendingDeeds: 0,
+        openReports: 0,
+        onlineUsers: 0,
+        blockchainFailed: 0,
+        blockchainPending: 0,
+      ),
+    );
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.admin),
+    );
+    router.goNamed(AdminNavigationRoutes.navigationName);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('admin_dashboard_blockchain')),
+        matching: find.text('متزامن'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('every management button is open, none says «قريباً»', (
