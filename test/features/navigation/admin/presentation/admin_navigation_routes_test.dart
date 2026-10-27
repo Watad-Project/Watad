@@ -7,6 +7,7 @@ import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/navigation/admin/presentation/pages/admin_navigation_page.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_placeholder.dart';
 
+import '../../../../helpers/fake_admin_blockchain_repository.dart';
 import '../../../../helpers/fake_admin_dashboard_repository.dart';
 import '../../../../helpers/fake_admin_reports_repository.dart';
 import '../../../../helpers/fake_admin_review_repository.dart';
@@ -18,6 +19,7 @@ void main() {
   setUp(() {
     // A tab's feature adds its register…Dependencies(getIt) call here when
     // it sets its tab's routeName (AdminNavigationPage.tabs).
+    registerFakeAdminBlockchain(FakeAdminBlockchainRepository());
     registerFakeAdminDashboard(FakeAdminDashboardRepository());
     registerFakeAdminReports(FakeAdminReportsRepository());
     registerFakeAdminReview(FakeAdminReviewRepository());
