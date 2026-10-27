@@ -142,7 +142,7 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Account | `complete_client_profile(p_full_name, p_national_id, p_phone)`, `delete_my_account()` |
 | Notifications | `mark_notifications_read(p_ids)` (all of the caller's when `p_ids` is null; returns how many changed) |
 | Presence | `set_my_presence(p_online)`: `true` every minute while the app is open, `false` when it goes to the background (§14) |
-| Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_set_project_deed_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing` |
+| Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_set_project_deed_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing`, `admin_blockchain_resync(p_project_id)` |
 | Blockchain sync (server only) | `blockchain_sync_claim`, `blockchain_sync_snapshot`, `blockchain_sync_complete`. They need the shared secret. **The app never calls these.** |
 | Push (server only) | `push_claim`, `push_complete`, for the `send-push` Edge Function (§13). They need the shared secret. **The app never calls these.** |
 
@@ -155,10 +155,13 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | `geocode` | `lat`, `lng` (numbers), optional `language` (`ar` default, or `en`) | The address of that point, from Google: `city`, `district`, `street`, `building_number`, `postal_code` (the `addresses` columns of §3a), plus `additional_number` and `short_address` (the Saudi national address, e.g. `RAYB6780`) and `formatted_address`. A field Google doesn't know is `null`; the user types it. Errors: `400` `invalid_body` / `invalid_coordinates`, `401` `unauthorized` (signed-in users only), `502` `geocoder_unavailable`. |
 | `geocode` (search) | `query` (2 to 100 characters: a city, district or street), optional `language`, optional `lat`, `lng` (preferred nearby, within 50 km) | `suggestions`: places in Saudi Arabia matching it, from Google Places Autocomplete, each `place_id`, `title` (e.g. «العزيزية») and `subtitle` (where it is, or `null`). Errors: `400` `invalid_query`, then as above. |
 | `geocode` (place) | `place_id` (from a suggestion) | Where it is: `lat`, `lng`, and `viewport` (`south`, `west`, `north`, `east`: wide for a city, narrow for a street) or `null`. Errors: `400` `invalid_place`, then as above. |
+| `blockchain-health` | none (`{}`) | Admins only: whether the blockchain answers, from the Fabric REST API's `GET /health`: `reachable` (it answered 200), `http_status` and `latency_ms` (`null` when it didn't answer), `checked_at` (when this check ran, UTC), `details` (the API's JSON answer, or `null`) and `error` (`null`, `timeout`, `unreachable` or `bad_status`). The ledger being down is a `200` with `reachable: false`. Errors: `401` `unauthorized`, `403` `forbidden` (not an admin), `500` `not_configured`. |
 
 `geocode` holds the Google key as the server secret `GOOGLE_MAPS_SERVER_KEY`; the app never sees it. The search and the place need the **Places API (New)** enabled for that key, besides the Geocoding API. It is deployed with `verify_jwt` off and checks the caller's session itself. Its source is in `supabase/functions/geocode/`.
 
-`send-push` is not one of them: the database calls it after every new notification (§13).
+`blockchain-health` reads the blockchain secrets `BLOCKCHAIN_API_URL` and `BLOCKCHAIN_API_KEY`, shared with `blockchain-sync` (§9); the app never sees them. It is deployed with `verify_jwt` off and checks the caller's session and `v_my_profile.is_admin` itself. Its source is in `supabase/functions/blockchain-health/`.
+
+`send-push` and `blockchain-sync` are not among them: the database calls them (§13, §9).
 
 `complete_client_profile()` finishes client sign-up. Call it once, after email OTP verification (before that there is no session). `p_phone` is the 9 digits starting with 5, without `+966`. It sets `users.full_name`, saves the `user_identity` row and returns `'created'`, or `'already_registered'` (and changes nothing) when the account already finished sign-up. Use that result, not `v_my_profile`, to tell a new account from an existing one: the sign-up trigger always creates the `users` row. Errors: `22023` for invalid input (`ValidationFailure`), `23505` when the ID/iqama number belongs to another account (`ConflictFailure`).
 
@@ -173,6 +176,7 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
 | Notifications | `v_my_notifications` |
+| Blockchain | `v_admin_blockchain_sync`, `v_admin_blockchain_summary` |
 | Admin | `v_admin_dashboard`, `v_admin_users`, `v_admin_marketplace_items` |
 
 Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a PR), not by reading a base table with joins in Dart.
@@ -194,6 +198,8 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 `v_admin_users` (migration 75) is every user as an admin sees them, closed accounts included, returned to admins only: name, photo, `role`, `member_since`, last seen and online, `is_deleted`, `is_me` (the admin reading it), the business (company, specialty, city and `verification_status`, any status), the open suspension (`is_suspended`, reason, `suspended_at`, `suspended_by_name`) and activity counts (projects as a client and as a contractor, listings not deleted, reports about them still open or in review). Since migration 76 it also has `email` (from Supabase Auth), `phone` and `national_id` (from `user_identity`; null for someone who never finished sign-up or whose account is closed), through the admin-only lookups `private.admin_user_email()`, `private.admin_user_phone()` and `private.admin_national_id()`. The actions are `admin_set_user_suspension()` and `admin_set_user_role()`.
 
 `v_admin_marketplace_items` (migration 77) is every listing not deleted by its seller, hidden and removed ones included, returned to admins only: the item, its seller (name, photo, verified business, rating, from `v_public_profiles`), one `status` (`removed` by an admin, `hidden` by the seller, `out_of_stock` or `live`, in that order), the removal (`removed_at`, `removal_reason`, `removed_by_name`) and counts (`order_count`, `open_report_count` still open or in review). Removing a listing is `admin_remove_listing()`.
+
+`v_admin_blockchain_sync` and `v_admin_blockchain_summary` (migration 81) are the blockchain sync of §9, returned to admins only (no row for anyone else); the `blockchain_sync` schema itself stays closed. `v_admin_blockchain_sync` has one row per contracted project: the project (`project_id`, `project_title`, `project_status`), the client (`owner_id`, `owner_name`, null when they have no name) and the contractor (`contractor_id`, `contractor_name`: the company), one `sync_status` (`failed`, `retrying`, `waiting` or `synced`, §9), and the sync's `version`, `attempts`, `last_attempt_at`, `next_attempt_at` (only while it waits), `synced_at` (the last successful sync), `last_outcome` (`ok`, `retry` or `failed`) and `last_message`. `v_admin_blockchain_summary` is one row: `projects` and the count of each `sync_status` (`synced`, `waiting`, `retrying`, `failed`), `last_synced_at`, and the cron job `blockchain-sync-retry`: `retry_job_active`, `retry_job_schedule`, `retry_job_last_run_at` and `retry_job_last_status` (pg_cron's: `succeeded`, `failed`, `running`, …). `admin_blockchain_resync(p_project_id)` marks one contracted project to sync again; the project shows `waiting` until the sync runs. Errors: `42501` (not an admin), `22023` (`project_required`), `P0002` (`sync_project_not_found`: not a contracted project).
 
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 
@@ -242,6 +248,19 @@ Use signed URLs for the private buckets. Never make them public.
 
 Payments are **append-only on the chain**. If a payment differs or disappears in the database, the sync reports `NEEDS ATTENTION` and a person must look at it.
 
+**The state of each project** is a row of `blockchain_sync.state` (migration 49). Admins read it through `v_admin_blockchain_sync` and `v_admin_blockchain_summary` (§7, migration 81), as one `sync_status`:
+
+| `sync_status` | `blockchain_sync.state` | Meaning |
+|---|---|---|
+| `synced` | not `dirty`, `last_outcome = 'ok'` | The chain matches the database (also a project that has no accepted offer, so nothing to copy) |
+| `waiting` | `dirty`, not after a retry | A change waits to be copied: the function runs right away, or within 2 minutes |
+| `retrying` | `dirty`, `last_outcome = 'retry'` | An attempt failed for a reason that may pass (the API didn't answer, rejected the key, `404`, `409`, `429`, `5xx`); it is tried again after 15 s, doubling up to an hour |
+| `failed` | not `dirty`, `last_outcome = 'failed'` | The API refused the record (another `4xx`), or the run reported `NEEDS ATTENTION`. It is not retried: a person fixes the data, then resyncs |
+
+An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6); it calls `blockchain_sync.resync()` for that project only. `blockchain_sync.resync()` without a project marks every contracted project; the app doesn't offer that. The admin checks whether the API answers with the `blockchain-health` Edge Function (§6).
+
+**Source:** `supabase/functions/blockchain-sync/` (`index.ts`, `handler.ts`, and `reconcile.ts`, which decides what to write and what needs attention). Deploy it with `supabase functions deploy blockchain-sync --no-verify-jwt`. Its body `{"check": true}` tests the secret and calls the API's `GET /health` without writing anything.
+
 **On-chain project record:** `id`, `owner`, `ownerId`, `ownerEmail`, `contractor`, `contractorId`, `contractorEmail`, `agreedPrice`, `currency` (SAR), `milestone[]` (`description`, `startDate`, `finishDate`, `status`), `payments[]` (`id`, `amount`, `date`, `note`). Task `start_date` and `finish_date` map to `startDate` and `finishDate`. Changing this shape needs a maintainer's approval, the Fabric chaincode and REST API change together with the Edge Function.
 
 ## 10. Security checklist for every change
@@ -257,7 +276,7 @@ Payments are **append-only on the chain**. If a payment differs or disappears in
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `80_v_open_projects_photos`, all applied; the next is `81_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `80_v_open_projects_photos` are applied; `81_admin_blockchain_monitor` is in the repo and waits to be applied; the next is `82_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
