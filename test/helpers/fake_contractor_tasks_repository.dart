@@ -2,6 +2,7 @@ import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
+import 'package:watad/features/tasks/contractor/domain/entities/contractor_submit_task_update_params.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_project.dart';
 import 'package:watad/features/tasks/contractor/domain/repositories/contractor_tasks_repository.dart';
 
@@ -23,6 +24,10 @@ class FakeContractorTasksRepository implements ContractorTasksRepository {
 
   Result<List<ContractorProjectTask>> tasksResult = const Success([]);
 
+  Result<String> submitUpdateResult = const Success('upd-new-1');
+
+  final List<ContractorSubmitTaskUpdateParams> submittedUpdates = [];
+
   @override
   Future<Result<ContractorTaskProject>> getProject(String projectId) async =>
       projectResult;
@@ -31,4 +36,12 @@ class FakeContractorTasksRepository implements ContractorTasksRepository {
   Future<Result<List<ContractorProjectTask>>> getProjectTasks(
     String projectId,
   ) async => tasksResult;
+
+  @override
+  Future<Result<String>> submitTaskUpdate(
+    ContractorSubmitTaskUpdateParams params,
+  ) async {
+    submittedUpdates.add(params);
+    return submitUpdateResult;
+  }
 }

@@ -55,7 +55,9 @@ class ContractorProjectTaskModel extends ContractorProjectTask {
       lastUpdateId: json['last_update_id'] as String?,
       lastUpdateProposedState: lastUpdateProposedState == null
           ? null
-          : TaskStatus.fromJson(lastUpdateProposedState),
+          : TaskStatus.values
+                .where((s) => s.value == lastUpdateProposedState)
+                .firstOrNull,
       lastUpdateDecision: lastUpdateDecision == null
           ? null
           : TaskUpdateDecision.fromJson(lastUpdateDecision),

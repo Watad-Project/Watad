@@ -15,6 +15,7 @@ import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
+import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -270,10 +271,16 @@ class ContractorProjectTasksPage extends StatelessWidget {
   }
 
   Future<void> _handleUpdateTask(BuildContext context) async {
-    final callback = onUpdateTask;
-    if (callback == null) return;
     final bloc = context.read<ContractorProjectTasksBloc>();
-    await callback(context, projectId);
+    final callback = onUpdateTask;
+    if (callback != null) {
+      await callback(context, projectId);
+    } else {
+      await context.pushNamed<bool>(
+        ContractorTasksRoutes.taskUpdateName,
+        pathParameters: {'projectId': projectId},
+      );
+    }
     if (context.mounted) {
       bloc.add(ContractorProjectTasksFetched(projectId));
     }
