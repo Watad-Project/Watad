@@ -61,8 +61,9 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `project_payments` | RO | Stages created by `add_payment_stage()`. |
 | | `bank_transfers` | RO | Receipts in the private `bank-transfer-receipts` bucket. |
 | | `contractor_bank_details` | RW (own row, contractor; no delete) | Where clients send bank transfers: one row per contractor (PK is the contractor's user id) with `beneficiary_name`, `bank_name` and `iban`. Only a user with a business, while their account is active (not closed or suspended), writes it. Saudi IBANs only: spaces and dashes are removed, Arabic-Indic digits become 0-9 and letters are upper-cased, then the shape (`SA` + 22 characters) and the check digits are verified. Invalid input raises `22023` (`invalid_iban`, `invalid_beneficiary_name`, `invalid_bank_name`). Read through `v_contractor_bank_details` (§7). Deleted when the account is closed (migration 78). Personal data: never log it. |
-| Marketplace | `marketplace_items` | RW (seller) | Stock reduced only by `checkout()`. Delete = set `deleted_at`. |
-| | `orders`, `order_items` | RO | Created by `checkout()`. Paid only by the payment webhook. Price and name are snapshots. |
+| Marketplace | `marketplace_items` | RW (seller) | Stock reduced only by `checkout()`. Delete = set `deleted_at`. `category` (`marketplace_category`, default `other`) since migration 82. |
+| | `marketplace_item_photos` | RO | Up to 6 photos per item, in order (`position` 0 to 5, `storage_path` in `images`). Written only by `set_marketplace_item_photos()`; read through `photo_paths` of the item views (§7). Migration 82. |
+| | `orders`, `order_items` | RO | Created by `checkout()`. Paid only by the payment webhook, or by the demo payment (§15). Price, name and `orders.delivery_address` are snapshots. |
 | Social | `chats`, `chat_members` | RO | Via `start_chat()`, `add_chat_member()`, `remove_chat_member()`, `mark_chat_read()`. |
 | | `messages` | insert only | Insert `{chat_id, content}`, a photo `{chat_id, attachment_path, attachment_mime}`, or both; `sender_id` comes from the session. A message has text, a photo, or both (migration 83). |
 | | `notifications` | RO (own rows) | Written by the server only: insert a row to notify a user (§13). Read through `v_my_notifications`; `read_at` set by `mark_notifications_read()`. |
@@ -86,7 +87,7 @@ Writes are limited twice: by RLS (which rows) and by column-level grants (which 
 | `project_tasks` | `project_id`, `title`, `description`, `amount`, `start_date` | none (use `set_task_status()`) | no |
 | `project_reports` | `project_id`, `title`, `content` | `title`, `content` | no |
 | `contractor_bank_details` | `beneficiary_name`, `bank_name`, `iban` | same three | no |
-| `marketplace_items` | `item_name`, `description`, `price`, `stock_quantity`, `is_active` | same five, plus `deleted_at` (soft delete) | no |
+| `marketplace_items` | `item_name`, `description`, `price`, `stock_quantity`, `is_active`, `category` | same six, plus `deleted_at` (soft delete) | no |
 | `messages` | `chat_id`, `content`, `attachment_path`, `attachment_mime` | none | no |
 | `reviews` | `target_user_id`, `project_id` or `order_id`, `rating`, `comment` | `rating`, `comment` | yes |
 | `help_reports` | `report_type`, `description`, one `target_*` column | none | no |
@@ -110,6 +111,7 @@ Every other table is read-only from the app. `projects.status` can be set on ins
 | `bank_transfer_status` | `pending`, `confirmed`, `rejected`, `cancelled` |
 | `order_status` | `pending_payment`, `paid`, `shipped`, `delivered`, `cancelled`, `refunded` |
 | `payment_method` (orders) | `mada`, `credit_card`, `apple_pay`, `stc_pay`, `bank_transfer` |
+| `marketplace_category` | `building_materials` «مواد البناء», `steel_metals` «الحديد والمعادن», `wood` «الأخشاب», `tools_equipment` «الأدوات والمعدات», `electrical_lighting` «الكهرباء والإنارة», `plumbing_sanitary` «السباكة والأدوات الصحية», `paints` «الدهانات», `insulation` «العزل», `flooring_tiles` «الأرضيات والبلاط», `doors_windows` «الأبواب والنوافذ», `hvac` «التكييف والتهوية», `safety` «الأمن والسلامة», `outdoor` «الحدائق والمظلات», `other` «أخرى» |
 | `report_type` | `fraud`, `scam`, `harassment`, `spam`, `inappropriate_content`, `payment_issue`, `technical_issue`, `other` |
 | `report_status` | `open`, `in_review`, `resolved`, `dismissed` |
 | `business_document_type` | `commercial_registration`, `vat_certificate`, `national_address`, `other` |
@@ -136,7 +138,7 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Tasks | `set_task_status(p_task_id, p_status)`, `submit_task_update(p_task_id, p_proposed_state, p_note, p_photo_paths)`, `decide_task_update(p_update_id, p_decision, p_rejection_reason, p_rejection_details, p_rejection_photo_paths)` |
 | Project payments | `add_payment_stage(p_project_id, p_amount, p_description)`, `cancel_payment_stage(p_payment_id)`, `attach_payment_intent(p_gateway_reference, p_order_id, p_project_payment_id, p_method)`, `submit_bank_transfer(p_payment_id, p_storage_path, p_bank_reference)`, `confirm_bank_transfer(p_transfer_id)`, `reject_bank_transfer(p_transfer_id, p_reason)` |
 | Webhook (server) | `record_payment_event(...)` |
-| Marketplace | `checkout(p_items jsonb, p_payment_method)`, `cancel_order(p_order_id)`, `mark_order_shipped(p_order_id)`, `confirm_order_delivered(p_order_id)`, `expire_stale_orders(p_older_than)` |
+| Marketplace | `checkout(p_items jsonb, p_payment_method, p_address_id)`, `cancel_order(p_order_id)`, `mark_order_shipped(p_order_id)`, `confirm_order_delivered(p_order_id)`, `expire_stale_orders(p_older_than)`, `set_marketplace_item_photos(p_item_id, p_paths)`, `simulate_order_payment(p_order_id, p_card_brand, p_card_last4, p_succeed)` (demo only, §15) |
 | Chat | `start_chat(p_other_user_id, p_project_id)`, `add_chat_member(p_chat_id, p_user_id)`, `remove_chat_member(p_chat_id, p_user_id)`, `mark_chat_read(p_chat_id)` |
 | Business | `request_business_verification()` |
 | Account | `complete_client_profile(p_full_name, p_national_id, p_phone)`, `delete_my_account()` |
@@ -201,6 +203,10 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 
 `v_admin_blockchain_sync` and `v_admin_blockchain_summary` (migration 81) are the blockchain sync of §9, returned to admins only (no row for anyone else); the `blockchain_sync` schema itself stays closed. `v_admin_blockchain_sync` has one row per contracted project: the project (`project_id`, `project_title`, `project_status`), the client (`owner_id`, `owner_name`, null when they have no name) and the contractor (`contractor_id`, `contractor_name`: the company), one `sync_status` (`failed`, `retrying`, `waiting` or `synced`, §9), and the sync's `version`, `attempts`, `last_attempt_at`, `next_attempt_at` (only while it waits), `synced_at` (the last successful sync), `last_outcome` (`ok`, `retry` or `failed`) and `last_message`. `v_admin_blockchain_summary` is one row: `projects` and the count of each `sync_status` (`synced`, `waiting`, `retrying`, `failed`), `last_synced_at`, and the cron job `blockchain-sync-retry`: `retry_job_active`, `retry_job_schedule`, `retry_job_last_run_at` and `retry_job_last_status` (pg_cron's: `succeeded`, `failed`, `running`, …). `admin_blockchain_resync(p_project_id)` marks one contracted project to sync again; the project shows `waiting` until the sync runs. Errors: `42501` (not an admin), `22023` (`project_required`), `P0002` (`sync_project_not_found`: not a contracted project).
 
+`v_marketplace_items` and `v_admin_marketplace_items` have `category` and `photo_paths` since migration 82: the item's photos in order, paths in the public `images` bucket (an empty array when there are none; show one with the bucket's public URL). `v_my_orders` has `delivery_address` since migration 82: the buyer's address as it was at checkout (`name`, `city`, `district`, `street`, `building_number`, `postal_code`, `formatted_address`; null on older orders). The seller sees only this copy, never the buyer's saved addresses.
+
+**Marketplace writes (migration 82).** `checkout(p_items, p_payment_method, p_address_id)` needs one of the buyer's own addresses (`v_my_addresses`) and copies it into the order: errors `22023` `address_required`, `P0002` `address_not_found` (not the buyer's). `set_marketplace_item_photos(p_item_id, p_paths)` makes the item's photos exactly `p_paths`, in that order (an empty array removes them). Upload the files first, to `images` at `<seller id>/marketplace/<item id>/<file>`. Only the seller, while the item isn't deleted or removed by an admin. Errors: `P0002` `item_not_found`, `42501` `item_not_editable`, `22023` `too_many_photos` (more than 6), `duplicate_photo`, `invalid_photo_path`, `photo_not_uploaded`.
+
 `v_chat_messages` has `attachment_path` and `attachment_mime` since migration 83 (null for a message without a photo), and `content` is null for a photo without text. Show the photo through a short-lived signed URL of `chat-attachments` (§8), never a public link. `v_my_chats.last_message` reads «📷 صورة» for a photo without text, and so does the body of its `message` notification (§13).
 
 **Sending a photo (migration 83).** Upload it to `chat-attachments` at `<chat id>/<file id>.<ext>` (`jpg`, `jpeg`, `png` or `webp`), then insert the message with `attachment_path` set to that path and `attachment_mime` to `image/jpeg`, `image/png` or `image/webp`, with or without `content`. A path outside that chat's own folder, a path without its type, or a message with neither text nor a photo is refused (`23514`).
@@ -212,7 +218,7 @@ This file does not list view columns. Never guess a column name: read it from th
 | Bucket | Public | Contents | Path rule |
 |--------|--------|----------|-----------|
 | `avatars` | yes | profile pictures | `<user id>/<file name>`, saved in `users.avatar_path` (never an external URL) |
-| `images` | yes | general images (e.g. listings, project photos) | `<user id>/projects/<file name>` for project photos |
+| `images` | yes | general images (e.g. listings, project photos) | `<user id>/projects/<file name>` for project photos; `<seller id>/marketplace/<item id>/<file name>` for item photos, saved with `set_marketplace_item_photos()` |
 | `business-documents` | **no** | verification documents | path saved in `business_documents.storage_path` |
 | `bank-transfer-receipts` | **no** | transfer receipts | path saved in `bank_transfers.storage_path` |
 | `project-deeds` | **no** | ownership deeds of projects (legal documents) | `<owner id>/<file name>`, saved in `projects.deed_storage_path` |
@@ -281,7 +287,7 @@ An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6);
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `81_admin_blockchain_monitor` are applied; `82_marketplace_photos_categories_orders` (GRA-65) and `83_chat_attachments` wait to be applied, in that order; the next is `84_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `82_marketplace_photos_categories_orders` are applied; `83_chat_attachments` is in the repo and waits to be applied; the next is `84_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
@@ -312,7 +318,7 @@ values (v_user_id, '<title>', '<body>',
 - **Where a tap goes is the app's choice:** the feature that has the screen for that event links its `type` to a route with `AppNotificationLinks` (`docs/APP_ARCHITECTURE.md` §11). A tap on the toast, the push or the row in the list opens that screen and marks the notification read; a type nothing links yet opens the notifications list.
 - The app never inserts a notification, and never calls OneSignal's REST API or `send-push`.
 
-**What notifies people already** (migrations 68 and 70, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
+**What notifies people already** (migrations 68, 70 and 82, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
 
 | Event | Who is told | `data.type` (+ ids) | Pops up |
 |---|---|---|---|
@@ -325,8 +331,12 @@ values (v_user_id, '<title>', '<body>',
 | A contractor sends an offer | the project's owner | `offer_received` (`project_id`, `offer_id`) | yes |
 | An offer is accepted | the contractor who sent it | `offer_accepted` (`project_id`, `offer_id`) | yes |
 | An offer is rejected (by the owner, or because `accept_offer()` took another) | the contractor who sent it | `offer_rejected` (`project_id`, `offer_id`) | no |
+| A marketplace order is paid (by the gateway, or the demo payment) | the seller | `order_paid` (`order_id`) | yes |
+| An order is shipped (`mark_order_shipped()`) | the buyer | `order_shipped` (`order_id`) | yes |
+| An order is delivered (`confirm_order_delivered()`) | the other party (the seller) | `order_delivered` (`order_id`) | yes |
+| An order is cancelled (`cancel_order()`, or it expired unpaid) | the other party; both when the server cancels it | `order_cancelled` (`order_id`) | no |
 
-A new event is one more trigger that calls `private.notify(user_id, title, body, data, pop_up)`, in its own migration.
+A new event is one more trigger that calls `private.notify(user_id, title, body, data, pop_up)`, in its own migration. The four order events (migration 82, trigger `notifications_order_status`) belong to the `marketplace` group of the notification settings (GRA-62); add them there when that mapping lands. Their body is the order's first item name, «… وغيرها» when it has more lines.
 
 **Then:** the new row reaches the open app through Realtime (`notifications` is in the `supabase_realtime` publication), and the trigger `notifications_push` posts its id to the `send-push` Edge Function with the Vault secret `push_secret`. The function takes the row once (`push_claim`):
 
@@ -351,3 +361,14 @@ Migration 66. Two halves, kept up by the app on its own (`lib/core/`): screens o
 
 Read them from `v_public_profiles.last_seen_at` and `.is_online`; every signed-in user may see them. The server uses `private.is_online()` to send an in-app notification instead of a push (§13).
 
+## 15. Demo payment (marketplace orders)
+
+**Demo only, no real money.** Watad has no payment gateway yet, so a marketplace order is paid with `simulate_order_payment(p_order_id, p_card_brand, p_card_last4, p_succeed)` (migration 82). This section is the one place that describes it; replace the function when a real gateway arrives.
+
+- Only the order's buyer, and only while it is `pending_payment`. Not for `bank_transfer` orders.
+- The app sends only the card's brand (e.g. `Visa`, up to 30 characters) and its last 4 digits. **Never send, store or log a full card number or the CVV**: the function has no parameter for them.
+- `p_succeed = true`: the order is paid through `record_payment_event()`, exactly as the gateway webhook would pay it. That sets `status = 'paid'`, `paid_at`, a `DEMO-…` `gateway_reference` and the card, writes a `payment_events` row (`gateway_event_id` `demo-…`) and the status history, and sends `order_paid` to the seller (§13).
+- `p_succeed = false` raises `payment_declined` (`P0001`) and the order stays unpaid, so the buyer can try again until it expires.
+- Errors: `P0002` `order_not_found` (not the buyer's), `40001` `order_not_awaiting_payment`, `22023` `not_a_card_payment`, `invalid_card_brand`, `invalid_card_last4`.
+
+**Replacing it with a real gateway:** drop `simulate_order_payment()`; the app starts the payment with the gateway; the gateway's webhook calls `record_payment_event()` (§6, server only), which already pays the order the same way.
