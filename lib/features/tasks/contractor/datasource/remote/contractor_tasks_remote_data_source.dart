@@ -17,7 +17,7 @@ class ContractorTasksRemoteDataSourceImpl
   static const String _contractorRole = 'taker';
 
   static const String _projectColumns =
-      'id, title, status, owner_name, city, district, '
+      'id, title, status, owner_id, owner_name, city, district, '
       'agreed_amount, budget, total_paid, total_scheduled, '
       'photo_paths, created_at, completed_at';
 

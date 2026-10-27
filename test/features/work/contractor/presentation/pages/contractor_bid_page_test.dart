@@ -9,9 +9,11 @@ import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/contractor_work_routes.dart';
 import 'package:watad/core/utils/money.dart';
+import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_bid_details.dart';
 import 'package:watad/features/work/contractor/domain/entities/contractor_open_project.dart';
 
+import '../../../../../helpers/fake_chat_repository.dart';
 import '../../../../../helpers/fake_contractor_work_repository.dart';
 import '../../../../../helpers/fake_splash_repository.dart';
 import '../../../../../helpers/pump_router.dart';
@@ -64,6 +66,7 @@ void main() {
     district: 'حي الياسمين',
     createdAt: DateTime.utc(2026, 10, 18),
     ownerName: 'فهد الشمري',
+    ownerId: 'u-owner',
     offerCount: 3,
   );
 
@@ -72,6 +75,59 @@ void main() {
   });
 
   tearDown(getIt.reset);
+
+  testWidgets('«استفسار» opens the chat with the client, about the project', (
+    tester,
+  ) async {
+    final chat = FakeChatRepository();
+    registerFakeChat(chat);
+    registerFakeContractorWorkTab(
+      _RecordingBidRepository(
+        bidDetailsResult: Success(
+          ContractorBidDetails(
+            project: sampleProject,
+            verificationStatus: VerificationStatus.verified,
+          ),
+        ),
+      ),
+    );
+    final router = await pumpAppRouter(tester);
+    router.goNamed(
+      ContractorWorkRoutes.bidName,
+      pathParameters: {'projectId': 'proj-1'},
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('contractor_bid_inquire')));
+    await tester.pumpAndSettle();
+
+    expect(chat.started, ['u-owner proj-1']);
+    expect(find.byType(ChatConversationPage), findsOneWidget);
+    await chat.dispose();
+  });
+
+  testWidgets('an unverified business that did not bid cannot ask', (
+    tester,
+  ) async {
+    registerFakeContractorWorkTab(
+      _RecordingBidRepository(
+        bidDetailsResult: Success(
+          ContractorBidDetails(
+            project: sampleProject,
+            verificationStatus: VerificationStatus.pending,
+          ),
+        ),
+      ),
+    );
+    final router = await pumpAppRouter(tester);
+    router.goNamed(
+      ContractorWorkRoutes.bidName,
+      pathParameters: {'projectId': 'proj-1'},
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('contractor_bid_inquire')), findsNothing);
+  });
 
   testWidgets('submits a new offer when contractor is verified', (
     tester,

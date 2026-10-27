@@ -8,6 +8,7 @@ void main() {
     final model = ClientProjectOfferModel.fromJson({
       'id': 'o-1',
       'project_id': 'p-1',
+      'provider_id': 'u-2',
       'amount': 465000,
       'status': 'pending',
       'message': ' يشمل التشطيب الخارجي ',
@@ -20,6 +21,7 @@ void main() {
 
     expect(model.id, 'o-1');
     expect(model.projectId, 'p-1');
+    expect(model.providerId, 'u-2');
     expect(model.amount, const Money.halalas(46500000));
     expect(model.status, OfferStatus.pending);
     expect(model.message, 'يشمل التشطيب الخارجي');
@@ -33,6 +35,7 @@ void main() {
     final model = ClientProjectOfferModel.fromJson({
       'id': 'o-2',
       'project_id': 'p-1',
+      'provider_id': 'u-2',
       'amount': 510000,
       'status': 'rejected',
       'message': '  ',

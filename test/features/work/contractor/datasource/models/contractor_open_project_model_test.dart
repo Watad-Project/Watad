@@ -14,6 +14,7 @@ void main() {
         'city': 'الرياض',
         'district': 'حي الياسمين',
         'created_at': '2026-10-18T12:30:00.000Z',
+        'owner_id': 'u-owner',
         'owner_name': 'خالد الحربي',
         'offer_count': 4,
         'my_offer_id': 'offer-55',
@@ -35,6 +36,7 @@ void main() {
       expect(model.district, 'حي الياسمين');
       expect(model.createdAt, DateTime.utc(2026, 10, 18, 12, 30));
       expect(model.ownerName, 'خالد الحربي');
+      expect(model.ownerId, 'u-owner');
       expect(model.offerCount, 4);
       expect(model.myOfferId, 'offer-55');
       expect(model.myOfferAmount, const Money.halalas(4200000));

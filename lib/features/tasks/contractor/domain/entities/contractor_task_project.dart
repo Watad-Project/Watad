@@ -18,12 +18,16 @@ class ContractorTaskProject {
     this.budget,
     this.photoUrl,
     this.completedAt,
+    this.ownerId,
   });
 
   final String id;
   final String title;
   final ProjectStatus status;
   final String ownerName;
+
+  /// The client's user id: who «مراسلة العميل» opens a chat with.
+  final String? ownerId;
   final String? city;
   final String? district;
   final Money? agreedAmount;

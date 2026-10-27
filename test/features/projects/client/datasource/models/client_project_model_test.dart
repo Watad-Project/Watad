@@ -41,6 +41,7 @@ void main() {
       'created_at': '2026-10-18T08:00:00+00:00',
       'photo_paths': ['u-1/projects/1792420175478_scaled_35.png'],
       'photo_url': 'https://nwgqhlqlpyaffoqfsebd.supabase.co/storage/v1/object/public/images/u-1/projects/1792420175478_scaled_35.png',
+      'taker_id': 'u-contractor',
       'taker_company_name': 'مؤسسة البناء المتين',
       'agreed_amount': 465000,
       'task_count': 4,
@@ -52,6 +53,7 @@ void main() {
       endsWith('/images/u-1/projects/1792420175478_scaled_35.png'),
     );
     expect(model.contractorName, 'مؤسسة البناء المتين');
+    expect(model.takerId, 'u-contractor');
     expect(model.agreedAmount, Money.fromJson(465000));
     expect(model.taskCount, 4);
     expect(model.approvedTaskCount, 2);

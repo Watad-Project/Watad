@@ -83,6 +83,7 @@
     "withdraw_confirm_title": "Withdraw Offer",
     "withdraw_offer_button": "Withdraw Offer",
     "your_offer": "Your offer: {amount} {currency}",
-    "your_offer_no_amount": "Your submitted offer"
+    "your_offer_no_amount": "Your submitted offer",
+    "inquire": "Ask a question"
   }
 }

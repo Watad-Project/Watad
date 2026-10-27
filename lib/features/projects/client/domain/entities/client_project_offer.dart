@@ -7,6 +7,7 @@ class ClientProjectOffer {
   const ClientProjectOffer({
     required this.id,
     required this.projectId,
+    required this.providerId,
     required this.amount,
     required this.status,
     required this.providerName,
@@ -19,6 +20,9 @@ class ClientProjectOffer {
 
   final String id;
   final String projectId;
+
+  /// The contractor's user id: who «مراسلة» opens a chat with.
+  final String providerId;
   final Money amount;
   final OfferStatus status;
 

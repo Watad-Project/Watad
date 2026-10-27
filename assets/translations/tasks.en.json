@@ -34,6 +34,7 @@
       "other": "{} proposed tasks"
     },
     "add_task": "+ Add task",
-    "update_task": "Update task"
+    "update_task": "Update task",
+    "message_client": "Message the client"
   }
 }

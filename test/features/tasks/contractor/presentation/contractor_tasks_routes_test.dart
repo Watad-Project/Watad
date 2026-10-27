@@ -16,6 +16,7 @@ import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
+import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
 import 'package:watad/features/tasks/contractor/contractor_tasks_injection.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_project.dart';
@@ -25,6 +26,7 @@ import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_pro
 import 'package:watad/features/tasks/contractor/presentation/pages/contractor_project_tasks_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_contractor_tasks_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
@@ -36,6 +38,7 @@ void main() {
     title: 'فيلا سكنية',
     status: ProjectStatus.inProgress,
     ownerName: 'عبدالله الحربي',
+    ownerId: 'u-client',
     city: 'الرياض',
     district: 'حي الياسمين',
     agreedAmount: const Money.halalas(48000000),
@@ -137,6 +140,25 @@ void main() {
   tearDown(() async {
     await getIt.reset();
     AppNotificationLinks.clear();
+  });
+
+  testWidgets('«مراسلة العميل» opens the chat with the client, about the '
+      'project', (tester) async {
+    final chat = FakeChatRepository();
+    registerFakeChat(chat);
+    await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.contractor),
+      initialLocation: '/contractor/tasks/p-1',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('contractor_project_tasks_message')));
+    await tester.pumpAndSettle();
+
+    expect(chat.started, ['u-client p-1']);
+    expect(find.byType(ChatConversationPage), findsOneWidget);
+    await chat.dispose();
   });
 
   testWidgets(

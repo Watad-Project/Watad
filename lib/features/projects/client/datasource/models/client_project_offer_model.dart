@@ -6,6 +6,7 @@ class ClientProjectOfferModel extends ClientProjectOffer {
   const ClientProjectOfferModel({
     required super.id,
     required super.projectId,
+    required super.providerId,
     required super.amount,
     required super.status,
     required super.providerName,
@@ -23,6 +24,7 @@ class ClientProjectOfferModel extends ClientProjectOffer {
     return ClientProjectOfferModel(
       id: json['id'] as String,
       projectId: json['project_id'] as String,
+      providerId: json['provider_id'] as String,
       amount: Money.fromJson(json['amount'] as num),
       status: OfferStatus.fromJson(json['status'] as String),
       providerName: json['provider_company_name'] as String? ?? '',

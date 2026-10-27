@@ -22,6 +22,7 @@ class ClientOfferCard extends StatelessWidget {
     required this.canAccept,
     required this.isAccepting,
     required this.onAccept,
+    this.onMessage,
     super.key,
   });
 
@@ -31,6 +32,9 @@ class ClientOfferCard extends StatelessWidget {
   /// This offer is being accepted.
   final bool isAccepting;
   final VoidCallback? onAccept;
+
+  /// Opens the chat with the contractor about this project.
+  final VoidCallback? onMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -83,8 +87,7 @@ class ClientOfferCard extends StatelessWidget {
                   child: AppButton(
                     label: context.tr('projects.client.message_contractor'),
                     variant: AppButtonVariant.secondary,
-                    // The chat has its own issue; until then it's off.
-                    onPressed: null,
+                    onPressed: onMessage,
                   ),
                 ),
               ],
