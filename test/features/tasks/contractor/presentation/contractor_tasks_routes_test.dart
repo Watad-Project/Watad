@@ -20,9 +20,12 @@ import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_
 import 'package:watad/features/tasks/contractor/contractor_tasks_injection.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_project.dart';
+import 'package:watad/features/tasks/contractor/domain/usecases/contractor_create_task_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_project_tasks_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_task_project_use_case.dart';
+import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_add_task_bloc.dart';
 import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_project_tasks_bloc.dart';
+import 'package:watad/features/tasks/contractor/presentation/pages/contractor_add_task_page.dart';
 import 'package:watad/features/tasks/contractor/presentation/pages/contractor_project_tasks_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
@@ -127,6 +130,12 @@ void main() {
     ContractorGetProjectTasksUseCase(repository),
   );
 
+  ContractorAddTaskBloc buildAddBloc() => ContractorAddTaskBloc(
+    ContractorGetTaskProjectUseCase(repository),
+    ContractorGetProjectTasksUseCase(repository),
+    ContractorCreateTaskUseCase(repository),
+  );
+
   setUp(() async {
     await getIt.reset();
     AppNotificationLinks.clear();
@@ -134,7 +143,9 @@ void main() {
     repository = FakeContractorTasksRepository()
       ..projectResult = Success(inProgressProject)
       ..tasksResult = Success(scheduleTasks);
-    getIt.registerFactory<ContractorProjectTasksBloc>(buildBloc);
+    getIt
+      ..registerFactory<ContractorProjectTasksBloc>(buildBloc)
+      ..registerFactory<ContractorAddTaskBloc>(buildAddBloc);
   });
 
   tearDown(() async {
@@ -321,31 +332,114 @@ void main() {
     },
   );
 
-  testWidgets('renders without overflow at 200% bold text scale', (
-    tester,
-  ) async {
-    final bloc = buildBloc()..add(const ContractorProjectTasksFetched('p-1'));
-    addTearDown(bloc.close);
+  testWidgets(
+    'renders schedule page without overflow at 200% bold text scale',
+    (tester) async {
+      final bloc = buildBloc()..add(const ContractorProjectTasksFetched('p-1'));
+      addTearDown(bloc.close);
 
-    await pumpLocalizedApp(
-      tester,
-      BlocProvider.value(
-        value: bloc,
-        child: ContractorProjectTasksPage(
-          projectId: 'p-1',
-          today: DateTime.utc(2026, 2, 1),
+      await pumpLocalizedApp(
+        tester,
+        BlocProvider.value(
+          value: bloc,
+          child: ContractorProjectTasksPage(
+            projectId: 'p-1',
+            today: DateTime.utc(2026, 2, 1),
+          ),
         ),
-      ),
-      textScale: largeTextScale,
-      boldText: true,
-    );
-    await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView), const Offset(0, -300));
-    await tester.pumpAndSettle();
+        textScale: largeTextScale,
+        boldText: true,
+      );
+      await tester.pumpAndSettle();
+      await tester.drag(find.byType(ListView), const Offset(0, -300));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(AppTimeline), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.byType(AppTimeline), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'opens add-task page from schedule, validates inputs, submits new task, and returns to schedule',
+    (tester) async {
+      final session = FakeAppSession()..signIn(AppRole.contractor);
+      await pumpAppRouter(
+        tester,
+        session: session,
+        initialLocation: '/contractor/tasks/p-1',
+      );
+      await tester.pumpAndSettle();
+
+      // Tap "+ إضافة مهمة" on the schedule page to navigate to GRA-38.
+      await tester.tap(find.byKey(const Key('contractor_project_tasks_add')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ContractorAddTaskPage), findsOneWidget);
+      expect(find.text('إضافة مهمة'), findsOneWidget);
+
+      // Submit empty description to trigger validation errors while keeping typed text.
+      await tester.enterText(
+        find.byKey(const Key('contractor_add_task_title')),
+        'عزل السطح المائي والحراري',
+      );
+      await tester.tap(find.byKey(const Key('contractor_add_task_submit')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('وصف المهمة مطلوب'), findsOneWidget);
+      expect(find.text('عزل السطح المائي والحراري'), findsOneWidget);
+
+      // Fill description, test exceeding remaining budget, then submit valid amount.
+      await tester.enterText(
+        find.byKey(const Key('contractor_add_task_description')),
+        'طبقتان من العزل البيتوميني مع اختبار غمر ٤٨ ساعة.',
+      );
+      await tester.enterText(
+        find.byKey(const Key('contractor_add_task_amount')),
+        '999999',
+      );
+      await tester.tap(find.byKey(const Key('contractor_add_task_submit')));
+      await tester.pumpAndSettle();
+
+      final amountErrorFinder = find.textContaining(
+        'المبلغ يتجاوز المتبقي من قيمة العقد',
+      );
+      expect(amountErrorFinder, findsOneWidget);
+      expect(tester.widget<Text>(amountErrorFinder).maxLines, 3);
+
+      await tester.enterText(
+        find.byKey(const Key('contractor_add_task_amount')),
+        '38000',
+      );
+      await tester.tap(find.byKey(const Key('contractor_add_task_submit')));
+      await tester.pumpAndSettle();
+
+      expect(repository.lastCreatedTask?.title, 'عزل السطح المائي والحراري');
+      expect(repository.lastCreatedTask?.amount, Money.fromSar(38000));
+      expect(find.byType(ContractorProjectTasksPage), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'renders add-task page without overflow at 200% bold text scale',
+    (tester) async {
+      final bloc = buildAddBloc()..add(const ContractorAddTaskStarted('p-1'));
+      addTearDown(bloc.close);
+
+      await pumpLocalizedApp(
+        tester,
+        BlocProvider.value(
+          value: bloc,
+          child: const ContractorAddTaskPage(projectId: 'p-1'),
+        ),
+        textScale: largeTextScale,
+        boldText: true,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ContractorAddTaskPage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   test('registers contractor task notification deep links', () async {
     await getIt.reset();

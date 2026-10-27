@@ -4,8 +4,10 @@ import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/features/tasks/contractor/datasource/remote/contractor_tasks_remote_data_source.dart';
 import 'package:watad/features/tasks/contractor/datasource/repositories/contractor_tasks_repository_impl.dart';
 import 'package:watad/features/tasks/contractor/domain/repositories/contractor_tasks_repository.dart';
+import 'package:watad/features/tasks/contractor/domain/usecases/contractor_create_task_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_project_tasks_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_task_project_use_case.dart';
+import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_add_task_bloc.dart';
 import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_project_tasks_bloc.dart';
 
 /// Registers the types of lib/features/tasks/contractor/ into [getIt].
@@ -21,7 +23,9 @@ void registerContractorTasksDependencies(GetIt getIt) {
     )
     ..registerLazySingleton(() => ContractorGetTaskProjectUseCase(getIt()))
     ..registerLazySingleton(() => ContractorGetProjectTasksUseCase(getIt()))
-    ..registerFactory(() => ContractorProjectTasksBloc(getIt(), getIt()));
+    ..registerLazySingleton(() => ContractorCreateTaskUseCase(getIt()))
+    ..registerFactory(() => ContractorProjectTasksBloc(getIt(), getIt()))
+    ..registerFactory(() => ContractorAddTaskBloc(getIt(), getIt(), getIt()));
 
   // Contractor notifications that open the contract's project schedule
   // (ARCHITECTURE.md §13).
