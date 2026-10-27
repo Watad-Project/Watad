@@ -35,6 +35,31 @@
     },
     "add_task": "+ Add task",
     "update_task": "Update task",
-    "message_client": "Message the client"
+    "message_client": "Message the client",
+    "update_title": "Update progress",
+    "update_step1_heading": "Which task do you want to update?",
+    "update_step1_subtitle": "Choose the task, then add photos and the new state",
+    "update_task_amount_and_status": "{} · {}",
+    "update_last_updated": "Last updated: {}",
+    "update_no_updates_yet": "No update sent yet",
+    "update_no_open_tasks": "No open tasks available to update right now",
+    "update_next_button": "Next: State & evidence",
+    "time_just_now": "Just now",
+    "time_hours_ago": {
+      "zero": "Just now",
+      "one": "{} hour ago",
+      "two": "{} hours ago",
+      "few": "{} hours ago",
+      "many": "{} hours ago",
+      "other": "{} hours ago"
+    },
+    "time_days_ago": {
+      "zero": "Today",
+      "one": "Yesterday",
+      "two": "{} days ago",
+      "few": "{} days ago",
+      "many": "{} days ago",
+      "other": "{} days ago"
+    }
   }
 }
