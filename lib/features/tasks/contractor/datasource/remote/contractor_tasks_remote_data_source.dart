@@ -1,11 +1,14 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/tasks/contractor/datasource/models/contractor_project_task_model.dart';
 import 'package:watad/features/tasks/contractor/datasource/models/contractor_task_project_model.dart';
+import 'package:watad/features/tasks/contractor/domain/entities/contractor_submit_task_update_params.dart';
 
 abstract interface class ContractorTasksRemoteDataSource {
   Future<ContractorTaskProjectModel> getProject(String projectId);
 
   Future<List<ContractorProjectTaskModel>> getProjectTasks(String projectId);
+
+  Future<String> submitTaskUpdate(ContractorSubmitTaskUpdateParams params);
 }
 
 class ContractorTasksRemoteDataSourceImpl
@@ -52,6 +55,43 @@ class ContractorTasksRemoteDataSourceImpl
     return rows.map(ContractorProjectTaskModel.fromJson).toList();
   }
 
+  @override
+  Future<String> submitTaskUpdate(
+    ContractorSubmitTaskUpdateParams params,
+  ) async {
+    final userId = _client.auth.currentUser?.id;
+    final photoPaths = <String>[];
+
+    if (params.photos.isNotEmpty) {
+      if (userId == null || userId.isEmpty) {
+        throw const AuthException('Not authenticated');
+      }
+      final bucket = _client.storage.from('task-evidence');
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      for (var i = 0; i < params.photos.length; i++) {
+        final photo = params.photos[i];
+        final cleanName = _sanitizeFileName(photo.fileName, fallbackIndex: i);
+        final path = '$userId/${timestamp}_${i}_$cleanName';
+        await bucket.uploadBinary(
+          path,
+          photo.bytes,
+          fileOptions: FileOptions(contentType: _contentType(cleanName)),
+        );
+        photoPaths.add(path);
+      }
+    }
+
+    return _client.rpc<String>(
+      'submit_task_update',
+      params: {
+        'p_task_id': params.taskId,
+        'p_proposed_state': params.proposedState.toJson(),
+        'p_note': params.note,
+        'p_photo_paths': photoPaths,
+      },
+    );
+  }
+
   Map<String, dynamic> _withPhotoUrl(Map<String, dynamic> row) {
     final paths = row['photo_paths'] as List<dynamic>?;
     final first = paths == null || paths.isEmpty
@@ -61,6 +101,20 @@ class ContractorTasksRemoteDataSourceImpl
     return {
       ...row,
       'photo_url': _client.storage.from('images').getPublicUrl(first),
+    };
+  }
+
+  static String _sanitizeFileName(String name, {required int fallbackIndex}) {
+    final sanitized = name.replaceAll(RegExp('[^a-zA-Z0-9._-]'), '_');
+    return sanitized.isEmpty ? 'evidence_$fallbackIndex.jpg' : sanitized;
+  }
+
+  static String _contentType(String fileName) {
+    final ext = fileName.split('.').last.toLowerCase();
+    return switch (ext) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      _ => 'image/jpeg',
     };
   }
 }
