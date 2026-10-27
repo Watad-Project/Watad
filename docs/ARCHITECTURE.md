@@ -65,7 +65,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `marketplace_item_photos` | RO | Up to 6 photos per item, in order (`position` 0 to 5, `storage_path` in `images`). Written only by `set_marketplace_item_photos()`; read through `photo_paths` of the item views (§7). Migration 82. |
 | | `orders`, `order_items` | RO | Created by `checkout()`. Paid only by the payment webhook, or by the demo payment (§15). Price, name and `orders.delivery_address` are snapshots. |
 | Social | `chats`, `chat_members` | RO | Via `start_chat()`, `add_chat_member()`, `remove_chat_member()`, `mark_chat_read()`. |
-| | `messages` | insert only | Insert `{chat_id, content}`; `sender_id` comes from the session. |
+| | `messages` | insert only | Insert `{chat_id, content}`, a photo `{chat_id, attachment_path, attachment_mime}`, or both; `sender_id` comes from the session. A message has text, a photo, or both (migration 83). |
 | | `notifications` | RO (own rows) | Written by the server only: insert a row to notify a user (§13). Read through `v_my_notifications`; `read_at` set by `mark_notifications_read()`. |
 | | `reviews` | insert | Only between the two parties of a completed project or delivered order. |
 | Moderation | `help_reports` | insert (reporter) | Set at most one `target_*` column. Admins use `admin_assign_help_report()` / `admin_resolve_help_report()`. |
@@ -88,7 +88,7 @@ Writes are limited twice: by RLS (which rows) and by column-level grants (which 
 | `project_reports` | `project_id`, `title`, `content` | `title`, `content` | no |
 | `contractor_bank_details` | `beneficiary_name`, `bank_name`, `iban` | same three | no |
 | `marketplace_items` | `item_name`, `description`, `price`, `stock_quantity`, `is_active`, `category` | same six, plus `deleted_at` (soft delete) | no |
-| `messages` | `chat_id`, `content` | none | no |
+| `messages` | `chat_id`, `content`, `attachment_path`, `attachment_mime` | none | no |
 | `reviews` | `target_user_id`, `project_id` or `order_id`, `rating`, `comment` | `rating`, `comment` | yes |
 | `help_reports` | `report_type`, `description`, one `target_*` column | none | no |
 
@@ -207,6 +207,10 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 
 **Marketplace writes (migration 82).** `checkout(p_items, p_payment_method, p_address_id)` needs one of the buyer's own addresses (`v_my_addresses`) and copies it into the order: errors `22023` `address_required`, `P0002` `address_not_found` (not the buyer's). `set_marketplace_item_photos(p_item_id, p_paths)` makes the item's photos exactly `p_paths`, in that order (an empty array removes them). Upload the files first, to `images` at `<seller id>/marketplace/<item id>/<file>`. Only the seller, while the item isn't deleted or removed by an admin. Errors: `P0002` `item_not_found`, `42501` `item_not_editable`, `22023` `too_many_photos` (more than 6), `duplicate_photo`, `invalid_photo_path`, `photo_not_uploaded`.
 
+`v_chat_messages` has `attachment_path` and `attachment_mime` since migration 83 (null for a message without a photo), and `content` is null for a photo without text. Show the photo through a short-lived signed URL of `chat-attachments` (§8), never a public link. `v_my_chats.last_message` reads «📷 صورة» for a photo without text, and so does the body of its `message` notification (§13).
+
+**Sending a photo (migration 83).** Upload it to `chat-attachments` at `<chat id>/<file id>.<ext>` (`jpg`, `jpeg`, `png` or `webp`), then insert the message with `attachment_path` set to that path and `attachment_mime` to `image/jpeg`, `image/png` or `image/webp`, with or without `content`. A path outside that chat's own folder, a path without its type, or a message with neither text nor a photo is refused (`23514`).
+
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 
 ## 8. Storage buckets
@@ -218,6 +222,7 @@ This file does not list view columns. Never guess a column name: read it from th
 | `business-documents` | **no** | verification documents | path saved in `business_documents.storage_path` |
 | `bank-transfer-receipts` | **no** | transfer receipts | path saved in `bank_transfers.storage_path` |
 | `project-deeds` | **no** | ownership deeds of projects (legal documents) | `<owner id>/<file name>`, saved in `projects.deed_storage_path` |
+| `chat-attachments` | **no** | chat photos (JPEG, PNG, WebP up to 10 MB) | `<chat id>/<file id>.<ext>`, saved in `messages.attachment_path`. Only the chat's members upload to or read its folder (`private.my_chat_ids()`, as for `messages`); nobody updates or deletes, as messages are insert-only (migration 83) |
 | `task-evidence` | **no** | task update evidence photos (JPEG, PNG, WebP up to 10 MB) | `<taker id>/<file name>`, saved in `project_task_updates.photo_paths`; the owner's rejection photos in `<owner id>/<file name>`, saved in `project_task_updates.rejection_photo_paths` (migration 79). Uploads only while the project is `in_progress`. |
 
 Use signed URLs for the private buckets. Never make them public.
@@ -282,7 +287,7 @@ An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6);
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `81_admin_blockchain_monitor` are applied; `82_marketplace_photos_categories_orders` is in the repo and waits to be applied; the next is `83_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `82_marketplace_photos_categories_orders` are applied; `83_chat_attachments` is in the repo and waits to be applied; the next is `84_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
