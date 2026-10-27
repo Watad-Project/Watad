@@ -83,6 +83,7 @@
     "withdraw_confirm_title": "سحب العرض",
     "withdraw_offer_button": "سحب العرض",
     "your_offer": "عرضك {amount} {currency}",
-    "your_offer_no_amount": "عرضك المقدّم"
+    "your_offer_no_amount": "عرضك المقدّم",
+    "inquire": "استفسار"
   }
 }

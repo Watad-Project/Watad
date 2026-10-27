@@ -18,6 +18,7 @@ class ClientProject {
     this.deedRejectionReason,
     this.photoUrl,
     this.contractorName,
+    this.takerId,
     this.agreedAmount,
     this.taskCount = 0,
     this.approvedTaskCount = 0,
@@ -48,6 +49,10 @@ class ClientProject {
 
   /// The business working on it, once an offer was accepted.
   final String? contractorName;
+
+  /// The contractor's user id, once an offer is accepted: who «مراسلة»
+  /// opens a chat with.
+  final String? takerId;
 
   /// The accepted offer's amount.
   final Money? agreedAmount;

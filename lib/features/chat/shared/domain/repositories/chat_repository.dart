@@ -3,8 +3,13 @@ import 'package:watad/features/chat/shared/domain/entities/chat_conversation.dar
 import 'package:watad/features/chat/shared/domain/entities/chat_message.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_messages_query.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_photo.dart';
+import 'package:watad/features/chat/shared/domain/entities/chat_start_request.dart';
 
 abstract interface class ChatRepository {
+  /// The chat's id: the existing one with that person (and project), or a
+  /// new one.
+  Future<Result<String>> startChat(ChatStartRequest request);
+
   Future<Result<ChatConversation>> getConversation(String chatId);
 
   /// Newest first: up to [limit] messages, before [before] or after [after]

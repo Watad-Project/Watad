@@ -8,6 +8,7 @@ void main() {
       'id': 'p-1',
       'title': 'فيلا سكنية',
       'status': 'in_progress',
+      'owner_id': 'u-client',
       'owner_name': 'عبدالله الحربي',
       'city': 'الرياض',
       'district': 'حي الياسمين',
@@ -27,6 +28,7 @@ void main() {
     expect(project.status, ProjectStatus.inProgress);
     expect(project.isInProgress, isTrue);
     expect(project.ownerName, 'عبدالله الحربي');
+    expect(project.ownerId, 'u-client');
     expect(project.agreedAmount?.halalas, 48000000);
     expect(project.budget?.halalas, 45000000);
     expect(project.contractAmount?.halalas, 48000000);

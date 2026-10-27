@@ -17,6 +17,7 @@ class ContractorTaskProjectModel extends ContractorTaskProject {
     super.budget,
     super.photoUrl,
     super.completedAt,
+    super.ownerId,
   });
 
   /// Maps a row from `v_my_projects` (`my_role = 'taker'`) plus `photo_url`
@@ -33,6 +34,7 @@ class ContractorTaskProjectModel extends ContractorTaskProject {
       title: json['title'] as String,
       status: ProjectStatus.fromJson(json['status'] as String),
       ownerName: json['owner_name'] as String? ?? '',
+      ownerId: json['owner_id'] as String?,
       city: json['city'] as String?,
       district: json['district'] as String?,
       agreedAmount: agreedAmount == null ? null : Money.fromJson(agreedAmount),

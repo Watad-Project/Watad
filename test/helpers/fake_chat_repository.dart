@@ -9,6 +9,7 @@ import 'package:watad/features/chat/shared/domain/entities/chat_member.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_message.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_photo.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_project_role.dart';
+import 'package:watad/features/chat/shared/domain/entities/chat_start_request.dart';
 import 'package:watad/features/chat/shared/domain/repositories/chat_repository.dart';
 
 const String fakeChatId = 'c-1';
@@ -59,6 +60,12 @@ class FakeChatRepository implements ChatRepository {
 
   Result<void> sendResult = const Success(null);
 
+  /// Answers start_chat; the fake chat unless set.
+  Result<String> startResult = const Success(fakeChatId);
+
+  /// Who chats were opened with, e.g. `u-2 p-1` or `u-2 -`.
+  final List<String> started = [];
+
   /// What was sent, e.g. `text: hi`, `photo: a.jpg (caption)`.
   final List<String> sent = [];
   int readMarks = 0;
@@ -67,6 +74,12 @@ class FakeChatRepository implements ChatRepository {
 
   /// Closes [live]; call it in tearDown.
   Future<void> dispose() => live.close();
+
+  @override
+  Future<Result<String>> startChat(ChatStartRequest request) async {
+    started.add('${request.otherUserId} ${request.projectId ?? '-'}');
+    return startResult;
+  }
 
   @override
   Future<Result<ChatConversation>> getConversation(String chatId) async =>

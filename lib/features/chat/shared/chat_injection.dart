@@ -8,8 +8,10 @@ import 'package:watad/features/chat/shared/domain/usecases/chat_get_conversation
 import 'package:watad/features/chat/shared/domain/usecases/chat_get_messages_use_case.dart';
 import 'package:watad/features/chat/shared/domain/usecases/chat_mark_read_use_case.dart';
 import 'package:watad/features/chat/shared/domain/usecases/chat_send_message_use_case.dart';
+import 'package:watad/features/chat/shared/domain/usecases/chat_start_use_case.dart';
 import 'package:watad/features/chat/shared/domain/usecases/chat_watch_new_messages_use_case.dart';
 import 'package:watad/features/chat/shared/presentation/bloc/chat_conversation_bloc.dart';
+import 'package:watad/features/chat/shared/presentation/bloc/chat_start_bloc.dart';
 
 /// Registers everything in lib/features/chat/shared/.
 void registerChatDependencies(GetIt getIt) {
@@ -23,9 +25,11 @@ void registerChatDependencies(GetIt getIt) {
     ..registerLazySingleton(() => ChatSendMessageUseCase(getIt()))
     ..registerLazySingleton(() => ChatMarkReadUseCase(getIt()))
     ..registerLazySingleton(() => ChatWatchNewMessagesUseCase(getIt()))
+    ..registerLazySingleton(() => ChatStartUseCase(getIt()))
     ..registerFactory(
       () => ChatConversationBloc(getIt(), getIt(), getIt(), getIt(), getIt()),
-    );
+    )
+    ..registerFactory(() => ChatStartBloc(getIt()));
 
   // A new message opens its chat (ARCHITECTURE.md §13).
   AppNotificationLinks.register('message', (data) {

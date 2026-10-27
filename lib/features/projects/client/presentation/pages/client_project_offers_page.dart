@@ -9,6 +9,7 @@ import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -121,6 +122,11 @@ class ClientProjectOffersPage extends StatelessWidget {
                 onAccept: state.acceptingOfferId == null
                     ? () => _confirmAccept(context, bloc, offer)
                     : null,
+                onMessage: () => context.pushNamed(
+                  ChatRoutes.chatStartName,
+                  pathParameters: {'userId': offer.providerId},
+                  queryParameters: {'project': offer.projectId},
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
             ],

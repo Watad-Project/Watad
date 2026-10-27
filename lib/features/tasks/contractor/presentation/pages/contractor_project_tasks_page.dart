@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/display/app_icon_tag.dart';
 import 'package:watad/core/components/display/app_money_text.dart';
 import 'package:watad/core/components/display/app_network_image.dart';
@@ -13,6 +14,7 @@ import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -70,6 +72,19 @@ class ContractorProjectTasksPage extends StatelessWidget {
           appBar: AppTopBar(
             title: project == null ? '' : project.displayTitle,
             onBack: () => context.pop(),
+            actions: [
+              if (project?.ownerId case final ownerId?)
+                AppIconButton(
+                  key: const Key('contractor_project_tasks_message'),
+                  icon: Icons.chat_bubble_outline_rounded,
+                  tooltip: context.tr('tasks.contractor.message_client'),
+                  onPressed: () => context.pushNamed(
+                    ChatRoutes.chatStartName,
+                    pathParameters: {'userId': ownerId},
+                    queryParameters: {'project': project!.id},
+                  ),
+                ),
+            ],
           ),
           body: AnimatedSwitcher(
             duration: AppMotion.enter,

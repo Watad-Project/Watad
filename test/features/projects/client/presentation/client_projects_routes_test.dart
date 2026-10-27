@@ -20,6 +20,7 @@ import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
+import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
 import 'package:watad/features/payments/client/presentation/pages/client_new_payment_page.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
@@ -39,6 +40,7 @@ import 'package:watad/features/projects/client/presentation/pages/client_task_up
 import 'package:watad/features/projects/client/presentation/widgets/client_task_date.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_client_payments_repository.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
 import '../../../../helpers/fake_network_images.dart';
@@ -71,6 +73,7 @@ void main() {
   final offer = ClientProjectOffer(
     id: 'o-1',
     projectId: 'p-1',
+    providerId: 'u-contractor',
     amount: const Money.halalas(46500000),
     status: OfferStatus.pending,
     providerName: 'مؤسسة البناء المتين',
@@ -87,6 +90,7 @@ void main() {
     city: 'جدة',
     pendingOfferCount: 0,
     contractorName: 'مؤسسة البناء المتين',
+    takerId: 'u-contractor',
     createdAt: DateTime.utc(2026, 10, 17),
   );
   // One task in each state, as the contractor's work moves on.
@@ -565,11 +569,50 @@ void main() {
     expect(find.text('مؤسسة البناء المتين'), findsOneWidget);
     expect(find.text('٤٫٨'), findsOneWidget);
     expect(find.text('يشمل التشطيب الخارجي'), findsOneWidget);
-    // The chat has its own issue.
-    final message = tester.widget<AppButton>(
-      find.widgetWithText(AppButton, 'مراسلة'),
+  });
+
+  testWidgets('the project screen messages its contractor', (tester) async {
+    final chat = FakeChatRepository();
+    registerFakeChat(chat);
+    await openTasks(tester);
+
+    await tester.tap(find.byKey(const Key('client_project_tasks_message')));
+    await tester.pumpAndSettle();
+
+    expect(chat.started, ['u-contractor p-3']);
+    expect(find.byType(ChatConversationPage), findsOneWidget);
+    await chat.dispose();
+  });
+
+  testWidgets('a project without a contractor has no message button', (
+    tester,
+  ) async {
+    repository.projectResult = Success(project);
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
     );
-    expect(message.onPressed, isNull);
+    router.goNamed(
+      ClientProjectsRoutes.projectTasksName,
+      pathParameters: {'projectId': 'p-1'},
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('client_project_tasks_message')), findsNothing);
+  });
+
+  testWidgets('«مراسلة» opens the chat with that contractor, about the '
+      'project', (tester) async {
+    final chat = FakeChatRepository();
+    registerFakeChat(chat);
+    await openOffers(tester);
+
+    await tester.tap(find.widgetWithText(AppButton, 'مراسلة'));
+    await tester.pumpAndSettle();
+
+    expect(chat.started, ['u-contractor p-1']);
+    expect(find.byType(ChatConversationPage), findsOneWidget);
+    await chat.dispose();
   });
 
   testWidgets('accepting asks first, then accepts at the amount shown', (

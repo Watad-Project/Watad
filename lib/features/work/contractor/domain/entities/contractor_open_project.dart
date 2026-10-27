@@ -10,6 +10,7 @@ class ContractorOpenProject {
     required this.city,
     required this.createdAt,
     required this.ownerName,
+    this.ownerId,
     required this.offerCount,
     this.ownerAvatarUrl,
     this.budget,
@@ -30,6 +31,9 @@ class ContractorOpenProject {
   final String? imageUrl;
   final DateTime createdAt;
   final String ownerName;
+
+  /// The client's user id: who «استفسار» opens a chat with.
+  final String? ownerId;
   final String? ownerAvatarUrl;
   final int offerCount;
   final String? myOfferId;

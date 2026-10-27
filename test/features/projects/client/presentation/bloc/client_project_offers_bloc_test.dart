@@ -25,6 +25,7 @@ void main() {
   ClientProjectOffer offer(OfferStatus status) => ClientProjectOffer(
     id: 'o-1',
     projectId: 'p-1',
+    providerId: 'u-contractor',
     amount: const Money.halalas(46500000),
     status: status,
     providerName: 'مؤسسة البناء المتين',

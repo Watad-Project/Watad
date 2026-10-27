@@ -9,6 +9,7 @@ import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
+import 'package:watad/features/chat/shared/presentation/pages/chat_start_page.dart';
 import 'package:watad/features/chat/shared/presentation/widgets/chat_header.dart';
 import 'package:watad/features/chat/shared/presentation/widgets/chat_message_bubble.dart';
 
@@ -144,6 +145,75 @@ void main() {
     await openChat(tester, textScale: largeTextScale, boldText: true);
 
     expect(find.byType(ChatConversationPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  Future<GoRouter> startChat(WidgetTester tester, {String? projectId}) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.contractor),
+    );
+    router.goNamed(
+      ChatRoutes.chatStartName,
+      pathParameters: {'userId': 'u-2'},
+      queryParameters: {'project': ?projectId},
+    );
+    await tester.pumpAndSettle();
+    return router;
+  }
+
+  testWidgets('chat-start opens the chat, then gives its place to it', (
+    tester,
+  ) async {
+    final router = await startChat(tester, projectId: 'p-1');
+
+    expect(repository.started, ['u-2 p-1']);
+    expect(find.byType(ChatConversationPage), findsOneWidget);
+    expect(find.byType(ChatStartPage), findsNothing);
+    expect(
+      router.routerDelegate.currentConfiguration.last.route.name,
+      ChatRoutes.chatConversationName,
+    );
+  });
+
+  testWidgets('chat-start without a project opens a plain chat', (
+    tester,
+  ) async {
+    await startChat(tester);
+
+    expect(repository.started, ['u-2 -']);
+  });
+
+  testWidgets('chat-start says why the server refused', (tester) async {
+    repository.startResult = const Failed(PermissionFailure());
+    await startChat(tester, projectId: 'p-1');
+
+    expect(find.byType(ChatStartPage), findsOneWidget);
+    expect(
+      find.text('لا يمكنك مراسلة هذا الشخص بخصوص هذا المشروع.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('chat-start with a closed account says so', (tester) async {
+    repository.startResult = const Failed(NotFoundFailure());
+    await startChat(tester);
+
+    expect(find.text('لم نجد هذا الحساب، ربما أُغلق.'), findsOneWidget);
+  });
+
+  testWidgets('chat-start fits large bold text', (tester) async {
+    repository.startResult = const Failed(PermissionFailure());
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+      textScale: largeTextScale,
+      boldText: true,
+    );
+    router.goNamed(ChatRoutes.chatStartName, pathParameters: {'userId': 'u-2'});
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ChatStartPage), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

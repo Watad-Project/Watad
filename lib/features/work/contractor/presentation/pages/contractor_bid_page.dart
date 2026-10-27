@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/display/app_icon_tag.dart';
@@ -14,7 +15,9 @@ import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/failure.dart';
+import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/contractor_work_routes.dart';
 import 'package:watad/core/router/routes/kyc_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
@@ -166,6 +169,25 @@ class _ContractorBidPageState extends State<ContractorBidPage> {
           appBar: AppTopBar(
             title: context.tr('work.contractor.bid_top_bar_title'),
             onBack: () => _popOrGoBack(context),
+            actions: [
+              // The database lets a verified business ask about an open
+              // project, and a business that bid on it.
+              if (state case ContractorBidReady(:final details)
+                  when details.verificationStatus ==
+                          VerificationStatus.verified ||
+                      details.existingOfferId != null)
+                if (details.project?.ownerId case final ownerId?)
+                  AppIconButton(
+                    key: const Key('contractor_bid_inquire'),
+                    icon: Icons.chat_bubble_outline_rounded,
+                    tooltip: context.tr('work.contractor.inquire'),
+                    onPressed: () => context.pushNamed(
+                      ChatRoutes.chatStartName,
+                      pathParameters: {'userId': ownerId},
+                      queryParameters: {'project': widget.projectId},
+                    ),
+                  ),
+            ],
           ),
           bottomNavigationBar: bottomBar,
           body: SafeArea(

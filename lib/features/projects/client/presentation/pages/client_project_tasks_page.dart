@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/display/app_money_text.dart';
 import 'package:watad/core/components/display/app_timeline.dart';
 import 'package:watad/core/components/display/app_verified_name.dart';
@@ -11,6 +12,7 @@ import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_payments_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
@@ -56,6 +58,19 @@ class ClientProjectTasksPage extends StatelessWidget {
                 ? ''
                 : ClientProjectTitle.of(context, project.title),
             onBack: () => context.pop(),
+            actions: [
+              if (project?.takerId case final takerId?)
+                AppIconButton(
+                  key: const Key('client_project_tasks_message'),
+                  icon: Icons.chat_bubble_outline_rounded,
+                  tooltip: context.tr('projects.client.message_contractor'),
+                  onPressed: () => context.pushNamed(
+                    ChatRoutes.chatStartName,
+                    pathParameters: {'userId': takerId},
+                    queryParameters: {'project': projectId},
+                  ),
+                ),
+            ],
           ),
           // Loading, the tasks and errors fade into each other.
           body: AnimatedSwitcher(

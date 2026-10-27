@@ -227,7 +227,7 @@ class ClientProjectsRemoteDataSourceImpl
   static const String _projectColumns =
       'id, title, status, city, district, budget, pending_offer_count, '
       'created_at, deed_status, deed_rejection_reason, photo_paths, '
-      'taker_company_name, agreed_amount';
+      'taker_id, taker_company_name, agreed_amount';
 
   @override
   Future<List<ClientProjectModel>> getMyProjects() async {
@@ -295,7 +295,7 @@ class ClientProjectsRemoteDataSourceImpl
     final rows = await _client
         .from('v_project_offers')
         .select(
-          'id, project_id, amount, status, message, created_at, '
+          'id, project_id, provider_id, amount, status, message, created_at, '
           'provider_company_name, provider_is_verified, provider_rating_avg, '
           'provider_rating_count',
         )

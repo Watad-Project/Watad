@@ -8,6 +8,11 @@ import 'package:watad/features/chat/shared/datasource/models/chat_message_model.
 import 'package:watad/features/chat/shared/domain/entities/chat_photo.dart';
 
 abstract interface class ChatRemoteDataSource {
+  /// The chat's id. The database refuses (42501) a project chat that isn't
+  /// between its owner and its taker, a business that bid on it, or a
+  /// verified business asking about an open project.
+  Future<String> startChat(String otherUserId, {String? projectId});
+
   /// Throws PGRST116 (not found) when I'm not in [chatId].
   Future<ChatConversationModel> getConversation(String chatId);
 
@@ -38,6 +43,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   static const int _signedUrlSeconds = 60 * 60;
 
   final Random _random = Random.secure();
+
+  @override
+  Future<String> startChat(String otherUserId, {String? projectId}) =>
+      _client.rpc<String>(
+        'start_chat',
+        params: {'p_other_user_id': otherUserId, 'p_project_id': projectId},
+      );
 
   @override
   Future<ChatConversationModel> getConversation(String chatId) async {
