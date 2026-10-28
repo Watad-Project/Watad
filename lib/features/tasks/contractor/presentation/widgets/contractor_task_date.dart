@@ -4,8 +4,8 @@ import 'package:watad/core/enums/task_status.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
 
-/// Formats Riyadh calendar dates (`date` columns) on the contractor's project
-/// schedule screen (GRA-37).
+/// Formats Riyadh calendar dates (`date` columns) and update timestamps on the
+/// contractor's task screens (GRA-37, GRA-39).
 abstract final class ContractorTaskDate {
   static const Duration _riyadhOffset = Duration(hours: 3);
 
@@ -13,6 +13,30 @@ abstract final class ContractorTaskDate {
   /// English) without shifting time zones.
   static String day(BuildContext context, DateTime date) =>
       DateFormat.MMMd(_locale(context)).format(date);
+
+  /// Formats when an update was sent on the phone's clock (e.g. «اليوم ٩:٤٠ ص»,
+  /// «أمس ٩:٤٠ ص», or «٢٤ أكتوبر ٩:٤٠ ص»).
+  static String sentAt(
+    BuildContext context,
+    DateTime createdAt, {
+    DateTime? now,
+  }) {
+    final locale = _locale(context);
+    final local = createdAt.toLocal();
+    final ref = (now ?? DateTime.now()).toLocal();
+    final localDay = DateTime(local.year, local.month, local.day);
+    final refDay = DateTime(ref.year, ref.month, ref.day);
+    final timeStr = DateFormat.jm(locale).format(local);
+    if (localDay == refDay) {
+      final todayWord = context.plural('tasks.contractor.time_days_ago', 0);
+      return '$todayWord $timeStr';
+    }
+    if (localDay == refDay.subtract(const Duration(days: 1))) {
+      final yesterdayWord = context.plural('tasks.contractor.time_days_ago', 1);
+      return '$yesterdayWord $timeStr';
+    }
+    return DateFormat.MMMd(locale).add_jm().format(local);
+  }
 
   /// Formats a [task]'s start and finish dates for its timeline subtitle:
   /// - Both start & finish: «بدأت ١٠ يناير · أُنجزت ١٨ يناير»
