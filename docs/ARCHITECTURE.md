@@ -196,7 +196,7 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 
 `v_project_task_updates` has `rejection_photo_paths` since migration 79: the photos the client attached to a rejected update, paths in the private `task-evidence` bucket (signed URLs), an empty array otherwise. The project's owner and taker can read them.
 
-`v_contractor_bank_details` (migration 78) is the bank account a contractor is paid on by bank transfer: `contractor_id`, `beneficiary_name`, `bank_name`, `iban` (clean: `SA` and 22 characters, no spaces), `created_at`, `updated_at` and `is_mine`. The contractor sees their own row (`is_mine`), the owner of a project sees its taker's row while the project is `in_progress` or `completed` (filter by `contractor_id` = `v_my_projects.taker_id`), and admins see every row. No row means the contractor hasn't added their details yet. The contractor saves them by inserting the three columns of §3a the first time and updating them afterwards; the row can't be deleted.
+`v_contractor_bank_details` (migration 78) is the bank account a contractor is paid on by bank transfer: `contractor_id`, `beneficiary_name`, `bank_name`, `iban` (clean: `SA` and 22 characters, no spaces), `created_at`, `updated_at` and `is_mine`. The contractor sees their own row (`is_mine`), the owner of a project sees its taker's row while the project is `in_progress` or `completed` (filter by `contractor_id` = `v_my_projects.taker_id`), and admins see every row. No row means the contractor hasn't added their details yet. The contractor saves them by inserting the three columns of §3a the first time and updating them afterwards; the row can't be deleted. While a verified contractor has no row, the server reminds them with a `bank_details_missing` notification (migration 85, §13), which opens the bank details screen.
 
 `v_admin_verification_queue` (pending licenses) and `v_admin_deed_queue` (deeds `under_review`, with the project and its owner) return rows to admins only. Order both by `requested_at`, oldest first. They show the requester's name, photo, `member_since` and `owner_national_id` (their ID/iqama number, null when they never gave one), never their phone.
 
@@ -296,7 +296,7 @@ An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6);
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `83_chat_attachments` are applied; `84_project_evidence_exports` is in the repo and waits to be applied; the next is `85_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `84_project_evidence_exports` are applied; `85_bank_details_reminder` is in the repo and waits to be applied; the next is `86_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
@@ -327,7 +327,7 @@ values (v_user_id, '<title>', '<body>',
 - **Where a tap goes is the app's choice:** the feature that has the screen for that event links its `type` to a route with `AppNotificationLinks` (`docs/APP_ARCHITECTURE.md` §11). A tap on the toast, the push or the row in the list opens that screen and marks the notification read; a type nothing links yet opens the notifications list.
 - The app never inserts a notification, and never calls OneSignal's REST API or `send-push`.
 
-**What notifies people already** (migrations 68, 70 and 82, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
+**What notifies people already** (migrations 68, 70, 82 and 85, triggers that call `private.notify()`). Nobody is told about what they did themselves, and a notification that can't be written never stops the event:
 
 | Event | Who is told | `data.type` (+ ids) | Pops up |
 |---|---|---|---|
@@ -340,6 +340,7 @@ values (v_user_id, '<title>', '<body>',
 | A contractor sends an offer | the project's owner | `offer_received` (`project_id`, `offer_id`) | yes |
 | An offer is accepted | the contractor who sent it | `offer_accepted` (`project_id`, `offer_id`) | yes |
 | An offer is rejected (by the owner, or because `accept_offer()` took another) | the contractor who sent it | `offer_rejected` (`project_id`, `offer_id`) | no |
+| A business becomes verified, or one of its offers is accepted, while it has no bank details (and once, when migration 85 is applied) | the business, if it's verified and not suspended | `bank_details_missing` (no ids) | yes |
 | A marketplace order is paid (by the gateway, or the demo payment) | the seller | `order_paid` (`order_id`) | yes |
 | An order is shipped (`mark_order_shipped()`) | the buyer | `order_shipped` (`order_id`) | yes |
 | An order is delivered (`confirm_order_delivered()`) | the other party (the seller) | `order_delivered` (`order_id`) | yes |
