@@ -41,5 +41,22 @@
     "partial_title": "The receipt didn't go for every task",
     "partial_sent": "Sent for:",
     "partial_not_sent": "Not sent for:"
+  },
+  "contractor": {
+    "bank_details_title": "Bank account",
+    "form_intro": "Clients transfer your project payments to this account, so make sure the details match your bank account.",
+    "view_intro": "Your clients see these details when they pay you by bank transfer.",
+    "beneficiary": "Beneficiary name",
+    "beneficiary_hint": "As it appears on your bank account",
+    "bank": "Bank name",
+    "bank_hint": "For example: Al Rajhi Bank",
+    "iban": "IBAN",
+    "iban_hint": "SA00 0000 0000 0000 0000 0000",
+    "iban_helper": "Starts with SA, 24 characters in all",
+    "edit": "Edit",
+    "save": "Save",
+    "saved": "Your bank details are saved",
+    "already_saved": "Your bank details were already saved, maybe from another device. Check them here.",
+    "copied": "Copied"
   }
 }

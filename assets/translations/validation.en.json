@@ -1,4 +1,6 @@
 {
+  "bank_name_invalid": "Write the bank's name: 2 to 100 characters.",
+  "beneficiary_name_invalid": "Write the beneficiary's name: 2 to 150 characters.",
   "company_name_required": "Please enter the company name.",
   "cr_number_invalid": "Commercial registration number must be 10 digits.",
   "cr_number_required": "Please enter the commercial registration number.",
@@ -8,6 +10,9 @@
   "file_required": "Please select the license document first.",
   "file_too_large": "File size exceeds the allowed limit (10MB).",
   "file_type_not_supported": "File format not supported. Please upload a JPG or PDF file only.",
+  "iban_checksum": "This IBAN has a typo: its check digits don't match. Compare it with your bank app.",
+  "iban_invalid": "A Saudi IBAN starts with SA and has 24 characters.",
+  "iban_required": "Enter the IBAN.",
   "invalid": "Some values aren't valid. Check them and try again.",
   "name_required": "Full name is required",
   "national_id_invalid": "National ID / Iqama must be exactly 10 digits",
