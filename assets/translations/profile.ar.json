@@ -1,0 +1,66 @@
+{
+  "client": {
+    "tab": "حسابي",
+    "title": "حسابي"
+  },
+  "coming_soon": "قريبًا",
+  "coming_soon_message": "هذه الشاشة قيد الإنشاء، وستتوفر قريبًا.",
+  "contractor": {
+    "cr_number": "رقم السجل التجاري",
+    "no_specialty": "لم يُحدَّد التخصص",
+    "request_verification": "ارفع السجل التجاري لتوثيق منشأتك",
+    "specialty": "التخصص",
+    "specialty_saved_as": {
+      "electrical_plumbing": {
+        "ar": "كهرباء وسباكة",
+        "en": "Electrical & Plumbing"
+      },
+      "finishes": {
+        "ar": "تشطيبات",
+        "en": "Finishes"
+      },
+      "general_contracting": {
+        "ar": "مقاولات عامة",
+        "en": "General Contracting"
+      },
+      "insulation": {
+        "ar": "عزل",
+        "en": "Insulation"
+      },
+      "renovation": {
+        "ar": "ترميم",
+        "en": "Restoration"
+      }
+    },
+    "status": {
+      "pending": "قيد المراجعة",
+      "rejected": "مرفوضة",
+      "suspended": "موقوفة",
+      "unverified": "غير موثّقة",
+      "verified": "موثّقة"
+    },
+    "status_title": "حالة التوثيق",
+    "tab": "منشأتي",
+    "title": "منشأتي"
+  },
+  "menu": {
+    "account": "الحساب",
+    "addresses": "العناوين المحفوظة",
+    "edit_profile": "تعديل الملف الشخصي",
+    "help": "المساعدة والدعم",
+    "listings": "منتجاتي",
+    "marketplace": "السوق",
+    "more": "المزيد",
+    "orders": "طلباتي",
+    "public_profile": "ملفي العام",
+    "sales": "مبيعاتي",
+    "settings": "الإعدادات"
+  },
+  "no_name": "لم تُضف اسمك بعد",
+  "no_ratings": "لا تقييمات بعد",
+  "rating": "{} ({})",
+  "suspended_edit_note": "لا يمكن تعديل ملفك أثناء إيقاف حسابك",
+  "suspended_message": "يمكنك تصفح التطبيق، لكن لا يمكنك النشر أو التعديل حتى يُرفع الإيقاف.",
+  "suspended_reason": "السبب",
+  "suspended_title": "حسابك موقوف"
+}

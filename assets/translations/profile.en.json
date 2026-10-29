@@ -1,0 +1,66 @@
+{
+  "client": {
+    "tab": "My account",
+    "title": "My account"
+  },
+  "coming_soon": "Coming soon",
+  "coming_soon_message": "This screen is being built and will be here soon.",
+  "contractor": {
+    "cr_number": "CR number",
+    "no_specialty": "No specialty yet",
+    "request_verification": "Upload your commercial registration to verify your business",
+    "specialty": "Specialty",
+    "specialty_saved_as": {
+      "electrical_plumbing": {
+        "ar": "كهرباء وسباكة",
+        "en": "Electrical & Plumbing"
+      },
+      "finishes": {
+        "ar": "تشطيبات",
+        "en": "Finishes"
+      },
+      "general_contracting": {
+        "ar": "مقاولات عامة",
+        "en": "General Contracting"
+      },
+      "insulation": {
+        "ar": "عزل",
+        "en": "Insulation"
+      },
+      "renovation": {
+        "ar": "ترميم",
+        "en": "Restoration"
+      }
+    },
+    "status": {
+      "pending": "Under review",
+      "rejected": "Rejected",
+      "suspended": "Suspended",
+      "unverified": "Not verified",
+      "verified": "Verified"
+    },
+    "status_title": "Verification",
+    "tab": "My business",
+    "title": "My business"
+  },
+  "menu": {
+    "account": "Account",
+    "addresses": "Saved addresses",
+    "edit_profile": "Edit profile",
+    "help": "Help and support",
+    "listings": "My listings",
+    "marketplace": "Marketplace",
+    "more": "More",
+    "orders": "My orders",
+    "public_profile": "My public profile",
+    "sales": "My sales",
+    "settings": "Settings"
+  },
+  "no_name": "You haven't added your name yet",
+  "no_ratings": "No ratings yet",
+  "rating": "{} ({})",
+  "suspended_edit_note": "You can't edit your profile while your account is suspended",
+  "suspended_message": "You can browse the app, but you can't post or edit anything until the suspension is lifted.",
+  "suspended_reason": "Reason",
+  "suspended_title": "Your account is suspended"
+}
