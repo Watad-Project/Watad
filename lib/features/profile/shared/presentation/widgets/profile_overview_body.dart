@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_loading_indicator.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile_business.dart';
@@ -105,9 +107,20 @@ class _ProfileOverviewContent extends StatelessWidget {
             buildBusiness(business),
           ],
           const SizedBox(height: AppSpacing.lg),
-          ProfileMenu(isSuspended: profile.isSuspended),
+          ProfileMenu(
+            isSuspended: profile.isSuspended,
+            onEditProfile: () => _editProfile(context),
+          ),
         ],
       ),
     );
+  }
+
+  /// Opens the edit profile page (GRA-60), then reloads: a saved name,
+  /// photo or business changes what the tab shows.
+  Future<void> _editProfile(BuildContext context) async {
+    final bloc = context.read<ProfileOverviewBloc>();
+    await context.pushNamed(ProfileRoutes.profileEditName);
+    bloc.add(const ProfileOverviewFetched());
   }
 }

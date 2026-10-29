@@ -87,8 +87,9 @@ class ContractorBusinessCard extends StatelessWidget {
     );
   }
 
-  /// Opens the license upload, then reloads: an upload sends the business
-  /// to review.
+  /// Opens the license upload. After an upload, the KYC flow goes on to its
+  /// status page (`goNamed`), so the contractor doesn't come back here; this
+  /// reload runs when they back out without uploading.
   Future<void> _requestVerification(BuildContext context) async {
     final bloc = context.read<ProfileOverviewBloc>();
     await context.pushNamed(ContractorKycRoutes.licenseName);
