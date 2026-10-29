@@ -16,6 +16,7 @@ import 'package:watad/features/notifications/shared/notifications_injection.dart
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
 import 'package:watad/features/payments/client/client_payments_injection.dart';
+import 'package:watad/features/payments/contractor/contractor_payments_injection.dart';
 import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
@@ -54,6 +55,7 @@ void configureDependencies() {
   registerContractorDashboardDependencies(getIt);
   registerContractorKycDependencies(getIt);
   registerContractorOnboardingDependencies(getIt);
+  registerContractorPaymentsDependencies(getIt);
   registerContractorTasksDependencies(getIt);
   registerContractorWorkDependencies(getIt);
   registerKycDependencies(getIt);

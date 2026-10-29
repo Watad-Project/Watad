@@ -15,6 +15,7 @@ import 'package:watad/features/payments/client/domain/entities/client_receipt.da
 import 'package:watad/features/payments/client/presentation/widgets/client_payment_format.dart';
 import 'package:watad/features/payments/client/presentation/widgets/client_receipt_picker.dart';
 import 'package:watad/features/payments/client/presentation/widgets/client_transfer_outcome_card.dart';
+import 'package:watad/features/payments/shared/presentation/widgets/payment_format.dart';
 
 /// The bank transfer screen once it loaded (GRA-52): what to do, where to
 /// send the money (the IBAN and the amount copy), the tasks it pays and
@@ -83,7 +84,7 @@ class ClientBankTransferDetails extends StatelessWidget {
               ),
               AppKeyValueRow(
                 label: context.tr('payments.client.iban'),
-                value: ClientPaymentFormat.iban(bankDetails.iban),
+                value: PaymentFormat.iban(bankDetails.iban),
                 isMonospace: true,
                 isCopyable: true,
                 copyValue: bankDetails.iban,
