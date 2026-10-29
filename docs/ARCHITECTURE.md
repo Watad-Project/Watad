@@ -47,7 +47,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | Domain | Table | Access | Notes |
 |--------|-------|--------|-------|
 | Identity | `users` | update `full_name`, `avatar_path` only | `role` locked. Anonymised, never deleted. |
-| | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique. `city`: where the business works, set by the contractor from the location picker. |
+| | `businesses` | RW (own, except `verification_status`) | PK is the owner's user id. `cr_number` is 10 digits, unique, and can't change once the business is `verified` (migration 86 raises `cr_number_locked`, `42501`). A new `company_name` or `cr_number` sends a `pending` or `verified` business back to `unverified` and clears `verified_at` and `verified_by` (trigger `businesses_reset_verification`, migration 02); to be verified again it uploads new documents and calls `request_business_verification()`. `city`: where the business works, picked by the contractor on the edit profile screen (GRA-60) from the `geocode` search and saved as the Arabic city name `geocode` gives for that place, like the cities of saved addresses, so `is_in_my_city` (§7) matches them. |
 | | `business_documents` | insert while unverified/rejected | Files in the private `business-documents` bucket. |
 | | `user_identity` | RO (own row only) | ID/iqama (`national_id`, 10 digits starting with 1 or 2, unique) and `phone` (`+9665XXXXXXXX`). Written only by `complete_client_profile()`; read through `v_my_identity`. Admins see the ID number of someone waiting for review, as `owner_national_id` in the two admin queues, through `private.admin_national_id()` (migration 65), and, since migration 76, the ID number, phone and email of every user in `v_admin_users` (a maintainer's decision, 2026-10-22). Personal data: never log it. |
 | | `user_suspensions` | RO | Written by admin RPC. |
@@ -190,6 +190,8 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 
 `v_contractors` is the client's directory of verified contractors (migration 61): city, rating, `completed_project_count`, and `is_in_my_city` (the contractor's city is the city of the caller's latest saved address). Order by `is_in_my_city` first to show the client's city first.
 
+`v_my_profile` has `city` since migration 86: the city of the signed-in user's business (null for a client, and until the contractor sets it).
+
 `v_public_profiles` also has `last_seen_at` and `is_online` (migration 66, §14).
 
 `v_my_projects` returns the projects of both sides. Filter with `my_role`: `owner` rows belong to the client screens, `taker` rows to the contractor screens. The owner also gets `deed_status` and `deed_rejection_reason` (null for the taker). Both sides get `photo_paths` (migration 71): the project's photos as paths in the public `images` bucket, an empty array when there are none; show one with the bucket's public URL. `v_open_projects` has the same `photo_paths` since migration 80 (never the deed).
@@ -296,7 +298,7 @@ An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6);
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `84_project_evidence_exports` are applied; `85_bank_details_reminder` is in the repo and waits to be applied; the next is `86_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `85_bank_details_reminder` are applied; `86_profile_cr_lock_and_city` is in the repo and waits to be applied; the next is `87_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
