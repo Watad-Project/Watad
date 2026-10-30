@@ -298,7 +298,7 @@ An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6);
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `85_bank_details_reminder` are applied; `86_profile_cr_lock_and_city` is in the repo and waits to be applied; the next is `87_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `86_profile_cr_lock_and_city` are applied; the next is `87_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
