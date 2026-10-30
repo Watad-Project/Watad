@@ -10,6 +10,7 @@ import 'package:watad/features/navigation/shared/presentation/widgets/navigation
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_home_repository.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
+import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -20,6 +21,7 @@ void main() {
     // A tab's feature adds its register…Dependencies(getIt) call here when
     // it sets its tab's routeName (ClientNavigationPage.tabs).
     registerFakeClientProjects();
+    registerFakeClientProfile();
     //
     // The router opens at the splash page first. Its fake never answers.
     registerFakeSplashBloc(FakeSplashRepository());

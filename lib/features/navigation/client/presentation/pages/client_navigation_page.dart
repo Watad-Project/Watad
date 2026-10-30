@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:watad/core/router/routes/client_home_routes.dart';
+import 'package:watad/core/router/routes/client_profile_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
@@ -47,7 +48,12 @@ class ClientNavigationPage extends StatelessWidget {
     ),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'profile.client.tab',
+      icon: Icons.person_outline,
+      selectedIcon: Icons.person,
+      routeName: ClientProfileRoutes.profileName,
+    ),
   ];
 
   /// Builds each tab's screen; the route takes them from getIt.
