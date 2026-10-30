@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/display/app_key_value_list.dart';
@@ -12,7 +11,6 @@ import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/core/theme/app_tone.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile_business.dart';
-import 'package:watad/features/profile/shared/presentation/bloc/profile_overview_bloc.dart';
 import 'package:watad/features/profile/shared/presentation/widgets/profile_specialty_text.dart';
 
 /// The business part of «منشأتي» (GRA-59): the company name, with the
@@ -21,7 +19,7 @@ import 'package:watad/features/profile/shared/presentation/widgets/profile_speci
 ///
 /// While the business is unverified or rejected, the status row opens the
 /// license upload (`ContractorKycRoutes.licenseName`), which asks for
-/// verification again.
+/// verification again. The contractor doesn't come back here from it.
 class ContractorBusinessCard extends StatelessWidget {
   const ContractorBusinessCard({required this.business, super.key});
 
@@ -87,14 +85,10 @@ class ContractorBusinessCard extends StatelessWidget {
     );
   }
 
-  /// Opens the license upload. After an upload, the KYC flow goes on to its
-  /// status page (`goNamed`), so the contractor doesn't come back here; this
-  /// reload runs when they back out without uploading.
-  Future<void> _requestVerification(BuildContext context) async {
-    final bloc = context.read<ProfileOverviewBloc>();
-    await context.pushNamed(ContractorKycRoutes.licenseName);
-    bloc.add(const ProfileOverviewFetched());
-  }
+  /// Opens the license upload one way, as the sign-in does for an unverified
+  /// contractor: that page has no way back, only the upload or signing out.
+  void _requestVerification(BuildContext context) =>
+      context.goNamed(ContractorKycRoutes.licenseName);
 
   static String _statusKey(VerificationStatus status) => switch (status) {
     VerificationStatus.verified => 'profile.contractor.status.verified',

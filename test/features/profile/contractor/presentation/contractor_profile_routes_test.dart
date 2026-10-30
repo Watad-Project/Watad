@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -6,8 +8,14 @@ import 'package:watad/core/components/layout/app_menu_row.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/core/router/routes/contractor_kyc_routes.dart';
 import 'package:watad/core/router/routes/contractor_profile_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/kyc/contractor/domain/entities/contractor_license_submission.dart';
+import 'package:watad/features/kyc/contractor/domain/repositories/contractor_kyc_repository.dart';
+import 'package:watad/features/kyc/contractor/domain/usecases/contractor_upload_license_use_case.dart';
+import 'package:watad/features/kyc/contractor/presentation/bloc/contractor_license_bloc.dart';
+import 'package:watad/features/kyc/contractor/presentation/pages/contractor_license_page.dart';
 import 'package:watad/features/profile/contractor/presentation/pages/contractor_profile_page.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile_business.dart';
@@ -104,6 +112,29 @@ void main() {
     expect(tester.widget<AppMenuRow>(statusRow()).onTap, isNotNull);
   });
 
+  testWidgets(
+    'the status row opens the license upload one way, as the sign-in does',
+    (tester) async {
+      getIt.registerFactory(
+        () => ContractorLicenseBloc(
+          ContractorUploadLicenseUseCase(_FakeContractorKycRepository()),
+        ),
+      );
+      repository.profileResult = Success(
+        contractor(status: VerificationStatus.unverified),
+      );
+      final router = await openProfile(tester);
+
+      await tester.tap(statusRow());
+      await tester.pumpAndSettle();
+
+      expect(currentPath(router), ContractorKycRoutes.licensePath);
+      expect(find.byType(ContractorLicensePage), findsOneWidget);
+      expect(find.byType(ContractorProfilePage), findsNothing);
+      expect(router.canPop(), isFalse);
+    },
+  );
+
   testWidgets('a pending business waits: its status only shows', (
     tester,
   ) async {
@@ -152,4 +183,16 @@ void main() {
     await scrollTo(tester, find.byKey(const Key('profile_menu_settings')));
     expect(tester.takeException(), isNull);
   });
+}
+
+/// The license page's repository: this test only opens the page.
+class _FakeContractorKycRepository implements ContractorKycRepository {
+  @override
+  Future<Result<ContractorLicenseSubmission>> uploadLicense({
+    required Uint8List bytes,
+    required String fileName,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> signOut() async => const Success(null);
 }
