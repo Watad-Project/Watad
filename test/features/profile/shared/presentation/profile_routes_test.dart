@@ -186,7 +186,7 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
-    await tapText(tester, 'الخروج دون حفظ');
+    await tapText(tester, 'خروج');
 
     expect(find.byType(ClientProfilePage), findsOneWidget);
     await scrollBackTo(tester, find.text('سارة العتيبي'));
@@ -223,7 +223,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('ستفقد منشأتك التوثيق'), findsOneWidget);
-      await tapText(tester, 'حفظ وإلغاء التوثيق');
+      await tapText(tester, 'نعم، احفظ');
 
       expect(
         repository.businessWrites.single.companyName,

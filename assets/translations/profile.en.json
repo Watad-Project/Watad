@@ -61,7 +61,7 @@
     "cr_number_taken": "This CR number belongs to another business.",
     "identity_note": "These details can't be changed.",
     "identity_title": "Identity",
-    "leave_confirm": "Leave without saving",
+    "leave_confirm": "Leave",
     "leave_message": "Your changes aren't saved, and they'll be lost if you leave now.",
     "leave_title": "Leave without saving?",
     "name": "Name",
@@ -90,7 +90,7 @@
     "specialty": "Specialty",
     "specialty_current": "Saved specialty: {}",
     "title": "Edit profile",
-    "unverify_confirm": "Save and lose verification",
+    "unverify_confirm": "Yes, save",
     "unverify_message_pending": "Changing the company name or CR number cancels your verification request. You can't send offers until an admin verifies your business, and you'll need to upload your commercial registration again.",
     "unverify_message_verified": "Changing the company name removes your business's verification. You can't send offers until an admin verifies it again, and you'll need to upload your commercial registration again.",
     "unverify_title": "Your business will lose its verification"
