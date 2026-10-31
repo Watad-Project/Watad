@@ -35,6 +35,31 @@
     },
     "add_task": "+ إضافة مهمة",
     "update_task": "تحديث مهمة",
-    "message_client": "مراسلة العميل"
+    "message_client": "مراسلة العميل",
+    "update_title": "تحديث التقدم",
+    "update_step1_heading": "ما المهمة التي تريد تحديثها؟",
+    "update_step1_subtitle": "اختر المهمة ثم أضف الصور والحالة الجديدة",
+    "update_task_amount_and_status": "{} · {}",
+    "update_last_updated": "آخر تحديث: {}",
+    "update_no_updates_yet": "لم يُرسل تحديث بعد",
+    "update_no_open_tasks": "لا توجد مهام مفتوحة للتحديث حالياً",
+    "update_next_button": "التالي: الحالة والأدلة",
+    "time_just_now": "الآن",
+    "time_hours_ago": {
+      "zero": "الآن",
+      "one": "قبل ساعة",
+      "two": "قبل ساعتين",
+      "few": "قبل {} ساعات",
+      "many": "قبل {} ساعة",
+      "other": "قبل {} ساعة"
+    },
+    "time_days_ago": {
+      "zero": "اليوم",
+      "one": "أمس",
+      "two": "قبل يومين",
+      "few": "قبل {} أيام",
+      "many": "قبل {} يوماً",
+      "other": "قبل {} يوم"
+    }
   }
 }
