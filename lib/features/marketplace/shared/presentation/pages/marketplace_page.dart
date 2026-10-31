@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_loading_indicator.dart';
@@ -10,6 +12,7 @@ import 'package:watad/core/components/inputs/app_text_field.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/enums/marketplace_category.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/marketplace_item.dart';
@@ -53,6 +56,15 @@ class MarketplacePage extends StatelessWidget {
       appBar: AppTopBar(
         title: context.tr('marketplace.browse_title'),
         actions: [
+          AppIconButton(
+            key: const Key('marketplace_my_items_button'),
+            icon: Icons.inventory_2_outlined,
+            tooltip: context.tr('marketplace.my_items_title'),
+            onPressed: () async {
+              await context.pushNamed(MarketplaceRoutes.myItemsName);
+              bloc.add(const MarketplaceFetched());
+            },
+          ),
           IconButton(
             key: const Key('marketplace_cart_button'),
             tooltip: context.tr('marketplace.cart_tooltip'),
