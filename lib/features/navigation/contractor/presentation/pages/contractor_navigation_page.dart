@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:watad/core/router/routes/contractor_dashboard_routes.dart';
 import 'package:watad/core/router/routes/contractor_work_routes.dart';
+import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -27,7 +28,12 @@ class ContractorNavigationPage extends StatelessWidget {
       selectedIcon: Icons.work,
       routeName: ContractorWorkRoutes.workName,
     ),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'marketplace.tab',
+      icon: Icons.storefront_outlined,
+      selectedIcon: Icons.storefront_rounded,
+      routeName: MarketplaceRoutes.marketplaceName,
+    ),
     NavigationTab.placeholder(),
     NavigationTab.placeholder(),
   ];
