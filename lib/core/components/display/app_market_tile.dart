@@ -4,12 +4,15 @@ import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/display/app_network_image.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
+import 'package:watad/core/components/display/app_verified_name.dart';
+import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/core/theme/app_tone.dart';
 
 /// A product in the market grid: photo with its condition (new, surplus,
-/// used), name, seller, price per unit and an add button.
+/// used, out of stock), name, seller (with optional verified check and
+/// rating), price per unit and an optional add button.
 ///
 /// The price and unit arrive formatted (the price through `Money`).
 class AppMarketTile extends StatelessWidget {
@@ -18,6 +21,8 @@ class AppMarketTile extends StatelessWidget {
     required this.title,
     required this.seller,
     required this.priceLabel,
+    this.sellerIsVerified = false,
+    this.ratingLabel,
     this.unitLabel,
     this.conditionLabel,
     this.conditionTone = AppTone.success,
@@ -25,11 +30,14 @@ class AppMarketTile extends StatelessWidget {
     this.onTap,
     this.onAdd,
     this.addTooltip,
+    this.showAddButton = true,
   });
 
   final String title;
   final String seller;
   final String priceLabel;
+  final bool sellerIsVerified;
+  final String? ratingLabel;
 
   /// E.g. "/ ton".
   final String? unitLabel;
@@ -43,6 +51,9 @@ class AppMarketTile extends StatelessWidget {
 
   /// What screen readers say for the add button. Defaults to "Add".
   final String? addTooltip;
+
+  /// Whether to show the add-to-cart icon button next to the price.
+  final bool showAddButton;
 
   @override
   Widget build(BuildContext context) {
@@ -73,11 +84,11 @@ class AppMarketTile extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
+            padding: EdgeInsetsDirectional.fromSTEB(
               AppSpacing.sm,
               AppSpacing.sm,
-              AppSpacing.xxs,
-              AppSpacing.xxs,
+              showAddButton ? AppSpacing.xxs : AppSpacing.sm,
+              showAddButton ? AppSpacing.xxs : AppSpacing.sm,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -89,12 +100,37 @@ class AppMarketTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.label,
                 ),
-                Text(
-                  seller,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.caption,
-                ),
+                if (sellerIsVerified)
+                  AppVerifiedName(name: seller, style: AppTextStyles.caption)
+                else
+                  Text(
+                    seller,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption,
+                  ),
+                if (ratingLabel != null) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          ratingLabel!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.caption,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.xxs),
                 Row(
                   children: [
                     Expanded(
@@ -112,12 +148,13 @@ class AppMarketTile extends StatelessWidget {
                         ],
                       ),
                     ),
-                    AppIconButton(
-                      icon: Icons.add,
-                      tooltip: addTooltip ?? context.tr('common.add'),
-                      onPressed: onAdd,
-                      variant: AppIconButtonVariant.filled,
-                    ),
+                    if (showAddButton)
+                      AppIconButton(
+                        icon: Icons.add,
+                        tooltip: addTooltip ?? context.tr('common.add'),
+                        onPressed: onAdd,
+                        variant: AppIconButtonVariant.filled,
+                      ),
                   ],
                 ),
               ],
