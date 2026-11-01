@@ -12,6 +12,7 @@ import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/core/router/routes/splash_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
+import 'package:watad/core/theme/app_tone.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_item_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/widgets/marketplace_item_buy_bar.dart';
 import 'package:watad/features/marketplace/shared/presentation/widgets/marketplace_item_details.dart';
@@ -34,6 +35,7 @@ class MarketplaceItemPage extends StatelessWidget {
         return Scaffold(
           appBar: AppTopBar(
             title: context.tr('marketplace.item_details.title'),
+            onBack: () => context.pop(),
           ),
           body: switch (state.status) {
             MarketplaceItemLoadStatus.initial ||
@@ -74,13 +76,17 @@ class MarketplaceItemPage extends StatelessWidget {
     switch (state.addStatus) {
       case MarketplaceItemAddStatus.added:
         final addition = state.addition!;
-        context.showSuccessSnackBar(
+        context.showSnackBar(
           addition.isCapped
               ? context.tr(
                   'marketplace.item_details.added_capped',
                   args: [context.formatNumber(addition.quantityInCart)],
                 )
               : context.tr('marketplace.item_details.added'),
+          tone: AppTone.success,
+          actionLabel: context.tr('marketplace.item_details.view_cart'),
+          onAction: () =>
+              context.pushNamed(MarketplaceRoutes.marketplaceCartName),
         );
       case MarketplaceItemAddStatus.failed:
         context.showErrorSnackBar(context.tr(state.addFailure!.messageKey));

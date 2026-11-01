@@ -2,14 +2,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/cart_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/cart_count_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/checkout_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_item_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_item_form_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_items_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/payment_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/edit_my_item_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_cart_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_checkout_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_item_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_payment_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/my_items_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/new_my_item_page.dart';
 
@@ -68,6 +74,36 @@ final List<RouteBase> marketplaceRoutes = [
         create: (_) =>
             getIt<MarketplaceItemBloc>()..add(MarketplaceItemFetched(itemId)),
         child: const MarketplaceItemPage(),
+      );
+    },
+  ),
+  GoRoute(
+    name: MarketplaceRoutes.marketplaceCartName,
+    path: MarketplaceRoutes.marketplaceCartPath,
+    builder: (context, state) => BlocProvider(
+      create: (_) => getIt<CartBloc>()..add(const CartFetched()),
+      child: const MarketplaceCartPage(),
+    ),
+  ),
+  GoRoute(
+    name: MarketplaceRoutes.marketplaceCheckoutName,
+    path: MarketplaceRoutes.marketplaceCheckoutPath,
+    builder: (context, state) {
+      final sellerId = state.pathParameters['sellerId']!;
+      return BlocProvider(
+        create: (_) => getIt<CheckoutBloc>()..add(CheckoutStarted(sellerId)),
+        child: const MarketplaceCheckoutPage(),
+      );
+    },
+  ),
+  GoRoute(
+    name: MarketplaceRoutes.marketplacePaymentName,
+    path: MarketplaceRoutes.marketplacePaymentPath,
+    builder: (context, state) {
+      final orderId = state.pathParameters['orderId']!;
+      return BlocProvider(
+        create: (_) => getIt<PaymentBloc>()..add(PaymentStarted(orderId)),
+        child: const MarketplacePaymentPage(),
       );
     },
   ),

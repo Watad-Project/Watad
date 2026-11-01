@@ -52,6 +52,14 @@ class MarketplacePage extends StatelessWidget {
     cartCount.add(const CartCountRefreshed());
   }
 
+  /// Opens the cart, then refreshes the badge: lines may have been removed
+  /// or ordered.
+  static Future<void> _openCart(BuildContext context) async {
+    final cartCount = context.read<CartCountBloc>();
+    await context.pushNamed(MarketplaceRoutes.marketplaceCartName);
+    cartCount.add(const CartCountRefreshed());
+  }
+
   static String _sortKey(MarketplaceSort sort) => switch (sort) {
     MarketplaceSort.newest => 'marketplace.sort_newest',
     MarketplaceSort.priceLowToHigh => 'marketplace.sort_price_low_to_high',
@@ -85,7 +93,7 @@ class MarketplacePage extends StatelessWidget {
               builder: (context, cart) => IconButton(
                 key: const Key('marketplace_cart_button'),
                 tooltip: context.tr('marketplace.cart_tooltip'),
-                onPressed: onCartTap ?? () {},
+                onPressed: onCartTap ?? () => _openCart(context),
                 icon: Badge(
                   isLabelVisible: cart.count > 0,
                   backgroundColor: AppColors.primary,

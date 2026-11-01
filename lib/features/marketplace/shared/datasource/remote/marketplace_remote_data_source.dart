@@ -13,6 +13,9 @@ abstract interface class MarketplaceRemoteDataSource {
   /// seller.
   Future<MarketplaceItemModel?> getItem(String itemId);
 
+  /// The rows the view still has for [itemIds], in no particular order.
+  Future<List<MarketplaceItemModel>> getItemsByIds(List<String> itemIds);
+
   /// The signed-in user's id, or null when nobody is signed in.
   String? currentUserId();
 
@@ -86,6 +89,16 @@ class MarketplaceRemoteDataSourceImpl implements MarketplaceRemoteDataSource {
         .eq('id', itemId)
         .maybeSingle();
     return row == null ? null : _toModel(row);
+  }
+
+  @override
+  Future<List<MarketplaceItemModel>> getItemsByIds(List<String> itemIds) async {
+    if (itemIds.isEmpty) return const [];
+    final rows = await _client
+        .from('v_marketplace_items')
+        .select(_columns)
+        .inFilter('id', itemIds);
+    return rows.map(_toModel).toList();
   }
 
   @override

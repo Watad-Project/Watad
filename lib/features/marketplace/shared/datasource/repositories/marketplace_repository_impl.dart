@@ -20,6 +20,10 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       guardSupabaseCall(() => _remote.getItem(itemId));
 
   @override
+  Future<Result<List<MarketplaceItem>>> getItemsByIds(List<String> itemIds) =>
+      guardSupabaseCall(() => _remote.getItemsByIds(itemIds));
+
+  @override
   Future<Result<List<MarketplaceItem>>> getMyItems() =>
       guardSupabaseCall(_remote.getMyItems);
 

@@ -17,4 +17,18 @@ abstract final class MarketplaceRoutes {
   /// catches `my-items`, `cart` or `orders`.
   static const String marketplaceItemName = 'marketplace-item';
   static const String marketplaceItemPath = '/marketplace/items/:itemId';
+
+  /// The cart, grouped by seller (GRA-68).
+  static const String marketplaceCartName = 'marketplace-cart';
+  static const String marketplaceCartPath = '/marketplace/cart';
+
+  /// One seller's group from the cart (GRA-68).
+  static const String marketplaceCheckoutName = 'marketplace-checkout';
+  static const String marketplaceCheckoutPath =
+      '/marketplace/checkout/:sellerId';
+
+  /// The demo payment of an unpaid order (GRA-68).
+  static const String marketplacePaymentName = 'marketplace-payment';
+  static const String marketplacePaymentPath =
+      '/marketplace/orders/:orderId/pay';
 }

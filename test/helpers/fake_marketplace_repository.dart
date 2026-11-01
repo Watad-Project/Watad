@@ -9,9 +9,11 @@ import 'package:watad/features/marketplace/shared/domain/entities/marketplace_qu
 import 'package:watad/features/marketplace/shared/domain/entities/marketplace_sort.dart';
 import 'package:watad/features/marketplace/shared/domain/repositories/cart_repository.dart';
 import 'package:watad/features/marketplace/shared/domain/repositories/marketplace_repository.dart';
+import 'package:watad/features/marketplace/shared/domain/repositories/orders_repository.dart';
 import 'package:watad/features/marketplace/shared/marketplace_injection.dart';
 
 import 'fake_cart_repository.dart';
+import 'fake_orders_repository.dart';
 
 /// In stock, from a verified business, with ratings.
 final MarketplaceItem fakeCementItem = MarketplaceItem(
@@ -106,6 +108,24 @@ final MarketplaceItem fakeRemovedItem = MarketplaceItem(
   removalReason: 'صور غير مطابقة للمنتج المعروض',
 );
 
+/// Another seller's item, not mine, in stock (not in the default lists).
+final MarketplaceItem fakeTilesItem = MarketplaceItem(
+  id: 'i-tiles',
+  name: 'بلاط سيراميك ٦٠×٦٠',
+  price: const Money.halalas(6500),
+  stockQuantity: 40,
+  inStock: true,
+  isActive: true,
+  category: MarketplaceCategory.flooringTiles,
+  createdAt: DateTime.utc(2026, 10, 15, 9),
+  updatedAt: DateTime.utc(2026, 10, 15, 9),
+  sellerId: 'u-tiles',
+  sellerName: 'مؤسسة البلاط',
+  sellerIsVerifiedBusiness: true,
+  sellerRatingAvg: 4.5,
+  sellerRatingCount: 3,
+);
+
 /// A hand-written [MarketplaceRepository]: it filters, searches, sorts, and
 /// pages [items] like `v_marketplace_items` would (APP_ARCHITECTURE.md §16).
 class FakeMarketplaceRepository implements MarketplaceRepository {
@@ -180,6 +200,23 @@ class FakeMarketplaceRepository implements MarketplaceRepository {
       }
     }
     return const Success(null);
+  }
+
+  /// Answers [getItemsByIds] instead, when set.
+  Result<List<MarketplaceItem>>? itemsByIdsResult;
+
+  /// Like `v_marketplace_items` with `inFilter('id', …)`: the visible rows.
+  @override
+  Future<Result<List<MarketplaceItem>>> getItemsByIds(
+    List<String> itemIds,
+  ) async {
+    if (itemsByIdsResult case final result?) return result;
+    final found = <String, MarketplaceItem>{
+      for (final item in [...items, ...myItems])
+        if (itemIds.contains(item.id) && (item.isActive || item.isMine))
+          item.id: item,
+    };
+    return Success(found.values.toList());
   }
 
   @override
@@ -317,11 +354,13 @@ class FakeMarketplaceRepository implements MarketplaceRepository {
 }
 
 /// For tests that open the marketplace route or client/contractor navigation
-/// tabs: the real registrations, with [repository] in place of Supabase and
-/// [cart] in place of the phone's storage. Reset getIt after the test.
+/// tabs: the real registrations, with [repository] and [orders] in place of
+/// Supabase and [cart] in place of the phone's storage. Reset getIt after
+/// the test.
 void registerFakeMarketplace([
   FakeMarketplaceRepository? repository,
   FakeCartRepository? cart,
+  FakeOrdersRepository? orders,
 ]) {
   registerMarketplaceDependencies(getIt);
   getIt
@@ -330,5 +369,7 @@ void registerFakeMarketplace([
       repository ?? FakeMarketplaceRepository(),
     )
     ..unregister<CartRepository>()
-    ..registerSingleton<CartRepository>(cart ?? FakeCartRepository());
+    ..registerSingleton<CartRepository>(cart ?? FakeCartRepository())
+    ..unregister<OrdersRepository>()
+    ..registerSingleton<OrdersRepository>(orders ?? FakeOrdersRepository());
 }
