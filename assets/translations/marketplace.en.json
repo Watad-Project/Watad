@@ -224,5 +224,51 @@
     "delivered": "Delivered",
     "cancelled": "Cancelled",
     "refunded": "Refunded"
+  },
+  "my_orders": {
+    "title": "My orders",
+    "number": "Order {}",
+    "units": {
+      "zero": "{} items",
+      "one": "{} item",
+      "two": "{} items",
+      "few": "{} items",
+      "many": "{} items",
+      "other": "{} items"
+    },
+    "all": "All",
+    "filter": "{} ({})",
+    "empty": "You haven't ordered anything from the market yet",
+    "empty_filter": "No orders with this status",
+    "browse": "Browse the market"
+  },
+  "order_details": {
+    "title": "Order details",
+    "seller": "Seller",
+    "buyer": "Buyer",
+    "items": "Products",
+    "payment": "Payment",
+    "paid_with": "Paid with",
+    "not_paid_yet": "Not paid yet",
+    "paid_at": "Paid on",
+    "address_name": "Name",
+    "address": "Address",
+    "timeline": "Order status",
+    "pay_now": "Pay now",
+    "confirm_delivery": "Received",
+    "confirm_title": "Did you receive your order?",
+    "confirm_message": "Confirm only once the products have reached you. The seller will be told it was delivered, and this can't be undone.",
+    "delivered": "Delivery confirmed",
+    "cancel": "Cancel order",
+    "cancel_title": "Cancel the order?",
+    "cancel_message": "The order will be cancelled and its quantities go back to the seller. This can't be undone.",
+    "cancelled": "Order cancelled",
+    "message_seller": "Message the seller",
+    "message_buyer": "Message the buyer",
+    "review": "Rate the seller",
+    "review_coming_soon": "Ratings are coming soon",
+    "report": "Report the order",
+    "error_cannot_cancel": "This order can't be cancelled: only unpaid orders can",
+    "error_cannot_confirm": "You can confirm delivery only once the order is paid"
   }
 }

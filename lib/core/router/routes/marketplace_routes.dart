@@ -27,7 +27,18 @@ abstract final class MarketplaceRoutes {
   static const String marketplaceCheckoutPath =
       '/marketplace/checkout/:sellerId';
 
-  /// The demo payment of an unpaid order (GRA-68).
+  /// «طلباتي»: the orders I bought (GRA-69).
+  static const String marketplaceOrdersName = 'marketplace-orders';
+  static const String marketplaceOrdersPath = '/marketplace/orders';
+
+  /// One order, for its buyer and its seller (GRA-69). Notifications
+  /// about an order open it.
+  static const String marketplaceOrderDetailsName = 'marketplace-order-details';
+  static const String marketplaceOrderDetailsPath =
+      '/marketplace/orders/:orderId';
+
+  /// The demo payment of an unpaid order (GRA-68). With `?from=order`, it
+  /// was opened from the order page, and «عرض الطلب» goes back to it.
   static const String marketplacePaymentName = 'marketplace-payment';
   static const String marketplacePaymentPath =
       '/marketplace/orders/:orderId/pay';

@@ -7,12 +7,17 @@ import 'package:watad/core/enums/order_status.dart';
 import 'package:watad/core/enums/payment_method.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/cart_line.dart';
+import 'package:watad/features/marketplace/shared/domain/entities/order_role.dart';
+import 'package:watad/features/marketplace/shared/domain/entities/order_status_change.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/edit_my_item_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_cart_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_checkout_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_item_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_order_details_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_orders_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_payment_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/my_items_page.dart';
@@ -41,12 +46,16 @@ void main() {
     registerFakeMarketplace(repository, cart, orders);
   });
 
-  tearDown(getIt.reset);
+  tearDown(() {
+    AppNotificationLinks.clear();
+    return getIt.reset();
+  });
 
   Future<GoRouter> open(
     WidgetTester tester, {
     String routeName = MarketplaceRoutes.marketplaceName,
     Map<String, String> pathParameters = const {},
+    Map<String, String> queryParameters = const {},
     double textScale = 1,
     bool boldText = false,
   }) async {
@@ -56,7 +65,11 @@ void main() {
       textScale: textScale,
       boldText: boldText,
     );
-    router.goNamed(routeName, pathParameters: pathParameters);
+    router.goNamed(
+      routeName,
+      pathParameters: pathParameters,
+      queryParameters: queryParameters,
+    );
     await tester.pumpAndSettle();
     return router;
   }
@@ -598,6 +611,12 @@ void main() {
       expect(find.text('7C9E6679'), findsOneWidget);
       expect(orders.payments.single.payment.last4, '1111');
       expect(orders.orders[orderId]?.status, OrderStatus.paid);
+
+      // «عرض الطلب» puts the order page in this one's place.
+      await tester.tap(find.byKey(const Key('payment_result_primary')));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketplaceOrderDetailsPage), findsOneWidget);
+      expect(currentPath(router), '/marketplace/orders/$orderId');
     });
 
     testWidgets('4000 0000 0000 0002 fails, and «حاول مرة أخرى» returns', (
@@ -635,6 +654,10 @@ void main() {
       await openPayment(tester);
 
       expect(find.byKey(const Key('payment_not_payable')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('payment_view_order')));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketplaceOrderDetailsPage), findsOneWidget);
     });
 
     testWidgets('payment form fits large bold text at 200%', (tester) async {
@@ -660,6 +683,335 @@ void main() {
         await finishProcessing(tester);
         expect(find.byKey(Key(key)), findsOneWidget);
         expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
+  group('my orders', () {
+    setUp(() {
+      for (final order in [
+        fakeOrder(
+          id: '1a2b3c4d-0000-4000-8000-000000000001',
+          status: OrderStatus.delivered,
+          createdAt: DateTime.utc(2026, 10, 20),
+        ),
+        fakeOrder(createdAt: DateTime.utc(2026, 11, 1)),
+        fakeOrder(
+          id: 'ffff0000-0000-4000-8000-000000000002',
+          role: OrderRole.seller,
+        ),
+      ]) {
+        orders.orders[order.id] = order;
+      }
+    });
+
+    Future<GoRouter> openOrders(
+      WidgetTester tester, {
+      double textScale = 1,
+      bool boldText = false,
+    }) => open(
+      tester,
+      routeName: MarketplaceRoutes.marketplaceOrdersName,
+      textScale: textScale,
+      boldText: boldText,
+    );
+
+    testWidgets('the orders I bought, newest first, with chip counts', (
+      tester,
+    ) async {
+      final router = await openOrders(tester);
+
+      expect(currentPath(router), MarketplaceRoutes.marketplaceOrdersPath);
+      expect(find.byType(MarketplaceOrdersPage), findsOneWidget);
+      // The order I sold isn't in «طلباتي».
+      expect(find.textContaining('FFFF0000'), findsNothing);
+      expect(find.text('طلب رقم 7C9E6679 · قطعتان'), findsOneWidget);
+      expect(find.text('طلب رقم 1A2B3C4D · قطعتان'), findsOneWidget);
+      expect(find.text('الكل (٢)'), findsOneWidget);
+      expect(find.text('بانتظار الدفع (١)'), findsOneWidget);
+      expect(find.text('ملغي (٠)'), findsOneWidget);
+      final newest = tester.getTopLeft(find.text('طلب رقم 7C9E6679 · قطعتان'));
+      final older = tester.getTopLeft(find.text('طلب رقم 1A2B3C4D · قطعتان'));
+      expect(newest.dy, lessThan(older.dy));
+    });
+
+    testWidgets('a chip filters, and a row opens the order', (tester) async {
+      await openOrders(tester);
+
+      // The chips scroll sideways: bring each one into view first.
+      Future<void> tapChip(String label) async {
+        await tester.ensureVisible(find.text(label));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+
+      await tapChip('تم التسليم (١)');
+      expect(find.text('طلب رقم 7C9E6679 · قطعتان'), findsNothing);
+      expect(find.text('طلب رقم 1A2B3C4D · قطعتان'), findsOneWidget);
+
+      await tapChip('ملغي (٠)');
+      expect(find.byKey(const Key('orders_filter_empty')), findsOneWidget);
+
+      await tapChip('الكل (٢)');
+      await tester.tap(find.text('طلب رقم 7C9E6679 · قطعتان'));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketplaceOrderDetailsPage), findsOneWidget);
+      expect(find.text('طلب رقم 7C9E6679'), findsOneWidget);
+    });
+
+    testWidgets('no orders yet says so, with the way to the market', (
+      tester,
+    ) async {
+      orders.orders.clear();
+      await openOrders(tester);
+
+      expect(find.byKey(const Key('orders_empty')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('orders_browse')));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketplacePage), findsOneWidget);
+    });
+
+    testWidgets('my orders fit large bold text at 200%', (tester) async {
+      await openOrders(tester, textScale: largeTextScale, boldText: true);
+
+      expect(find.byType(MarketplaceOrdersPage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('order details', () {
+    final orderId = fakeOrder().id;
+
+    setUp(() => orders.orders[orderId] = fakeOrder());
+
+    Future<GoRouter> openOrder(
+      WidgetTester tester, {
+      double textScale = 1,
+      bool boldText = false,
+    }) => open(
+      tester,
+      routeName: MarketplaceRoutes.marketplaceOrderDetailsName,
+      pathParameters: {'orderId': orderId},
+      textScale: textScale,
+      boldText: boldText,
+    );
+
+    Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+      await tester.scrollUntilVisible(
+        finder,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('an unpaid order: products, payment, address and timeline', (
+      tester,
+    ) async {
+      final router = await openOrder(tester);
+
+      expect(currentPath(router), '/marketplace/orders/$orderId');
+      expect(find.text('طلب رقم 7C9E6679'), findsOneWidget);
+      expect(find.text('بانتظار الدفع'), findsWidgets);
+      expect(find.text('البائع'), findsOneWidget);
+      expect(find.text('سارة العتيبي'), findsOneWidget);
+      expect(find.text('حديد تسليح ١٢ مم'), findsOneWidget);
+
+      await scrollTo(tester, find.byKey(const Key('order_payment')));
+      expect(find.text('لم يُدفع بعد'), findsOneWidget);
+      await scrollTo(tester, find.byKey(const Key('order_address')));
+      expect(find.textContaining('٢٤٥٠ شارع الملك عبدالله'), findsOneWidget);
+      await scrollTo(tester, find.byKey(const Key('order_timeline')));
+      // The step it reached, then the ones still to come.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('order_timeline')),
+          matching: find.text('تم التسليم'),
+        ),
+        findsOneWidget,
+      );
+
+      await scrollTo(tester, find.byKey(const Key('order_report')));
+      expect(find.byKey(const Key('order_pay')), findsOneWidget);
+      expect(find.byKey(const Key('order_cancel')), findsOneWidget);
+      expect(find.byKey(const Key('order_message')), findsOneWidget);
+      expect(find.byKey(const Key('order_confirm_delivery')), findsNothing);
+      expect(find.byKey(const Key('order_review')), findsNothing);
+    });
+
+    testWidgets('«إلغاء الطلب» asks, cancels, and shows «ملغي»', (
+      tester,
+    ) async {
+      await openOrder(tester);
+
+      await scrollTo(tester, find.byKey(const Key('order_cancel')));
+      await tester.tap(find.byKey(const Key('order_cancel')));
+      await tester.pumpAndSettle();
+      expect(find.text('إلغاء الطلب؟'), findsOneWidget);
+      await tester.tap(find.text('إلغاء الطلب').last);
+      await tester.pumpAndSettle();
+
+      expect(orders.cancelled, [orderId]);
+      expect(find.text('أُلغي الطلب'), findsOneWidget);
+      expect(find.byKey(const Key('order_cancel')), findsNothing);
+      expect(find.byKey(const Key('order_pay')), findsNothing);
+      expect(find.text('ملغي'), findsWidgets);
+    });
+
+    testWidgets('a paid card order: «تم الاستلام» delivers it', (tester) async {
+      orders.orders[orderId] = fakeOrder(
+        status: OrderStatus.paid,
+        cardBrand: 'Visa',
+        cardLast4: '1111',
+        paidAt: DateTime.utc(2026, 11, 1, 10),
+      );
+      orders.history[orderId] = [
+        OrderStatusChange(
+          newStatus: OrderStatus.pendingPayment,
+          changedAt: DateTime.utc(2026, 11, 1, 9),
+        ),
+        OrderStatusChange(
+          oldStatus: OrderStatus.pendingPayment,
+          newStatus: OrderStatus.paid,
+          changedAt: DateTime.utc(2026, 11, 1, 10),
+        ),
+      ];
+      await openOrder(tester);
+
+      await scrollTo(tester, find.byKey(const Key('order_payment')));
+      expect(find.text('Visa •••• 1111'), findsOneWidget);
+
+      await scrollTo(tester, find.byKey(const Key('order_confirm_delivery')));
+      expect(find.byKey(const Key('order_cancel')), findsNothing);
+      await tester.tap(find.byKey(const Key('order_confirm_delivery')));
+      await tester.pumpAndSettle();
+      expect(find.text('هل استلمت طلبك؟'), findsOneWidget);
+      await tester.tap(find.text('تم الاستلام').last);
+      await tester.pumpAndSettle();
+
+      expect(orders.confirmed, [orderId]);
+      expect(find.text('تم تأكيد استلام الطلب'), findsOneWidget);
+      await scrollTo(tester, find.byKey(const Key('order_review')));
+      expect(find.byKey(const Key('order_confirm_delivery')), findsNothing);
+    });
+
+    testWidgets('«ادفع الآن» pays, and «عرض الطلب» comes back to it', (
+      tester,
+    ) async {
+      final router = await openOrder(tester);
+
+      await scrollTo(tester, find.byKey(const Key('order_pay')));
+      await tester.tap(find.byKey(const Key('order_pay')));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketplacePaymentPage), findsOneWidget);
+      // Opened from the order (`?from=order`): «عرض الطلب» goes back.
+      expect(
+        tester
+            .widget<MarketplacePaymentPage>(find.byType(MarketplacePaymentPage))
+            .returnsToOrder,
+        isTrue,
+      );
+
+      final number = find.descendant(
+        of: find.byKey(const Key('payment_card_number')),
+        matching: find.byType(EditableText),
+      );
+      await tester.enterText(number, '4111111111111111');
+      for (final (key, text) in [
+        ('payment_card_expiry', '1228'),
+        ('payment_card_cvv', '737'),
+        ('payment_card_name', 'KHALID ALMUTAIRI'),
+      ]) {
+        final field = find.descendant(
+          of: find.byKey(Key(key)),
+          matching: find.byType(EditableText),
+        );
+        await tester.ensureVisible(field);
+        await tester.enterText(field, text);
+      }
+      await tester.ensureVisible(find.byKey(const Key('payment_card_submit')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('payment_card_submit')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('payment_result_primary')));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketplaceOrderDetailsPage), findsOneWidget);
+      expect(currentPath(router), '/marketplace/orders/$orderId');
+      // Loaded again: now paid, so «تم الاستلام» instead of «ادفع الآن».
+      expect(find.byKey(const Key('order_pay')), findsNothing);
+      expect(find.byKey(const Key('order_confirm_delivery')), findsOneWidget);
+    });
+
+    testWidgets("the seller sees the buyer and none of the buyer's actions", (
+      tester,
+    ) async {
+      orders.orders[orderId] = fakeOrder(
+        status: OrderStatus.paid,
+        role: OrderRole.seller,
+      );
+      await openOrder(tester);
+
+      expect(find.text('المشتري'), findsOneWidget);
+      expect(find.text('خالد المطيري'), findsOneWidget);
+      await scrollTo(tester, find.byKey(const Key('order_seller_actions')));
+      expect(find.text('مراسلة المشتري'), findsOneWidget);
+      expect(find.byKey(const Key('order_buyer_actions')), findsNothing);
+      expect(find.byKey(const Key('order_confirm_delivery')), findsNothing);
+    });
+
+    testWidgets('an order I cannot see shows the error', (tester) async {
+      orders.orders.clear();
+      await openOrder(tester);
+
+      expect(find.text('لم نعثر على ما تبحث عنه.'), findsOneWidget);
+      expect(find.byKey(const Key('order_timeline')), findsNothing);
+    });
+
+    for (final (label, role) in [
+      ('buyer', OrderRole.buyer),
+      ('seller', OrderRole.seller),
+    ]) {
+      testWidgets('order details ($label) fit large bold text at 200%', (
+        tester,
+      ) async {
+        orders.orders[orderId] = fakeOrder(role: role);
+        await openOrder(tester, textScale: largeTextScale, boldText: true);
+
+        expect(find.byType(MarketplaceOrderDetailsPage), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await scrollTo(
+          tester,
+          find.byKey(
+            Key(
+              role == OrderRole.buyer
+                  ? 'order_buyer_actions'
+                  : 'order_seller_actions',
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
+  test('every order notification opens the order', () {
+    for (final type in [
+      'order_paid',
+      'order_shipped',
+      'order_delivered',
+      'order_cancelled',
+    ]) {
+      final link = AppNotificationLinks.linkOf({
+        'type': type,
+        'order_id': '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+      });
+      expect(link?.name, MarketplaceRoutes.marketplaceOrderDetailsName);
+      expect(link?.pathParameters, {
+        'orderId': '7c9e6679-7425-40de-944b-e07fc1f90ae7',
       });
     }
   });

@@ -1,6 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/marketplace/shared/datasource/models/marketplace_address_model.dart';
 import 'package:watad/features/marketplace/shared/datasource/models/marketplace_order_model.dart';
+import 'package:watad/features/marketplace/shared/datasource/models/order_line_model.dart';
+import 'package:watad/features/marketplace/shared/datasource/models/order_status_change_model.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/card_payment.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/checkout_request.dart';
 
@@ -12,6 +14,16 @@ abstract interface class OrdersRemoteDataSource {
   Future<String> checkout(CheckoutRequest request);
 
   Future<MarketplaceOrderModel?> getOrder(String orderId);
+
+  Future<List<MarketplaceOrderModel>> getMyPurchases();
+
+  Future<List<OrderLineModel>> getOrderLines(String orderId);
+
+  Future<List<OrderStatusChangeModel>> getStatusHistory(String orderId);
+
+  Future<void> cancelOrder(String orderId);
+
+  Future<void> confirmDelivered(String orderId);
 
   Future<void> simulatePayment(
     String orderId,
@@ -75,6 +87,47 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
         .maybeSingle();
     return row == null ? null : _toOrder(row);
   }
+
+  @override
+  Future<List<MarketplaceOrderModel>> getMyPurchases() async {
+    final rows = await _client
+        .from('v_my_orders')
+        .select(_orderColumns)
+        .eq('my_role', 'buyer')
+        .order('created_at', ascending: false);
+    return rows.map(_toOrder).toList();
+  }
+
+  @override
+  Future<List<OrderLineModel>> getOrderLines(String orderId) async {
+    final rows = await _client
+        .from('v_order_items')
+        .select('item_id, item_name, quantity, price_at_purchase, subtotal')
+        .eq('order_id', orderId)
+        .order('created_at');
+    return rows.map(OrderLineModel.fromJson).toList();
+  }
+
+  @override
+  Future<List<OrderStatusChangeModel>> getStatusHistory(String orderId) async {
+    // Never the note: it may hold a server's or a person's own words.
+    final rows = await _client
+        .from('v_order_status_history')
+        .select('old_status, new_status, changed_at')
+        .eq('order_id', orderId)
+        .order('changed_at');
+    return rows.map(OrderStatusChangeModel.fromJson).toList();
+  }
+
+  @override
+  Future<void> cancelOrder(String orderId) =>
+      _client.rpc<void>('cancel_order', params: {'p_order_id': orderId});
+
+  @override
+  Future<void> confirmDelivered(String orderId) => _client.rpc<void>(
+    'confirm_order_delivered',
+    params: {'p_order_id': orderId},
+  );
 
   @override
   Future<void> simulatePayment(

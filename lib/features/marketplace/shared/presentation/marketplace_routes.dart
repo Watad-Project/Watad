@@ -7,6 +7,8 @@ import 'package:watad/features/marketplace/shared/presentation/bloc/cart_count_b
 import 'package:watad/features/marketplace/shared/presentation/bloc/checkout_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_item_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_order_details_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_orders_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_item_form_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_items_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/payment_bloc.dart';
@@ -14,6 +16,8 @@ import 'package:watad/features/marketplace/shared/presentation/pages/edit_my_ite
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_cart_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_checkout_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_item_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_order_details_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_orders_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_payment_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/my_items_page.dart';
@@ -97,13 +101,37 @@ final List<RouteBase> marketplaceRoutes = [
     },
   ),
   GoRoute(
+    name: MarketplaceRoutes.marketplaceOrdersName,
+    path: MarketplaceRoutes.marketplaceOrdersPath,
+    builder: (context, state) => BlocProvider(
+      create: (_) =>
+          getIt<MarketplaceOrdersBloc>()..add(const MarketplaceOrdersFetched()),
+      child: const MarketplaceOrdersPage(),
+    ),
+  ),
+  GoRoute(
+    name: MarketplaceRoutes.marketplaceOrderDetailsName,
+    path: MarketplaceRoutes.marketplaceOrderDetailsPath,
+    builder: (context, state) {
+      final orderId = state.pathParameters['orderId']!;
+      return BlocProvider(
+        create: (_) =>
+            getIt<MarketplaceOrderDetailsBloc>()
+              ..add(MarketplaceOrderDetailsFetched(orderId)),
+        child: const MarketplaceOrderDetailsPage(),
+      );
+    },
+  ),
+  GoRoute(
     name: MarketplaceRoutes.marketplacePaymentName,
     path: MarketplaceRoutes.marketplacePaymentPath,
     builder: (context, state) {
       final orderId = state.pathParameters['orderId']!;
       return BlocProvider(
         create: (_) => getIt<PaymentBloc>()..add(PaymentStarted(orderId)),
-        child: const MarketplacePaymentPage(),
+        child: MarketplacePaymentPage(
+          returnsToOrder: state.uri.queryParameters['from'] == 'order',
+        ),
       );
     },
   ),

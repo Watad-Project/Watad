@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
+import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/features/marketplace/shared/datasource/local/cart_local_data_source.dart';
 import 'package:watad/features/marketplace/shared/datasource/remote/marketplace_remote_data_source.dart';
 import 'package:watad/features/marketplace/shared/datasource/remote/orders_remote_data_source.dart';
@@ -11,7 +12,9 @@ import 'package:watad/features/marketplace/shared/domain/repositories/cart_repos
 import 'package:watad/features/marketplace/shared/domain/repositories/marketplace_repository.dart';
 import 'package:watad/features/marketplace/shared/domain/repositories/orders_repository.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/add_to_cart_use_case.dart';
+import 'package:watad/features/marketplace/shared/domain/usecases/cancel_order_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/check_card_use_case.dart';
+import 'package:watad/features/marketplace/shared/domain/usecases/confirm_order_delivered_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/create_marketplace_item_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/delete_marketplace_item_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_cart_count_use_case.dart';
@@ -20,6 +23,8 @@ import 'package:watad/features/marketplace/shared/domain/usecases/get_marketplac
 import 'package:watad/features/marketplace/shared/domain/usecases/get_marketplace_items_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_my_marketplace_item_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_my_marketplace_items_use_case.dart';
+import 'package:watad/features/marketplace/shared/domain/usecases/get_my_orders_use_case.dart';
+import 'package:watad/features/marketplace/shared/domain/usecases/get_order_details_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_order_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/pay_order_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/place_order_use_case.dart';
@@ -34,6 +39,8 @@ import 'package:watad/features/marketplace/shared/presentation/bloc/cart_count_b
 import 'package:watad/features/marketplace/shared/presentation/bloc/checkout_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_item_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_order_details_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_orders_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_item_form_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_items_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/payment_bloc.dart';
@@ -82,12 +89,20 @@ void registerMarketplaceDependencies(GetIt getIt) {
     ..registerLazySingleton(CheckCardUseCase.new)
     ..registerLazySingleton(() => PayOrderUseCase(getIt()))
     ..registerLazySingleton(() => GetOrderUseCase(getIt()))
+    ..registerLazySingleton(() => GetMyOrdersUseCase(getIt()))
+    ..registerLazySingleton(() => GetOrderDetailsUseCase(getIt()))
+    ..registerLazySingleton(() => CancelOrderUseCase(getIt()))
+    ..registerLazySingleton(() => ConfirmOrderDeliveredUseCase(getIt()))
     ..registerFactory(() => MarketplaceBloc(getIt()))
     ..registerFactory(() => MarketplaceItemBloc(getIt(), getIt()))
     ..registerFactory(() => CartCountBloc(getIt()))
     ..registerFactory(() => CartBloc(getIt(), getIt(), getIt(), getIt()))
     ..registerFactory(() => CheckoutBloc(getIt(), getIt()))
     ..registerFactory(() => PaymentBloc(getIt(), getIt(), getIt()))
+    ..registerFactory(() => MarketplaceOrdersBloc(getIt()))
+    ..registerFactory(
+      () => MarketplaceOrderDetailsBloc(getIt(), getIt(), getIt()),
+    )
     ..registerFactory(() => MyItemsBloc(getIt(), getIt(), getIt()))
     ..registerFactory(() => MyItemFormBloc(getIt(), getIt(), getIt()))
     ..registerFactory<Widget>(
@@ -97,4 +112,21 @@ void registerMarketplaceDependencies(GetIt getIt) {
       ),
       instanceName: MarketplaceRoutes.marketplaceName,
     );
+
+  // Every order notification opens the order, for its buyer and its seller
+  // alike (ARCHITECTURE.md §13).
+  for (final type in const [
+    'order_paid',
+    'order_shipped',
+    'order_delivered',
+    'order_cancelled',
+  ]) {
+    AppNotificationLinks.register(
+      type,
+      (data) => (
+        name: MarketplaceRoutes.marketplaceOrderDetailsName,
+        pathParameters: {'orderId': '${data['order_id']}'},
+      ),
+    );
+  }
 }
