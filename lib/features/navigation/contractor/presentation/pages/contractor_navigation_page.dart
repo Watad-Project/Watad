@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:watad/core/router/routes/contractor_dashboard_routes.dart';
+import 'package:watad/core/router/routes/contractor_profile_routes.dart';
 import 'package:watad/core/router/routes/contractor_work_routes.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
@@ -35,7 +36,12 @@ class ContractorNavigationPage extends StatelessWidget {
       routeName: MarketplaceRoutes.marketplaceName,
     ),
     NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'profile.contractor.tab',
+      icon: Icons.storefront_outlined,
+      selectedIcon: Icons.storefront,
+      routeName: ContractorProfileRoutes.profileName,
+    ),
   ];
 
   /// Builds each tab's screen; the route takes them from getIt.
