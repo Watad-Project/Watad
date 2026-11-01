@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_home_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
@@ -9,6 +10,7 @@ class ClientNavigationPage extends StatelessWidget {
   const ClientNavigationPage({
     required this.screens,
     this.selectedRouteName,
+    this.badges = const [],
     super.key,
   });
 
@@ -46,7 +48,12 @@ class ClientNavigationPage extends StatelessWidget {
       routeName: ClientProjectsRoutes.projectsName,
     ),
     NavigationTab.placeholder(),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'chat.tab',
+      icon: Icons.chat_bubble_outline_rounded,
+      selectedIcon: Icons.chat_bubble_rounded,
+      routeName: ChatRoutes.chatsName,
+    ),
     NavigationTab.placeholder(),
   ];
 
@@ -56,10 +63,14 @@ class ClientNavigationPage extends StatelessWidget {
   /// The tab to open, from the route's `tab` parameter.
   final String? selectedRouteName;
 
+  /// Each tab's live badge count; the route takes them from getIt.
+  final List<Stream<int> Function()?> badges;
+
   @override
   Widget build(BuildContext context) => NavigationShell(
     tabs: tabs,
     screens: screens,
     selectedRouteName: selectedRouteName,
+    badges: badges,
   );
 }

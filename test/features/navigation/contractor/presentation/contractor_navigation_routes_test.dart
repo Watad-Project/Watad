@@ -8,13 +8,17 @@ import 'package:watad/features/navigation/contractor/presentation/pages/contract
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_placeholder.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_contractor_dashboard_repository.dart';
 import '../../../../helpers/fake_contractor_work_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
 void main() {
+  late FakeChatRepository chat;
+
   setUp(() {
+    registerFakeChat(chat = FakeChatRepository());
     // A tab's feature adds its register…Dependencies(getIt) call here when
     // it sets its tab's routeName (ContractorNavigationPage.tabs).
     //
@@ -24,7 +28,10 @@ void main() {
     registerFakeContractorWorkTab();
   });
 
-  tearDown(getIt.reset);
+  tearDown(() async {
+    await chat.dispose();
+    await getIt.reset();
+  });
 
   testWidgets('every contractor navigation route opens its page at its path', (
     tester,

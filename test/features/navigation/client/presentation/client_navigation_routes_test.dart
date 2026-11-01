@@ -2,30 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/layout/app_bottom_nav.dart';
 import 'package:watad/core/di/injection.dart';
+import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/navigation/client/presentation/pages/client_navigation_page.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_placeholder.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_client_home_repository.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
 void main() {
+  late FakeChatRepository chat;
+
   setUp(() {
     // The client's navigation opens on its «الرئيسية» tab.
     registerFakeClientHome();
     // A tab's feature adds its register…Dependencies(getIt) call here when
     // it sets its tab's routeName (ClientNavigationPage.tabs).
     registerFakeClientProjects();
+    registerFakeChat(chat = FakeChatRepository());
     //
     // The router opens at the splash page first. Its fake never answers.
     registerFakeSplashBloc(FakeSplashRepository());
   });
 
-  tearDown(getIt.reset);
+  tearDown(() async {
+    await chat.dispose();
+    await getIt.reset();
+  });
 
   testWidgets('every client navigation route opens its page at its path', (
     tester,
@@ -68,5 +76,31 @@ void main() {
       }
     }
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the chats tab shows the unread total, live', (tester) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+    );
+    router.goNamed(ClientNavigationRoutes.navigationName);
+    await tester.pumpAndSettle();
+
+    chat.unread.add(const Success(3));
+    // The count goes through a few asynchronous steps before the bar.
+    await tester.pump();
+    await tester.pump();
+    expect(
+      find.descendant(of: find.byType(AppBottomNav), matching: find.text('3')),
+      findsOneWidget,
+    );
+
+    chat.unread.add(const Success(0));
+    await tester.pump();
+    await tester.pump();
+    expect(
+      find.descendant(of: find.byType(AppBottomNav), matching: find.text('3')),
+      findsNothing,
+    );
   });
 }

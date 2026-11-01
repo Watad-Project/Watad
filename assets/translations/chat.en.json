@@ -26,5 +26,10 @@
   "photo_type": "Send the photo as JPEG, PNG or WebP.",
   "send_refused": "You can't send in this chat; your account may be suspended.",
   "start_refused": "You can't message this person about this project.",
-  "start_not_found": "We couldn't find this account; it may be closed."
+  "start_not_found": "We couldn't find this account; it may be closed.",
+  "tab": "Chats",
+  "no_chats": "No chats yet. A chat starts from an offer, a project or an item.",
+  "no_messages_yet": "No messages yet",
+  "you": "You: {}",
+  "unread": "{} unread"
 }

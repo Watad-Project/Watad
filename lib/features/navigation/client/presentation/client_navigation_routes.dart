@@ -19,6 +19,16 @@ final List<RouteBase> clientNavigationRoutes = [
             null,
       ],
       selectedRouteName: state.uri.queryParameters['tab'],
+      // A tab's feature may also register its badge's live count under the
+      // tab's route name.
+      badges: [
+        for (final tab in ClientNavigationPage.tabs)
+          if (tab.routeName case final name?
+              when getIt.isRegistered<Stream<int>>(instanceName: name))
+            () => getIt<Stream<int>>(instanceName: name)
+          else
+            null,
+      ],
     ),
   ),
 ];

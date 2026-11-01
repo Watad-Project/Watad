@@ -10,6 +10,7 @@ import 'package:watad/features/chat/shared/domain/entities/chat_message.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_photo.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_project_role.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_start_request.dart';
+import 'package:watad/features/chat/shared/domain/entities/chat_summary.dart';
 import 'package:watad/features/chat/shared/domain/repositories/chat_repository.dart';
 
 const String fakeChatId = 'c-1';
@@ -73,7 +74,25 @@ class FakeChatRepository implements ChatRepository {
   final StreamController<Result<void>> live = StreamController.broadcast();
 
   /// Closes [live]; call it in tearDown.
-  Future<void> dispose() => live.close();
+  Future<void> dispose() async {
+    await live.close();
+    await unread.close();
+  }
+
+  /// Answers getMyChats.
+  Result<List<ChatSummary>> chatsResult = const Success([]);
+
+  /// The unread totals the badge sees, live.
+  final StreamController<Result<int>> unread = StreamController.broadcast();
+
+  @override
+  Future<Result<List<ChatSummary>>> getMyChats() async => chatsResult;
+
+  @override
+  Stream<Result<void>> watchMyChats() => live.stream;
+
+  @override
+  Stream<Result<int>> watchUnreadTotal() => unread.stream;
 
   @override
   Future<Result<String>> startChat(ChatStartRequest request) async {

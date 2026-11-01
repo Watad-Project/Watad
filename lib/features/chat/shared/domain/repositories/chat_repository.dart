@@ -4,8 +4,19 @@ import 'package:watad/features/chat/shared/domain/entities/chat_message.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_messages_query.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_photo.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_start_request.dart';
+import 'package:watad/features/chat/shared/domain/entities/chat_summary.dart';
 
 abstract interface class ChatRepository {
+  /// Every chat I'm in.
+  Future<Result<List<ChatSummary>>> getMyChats();
+
+  /// An event for every new message in any of my chats, live.
+  Stream<Result<void>> watchMyChats();
+
+  /// The unread total across my chats, live, read again when a message
+  /// arrives and every so often (reading a chat lowers it).
+  Stream<Result<int>> watchUnreadTotal();
+
   /// The chat's id: the existing one with that person (and project), or a
   /// new one.
   Future<Result<String>> startChat(ChatStartRequest request);
