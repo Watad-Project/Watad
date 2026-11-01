@@ -12,6 +12,7 @@ import 'package:watad/features/kyc/contractor/contractor_kyc_injection.dart';
 import 'package:watad/features/kyc/shared/kyc_injection.dart';
 import 'package:watad/features/location/shared/location_injection.dart';
 import 'package:watad/features/marketplace/admin/admin_marketplace_injection.dart';
+import 'package:watad/features/marketplace/shared/marketplace_injection.dart';
 import 'package:watad/features/notifications/shared/notifications_injection.dart';
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
@@ -60,6 +61,7 @@ void configureDependencies() {
   registerContractorWorkDependencies(getIt);
   registerKycDependencies(getIt);
   registerLocationDependencies(getIt);
+  registerMarketplaceDependencies(getIt);
   registerNotificationsDependencies(getIt);
   registerOnboardingDependencies(getIt);
   registerSplashDependencies(getIt);

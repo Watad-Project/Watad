@@ -21,6 +21,7 @@ import 'package:watad/features/kyc/contractor/presentation/contractor_kyc_routes
 import 'package:watad/features/kyc/shared/presentation/kyc_routes.dart';
 import 'package:watad/features/location/shared/presentation/location_routes.dart';
 import 'package:watad/features/marketplace/admin/presentation/admin_marketplace_routes.dart';
+import 'package:watad/features/marketplace/shared/presentation/marketplace_routes.dart';
 import 'package:watad/features/navigation/admin/presentation/admin_navigation_routes.dart';
 import 'package:watad/features/navigation/client/presentation/client_navigation_routes.dart';
 import 'package:watad/features/navigation/contractor/presentation/contractor_navigation_routes.dart';
@@ -85,6 +86,7 @@ GoRouter createAppRouter({
       ...contractorWorkRoutes,
       ...kycRoutes,
       ...locationRoutes,
+      ...marketplaceRoutes,
       ...notificationsRoutes,
       ...onboardingRoutes,
       ...splashRoutes,
