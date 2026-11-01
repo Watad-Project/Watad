@@ -17,6 +17,7 @@ import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
+import 'package:watad/features/evidence/shared/presentation/pages/evidence_export_page.dart';
 import 'package:watad/features/tasks/contractor/contractor_tasks_injection.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_project.dart';
@@ -31,6 +32,7 @@ import 'package:watad/features/tasks/contractor/presentation/pages/contractor_pr
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_contractor_tasks_repository.dart';
+import '../../../../helpers/fake_evidence_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -170,6 +172,23 @@ void main() {
     expect(chat.started, ['u-client p-1']);
     expect(find.byType(ChatConversationPage), findsOneWidget);
     await chat.dispose();
+  });
+
+  testWidgets('the job screen exports its record', (tester) async {
+    final evidence = FakeEvidenceRepository();
+    registerFakeEvidence(evidence);
+    await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.contractor),
+      initialLocation: '/contractor/tasks/p-1',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('contractor_project_tasks_export')));
+    await tester.pumpAndSettle();
+
+    expect(evidence.exports, ['p-1']);
+    expect(find.byType(EvidenceExportPage), findsOneWidget);
   });
 
   testWidgets(

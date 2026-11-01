@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
+import 'package:watad/core/components/buttons/app_icon_button.dart';
 import 'package:watad/core/components/display/app_key_value_list.dart';
 import 'package:watad/core/components/feedback/app_confirm_dialog.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
@@ -14,6 +15,7 @@ import 'package:watad/core/components/feedback/app_status_card.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/evidence_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -40,6 +42,27 @@ class AdminBlockchainProjectPage extends StatelessWidget {
       appBar: AppTopBar(
         title: context.tr('blockchain.admin.project_title'),
         onBack: () => context.pop(),
+        actions: [
+          // The project's evidence PDF, for the demo (GRA-72).
+          BlocSelector<
+            AdminBlockchainProjectBloc,
+            AdminBlockchainProjectState,
+            String?
+          >(
+            selector: (state) => state.project == null ? null : state.projectId,
+            builder: (context, projectId) => projectId == null
+                ? const SizedBox.shrink()
+                : AppIconButton(
+                    key: const Key('admin_blockchain_project_export'),
+                    icon: Icons.picture_as_pdf_outlined,
+                    tooltip: context.tr('blockchain.admin.export_evidence'),
+                    onPressed: () => context.pushNamed(
+                      EvidenceRoutes.evidenceExportName,
+                      pathParameters: {'projectId': projectId},
+                    ),
+                  ),
+          ),
+        ],
       ),
       body:
           BlocConsumer<AdminBlockchainProjectBloc, AdminBlockchainProjectState>(

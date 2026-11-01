@@ -53,8 +53,10 @@ The Flutter version the whole team uses, and the registry of every package the a
 | `material_ui` | runtime | The standalone Material library that `pinput` 7 is built on. `AppOtpInput` uses its `Material` and `MaterialLocalizations`, which are other types than Flutter's own | `lib/core/components/` only (the `AppOtpInput` component) | 2026-10-10 |
 | `lottie` | runtime | Lottie animations from `assets/animations/` (onboarding illustrations) | `lib/core/components/` only (the `AppLottie` component) | 2026-10-12 |
 | `onesignal_flutter` | runtime | Push notifications on Android and iOS through OneSignal: sign the device in as the user (`external_id`), ask permission, report taps. Web uses the OneSignal Web SDK in `web/index.html` instead | `datasource/local/` of the notifications feature only | 2026-10-20 |
+| `pdf` | runtime | Builds PDF files (the project evidence PDF, GRA-72): pages, tables whose header repeats across pages, right-to-left Arabic with an embedded font, QR codes | `presentation/` (not blocs) | 2026-11-01 |
 | `permission_handler` | runtime | Requesting camera and storage runtime permissions | `presentation/`, `lib/core/components/` | 2026-10-14 |
 | `pinput` | runtime | OTP / PIN input. The package is `pinput`, not `pin_put` | `lib/core/components/` only (the `AppOtpInput` component) | 2026-10-06 |
+| `printing` | runtime | Shares, saves or prints a PDF through the system share sheet and print dialog | `presentation/` (not blocs) | 2026-11-01 |
 | `shared_preferences` | runtime | On-device key-value storage (e.g. remember onboarding seen) | `datasource/`, `lib/core/` | 2026-10-11 |
 | `supabase_flutter` | runtime | Backend: Auth, Postgres views and RPCs, Storage, Realtime | `datasource/`, `lib/core/supabase/`, `lib/core/di/`, `lib/main.dart` | 2026-10-06 |
 | `url_launcher` | runtime | Opens a link outside the app (e.g. a signed URL to a PDF document) | `presentation/` | 2026-10-19 |

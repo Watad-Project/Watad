@@ -161,6 +161,7 @@
     "reject_details_hint": "Write what the contractor needs to fix...",
     "reject_send": "Send rejection to contractor",
     "reject_sent": "The rejection was sent to the contractor",
-    "reject_details_too_long": "Keep the details to 1,000 characters or fewer."
+    "reject_details_too_long": "Keep the details to 1,000 characters or fewer.",
+    "export_evidence": "Export project record (PDF)"
   }
 }

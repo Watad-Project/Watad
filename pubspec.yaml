@@ -45,8 +45,10 @@ dependencies:
   lottie: ^3.6.1
   material_ui: ^1.5.0
   onesignal_flutter: ^5.7.1
+  pdf: ^3.13.1
   permission_handler: ^13.0.2
   pinput: ^7.0.0
+  printing: ^5.15.1
   shared_preferences: ^2.5.6
   supabase_flutter: ^2.18.0
   url_launcher: ^6.3.3
@@ -94,6 +96,15 @@ flutter:
           weight: 400
         - asset: assets/fonts/IBMPlexMono-SemiBold.ttf
           weight: 600
+    # Amiri, from github.com/google/fonts, under the SIL Open Font License
+    # (assets/fonts/Amiri-OFL.txt): the Arabic font of the project evidence
+    # PDF (GRA-72), embedded in the file.
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Amiri-Bold.ttf
+          weight: 700
 
   # To add assets to your application, add an assets section, like this:
   # assets:

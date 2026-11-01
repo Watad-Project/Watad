@@ -64,6 +64,7 @@
     "resync_title": "Resync this project?",
     "resync_message": "The project is copied to the blockchain again, and shows as waiting until that's done.",
     "resync_sent": "Resync sent",
-    "not_found": "This project isn't contracted"
+    "not_found": "This project isn't contracted",
+    "export_evidence": "Export project record (PDF)"
   }
 }

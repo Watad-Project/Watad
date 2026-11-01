@@ -21,6 +21,7 @@ import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
+import 'package:watad/features/evidence/shared/presentation/pages/evidence_export_page.dart';
 import 'package:watad/features/payments/client/presentation/pages/client_new_payment_page.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
@@ -43,6 +44,7 @@ import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_client_payments_repository.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
+import '../../../../helpers/fake_evidence_repository.dart';
 import '../../../../helpers/fake_network_images.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
@@ -599,6 +601,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('client_project_tasks_message')), findsNothing);
+    // Not on the blockchain, so nothing to export.
+    expect(find.byKey(const Key('client_project_tasks_export')), findsNothing);
+  });
+
+  testWidgets('the project screen exports its record', (tester) async {
+    final evidence = FakeEvidenceRepository();
+    registerFakeEvidence(evidence);
+    await openTasks(tester);
+
+    await tester.tap(find.byKey(const Key('client_project_tasks_export')));
+    await tester.pumpAndSettle();
+
+    expect(evidence.exports, ['p-3']);
+    expect(find.byType(EvidenceExportPage), findsOneWidget);
   });
 
   testWidgets('«مراسلة» opens the chat with that contractor, about the '

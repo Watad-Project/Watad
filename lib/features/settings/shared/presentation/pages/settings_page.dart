@@ -15,6 +15,7 @@ import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/auth_routes.dart';
 import 'package:watad/core/router/routes/contractor_payments_routes.dart';
+import 'package:watad/core/router/routes/evidence_routes.dart';
 import 'package:watad/core/router/routes/settings_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_tone.dart';
@@ -27,11 +28,7 @@ import 'package:watad/features/settings/shared/presentation/widgets/settings_sec
 /// «الإعدادات»: language, the contractor's bank details, the project
 /// export, the notification switches, signing out and closing the account.
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({this.onExportProject, super.key});
-
-  /// Opens the list of my projects to export one (GRA-72); null shows the
-  /// row as coming soon.
-  final VoidCallback? onExportProject;
+  const SettingsPage({super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -119,7 +116,7 @@ class _SettingsPageState extends State<SettingsPage>
         AppSpacing.xl,
       ),
       children: [
-        _General(overview: overview, onExportProject: widget.onExportProject),
+        _General(overview: overview),
         if (_pushBlocked) ...[
           const SizedBox(height: AppSpacing.lg),
           AppStatusCard(
@@ -181,10 +178,9 @@ class _SettingsPageState extends State<SettingsPage>
 /// Language, the contractor's bank details, the export, and the static
 /// pages.
 class _General extends StatelessWidget {
-  const _General({required this.overview, this.onExportProject});
+  const _General({required this.overview});
 
   final SettingsOverview overview;
-  final VoidCallback? onExportProject;
 
   void _openInfo(BuildContext context, String page) => context.pushNamed(
     SettingsRoutes.settingsInfoName,
@@ -224,11 +220,8 @@ class _General extends StatelessWidget {
           key: const Key('settings_export_project'),
           icon: Icons.picture_as_pdf_outlined,
           label: context.tr('settings.export_project'),
-          tag: onExportProject == null
-              ? context.tr('settings.coming_soon')
-              : null,
-          isMuted: onExportProject == null,
-          onTap: onExportProject,
+          // My contracted projects, to export one (GRA-72).
+          onTap: () => context.pushNamed(EvidenceRoutes.evidenceProjectsName),
         ),
         AppMenuRow(
           icon: Icons.info_outline_rounded,

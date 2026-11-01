@@ -57,6 +57,7 @@
     "add_error_description_length": "Task description must be 5,000 characters or fewer",
     "add_error_amount_invalid": "Enter a valid amount greater than zero with at most 2 decimals",
     "add_error_amount_exceeds_remaining": "Amount exceeds the remaining contract budget ({})",
-    "add_error_not_in_progress": "This project is no longer in progress"
+    "add_error_not_in_progress": "This project is no longer in progress",
+    "export_evidence": "Export project record (PDF)"
   }
 }

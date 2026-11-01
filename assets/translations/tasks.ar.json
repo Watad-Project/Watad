@@ -57,6 +57,7 @@
     "add_error_description_length": "وصف المهمة يجب ألا يتجاوز ٥٠٠٠ حرف",
     "add_error_amount_invalid": "أدخل مبلغاً صحيحاً أكبر من الصفر وبحد أقصى منزلتين عشريتين",
     "add_error_amount_exceeds_remaining": "المبلغ يتجاوز المتبقي من قيمة العقد ({})",
-    "add_error_not_in_progress": "لم يعد هذا المشروع قيد التنفيذ"
+    "add_error_not_in_progress": "لم يعد هذا المشروع قيد التنفيذ",
+    "export_evidence": "تصدير سجل المشروع (PDF)"
   }
 }
