@@ -11,6 +11,7 @@ import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_home_repository.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
 import '../../../../helpers/fake_profile_repository.dart';
+import '../../../../helpers/fake_marketplace_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -22,6 +23,7 @@ void main() {
     // it sets its tab's routeName (ClientNavigationPage.tabs).
     registerFakeClientProjects();
     registerFakeClientProfile();
+    registerFakeMarketplace();
     //
     // The router opens at the splash page first. Its fake never answers.
     registerFakeSplashBloc(FakeSplashRepository());

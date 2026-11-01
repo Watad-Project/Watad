@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/components/display/app_market_tile.dart';
+import 'package:watad/core/components/display/app_verified_name.dart';
 import 'package:watad/core/theme/app_tone.dart';
 
 import '../../../helpers/pump_component.dart';
@@ -34,5 +35,31 @@ void main() {
     expect(adds, 1);
     expect(taps, 1);
     expect(find.byIcon(Icons.add), findsOneWidget);
+  });
+
+  testWidgets('shows verified seller, rating and hides add button when asked', (
+    tester,
+  ) async {
+    await pumpComponent(
+      tester,
+      const SizedBox(
+        width: 180,
+        child: AppMarketTile(
+          title: 'أسمنت بورتلاندي',
+          seller: 'شركة اليمامة',
+          sellerIsVerified: true,
+          ratingLabel: '٤٫٨ (١٢ تقييمًا)',
+          priceLabel: '٢٥ ر.س',
+          conditionLabel: 'نفد',
+          conditionTone: AppTone.danger,
+          showAddButton: false,
+        ),
+      ),
+    );
+
+    expect(find.byType(AppVerifiedName), findsOneWidget);
+    expect(find.text('٤٫٨ (١٢ تقييمًا)'), findsOneWidget);
+    expect(find.text('نفد'), findsOneWidget);
+    expect(find.byIcon(Icons.add), findsNothing);
   });
 }
