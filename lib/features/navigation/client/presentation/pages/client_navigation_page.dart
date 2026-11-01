@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_home_routes.dart';
+import 'package:watad/core/router/routes/client_profile_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
+import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_shell.dart';
 import 'package:watad/features/navigation/shared/presentation/widgets/navigation_tab.dart';
 
@@ -47,14 +49,24 @@ class ClientNavigationPage extends StatelessWidget {
       selectedIcon: Icons.assignment_rounded,
       routeName: ClientProjectsRoutes.projectsName,
     ),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'marketplace.tab',
+      icon: Icons.storefront_outlined,
+      selectedIcon: Icons.storefront_rounded,
+      routeName: MarketplaceRoutes.marketplaceName,
+    ),
     NavigationTab(
       labelKey: 'chat.tab',
       icon: Icons.chat_bubble_outline_rounded,
       selectedIcon: Icons.chat_bubble_rounded,
       routeName: ChatRoutes.chatsName,
     ),
-    NavigationTab.placeholder(),
+    NavigationTab(
+      labelKey: 'profile.client.tab',
+      icon: Icons.person_outline,
+      selectedIcon: Icons.person,
+      routeName: ClientProfileRoutes.profileName,
+    ),
   ];
 
   /// Builds each tab's screen; the route takes them from getIt.

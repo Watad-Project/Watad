@@ -7,10 +7,20 @@ import 'package:watad/core/theme/app_colors.dart';
 /// circle. People and businesses never get the striped
 /// `AppImagePlaceholder`; that one is for photos of things.
 class AppAvatar extends StatelessWidget {
-  const AppAvatar({this.url, this.size = 48, this.semanticLabel, super.key});
+  const AppAvatar({
+    this.url,
+    this.image,
+    this.size = 48,
+    this.semanticLabel,
+    super.key,
+  });
 
   /// The photo's URL, e.g. a public URL from the `avatars` bucket.
   final String? url;
+
+  /// A photo that isn't uploaded yet, e.g. one just picked to replace the
+  /// saved one. Shown instead of [url].
+  final ImageProvider? image;
 
   /// The circle's diameter.
   final double size;
@@ -21,7 +31,6 @@ class AppAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final source = url;
     final Widget fallback = _DefaultAvatar(size: size);
     return Semantics(
       label: semanticLabel,
@@ -30,21 +39,24 @@ class AppAvatar extends StatelessWidget {
       child: ClipOval(
         child: SizedBox.square(
           dimension: size,
-          child: source == null || source.isEmpty
-              ? fallback
-              : Image.network(
-                  source,
-                  fit: BoxFit.cover,
-                  frameBuilder: (context, child, frame, _) => frame == null
-                      ? const AppShimmer(
-                          child: AppSkeletonBox(
-                            height: double.infinity,
-                            radius: 0,
-                          ),
-                        )
-                      : child,
-                  errorBuilder: (_, _, _) => fallback,
-                ),
+          child: switch ((image, url)) {
+            (final picked?, _) => Image(
+              image: picked,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => fallback,
+            ),
+            (_, final source?) when source.isNotEmpty => Image.network(
+              source,
+              fit: BoxFit.cover,
+              frameBuilder: (context, child, frame, _) => frame == null
+                  ? const AppShimmer(
+                      child: AppSkeletonBox(height: double.infinity, radius: 0),
+                    )
+                  : child,
+              errorBuilder: (_, _, _) => fallback,
+            ),
+            _ => fallback,
+          },
         ),
       ),
     );

@@ -12,11 +12,15 @@ import 'package:watad/features/kyc/contractor/contractor_kyc_injection.dart';
 import 'package:watad/features/kyc/shared/kyc_injection.dart';
 import 'package:watad/features/location/shared/location_injection.dart';
 import 'package:watad/features/marketplace/admin/admin_marketplace_injection.dart';
+import 'package:watad/features/marketplace/shared/marketplace_injection.dart';
 import 'package:watad/features/notifications/shared/notifications_injection.dart';
 import 'package:watad/features/onboarding/contractor/contractor_onboarding_injection.dart';
 import 'package:watad/features/onboarding/shared/onboarding_injection.dart';
 import 'package:watad/features/payments/client/client_payments_injection.dart';
 import 'package:watad/features/payments/contractor/contractor_payments_injection.dart';
+import 'package:watad/features/profile/client/client_profile_injection.dart';
+import 'package:watad/features/profile/contractor/contractor_profile_injection.dart';
+import 'package:watad/features/profile/shared/profile_injection.dart';
 import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
@@ -51,17 +55,21 @@ void configureDependencies() {
   registerChatDependencies(getIt);
   registerClientHomeDependencies(getIt);
   registerClientPaymentsDependencies(getIt);
+  registerClientProfileDependencies(getIt);
   registerClientProjectsDependencies(getIt);
   registerContractorDashboardDependencies(getIt);
   registerContractorKycDependencies(getIt);
   registerContractorOnboardingDependencies(getIt);
   registerContractorPaymentsDependencies(getIt);
+  registerContractorProfileDependencies(getIt);
   registerContractorTasksDependencies(getIt);
   registerContractorWorkDependencies(getIt);
   registerKycDependencies(getIt);
   registerLocationDependencies(getIt);
+  registerMarketplaceDependencies(getIt);
   registerNotificationsDependencies(getIt);
   registerOnboardingDependencies(getIt);
+  registerProfileDependencies(getIt);
   registerSplashDependencies(getIt);
 }
 

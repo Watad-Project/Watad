@@ -28,6 +28,10 @@
 	<string>$(MAPS_API_KEY)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Watad uses the camera to take your profile photo and the photos you add to documents and project updates.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Watad uses your photos to set your profile photo and to attach photos to documents and project updates.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

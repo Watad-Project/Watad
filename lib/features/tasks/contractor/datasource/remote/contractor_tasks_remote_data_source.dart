@@ -1,11 +1,14 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/tasks/contractor/datasource/models/contractor_project_task_model.dart';
 import 'package:watad/features/tasks/contractor/datasource/models/contractor_task_project_model.dart';
+import 'package:watad/features/tasks/contractor/domain/entities/contractor_new_task.dart';
 
 abstract interface class ContractorTasksRemoteDataSource {
   Future<ContractorTaskProjectModel> getProject(String projectId);
 
   Future<List<ContractorProjectTaskModel>> getProjectTasks(String projectId);
+
+  Future<void> createTask(ContractorNewTask task);
 }
 
 class ContractorTasksRemoteDataSourceImpl
@@ -52,6 +55,17 @@ class ContractorTasksRemoteDataSourceImpl
     return rows.map(ContractorProjectTaskModel.fromJson).toList();
   }
 
+  @override
+  Future<void> createTask(ContractorNewTask task) async {
+    await _client.from('project_tasks').insert({
+      'project_id': task.projectId,
+      'title': task.title,
+      'description': task.description,
+      'amount': task.amount?.toJson(),
+      'start_date': _formatCalendarDay(task.startDate),
+    });
+  }
+
   Map<String, dynamic> _withPhotoUrl(Map<String, dynamic> row) {
     final paths = row['photo_paths'] as List<dynamic>?;
     final first = paths == null || paths.isEmpty
@@ -62,5 +76,13 @@ class ContractorTasksRemoteDataSourceImpl
       ...row,
       'photo_url': _client.storage.from('images').getPublicUrl(first),
     };
+  }
+
+  static String? _formatCalendarDay(DateTime? date) {
+    if (date == null) return null;
+    final y = date.year.toString().padLeft(4, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
   }
 }
