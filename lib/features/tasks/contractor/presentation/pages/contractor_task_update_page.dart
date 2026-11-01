@@ -9,6 +9,7 @@ import 'package:watad/core/components/feedback/app_loading_indicator.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_submit_task_update_params.dart';
@@ -59,7 +60,7 @@ class ContractorTaskUpdatePage extends StatelessWidget {
             context.showSuccessSnackBar(
               context.tr('tasks.contractor.update_submitted_success'),
             );
-            _popIfPossible(context, true);
+            _openSubmittedUpdate(context, state.submittedUpdateId!);
           },
         ),
         BlocListener<ContractorTaskUpdateBloc, ContractorTaskUpdateState>(
@@ -129,6 +130,15 @@ class ContractorTaskUpdatePage extends StatelessWidget {
   void _popIfPossible(BuildContext context, [bool? result]) {
     if (GoRouter.maybeOf(context)?.canPop() ?? false) {
       context.pop(result);
+    }
+  }
+
+  void _openSubmittedUpdate(BuildContext context, String updateId) {
+    if (GoRouter.maybeOf(context) != null) {
+      context.pushReplacementNamed(
+        ContractorTasksRoutes.taskUpdateStatusName,
+        pathParameters: {'projectId': projectId, 'updateId': updateId},
+      );
     }
   }
 

@@ -6,9 +6,12 @@ import 'package:watad/features/tasks/contractor/datasource/repositories/contract
 import 'package:watad/features/tasks/contractor/domain/repositories/contractor_tasks_repository.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_project_tasks_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_task_project_use_case.dart';
+import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_task_update_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_submit_task_update_use_case.dart';
+import 'package:watad/features/tasks/contractor/domain/usecases/contractor_watch_task_update_use_case.dart';
 import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_project_tasks_bloc.dart';
 import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_task_update_bloc.dart';
+import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_task_update_status_bloc.dart';
 import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_task_update_step_cubit.dart';
 
 /// Registers the types of lib/features/tasks/contractor/ into [getIt].
@@ -25,18 +28,16 @@ void registerContractorTasksDependencies(GetIt getIt) {
     ..registerLazySingleton(() => ContractorGetTaskProjectUseCase(getIt()))
     ..registerLazySingleton(() => ContractorGetProjectTasksUseCase(getIt()))
     ..registerLazySingleton(() => ContractorSubmitTaskUpdateUseCase(getIt()))
+    ..registerLazySingleton(() => ContractorGetTaskUpdateUseCase(getIt()))
+    ..registerLazySingleton(() => ContractorWatchTaskUpdateUseCase(getIt()))
     ..registerFactory(() => ContractorProjectTasksBloc(getIt(), getIt()))
     ..registerFactory(() => ContractorTaskUpdateBloc(getIt(), getIt(), getIt()))
-    ..registerFactory(() => ContractorTaskUpdateStepCubit(initialTaskId: null));
+    ..registerFactory(() => ContractorTaskUpdateStepCubit(initialTaskId: null))
+    ..registerFactory(() => ContractorTaskUpdateStatusBloc(getIt(), getIt()));
 
   // Contractor notifications that open the contract's project schedule
   // (ARCHITECTURE.md §13).
-  for (final type in const [
-    'offer_accepted',
-    'task_accepted',
-    'task_update_accepted',
-    'task_update_rejected',
-  ]) {
+  for (final type in const ['offer_accepted', 'task_accepted']) {
     AppNotificationLinks.register(
       type,
       (data) => (
@@ -44,5 +45,26 @@ void registerContractorTasksDependencies(GetIt getIt) {
         pathParameters: {'projectId': '${data['project_id']}'},
       ),
     );
+  }
+
+  // Client decision notifications on a task update open the update status
+  // screen when update_id is present (GRA-39).
+  for (final type in const ['task_update_accepted', 'task_update_rejected']) {
+    AppNotificationLinks.register(type, (data) {
+      final updateId = data['update_id'];
+      if (updateId != null && '$updateId'.isNotEmpty) {
+        return (
+          name: ContractorTasksRoutes.taskUpdateStatusName,
+          pathParameters: {
+            'projectId': '${data['project_id']}',
+            'updateId': '$updateId',
+          },
+        );
+      }
+      return (
+        name: ContractorTasksRoutes.projectTasksName,
+        pathParameters: {'projectId': '${data['project_id']}'},
+      );
+    });
   }
 }

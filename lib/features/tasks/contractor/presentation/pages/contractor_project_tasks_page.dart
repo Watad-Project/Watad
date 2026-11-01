@@ -290,10 +290,18 @@ class ContractorProjectTasksPage extends StatelessWidget {
     BuildContext context,
     ContractorProjectTask task,
   ) async {
-    final callback = onTaskTap;
-    if (callback == null) return;
     final bloc = context.read<ContractorProjectTasksBloc>();
-    await callback(context, task);
+    final callback = onTaskTap;
+    if (callback != null) {
+      await callback(context, task);
+    } else if (task.lastUpdateId case final updateId?) {
+      await context.pushNamed<void>(
+        ContractorTasksRoutes.taskUpdateStatusName,
+        pathParameters: {'projectId': projectId, 'updateId': updateId},
+      );
+    } else {
+      return;
+    }
     if (context.mounted) {
       bloc.add(ContractorProjectTasksFetched(projectId));
     }
