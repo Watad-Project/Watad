@@ -104,5 +104,31 @@
   "removed_since_by": "Since {}, by {}",
   "error_already_removed": "This item is already removed",
   "error_not_found": "We couldn't find this item",
-  "error_reason_too_long": "The reason is longer than 1,000 characters"
+  "error_reason_too_long": "The reason is longer than 1,000 characters",
+  "item_details": {
+    "title": "Item",
+    "photo_label": "Photo {} of {}",
+    "per_unit": "Price per unit",
+    "stock": "In stock: {}",
+    "out_of_stock": "Out of stock",
+    "mine_note": "This is your listing",
+    "mine_hidden_note": "This listing is hidden: only you can see it",
+    "description_title": "Description",
+    "no_description": "The seller didn't add a description",
+    "seller_title": "Seller",
+    "message_seller": "Message the seller",
+    "report": "Report this item",
+    "coming_soon": "Soon",
+    "report_coming_soon": "Reporting comes soon, with help and support",
+    "quantity_label": "Quantity",
+    "add_to_cart": "Add to cart",
+    "added": "Added to your cart",
+    "added_capped": "Your cart now has {}, all that's in stock",
+    "edit": "Edit",
+    "unavailable": "This item isn't available. The seller may have hidden it, or it was removed from the market.",
+    "back_to_market": "Back to the market",
+    "error_own_item": "You can't buy your own item",
+    "error_unavailable": "This item can't be bought right now",
+    "error_quantity": "Choose a quantity between 1 and the stock"
+  }
 }

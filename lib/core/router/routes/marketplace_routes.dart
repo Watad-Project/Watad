@@ -12,4 +12,9 @@ abstract final class MarketplaceRoutes {
 
   static const String editMyItemName = 'edit-my-item';
   static const String editMyItemPath = '/marketplace/my-items/:itemId/edit';
+
+  /// One listing (GRA-67). Under `items/`, so `/marketplace/<id>` never
+  /// catches `my-items`, `cart` or `orders`.
+  static const String marketplaceItemName = 'marketplace-item';
+  static const String marketplaceItemPath = '/marketplace/items/:itemId';
 }

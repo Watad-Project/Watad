@@ -2,10 +2,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/cart_count_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_item_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_item_form_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_items_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/edit_my_item_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_item_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/my_items_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/new_my_item_page.dart';
@@ -14,8 +17,17 @@ final List<RouteBase> marketplaceRoutes = [
   GoRoute(
     name: MarketplaceRoutes.marketplaceName,
     path: MarketplaceRoutes.marketplacePath,
-    builder: (context, state) => BlocProvider(
-      create: (_) => getIt<MarketplaceBloc>()..add(const MarketplaceFetched()),
+    builder: (context, state) => MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              getIt<MarketplaceBloc>()..add(const MarketplaceFetched()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              getIt<CartCountBloc>()..add(const CartCountRefreshed()),
+        ),
+      ],
       child: const MarketplacePage(),
     ),
   ),
@@ -44,6 +56,18 @@ final List<RouteBase> marketplaceRoutes = [
         create: (_) =>
             getIt<MyItemFormBloc>()..add(MyItemFormStarted(itemId: itemId)),
         child: const EditMyItemPage(),
+      );
+    },
+  ),
+  GoRoute(
+    name: MarketplaceRoutes.marketplaceItemName,
+    path: MarketplaceRoutes.marketplaceItemPath,
+    builder: (context, state) {
+      final itemId = state.pathParameters['itemId']!;
+      return BlocProvider(
+        create: (_) =>
+            getIt<MarketplaceItemBloc>()..add(MarketplaceItemFetched(itemId)),
+        child: const MarketplaceItemPage(),
       );
     },
   ),

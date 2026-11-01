@@ -9,6 +9,10 @@ abstract interface class MarketplaceRepository {
   /// One page of active listings matching [query].
   Future<Result<List<MarketplaceItem>>> getItems(MarketplaceQuery query);
 
+  /// One listing by id, or null when the view has no row for it: hidden or
+  /// deleted by its seller, for anyone but the seller.
+  Future<Result<MarketplaceItem?>> getItem(String itemId);
+
   /// The signed-in seller's listings (`is_mine = true`), newest first.
   Future<Result<List<MarketplaceItem>>> getMyItems();
 

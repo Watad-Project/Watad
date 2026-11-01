@@ -104,5 +104,31 @@
   "removed_since_by": "منذ {}، بواسطة {}",
   "error_already_removed": "المنتج محذوف من الإدارة بالفعل",
   "error_not_found": "لم نجد هذا المنتج",
-  "error_reason_too_long": "السبب أطول من ١٠٠٠ حرف"
+  "error_reason_too_long": "السبب أطول من ١٠٠٠ حرف",
+  "item_details": {
+    "title": "المنتج",
+    "photo_label": "الصورة {} من {}",
+    "per_unit": "السعر للوحدة",
+    "stock": "الكمية المتوفرة: {}",
+    "out_of_stock": "نفدت الكمية",
+    "mine_note": "هذا منتجك",
+    "mine_hidden_note": "هذا المنتج مخفي: لا يراه غيرك",
+    "description_title": "الوصف",
+    "no_description": "لم يضف البائع وصفًا",
+    "seller_title": "البائع",
+    "message_seller": "مراسلة البائع",
+    "report": "إبلاغ عن المنتج",
+    "coming_soon": "قريبًا",
+    "report_coming_soon": "الإبلاغ متاح قريبًا مع صفحة المساعدة والدعم",
+    "quantity_label": "الكمية",
+    "add_to_cart": "أضف للسلة",
+    "added": "أُضيف المنتج إلى السلة",
+    "added_capped": "في سلتك الآن {}، وهي كل الكمية المتوفرة",
+    "edit": "تعديل",
+    "unavailable": "المنتج غير متاح. ربما أخفاه البائع أو أُزيل من السوق.",
+    "back_to_market": "العودة إلى السوق",
+    "error_own_item": "لا يمكنك شراء منتجك",
+    "error_unavailable": "لا يمكن شراء هذا المنتج الآن",
+    "error_quantity": "اختر كمية بين ١ والكمية المتوفرة"
+  }
 }

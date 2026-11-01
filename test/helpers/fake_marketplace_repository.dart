@@ -7,8 +7,11 @@ import 'package:watad/features/marketplace/shared/domain/entities/marketplace_it
 import 'package:watad/features/marketplace/shared/domain/entities/marketplace_item_draft.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/marketplace_query.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/marketplace_sort.dart';
+import 'package:watad/features/marketplace/shared/domain/repositories/cart_repository.dart';
 import 'package:watad/features/marketplace/shared/domain/repositories/marketplace_repository.dart';
 import 'package:watad/features/marketplace/shared/marketplace_injection.dart';
+
+import 'fake_cart_repository.dart';
 
 /// In stock, from a verified business, with ratings.
 final MarketplaceItem fakeCementItem = MarketplaceItem(
@@ -164,6 +167,21 @@ class FakeMarketplaceRepository implements MarketplaceRepository {
     return Success(matching.skip(query.offset).take(query.limit).toList());
   }
 
+  /// Answers [getItem] instead, when set.
+  Result<MarketplaceItem?>? itemResult;
+
+  /// Like `v_marketplace_items`: no row for a hidden item that isn't mine.
+  @override
+  Future<Result<MarketplaceItem?>> getItem(String itemId) async {
+    if (itemResult case final result?) return result;
+    for (final item in [...items, ...myItems]) {
+      if (item.id == itemId) {
+        return Success(item.isActive || item.isMine ? item : null);
+      }
+    }
+    return const Success(null);
+  }
+
   @override
   Future<Result<List<MarketplaceItem>>> getMyItems() async {
     if (myItemsResult case final result?) return result;
@@ -299,13 +317,18 @@ class FakeMarketplaceRepository implements MarketplaceRepository {
 }
 
 /// For tests that open the marketplace route or client/contractor navigation
-/// tabs: the real registrations, with [repository] in place of Supabase.
-/// Reset getIt after the test.
-void registerFakeMarketplace([FakeMarketplaceRepository? repository]) {
+/// tabs: the real registrations, with [repository] in place of Supabase and
+/// [cart] in place of the phone's storage. Reset getIt after the test.
+void registerFakeMarketplace([
+  FakeMarketplaceRepository? repository,
+  FakeCartRepository? cart,
+]) {
   registerMarketplaceDependencies(getIt);
   getIt
     ..unregister<MarketplaceRepository>()
     ..registerSingleton<MarketplaceRepository>(
       repository ?? FakeMarketplaceRepository(),
-    );
+    )
+    ..unregister<CartRepository>()
+    ..registerSingleton<CartRepository>(cart ?? FakeCartRepository());
 }

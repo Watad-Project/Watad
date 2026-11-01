@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/marketplace_item.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/cart_count_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_page.dart';
 
@@ -8,14 +9,17 @@ import 'package:watad/features/marketplace/shared/presentation/pages/marketplace
 class MarketplaceTab extends StatefulWidget {
   const MarketplaceTab({
     required this.bloc,
-    this.cartCount = 0,
+    required this.cartCountBloc,
     this.onCartTap,
     this.onItemTap,
     super.key,
   });
 
   final MarketplaceBloc bloc;
-  final int cartCount;
+
+  /// The number on the cart icon.
+  final CartCountBloc cartCountBloc;
+
   final VoidCallback? onCartTap;
   final ValueChanged<MarketplaceItem>? onItemTap;
 
@@ -27,6 +31,7 @@ class _MarketplaceTabState extends State<MarketplaceTab> {
   @override
   void dispose() {
     widget.bloc.close();
+    widget.cartCountBloc.close();
     super.dispose();
   }
 
@@ -34,10 +39,12 @@ class _MarketplaceTabState extends State<MarketplaceTab> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: widget.bloc,
-      child: MarketplacePage(
-        cartCount: widget.cartCount,
-        onCartTap: widget.onCartTap,
-        onItemTap: widget.onItemTap,
+      child: BlocProvider.value(
+        value: widget.cartCountBloc,
+        child: MarketplacePage(
+          onCartTap: widget.onCartTap,
+          onItemTap: widget.onItemTap,
+        ),
       ),
     );
   }

@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/core/utils/money.dart';
+import 'package:watad/features/marketplace/shared/domain/entities/cart_line.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/edit_my_item_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_item_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/my_items_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/new_my_item_page.dart';
@@ -12,6 +15,7 @@ import 'package:watad/features/marketplace/shared/presentation/widgets/marketpla
 import 'package:watad/features/marketplace/shared/presentation/widgets/my_item_card.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_cart_repository.dart';
 import '../../../../helpers/fake_marketplace_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
@@ -19,11 +23,13 @@ import '../../../../helpers/pump_router.dart';
 
 void main() {
   late FakeMarketplaceRepository repository;
+  late FakeCartRepository cart;
 
   setUp(() {
     registerFakeSplashBloc(FakeSplashRepository());
     repository = FakeMarketplaceRepository();
-    registerFakeMarketplace(repository);
+    cart = FakeCartRepository();
+    registerFakeMarketplace(repository, cart);
   });
 
   tearDown(getIt.reset);
@@ -239,5 +245,135 @@ void main() {
 
     expect(find.byType(EditMyItemPage), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('item page', () {
+    Future<GoRouter> openItem(
+      WidgetTester tester,
+      String itemId, {
+      double textScale = 1,
+      bool boldText = false,
+    }) => open(
+      tester,
+      routeName: MarketplaceRoutes.marketplaceItemName,
+      pathParameters: {'itemId': itemId},
+      textScale: textScale,
+      boldText: boldText,
+    );
+
+    testWidgets("someone else's item: seller, messaging and add to cart", (
+      tester,
+    ) async {
+      final router = await openItem(tester, 'i-steel');
+
+      expect(currentPath(router), '/marketplace/items/i-steel');
+      expect(find.byType(MarketplaceItemPage), findsOneWidget);
+      expect(find.text('حديد تسليح ١٢ مم'), findsOneWidget);
+      expect(find.text('حديد ومعادن'), findsOneWidget);
+      expect(
+        find.text('الكمية المتوفرة: ١٠', skipOffstage: false),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('marketplace_item_report')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('سارة العتيبي'), findsOneWidget);
+      expect(find.text('لا تقييمات بعد'), findsOneWidget);
+      expect(
+        find.byKey(const Key('marketplace_item_message_seller')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('marketplace_item_edit')), findsNothing);
+
+      await tester.tap(find.byTooltip('زيادة'));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('marketplace_item_add')));
+      await tester.pumpAndSettle();
+
+      expect(cart.lines.single.itemId, 'i-steel');
+      expect(cart.lines.single.quantity, 2);
+      expect(find.text('أُضيف المنتج إلى السلة'), findsOneWidget);
+    });
+
+    testWidgets('my own item shows «تعديل» instead of the cart', (
+      tester,
+    ) async {
+      await openItem(tester, 'i-cement');
+
+      expect(find.text('هذا منتجك', skipOffstage: false), findsOneWidget);
+      expect(find.byKey(const Key('marketplace_item_edit')), findsOneWidget);
+      expect(find.byKey(const Key('marketplace_item_add')), findsNothing);
+      expect(
+        find.byKey(const Key('marketplace_item_message_seller')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('a removed or missing item is «المنتج غير متاح»', (
+      tester,
+    ) async {
+      await openItem(tester, 'i-removed');
+      expect(
+        find.byKey(const Key('marketplace_item_unavailable')),
+        findsOneWidget,
+      );
+
+      await openItem(tester, 'i-does-not-exist');
+      expect(
+        find.byKey(const Key('marketplace_item_unavailable')),
+        findsOneWidget,
+      );
+    });
+
+    for (final (label, itemId) in [
+      ('not mine', 'i-steel'),
+      ('mine', 'i-cement'),
+      ('unavailable', 'i-removed'),
+    ]) {
+      testWidgets('item page ($label) fits large bold text at 200%', (
+        tester,
+      ) async {
+        await openItem(
+          tester,
+          itemId,
+          textScale: largeTextScale,
+          boldText: true,
+        );
+
+        expect(find.byType(MarketplaceItemPage), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
+  testWidgets('a grid item opens its page, and the badge counts the cart', (
+    tester,
+  ) async {
+    cart.lines = [
+      const CartLine(
+        itemId: 'i-other',
+        quantity: 1,
+        priceWhenAdded: Money.halalas(100),
+      ),
+    ];
+    final router = await open(tester);
+    Finder badge(String count) => find.descendant(
+      of: find.byKey(const Key('marketplace_cart_button')),
+      matching: find.text(count),
+    );
+    expect(badge('١'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('i-steel')));
+    await tester.pumpAndSettle();
+    expect(find.byType(MarketplaceItemPage), findsOneWidget);
+    await tester.tap(find.byKey(const Key('marketplace_item_add')));
+    await tester.pumpAndSettle();
+
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(MarketplacePage), findsOneWidget);
+    expect(badge('٢'), findsOneWidget);
   });
 }
