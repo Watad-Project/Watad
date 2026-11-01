@@ -89,7 +89,9 @@ class AppTextField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hint,
         helperText: helperText,
+        helperMaxLines: 3,
         errorText: errorText,
+        errorMaxLines: 3,
         hintStyle: isMonospace
             ? AppTextStyles.mono.copyWith(
                 color: AppColors.textSecondary,

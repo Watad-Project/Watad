@@ -1,5 +1,7 @@
 import 'package:watad/core/enums/project_status.dart';
+import 'package:watad/core/enums/task_status.dart';
 import 'package:watad/core/utils/money.dart';
+import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
 
 /// A contract project as seen on the contractor's project schedule screen
 /// (GRA-37), backed by `v_my_projects` (`my_role = 'taker'`).
@@ -55,5 +57,27 @@ class ContractorTaskProject {
       return title;
     }
     return '$title — $trimmedDistrict';
+  }
+
+  /// Amount left under [agreedAmount] that can still be assigned to tasks
+  /// (GRA-38): `agreed_amount - total_scheduled - sum(proposed/accepted/done`
+  /// tasks without a `payment_id`). Returns `null` when [agreedAmount] is not
+  /// set.
+  Money? remainingBudget(List<ContractorProjectTask> tasks) {
+    final cap = agreedAmount;
+    if (cap == null) return null;
+    var unscheduled = const Money.zero();
+    for (final task in tasks) {
+      final taskAmount = task.amount;
+      if (taskAmount == null || task.paymentId != null) continue;
+      switch (task.status) {
+        case TaskStatus.proposed || TaskStatus.accepted || TaskStatus.done:
+          unscheduled = unscheduled + taskAmount;
+        case TaskStatus.approved || TaskStatus.rejected:
+          break;
+      }
+    }
+    final remaining = cap - totalScheduled - unscheduled;
+    return remaining < const Money.zero() ? const Money.zero() : remaining;
   }
 }
