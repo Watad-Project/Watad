@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/layout/app_bottom_nav.dart';
@@ -19,6 +21,7 @@ class NavigationShell extends StatefulWidget {
     required this.tabs,
     required this.screens,
     this.selectedRouteName,
+    this.badges = const [],
     super.key,
   }) : assert(tabs.length == screens.length, 'One screen per tab');
 
@@ -33,6 +36,11 @@ class NavigationShell extends StatefulWidget {
   /// current tab (the first one at the start).
   final String? selectedRouteName;
 
+  /// A live count for the tab at each index (e.g. unread chats), shown as
+  /// its badge; empty, or null at an index, for no badge. Each one is
+  /// listened to while the shell shows.
+  final List<Stream<int> Function()?> badges;
+
   @override
   State<NavigationShell> createState() => _NavigationShellState();
 }
@@ -42,6 +50,29 @@ class _NavigationShellState extends State<NavigationShell> {
 
   /// The screens built so far, by tab index.
   final _built = <int, Widget>{};
+
+  /// The badge counts, by tab index, and their subscriptions.
+  final _badgeCounts = <int, int>{};
+  final _badgeSubscriptions = <StreamSubscription<int>>[];
+
+  @override
+  void initState() {
+    super.initState();
+    for (final (index, badge) in widget.badges.indexed) {
+      if (badge == null) continue;
+      _badgeSubscriptions.add(
+        badge().listen((count) => setState(() => _badgeCounts[index] = count)),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final subscription in _badgeSubscriptions) {
+      unawaited(subscription.cancel());
+    }
+    super.dispose();
+  }
 
   int? _indexOf(String? routeName) {
     if (routeName == null) return null;
@@ -82,11 +113,12 @@ class _NavigationShellState extends State<NavigationShell> {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         items: [
-          for (final tab in widget.tabs)
+          for (final (index, tab) in widget.tabs.indexed)
             AppBottomNavItem(
               icon: tab.icon,
               activeIcon: tab.selectedIcon,
               label: context.tr(tab.labelKey),
+              badgeCount: _badgeCounts[index],
             ),
         ],
       ),

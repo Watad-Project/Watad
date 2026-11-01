@@ -8,8 +8,10 @@ import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
+import 'package:watad/features/chat/shared/domain/entities/chat_summary.dart';
 import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
 import 'package:watad/features/chat/shared/presentation/pages/chat_start_page.dart';
+import 'package:watad/features/chat/shared/presentation/pages/chats_page.dart';
 import 'package:watad/features/chat/shared/presentation/widgets/chat_header.dart';
 import 'package:watad/features/chat/shared/presentation/widgets/chat_message_bubble.dart';
 
@@ -214,6 +216,86 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ChatStartPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  Future<GoRouter> openChats(
+    WidgetTester tester, {
+    double textScale = 1,
+    bool boldText = false,
+  }) async {
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.client),
+      textScale: textScale,
+      boldText: boldText,
+    );
+    router.goNamed(ChatRoutes.chatsName);
+    await tester.pumpAndSettle();
+    return router;
+  }
+
+  ChatSummary summary({int unread = 2, bool mine = false}) => ChatSummary(
+    chatId: fakeChatId,
+    unreadCount: unread,
+    lastMessageIsMine: mine,
+    projectTitle: 'فيلا سكنية',
+    lastMessage: 'متى تبدأون؟',
+    lastMessageAt: now.subtract(const Duration(minutes: 3)),
+    other: fakeChatConversation.other,
+  );
+
+  testWidgets('chats lists my chats at its path, with what waits unread', (
+    tester,
+  ) async {
+    repository.chatsResult = Success([summary()]);
+    final router = await openChats(tester);
+
+    expect(currentPath(router), '/chat');
+    expect(find.byType(ChatsPage), findsOneWidget);
+    expect(find.text('مؤسسة الأساس الحديث'), findsOneWidget);
+    expect(find.text('المشروع: فيلا سكنية'), findsOneWidget);
+    expect(find.text('متى تبدأون؟'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('chat_list_unread')),
+        matching: find.text('٢'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('my own last message reads «أنت: …»', (tester) async {
+    repository.chatsResult = Success([summary(unread: 0, mine: true)]);
+    await openChats(tester);
+
+    expect(find.text('أنت: متى تبدأون؟'), findsOneWidget);
+    expect(find.byKey(const Key('chat_list_unread')), findsNothing);
+  });
+
+  testWidgets('a tap opens the conversation', (tester) async {
+    repository.chatsResult = Success([summary()]);
+    await openChats(tester);
+
+    await tester.tap(find.text('متى تبدأون؟'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ChatConversationPage), findsOneWidget);
+  });
+
+  testWidgets('no chats yet says where they start', (tester) async {
+    await openChats(tester);
+
+    expect(
+      find.text('لا توجد محادثات بعد. تبدأ المحادثة من عرض أو مشروع أو منتج.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('chats fit large bold text', (tester) async {
+    repository.chatsResult = Success([summary()]);
+    await openChats(tester, textScale: largeTextScale, boldText: true);
+
+    expect(find.byType(ChatsPage), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

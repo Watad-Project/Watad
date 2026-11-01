@@ -6,12 +6,25 @@ import 'package:watad/features/chat/shared/domain/entities/chat_message.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_messages_query.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_photo.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_start_request.dart';
+import 'package:watad/features/chat/shared/domain/entities/chat_summary.dart';
 import 'package:watad/features/chat/shared/domain/repositories/chat_repository.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
   const ChatRepositoryImpl(this._remote);
 
   final ChatRemoteDataSource _remote;
+
+  @override
+  Future<Result<List<ChatSummary>>> getMyChats() =>
+      guardSupabaseCall(_remote.getMyChats);
+
+  @override
+  Stream<Result<void>> watchMyChats() =>
+      guardSupabaseStream(_remote.watchMyChats());
+
+  @override
+  Stream<Result<int>> watchUnreadTotal() =>
+      guardSupabaseStream(_remote.watchUnreadTotal());
 
   @override
   Future<Result<String>> startChat(ChatStartRequest request) =>
