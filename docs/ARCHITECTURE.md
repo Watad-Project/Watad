@@ -68,6 +68,7 @@ Legend: **RW** = the app may insert/update the signed-in user's own rows (RLS en
 | | `messages` | insert only | Insert `{chat_id, content}`, a photo `{chat_id, attachment_path, attachment_mime}`, or both; `sender_id` comes from the session. A message has text, a photo, or both (migration 83). |
 | | `project_evidence_exports` | RO | Every signed export of a project's evidence (GRA-72's PDF): project, who, when, `fingerprint`, `signature`, `key_id`. Inserted only by the `project-evidence` Edge Function; read through `v_project_evidence_exports` (§7). Migration 84. |
 | | `notifications` | RO (own rows) | Written by the server only: insert a row to notify a user (§13). Read through `v_my_notifications`; `read_at` set by `mark_notifications_read()`. |
+| | `notification_preferences` | RO (own rows) | Whether the user gets the push and pop-up of each `notification_group` (no row means on). Written only by `set_notification_preference()`; read through `v_my_notification_preferences` (§7, §13). Migration 87. |
 | | `reviews` | insert | Only between the two parties of a completed project or delivered order. |
 | Moderation | `help_reports` | insert (reporter) | Set at most one `target_*` column. Admins use `admin_assign_help_report()` / `admin_resolve_help_report()`. |
 | Audit | `status_history` | RO, append-only | Written by triggers. |
@@ -113,6 +114,7 @@ Every other table is read-only from the app. `projects.status` can be set on ins
 | `order_status` | `pending_payment`, `paid`, `shipped`, `delivered`, `cancelled`, `refunded` |
 | `payment_method` (orders) | `mada`, `credit_card`, `apple_pay`, `stc_pay`, `bank_transfer` |
 | `marketplace_category` | `building_materials` «مواد البناء», `steel_metals` «الحديد والمعادن», `wood` «الأخشاب», `tools_equipment` «الأدوات والمعدات», `electrical_lighting` «الكهرباء والإنارة», `plumbing_sanitary` «السباكة والأدوات الصحية», `paints` «الدهانات», `insulation` «العزل», `flooring_tiles` «الأرضيات والبلاط», `doors_windows` «الأبواب والنوافذ», `hvac` «التكييف والتهوية», `safety` «الأمن والسلامة», `outdoor` «الحدائق والمظلات», `other` «أخرى» |
+| `notification_group` | `messages` «الرسائل», `projects` «العروض والمشاريع», `tasks` «مهام المشروع», `marketplace` «الطلبات والسوق» |
 | `report_type` | `fraud`, `scam`, `harassment`, `spam`, `inappropriate_content`, `payment_issue`, `technical_issue`, `other` |
 | `report_status` | `open`, `in_review`, `resolved`, `dismissed` |
 | `business_document_type` | `commercial_registration`, `vat_certificate`, `national_address`, `other` |
@@ -143,7 +145,7 @@ All are `SECURITY DEFINER` and check the caller inside. Call with `supabase.rpc(
 | Chat | `start_chat(p_other_user_id, p_project_id)`, `add_chat_member(p_chat_id, p_user_id)`, `remove_chat_member(p_chat_id, p_user_id)`, `mark_chat_read(p_chat_id)` |
 | Business | `request_business_verification()` |
 | Account | `complete_client_profile(p_full_name, p_national_id, p_phone)`, `delete_my_account()` |
-| Notifications | `mark_notifications_read(p_ids)` (all of the caller's when `p_ids` is null; returns how many changed) |
+| Notifications | `mark_notifications_read(p_ids)` (all of the caller's when `p_ids` is null; returns how many changed), `set_notification_preference(p_group, p_enabled)` (mutes or unmutes one group, §13) |
 | Presence | `set_my_presence(p_online)`: `true` every minute while the app is open, `false` when it goes to the background (§14) |
 | Admin | `admin_set_user_role`, `admin_set_user_suspension`, `admin_set_business_verification`, `admin_set_project_deed_verification`, `admin_assign_help_report`, `admin_resolve_help_report`, `admin_remove_listing`, `admin_blockchain_resync(p_project_id)` |
 | Blockchain sync (server only) | `blockchain_sync_claim`, `blockchain_sync_snapshot`, `blockchain_sync_complete`. They need the shared secret. **The app never calls these.** |
@@ -182,7 +184,7 @@ Call with `supabase.functions.invoke('<name>', body: {...})` from a `datasource/
 | Marketplace | `v_marketplace_items`, `v_my_orders`, `v_order_items` |
 | Chat | `v_my_chats`, `v_chat_messages` |
 | Reviews and reports | `v_reviews`, `v_my_help_reports`, `v_admin_help_reports` |
-| Notifications | `v_my_notifications` |
+| Notifications | `v_my_notifications`, `v_my_notification_preferences` |
 | Blockchain | `v_admin_blockchain_sync`, `v_admin_blockchain_summary`, `v_project_evidence_exports` |
 | Admin | `v_admin_dashboard`, `v_admin_users`, `v_admin_marketplace_items` |
 
@@ -219,6 +221,8 @@ Rule: add a new screen's read by adding or reusing a `v_*` view (proposed in a P
 **Sending a photo (migration 83).** Upload it to `chat-attachments` at `<chat id>/<file id>.<ext>` (`jpg`, `jpeg`, `png` or `webp`), then insert the message with `attachment_path` set to that path and `attachment_mime` to `image/jpeg`, `image/png` or `image/webp`, with or without `content`. A path outside that chat's own folder, a path without its type, or a message with neither text nor a photo is refused (`23514`).
 
 `v_project_evidence_exports` (migration 84) is every signed evidence export of a project, for its owner, its taker and admins: `id` (the PDF's export id), `project_id`, `exported_by`, `exported_by_name`, `exported_at`, `fingerprint`, `signature` and `key_id`. A PDF matches its export when its fingerprint is the row's.
+
+`v_my_notification_preferences` (migration 87) is every `notification_group` with `push_enabled`: whether the signed-in user gets its push and pop-up, `true` for a group they never set. Save a switch with `set_notification_preference(p_group, p_enabled)` (`22023` when either is null).
 
 This file does not list view columns. Never guess a column name: read it from the SQL in `supabase/migrations/`, or query `information_schema.columns` (read-only) through the Supabase MCP or CLI, or ask a maintainer.
 
@@ -298,7 +302,7 @@ An admin resyncs one project with `admin_blockchain_resync(p_project_id)` (§6);
 
 ## 11. Migrations
 
-- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `86_profile_cr_lock_and_city` are applied; the next is `87_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
+- Every applied migration is in `supabase/migrations/`, numbered in order (`00_setup` … `86_profile_cr_lock_and_city` are applied; `87_notification_preferences` is in the repo and waits to be applied; the next is `88_...`), so `supabase migration list` shows the same versions in the repo and on the live project. Files 00 to 55 were fetched from the live history (`supabase migration fetch`), exactly as they were applied. One version per migration: check `supabase_migrations.schema_migrations` before picking a timestamp, as two files with the same version break the history.
 - One topic per migration. Never edit an applied migration; add a new one.
 - A maintainer applies new migrations with `supabase db push`. If the CLI says the history doesn't match, a file is missing or misnamed: fix the file. Never run `supabase migration repair --status reverted` (it erases applied history), and run `--status applied` only for SQL that has really run.
 - A PR that changes the schema also updates sections 3 to 8 of this file.
@@ -359,6 +363,18 @@ A new event is one more trigger that calls `private.notify(user_id, title, body,
 | doesn't, and OneSignal refused it | `failed` | Nothing; the reason is in `push_error` |
 
 A failed push isn't retried; the notification is still in the app's list.
+
+**Muting a group (migration 87).** Each user can turn off the push and pop-up of a `notification_group` in settings (`set_notification_preference()`, `v_my_notification_preferences`). `private.notification_group_of(type)` is the one mapping from `data.type` to a group; a new type needs one line there:
+
+| Group | Types |
+|---|---|
+| `messages` | `message` |
+| `projects` | `offer_received`, `offer_accepted`, `offer_rejected` (and the project payment types, when they exist) |
+| `tasks` | `task_added`, `task_accepted`, `task_update_sent`, `task_update_accepted`, `task_update_rejected` |
+| `marketplace` | `order_paid`, `order_shipped`, `order_delivered`, `order_cancelled` |
+| none: always sent | `deed_verified`, `deed_rejected`, `bank_details_missing`, verification and suspension |
+
+`private.notify()` still saves every notification, so it's always in the app's list. When its group is muted, the row is saved with `pop_up = false` and `push_status = 'muted'`: the push trigger doesn't call `send-push` for it, and `push_claim()` only takes `pending` rows.
 
 **The app** starts OneSignal at launch (`startAppServices()`), signs the device in as the Supabase user with `OneSignal.login()` and out on sign-out, and asks permission when the bell first shows on a home. It reads `v_my_notifications` (newest first: order by `created_at` desc) and marks rows read with `mark_notifications_read(p_ids)`.
 
