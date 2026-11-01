@@ -3,7 +3,9 @@ import 'package:watad/core/supabase/supabase_guard.dart';
 import 'package:watad/features/tasks/contractor/datasource/remote/contractor_tasks_remote_data_source.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_new_task.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
+import 'package:watad/features/tasks/contractor/domain/entities/contractor_submit_task_update_params.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_project.dart';
+import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_update.dart';
 import 'package:watad/features/tasks/contractor/domain/repositories/contractor_tasks_repository.dart';
 
 class ContractorTasksRepositoryImpl implements ContractorTasksRepository {
@@ -26,5 +28,22 @@ class ContractorTasksRepositoryImpl implements ContractorTasksRepository {
   @override
   Future<Result<void>> createTask(ContractorNewTask task) {
     return guardSupabaseCall(() => _remote.createTask(task));
+  }
+
+  @override
+  Future<Result<String>> submitTaskUpdate(
+    ContractorSubmitTaskUpdateParams params,
+  ) {
+    return guardSupabaseCall(() => _remote.submitTaskUpdate(params));
+  }
+
+  @override
+  Future<Result<ContractorTaskUpdate>> getTaskUpdate(String updateId) {
+    return guardSupabaseCall(() => _remote.getTaskUpdate(updateId));
+  }
+
+  @override
+  Stream<Result<ContractorTaskUpdate>> watchTaskUpdate(String updateId) {
+    return guardSupabaseStream(_remote.watchTaskUpdate(updateId));
   }
 }

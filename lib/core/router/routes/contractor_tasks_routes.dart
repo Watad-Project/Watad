@@ -4,4 +4,12 @@ abstract final class ContractorTasksRoutes {
 
   static const String addTaskName = 'contractor-add-task';
   static const String addTaskPath = '/contractor/tasks/:projectId/new';
+
+  static const String taskUpdateName = 'contractor-task-update';
+  static const String taskUpdatePath =
+      '/contractor/tasks/:projectId/updates/new';
+
+  static const String taskUpdateStatusName = 'contractor-task-update-status';
+  static const String taskUpdateStatusPath =
+      '/contractor/tasks/:projectId/updates/:updateId';
 }
