@@ -5,12 +5,14 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/settings_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/evidence/shared/presentation/pages/evidence_projects_page.dart';
 import 'package:watad/features/settings/shared/domain/entities/settings_delete_blocker.dart';
 import 'package:watad/features/settings/shared/domain/entities/settings_overview.dart';
 import 'package:watad/features/settings/shared/presentation/pages/settings_info_page.dart';
 import 'package:watad/features/settings/shared/presentation/pages/settings_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_evidence_repository.dart';
 import '../../../../helpers/fake_settings_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
@@ -124,6 +126,17 @@ void main() {
       findsOneWidget,
     );
     expect(repository.calls, isEmpty);
+  });
+
+  testWidgets('«تصدير سجل مشروع» opens my contracted projects', (tester) async {
+    registerFakeEvidence(FakeEvidenceRepository());
+    await openSettings(tester);
+
+    await tester.tap(find.byKey(const Key('settings_export_project')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EvidenceProjectsPage), findsOneWidget);
+    expect(find.text('ترميم فيلا في العزيزية'), findsOneWidget);
   });
 
   testWidgets('settings-info shows a static page at its path', (tester) async {

@@ -16,6 +16,7 @@ import 'package:watad/features/blockchain/admin/presentation/admin_blockchain_ro
 import 'package:watad/features/chat/shared/presentation/chat_routes.dart';
 import 'package:watad/features/dashboard/admin/presentation/admin_dashboard_routes.dart';
 import 'package:watad/features/dashboard/contractor/presentation/contractor_dashboard_routes.dart';
+import 'package:watad/features/evidence/shared/presentation/evidence_routes.dart';
 import 'package:watad/features/home/client/presentation/client_home_routes.dart';
 import 'package:watad/features/kyc/contractor/presentation/contractor_kyc_routes.dart';
 import 'package:watad/features/kyc/shared/presentation/kyc_routes.dart';
@@ -90,6 +91,7 @@ GoRouter createAppRouter({
       ...contractorProfileRoutes,
       ...contractorTasksRoutes,
       ...contractorWorkRoutes,
+      ...evidenceRoutes,
       ...kycRoutes,
       ...locationRoutes,
       ...marketplaceRoutes,

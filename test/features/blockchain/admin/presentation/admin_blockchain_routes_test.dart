@@ -13,9 +13,11 @@ import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain
 import 'package:watad/features/blockchain/admin/presentation/pages/admin_blockchain_page.dart';
 import 'package:watad/features/blockchain/admin/presentation/pages/admin_blockchain_project_page.dart';
 import 'package:watad/features/blockchain/admin/presentation/widgets/admin_blockchain_project_card.dart';
+import 'package:watad/features/evidence/shared/presentation/pages/evidence_export_page.dart';
 
 import '../../../../helpers/fake_admin_blockchain_repository.dart';
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_evidence_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -159,6 +161,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AdminBlockchainProjectPage), findsOneWidget);
+  });
+
+  testWidgets('the project page exports its record, for the demo', (
+    tester,
+  ) async {
+    final evidence = FakeEvidenceRepository();
+    registerFakeEvidence(evidence);
+    await openProject(tester);
+
+    await tester.tap(find.byKey(const Key('admin_blockchain_project_export')));
+    await tester.pumpAndSettle();
+
+    expect(evidence.exports, ['p-failed']);
+    expect(find.byType(EvidenceExportPage), findsOneWidget);
   });
 
   testWidgets('admin-blockchain-project opens the project at its path', (

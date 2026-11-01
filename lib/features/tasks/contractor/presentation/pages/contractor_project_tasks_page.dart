@@ -16,6 +16,7 @@ import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
+import 'package:watad/core/router/routes/evidence_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -83,6 +84,17 @@ class ContractorProjectTasksPage extends StatelessWidget {
                     ChatRoutes.chatStartName,
                     pathParameters: {'userId': ownerId},
                     queryParameters: {'project': project!.id},
+                  ),
+                ),
+              // The contractor's jobs are all contracted, so on the chain.
+              if (project != null)
+                AppIconButton(
+                  key: const Key('contractor_project_tasks_export'),
+                  icon: Icons.picture_as_pdf_outlined,
+                  tooltip: context.tr('tasks.contractor.export_evidence'),
+                  onPressed: () => context.pushNamed(
+                    EvidenceRoutes.evidenceExportName,
+                    pathParameters: {'projectId': project.id},
                   ),
                 ),
             ],

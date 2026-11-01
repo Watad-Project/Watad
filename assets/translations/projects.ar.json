@@ -161,6 +161,7 @@
     "reject_details_hint": "اكتب ما يجب على المقاول إصلاحه...",
     "reject_send": "إرسال الرفض للمقاول",
     "reject_sent": "أُرسل الرفض للمقاول",
-    "reject_details_too_long": "اكتب التفاصيل في ١٠٠٠ حرف أو أقل."
+    "reject_details_too_long": "اكتب التفاصيل في ١٠٠٠ حرف أو أقل.",
+    "export_evidence": "تصدير سجل المشروع (PDF)"
   }
 }

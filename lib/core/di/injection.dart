@@ -7,6 +7,7 @@ import 'package:watad/features/blockchain/admin/admin_blockchain_injection.dart'
 import 'package:watad/features/chat/shared/chat_injection.dart';
 import 'package:watad/features/dashboard/admin/admin_dashboard_injection.dart';
 import 'package:watad/features/dashboard/contractor/contractor_dashboard_injection.dart';
+import 'package:watad/features/evidence/shared/evidence_injection.dart';
 import 'package:watad/features/home/client/client_home_injection.dart';
 import 'package:watad/features/kyc/contractor/contractor_kyc_injection.dart';
 import 'package:watad/features/kyc/shared/kyc_injection.dart';
@@ -65,6 +66,7 @@ void configureDependencies() {
   registerContractorProfileDependencies(getIt);
   registerContractorTasksDependencies(getIt);
   registerContractorWorkDependencies(getIt);
+  registerEvidenceDependencies(getIt);
   registerKycDependencies(getIt);
   registerLocationDependencies(getIt);
   registerMarketplaceDependencies(getIt);

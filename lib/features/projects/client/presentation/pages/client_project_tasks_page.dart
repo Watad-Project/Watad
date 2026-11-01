@@ -15,6 +15,7 @@ import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_payments_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
+import 'package:watad/core/router/routes/evidence_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -68,6 +69,17 @@ class ClientProjectTasksPage extends StatelessWidget {
                     ChatRoutes.chatStartName,
                     pathParameters: {'userId': takerId},
                     queryParameters: {'project': projectId},
+                  ),
+                ),
+              // Only a contracted project is on the blockchain.
+              if (project?.takerId != null)
+                AppIconButton(
+                  key: const Key('client_project_tasks_export'),
+                  icon: Icons.picture_as_pdf_outlined,
+                  tooltip: context.tr('projects.client.export_evidence'),
+                  onPressed: () => context.pushNamed(
+                    EvidenceRoutes.evidenceExportName,
+                    pathParameters: {'projectId': projectId},
                   ),
                 ),
             ],
