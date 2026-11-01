@@ -23,6 +23,7 @@ import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
 import 'package:watad/features/evidence/shared/presentation/pages/evidence_export_page.dart';
 import 'package:watad/features/payments/client/presentation/pages/client_new_payment_page.dart';
+import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
 import 'package:watad/features/projects/client/domain/entities/client_deed_verification_status.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project.dart';
 import 'package:watad/features/projects/client/domain/entities/client_project_offer.dart';
@@ -46,6 +47,7 @@ import '../../../../helpers/fake_client_payments_repository.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
 import '../../../../helpers/fake_evidence_repository.dart';
 import '../../../../helpers/fake_network_images.dart';
+import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -584,6 +586,18 @@ void main() {
     expect(chat.started, ['u-contractor p-3']);
     expect(find.byType(ChatConversationPage), findsOneWidget);
     await chat.dispose();
+  });
+
+  testWidgets("the contractor's name opens their public profile", (
+    tester,
+  ) async {
+    registerFakePublicProfile();
+    await openOffers(tester);
+
+    await tester.tap(find.byKey(const Key('client_offer_provider')).first);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PublicProfilePage), findsOneWidget);
   });
 
   testWidgets('a project without a contractor has no message button', (

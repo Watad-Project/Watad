@@ -114,5 +114,33 @@
   "suspended_edit_note": "You can't edit your profile while your account is suspended",
   "suspended_message": "You can browse the app, but you can't post or edit anything until the suspension is lifted.",
   "suspended_reason": "Reason",
-  "suspended_title": "Your account is suspended"
+  "suspended_title": "Your account is suspended",
+  "public": {
+    "title": "Profile",
+    "deleted": "Deleted account",
+    "no_name": "No name",
+    "not_found": "We couldn't find this account.",
+    "rating": "{} ({})",
+    "ratings": {
+      "zero": "{} ratings",
+      "one": "{} rating",
+      "two": "{} ratings",
+      "few": "{} ratings",
+      "many": "{} ratings",
+      "other": "{} ratings"
+    },
+    "member_since": "Member since {}",
+    "online": "Online now",
+    "last_seen": "Last seen {}",
+    "message": "Message",
+    "edit": "Edit profile",
+    "items": "Their items on the market",
+    "no_items": "No items on the market right now.",
+    "out_of_stock": "Sold out",
+    "reviews": "Reviews",
+    "more_reviews": "Show more",
+    "from_project": "Project",
+    "from_order": "Order",
+    "stars": "{} out of 5 stars"
+  }
 }

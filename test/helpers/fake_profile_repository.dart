@@ -1,6 +1,7 @@
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/enums/verification_status.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/profile/client/client_profile_injection.dart';
 import 'package:watad/features/profile/contractor/contractor_profile_injection.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
@@ -8,10 +9,14 @@ import 'package:watad/features/profile/shared/domain/entities/my_profile_busines
 import 'package:watad/features/profile/shared/domain/entities/profile_business_changes.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_city_suggestion.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_identity.dart';
+import 'package:watad/features/profile/shared/domain/entities/profile_market_item.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_photo.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_place.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_rating.dart';
+import 'package:watad/features/profile/shared/domain/entities/profile_review.dart';
+import 'package:watad/features/profile/shared/domain/entities/profile_reviews_query.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_user_write.dart';
+import 'package:watad/features/profile/shared/domain/entities/public_profile.dart';
 import 'package:watad/features/profile/shared/domain/repositories/profile_repository.dart';
 import 'package:watad/features/profile/shared/profile_injection.dart';
 
@@ -42,6 +47,52 @@ const ProfileIdentity fakeIdentity = ProfileIdentity(
   phone: '+966512345678',
 );
 
+/// A verified contractor's public profile, last seen on 30 October.
+final PublicProfile fakePublicProfile = PublicProfile(
+  id: fakeContractorProfile.id,
+  displayName: 'مؤسسة البناء المتين',
+  isDeleted: false,
+  memberSince: DateTime.utc(2026, 9, 14),
+  isBusiness: true,
+  companyName: 'مؤسسة البناء المتين',
+  specialty: 'مقاولات عامة',
+  isVerifiedBusiness: true,
+  rating: const ProfileRating(count: 12, average: 4.8),
+  lastSeenAt: DateTime.utc(2026, 10, 30, 9, 15),
+  isOnline: false,
+  isMe: false,
+);
+
+/// One item in stock and one sold out.
+const List<ProfileMarketItem> fakeProfileItems = [
+  ProfileMarketItem(
+    id: 'i-1',
+    name: 'حديد تسليح ١٢ مم',
+    price: Money.halalas(285000),
+    inStock: true,
+  ),
+  ProfileMarketItem(
+    id: 'i-2',
+    name: 'بلاط بورسلان',
+    price: Money.halalas(4500),
+    inStock: false,
+  ),
+];
+
+/// [count] reviews, newest first: even ones about projects, odd ones about
+/// orders.
+List<ProfileReview> fakeProfileReviews(int count) => [
+  for (var i = 0; i < count; i++)
+    ProfileReview(
+      id: 'r-$i',
+      reviewerName: 'عميل $i',
+      rating: 5 - i % 3,
+      comment: i == 0 ? 'عمل متقن والتزام بالمواعيد' : null,
+      isFromProject: i.isEven,
+      createdAt: DateTime.utc(2026, 10, 28 - i % 20),
+    ),
+];
+
 /// A hand-written [ProfileRepository] (APP_ARCHITECTURE.md §16).
 ///
 /// Like the tables, it keeps one profile ([profileResult]), and the writes
@@ -71,6 +122,15 @@ class FakeProfileRepository implements ProfileRepository {
     ProfilePlace(latitude: 24.4672, longitude: 39.6111),
   );
   Result<String?> cityResult = const Success('المدينة المنورة');
+
+  Result<PublicProfile>? publicProfileResult;
+  Result<List<ProfileMarketItem>> itemsResult = const Success(fakeProfileItems);
+
+  /// Every review about the user; [getReviews] answers a page of them.
+  List<ProfileReview> reviews = fakeProfileReviews(3);
+
+  /// What [getReviews] answers instead of a page.
+  Result<List<ProfileReview>>? reviewsResult;
 
   /// E.g. `getMyProfile`, `uploadAvatar`, `updateUser`,
   /// `deleteAvatar(<path>)`.
@@ -195,6 +255,32 @@ class FakeProfileRepository implements ProfileRepository {
     calls.add('cityAt(${place.latitude}, ${place.longitude})');
     return cityResult;
   }
+
+  @override
+  Future<Result<PublicProfile>> getPublicProfile(String userId) async {
+    calls.add('getPublicProfile($userId)');
+    return publicProfileResult ?? Success(fakePublicProfile);
+  }
+
+  @override
+  Future<Result<List<ProfileMarketItem>>> getMarketItems(String userId) async {
+    calls.add('getMarketItems($userId)');
+    return itemsResult;
+  }
+
+  @override
+  Future<Result<List<ProfileReview>>> getReviews(
+    ProfileReviewsQuery query,
+  ) async {
+    calls.add('getReviews(${query.userId}, ${query.offset})');
+    return reviewsResult ??
+        Success(
+          reviews
+              .skip(query.offset)
+              .take(ProfileReviewsQuery.pageSize)
+              .toList(),
+        );
+  }
 }
 
 /// For tests that open the client's «حسابي», by its route or in the client's
@@ -216,6 +302,13 @@ void registerFakeContractorProfile([FakeProfileRepository? repository]) {
           profileResult: const Success(fakeContractorProfile),
         ),
   );
+}
+
+/// For tests that open a public profile: the real registrations of
+/// lib/features/profile/shared/, with [repository] in place of Supabase.
+void registerFakePublicProfile([FakeProfileRepository? repository]) {
+  registerProfileDependencies(getIt);
+  _useRepository(repository ?? FakeProfileRepository());
 }
 
 void _useRepository(ProfileRepository repository) {

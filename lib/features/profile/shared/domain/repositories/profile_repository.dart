@@ -3,10 +3,14 @@ import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_business_changes.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_city_suggestion.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_identity.dart';
+import 'package:watad/features/profile/shared/domain/entities/profile_market_item.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_photo.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_place.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_rating.dart';
+import 'package:watad/features/profile/shared/domain/entities/profile_review.dart';
+import 'package:watad/features/profile/shared/domain/entities/profile_reviews_query.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_user_write.dart';
+import 'package:watad/features/profile/shared/domain/entities/public_profile.dart';
 
 abstract interface class ProfileRepository {
   /// The signed-in user's profile, with their business if they have one.
@@ -39,4 +43,15 @@ abstract interface class ProfileRepository {
 
   /// The city at [place], named in Arabic; null when Google knows none.
   Future<Result<String?>> cityAt(ProfilePlace place);
+
+  /// The public profile of the user with [userId] (GRA-58); a
+  /// `NotFoundFailure` when there's no such user.
+  Future<Result<PublicProfile>> getPublicProfile(String userId);
+
+  /// The active items of the user with [userId] on the market, newest
+  /// first.
+  Future<Result<List<ProfileMarketItem>>> getMarketItems(String userId);
+
+  /// A page of the reviews about a user, newest first.
+  Future<Result<List<ProfileReview>>> getReviews(ProfileReviewsQuery query);
 }

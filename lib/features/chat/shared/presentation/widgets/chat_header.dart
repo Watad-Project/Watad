@@ -14,12 +14,16 @@ class ChatHeader extends StatelessWidget {
     required this.conversation,
     required this.now,
     this.onProjectTap,
+    this.onPersonTap,
     super.key,
   });
 
   final ChatConversation conversation;
   final DateTime now;
   final VoidCallback? onProjectTap;
+
+  /// Opens their public profile (GRA-58).
+  final VoidCallback? onPersonTap;
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +50,15 @@ class ChatHeader extends StatelessWidget {
         ),
         child: Row(
           children: [
-            AppAvatar(
-              url: other?.avatarUrl,
-              size: 40,
-              semanticLabel: other?.name,
+            InkWell(
+              key: const Key('chat_header_person'),
+              onTap: onPersonTap,
+              customBorder: const CircleBorder(),
+              child: AppAvatar(
+                url: other?.avatarUrl,
+                size: 40,
+                semanticLabel: other?.name,
+              ),
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(

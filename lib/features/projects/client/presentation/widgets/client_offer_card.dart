@@ -23,6 +23,7 @@ class ClientOfferCard extends StatelessWidget {
     required this.isAccepting,
     required this.onAccept,
     this.onMessage,
+    this.onProviderTap,
     super.key,
   });
 
@@ -36,6 +37,9 @@ class ClientOfferCard extends StatelessWidget {
   /// Opens the chat with the contractor about this project.
   final VoidCallback? onMessage;
 
+  /// Opens the contractor's public profile (GRA-58).
+  final VoidCallback? onProviderTap;
+
   @override
   Widget build(BuildContext context) {
     final rating = offer.providerRatingAvg;
@@ -45,25 +49,33 @@ class ClientOfferCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: offer.isProviderVerified
-                    ? AppVerifiedName(
-                        name: offer.providerName,
-                        style: nameStyle,
-                      )
-                    : Text(offer.providerName, style: nameStyle),
-              ),
-              if (rating != null) ...[
-                const SizedBox(width: AppSpacing.xs),
-                const Icon(Icons.star_rounded, size: 18, color: AppColors.ink),
-                Text(
-                  context.formatNumber(rating, decimals: 1),
-                  style: AppTextStyles.label,
+          InkWell(
+            key: const Key('client_offer_provider'),
+            onTap: onProviderTap,
+            child: Row(
+              children: [
+                Expanded(
+                  child: offer.isProviderVerified
+                      ? AppVerifiedName(
+                          name: offer.providerName,
+                          style: nameStyle,
+                        )
+                      : Text(offer.providerName, style: nameStyle),
                 ),
+                if (rating != null) ...[
+                  const SizedBox(width: AppSpacing.xs),
+                  const Icon(
+                    Icons.star_rounded,
+                    size: 18,
+                    color: AppColors.ink,
+                  ),
+                  Text(
+                    context.formatNumber(rating, decimals: 1),
+                    style: AppTextStyles.label,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           AppMoneyText(offer.amount),

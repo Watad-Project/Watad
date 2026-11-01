@@ -2,11 +2,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/profile/shared/datasource/models/my_profile_model.dart';
 import 'package:watad/features/profile/shared/datasource/models/profile_city_suggestion_model.dart';
 import 'package:watad/features/profile/shared/datasource/models/profile_identity_model.dart';
+import 'package:watad/features/profile/shared/datasource/models/profile_market_item_model.dart';
 import 'package:watad/features/profile/shared/datasource/models/profile_place_model.dart';
 import 'package:watad/features/profile/shared/datasource/models/profile_rating_model.dart';
+import 'package:watad/features/profile/shared/datasource/models/profile_review_model.dart';
+import 'package:watad/features/profile/shared/datasource/models/public_profile_model.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_business_changes.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_photo.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_place.dart';
+import 'package:watad/features/profile/shared/domain/entities/profile_reviews_query.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_user_write.dart';
 
 abstract interface class ProfileRemoteDataSource {
@@ -42,6 +46,17 @@ abstract interface class ProfileRemoteDataSource {
   /// The `geocode` Edge Function's address of [place], in Arabic: its
   /// `city`, or null when Google knows none there.
   Future<String?> cityAt(ProfilePlace place);
+
+  /// The `v_public_profiles` row of the user with [userId], with their
+  /// photo's public URL and whether it's the signed-in user.
+  Future<PublicProfileModel> getPublicProfile(String userId);
+
+  /// The `v_marketplace_items` rows of the user with [userId] that are on
+  /// sale (active, not removed), newest first, with their first photo.
+  Future<List<ProfileMarketItemModel>> getMarketItems(String userId);
+
+  /// A page of the `v_reviews` rows about a user, newest first.
+  Future<List<ProfileReviewModel>> getReviews(ProfileReviewsQuery query);
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -184,6 +199,70 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   /// Avatars live in the public `avatars` bucket.
+  @override
+  Future<PublicProfileModel> getPublicProfile(String userId) async {
+    final row = await _client
+        .from('v_public_profiles')
+        .select(
+          'id, display_name, avatar_path, is_deleted, member_since, '
+          'is_business, company_name, specialized_field, '
+          'is_verified_business, rating_avg, rating_count, last_seen_at, '
+          'is_online',
+        )
+        .eq('id', userId)
+        .single();
+    return PublicProfileModel.fromJson({
+      ...row,
+      'avatar_url': _avatarUrl(row['avatar_path'] as String?),
+      'is_me': row['id'] == _client.auth.currentUser?.id,
+    });
+  }
+
+  @override
+  Future<List<ProfileMarketItemModel>> getMarketItems(String userId) async {
+    final rows = await _client
+        .from('v_marketplace_items')
+        .select('id, item_name, price, in_stock, photo_paths')
+        .eq('seller_id', userId)
+        .eq('is_active', true)
+        .isFilter('removed_at', null)
+        .order('created_at', ascending: false);
+    return [
+      for (final row in rows)
+        ProfileMarketItemModel.fromJson({
+          ...row,
+          'photo_url': switch (row['photo_paths']) {
+            [final String first, ...] when first.isNotEmpty =>
+              _client.storage.from('images').getPublicUrl(first),
+            _ => null,
+          },
+        }),
+    ];
+  }
+
+  @override
+  Future<List<ProfileReviewModel>> getReviews(ProfileReviewsQuery query) async {
+    final rows = await _client
+        .from('v_reviews')
+        .select(
+          'id, reviewer_name, reviewer_avatar_path, rating, comment, '
+          'context_type, created_at',
+        )
+        .eq('target_user_id', query.userId)
+        .order('created_at', ascending: false)
+        .order('id')
+        .range(query.offset, query.offset + ProfileReviewsQuery.pageSize - 1);
+    return [
+      for (final row in rows)
+        ProfileReviewModel.fromJson({
+          ...row,
+          'reviewer_avatar_url': _avatarUrl(
+            row['reviewer_avatar_path'] as String?,
+          ),
+        }),
+    ];
+  }
+
   String? _avatarUrl(String? path) => path == null || path.isEmpty
       ? null
       : _client.storage.from('avatars').getPublicUrl(path);

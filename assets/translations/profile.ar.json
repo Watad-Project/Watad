@@ -114,5 +114,33 @@
   "suspended_edit_note": "لا يمكن تعديل ملفك أثناء إيقاف حسابك",
   "suspended_message": "يمكنك تصفح التطبيق، لكن لا يمكنك النشر أو التعديل حتى يُرفع الإيقاف.",
   "suspended_reason": "السبب",
-  "suspended_title": "حسابك موقوف"
+  "suspended_title": "حسابك موقوف",
+  "public": {
+    "title": "الملف الشخصي",
+    "deleted": "حساب محذوف",
+    "no_name": "بلا اسم",
+    "not_found": "لم نجد هذا الحساب.",
+    "rating": "{} ({})",
+    "ratings": {
+      "zero": "{} تقييم",
+      "one": "تقييم واحد",
+      "two": "تقييمان",
+      "few": "{} تقييمات",
+      "many": "{} تقييمًا",
+      "other": "{} تقييم"
+    },
+    "member_since": "عضو منذ {}",
+    "online": "متصل الآن",
+    "last_seen": "آخر ظهور {}",
+    "message": "مراسلة",
+    "edit": "تعديل الملف",
+    "items": "منتجاته في السوق",
+    "no_items": "لا منتجات في السوق حاليًا.",
+    "out_of_stock": "نفد",
+    "reviews": "التقييمات",
+    "more_reviews": "عرض المزيد",
+    "from_project": "مشروع",
+    "from_order": "طلب",
+    "stars": "{} من ٥ نجوم"
+  }
 }
