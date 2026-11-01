@@ -4,11 +4,12 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/features/profile/shared/presentation/bloc/profile_city_search_bloc.dart';
 import 'package:watad/features/profile/shared/presentation/bloc/profile_edit_bloc.dart';
+import 'package:watad/features/profile/shared/presentation/bloc/public_profile_bloc.dart';
 import 'package:watad/features/profile/shared/presentation/pages/profile_edit_page.dart';
+import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
 
 final List<RouteBase> profileRoutes = [
-  // A public profile at '/profile/:userId' (GRA-58) goes after this one,
-  // so 'edit' isn't read as a user id.
+  // Before the public profile, so 'edit' isn't read as a user id.
   GoRoute(
     name: ProfileRoutes.profileEditName,
     path: ProfileRoutes.profileEditPath,
@@ -22,6 +23,16 @@ final List<RouteBase> profileRoutes = [
         BlocProvider(create: (_) => getIt<ProfileCitySearchBloc>()),
       ],
       child: const ProfileEditPage(),
+    ),
+  ),
+  GoRoute(
+    name: ProfileRoutes.publicProfileName,
+    path: ProfileRoutes.publicProfilePath,
+    builder: (context, state) => BlocProvider(
+      create: (_) =>
+          getIt<PublicProfileBloc>()
+            ..add(PublicProfileFetched(state.pathParameters['userId']!)),
+      child: const PublicProfilePage(),
     ),
   ),
 ];

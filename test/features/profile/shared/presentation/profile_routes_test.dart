@@ -14,9 +14,12 @@ import 'package:watad/features/profile/client/presentation/pages/client_profile_
 import 'package:watad/features/profile/contractor/presentation/pages/contractor_profile_page.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile_business.dart';
+import 'package:watad/features/profile/shared/domain/entities/public_profile.dart';
 import 'package:watad/features/profile/shared/presentation/pages/profile_edit_page.dart';
+import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
@@ -334,5 +337,139 @@ void main() {
 
     await scrollTo(tester, field('cr_number'));
     expect(tester.takeException(), isNull);
+  });
+
+  group('public-profile', () {
+    final userId = fakePublicProfile.id;
+
+    Future<GoRouter> openPublic(
+      WidgetTester tester, {
+      double textScale = 1,
+      bool boldText = false,
+    }) async {
+      registerFakePublicProfile(repository);
+      final router = await pump(
+        tester,
+        textScale: textScale,
+        boldText: boldText,
+      );
+      router.goNamed(
+        ProfileRoutes.publicProfileName,
+        pathParameters: {'userId': userId},
+      );
+      await tester.pumpAndSettle();
+      return router;
+    }
+
+    PublicProfile profile({bool isMe = false, bool isDeleted = false}) =>
+        PublicProfile(
+          id: userId,
+          displayName: fakePublicProfile.displayName,
+          isDeleted: isDeleted,
+          isBusiness: true,
+          isVerifiedBusiness: true,
+          rating: fakePublicProfile.rating,
+          isOnline: true,
+          isMe: isMe,
+        );
+
+    testWidgets('opens at its path with the header, items and reviews', (
+      tester,
+    ) async {
+      final router = await openPublic(tester);
+
+      expect(currentPath(router), '/profile/$userId');
+      expect(find.byType(PublicProfilePage), findsOneWidget);
+      expect(find.text('مؤسسة البناء المتين'), findsWidgets);
+      expect(find.text('مقاولات عامة'), findsOneWidget);
+      expect(find.text('٤٫٨ (١٢ تقييمًا)'), findsOneWidget);
+      expect(find.textContaining('عضو منذ'), findsOneWidget);
+      expect(find.textContaining('آخر ظهور'), findsOneWidget);
+      expect(find.text('حديد تسليح ١٢ مم'), findsOneWidget);
+      expect(find.text('نفد'), findsOneWidget);
+      await tester.dragUntilVisible(
+        find.text('عمل متقن والتزام بالمواعيد'),
+        find.byType(ListView),
+        const Offset(0, -300),
+      );
+      expect(find.text('مشروع'), findsWidgets);
+      expect(find.text('طلب'), findsWidgets);
+      // Three reviews: no more to load.
+      expect(
+        find.byKey(const Key('public_profile_more_reviews')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('«مراسلة» starts a chat without a project', (tester) async {
+      final chat = FakeChatRepository();
+      registerFakeChat(chat);
+      await openPublic(tester);
+
+      await tester.tap(find.byKey(const Key('public_profile_message')));
+      await tester.pumpAndSettle();
+
+      expect(chat.started, ['$userId -']);
+      await chat.dispose();
+    });
+
+    testWidgets('my own profile offers to edit it, not to message', (
+      tester,
+    ) async {
+      repository.publicProfileResult = Success(profile(isMe: true));
+      await openPublic(tester);
+
+      expect(find.byKey(const Key('public_profile_message')), findsNothing);
+      expect(find.byKey(const Key('public_profile_edit')), findsOneWidget);
+      expect(find.text('متصل الآن'), findsOneWidget);
+    });
+
+    testWidgets('a closed account has no actions', (tester) async {
+      repository.publicProfileResult = Success(profile(isDeleted: true));
+      await openPublic(tester);
+
+      expect(find.text('حساب محذوف'), findsOneWidget);
+      expect(find.byKey(const Key('public_profile_message')), findsNothing);
+      expect(find.byKey(const Key('public_profile_edit')), findsNothing);
+      expect(find.text('منتجاته في السوق'), findsNothing);
+    });
+
+    testWidgets('reviews load page by page', (tester) async {
+      repository.reviews = fakeProfileReviews(12);
+      await openPublic(tester);
+
+      final more = find.byKey(const Key('public_profile_more_reviews'));
+      await tester.dragUntilVisible(
+        more,
+        find.byType(ListView),
+        const Offset(0, -400),
+      );
+      await tester.tap(more);
+      await tester.pumpAndSettle();
+
+      expect(repository.calls, contains('getReviews($userId, 10)'));
+      expect(more, findsNothing);
+    });
+
+    testWidgets('an unknown user says so', (tester) async {
+      repository.publicProfileResult = const Failed(NotFoundFailure());
+      await openPublic(tester);
+
+      expect(find.text('لم نجد هذا الحساب.'), findsOneWidget);
+    });
+
+    testWidgets('a failed load offers a retry', (tester) async {
+      repository.publicProfileResult = const Failed(NetworkFailure());
+      await openPublic(tester);
+
+      expect(find.text('إعادة المحاولة'), findsOneWidget);
+    });
+
+    testWidgets('fits large bold text', (tester) async {
+      await openPublic(tester, textScale: largeTextScale, boldText: true);
+
+      expect(find.byType(PublicProfilePage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

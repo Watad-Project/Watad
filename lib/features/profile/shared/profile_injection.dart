@@ -5,6 +5,8 @@ import 'package:watad/features/profile/shared/domain/repositories/profile_reposi
 import 'package:watad/features/profile/shared/domain/usecases/check_profile_form_use_case.dart';
 import 'package:watad/features/profile/shared/domain/usecases/get_profile_edit_data_use_case.dart';
 import 'package:watad/features/profile/shared/domain/usecases/get_profile_overview_use_case.dart';
+import 'package:watad/features/profile/shared/domain/usecases/get_profile_reviews_use_case.dart';
+import 'package:watad/features/profile/shared/domain/usecases/get_public_profile_use_case.dart';
 import 'package:watad/features/profile/shared/domain/usecases/prepare_profile_photo_use_case.dart';
 import 'package:watad/features/profile/shared/domain/usecases/resolve_profile_city_use_case.dart';
 import 'package:watad/features/profile/shared/domain/usecases/save_profile_use_case.dart';
@@ -12,6 +14,7 @@ import 'package:watad/features/profile/shared/domain/usecases/search_profile_cit
 import 'package:watad/features/profile/shared/presentation/bloc/profile_city_search_bloc.dart';
 import 'package:watad/features/profile/shared/presentation/bloc/profile_edit_bloc.dart';
 import 'package:watad/features/profile/shared/presentation/bloc/profile_overview_bloc.dart';
+import 'package:watad/features/profile/shared/presentation/bloc/public_profile_bloc.dart';
 
 /// Registers the types of lib/features/profile/shared/ into [getIt].
 ///
@@ -35,5 +38,9 @@ void registerProfileDependencies(GetIt getIt) {
     ..registerLazySingleton(() => SearchProfileCitiesUseCase(getIt()))
     ..registerLazySingleton(() => ResolveProfileCityUseCase(getIt()))
     ..registerFactory(() => ProfileEditBloc(getIt(), getIt(), getIt(), getIt()))
-    ..registerFactory(() => ProfileCitySearchBloc(getIt(), getIt()));
+    ..registerFactory(() => ProfileCitySearchBloc(getIt(), getIt()))
+    // The public profile (GRA-58).
+    ..registerLazySingleton(() => GetPublicProfileUseCase(getIt()))
+    ..registerLazySingleton(() => GetProfileReviewsUseCase(getIt()))
+    ..registerFactory(() => PublicProfileBloc(getIt(), getIt()));
 }

@@ -11,6 +11,7 @@ import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_conversation.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_message.dart';
@@ -97,6 +98,13 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                   onProjectTap: conversation.projectRole == null
                       ? null
                       : () => _openProject(conversation),
+                  onPersonTap: switch (conversation.other) {
+                    final other? => () => context.pushNamed(
+                      ProfileRoutes.publicProfileName,
+                      pathParameters: {'userId': other.id},
+                    ),
+                    null => null,
+                  },
                 ),
                 Expanded(child: _Messages(state: state)),
                 ChatComposer(

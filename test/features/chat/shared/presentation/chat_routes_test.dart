@@ -6,6 +6,7 @@ import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/features/chat/shared/domain/entities/chat_summary.dart';
@@ -14,10 +15,12 @@ import 'package:watad/features/chat/shared/presentation/pages/chat_start_page.da
 import 'package:watad/features/chat/shared/presentation/pages/chats_page.dart';
 import 'package:watad/features/chat/shared/presentation/widgets/chat_header.dart';
 import 'package:watad/features/chat/shared/presentation/widgets/chat_message_bubble.dart';
+import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_client_projects_repository.dart';
+import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -127,6 +130,17 @@ void main() {
     final top = router.routerDelegate.currentConfiguration.last;
     expect(top.route.name, ClientProjectsRoutes.projectTasksName);
     expect(top.matchedLocation, '/client/projects/p-1');
+  });
+
+  testWidgets('their photo opens their public profile', (tester) async {
+    registerFakePublicProfile();
+    final router = await openChat(tester);
+
+    await tester.tap(find.byKey(const Key('chat_header_person')));
+    await tester.pumpAndSettle();
+    final top = router.routerDelegate.currentConfiguration.last;
+    expect(top.route.name, ProfileRoutes.publicProfileName);
+    expect(find.byType(PublicProfilePage), findsOneWidget);
   });
 
   testWidgets('a chat I am not in says so', (tester) async {
