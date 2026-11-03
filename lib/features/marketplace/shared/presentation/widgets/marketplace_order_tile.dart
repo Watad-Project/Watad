@@ -45,11 +45,13 @@ class MarketplaceOrderTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
+                // One line each, so a long number never splits «٥ قطع».
                 Text(
-                  [
-                    MarketplaceOrderLabels.number(context, order),
-                    MarketplaceOrderLabels.units(context, order),
-                  ].join(' · '),
+                  MarketplaceOrderLabels.number(context, order),
+                  style: AppTextStyles.caption,
+                ),
+                Text(
+                  MarketplaceOrderLabels.units(context, order),
                   style: AppTextStyles.caption,
                 ),
                 Text(

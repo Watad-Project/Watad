@@ -48,7 +48,14 @@ class CheckoutLines extends StatelessWidget {
         Padding(
           padding: const EdgeInsetsDirectional.all(AppSpacing.md),
           child: AppSummaryRows(
-            rows: const [],
+            rows: [
+              AppSummaryRow(
+                label: context.tr('marketplace.cart.units'),
+                value: context.formatNumber(
+                  review.entries.fold(0, (sum, e) => sum + e.line.quantity),
+                ),
+              ),
+            ],
             total: AppSummaryRow(
               label: context.tr('marketplace.checkout.total'),
               value: AppMoneyText.format(context, review.total),

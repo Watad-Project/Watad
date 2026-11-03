@@ -499,6 +499,8 @@ void main() {
       final router = await openCheckout(tester);
       expect(find.byType(MarketplaceCheckoutPage), findsOneWidget);
       expect(currentPath(router), '/marketplace/checkout/u-seller');
+      // The units above the total, like the cart.
+      expect(find.text('عدد القطع'), findsOneWidget);
 
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('checkout_method_mada')),
@@ -725,13 +727,15 @@ void main() {
       expect(find.byType(MarketplaceOrdersPage), findsOneWidget);
       // The order I sold isn't in «طلباتي».
       expect(find.textContaining('FFFF0000'), findsNothing);
-      expect(find.text('طلب رقم 7C9E6679 · قطعتان'), findsOneWidget);
-      expect(find.text('طلب رقم 1A2B3C4D · قطعتان'), findsOneWidget);
+      expect(find.text('طلب رقم 7C9E6679'), findsOneWidget);
+      expect(find.text('طلب رقم 1A2B3C4D'), findsOneWidget);
+      // The units get their own line under the number.
+      expect(find.text('قطعتان'), findsNWidgets(2));
       expect(find.text('الكل (٢)'), findsOneWidget);
       expect(find.text('بانتظار الدفع (١)'), findsOneWidget);
       expect(find.text('ملغي (٠)'), findsOneWidget);
-      final newest = tester.getTopLeft(find.text('طلب رقم 7C9E6679 · قطعتان'));
-      final older = tester.getTopLeft(find.text('طلب رقم 1A2B3C4D · قطعتان'));
+      final newest = tester.getTopLeft(find.text('طلب رقم 7C9E6679'));
+      final older = tester.getTopLeft(find.text('طلب رقم 1A2B3C4D'));
       expect(newest.dy, lessThan(older.dy));
     });
 
@@ -747,14 +751,14 @@ void main() {
       }
 
       await tapChip('تم التسليم (١)');
-      expect(find.text('طلب رقم 7C9E6679 · قطعتان'), findsNothing);
-      expect(find.text('طلب رقم 1A2B3C4D · قطعتان'), findsOneWidget);
+      expect(find.text('طلب رقم 7C9E6679'), findsNothing);
+      expect(find.text('طلب رقم 1A2B3C4D'), findsOneWidget);
 
       await tapChip('ملغي (٠)');
       expect(find.byKey(const Key('orders_filter_empty')), findsOneWidget);
 
       await tapChip('الكل (٢)');
-      await tester.tap(find.text('طلب رقم 7C9E6679 · قطعتان'));
+      await tester.tap(find.text('طلب رقم 7C9E6679'));
       await tester.pumpAndSettle();
       expect(find.byType(MarketplaceOrderDetailsPage), findsOneWidget);
       expect(find.text('طلب رقم 7C9E6679'), findsOneWidget);
@@ -815,8 +819,10 @@ void main() {
       expect(find.text('طلب رقم 7C9E6679'), findsOneWidget);
       expect(find.text('بانتظار الدفع'), findsWidgets);
       expect(find.text('البائع'), findsOneWidget);
-      expect(find.text('سارة العتيبي'), findsOneWidget);
+      // In the party card and on the products box, like the cart.
+      expect(find.text('سارة العتيبي'), findsNWidgets(2));
       expect(find.text('حديد تسليح ١٢ مم'), findsOneWidget);
+      expect(find.text('عدد القطع'), findsOneWidget);
 
       await scrollTo(tester, find.byKey(const Key('order_payment')));
       expect(find.text('لم يُدفع بعد'), findsOneWidget);
@@ -956,7 +962,7 @@ void main() {
       await openOrder(tester);
 
       expect(find.text('المشتري'), findsOneWidget);
-      expect(find.text('خالد المطيري'), findsOneWidget);
+      expect(find.text('خالد المطيري'), findsNWidgets(2));
       await scrollTo(tester, find.byKey(const Key('order_seller_actions')));
       expect(find.text('مراسلة المشتري'), findsOneWidget);
       expect(find.byKey(const Key('order_buyer_actions')), findsNothing);

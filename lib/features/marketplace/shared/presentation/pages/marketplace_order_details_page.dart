@@ -152,7 +152,7 @@ class _OrderView extends StatelessWidget {
         AppSectionHeader(title: context.tr('marketplace.order_details.items')),
         AppCartGroup(
           key: const Key('order_lines'),
-          title: MarketplaceOrderLabels.units(context, order),
+          title: isBuyer ? order.sellerName : order.buyerName,
           children: [
             for (final line in details.lines)
               AppCartLine(
@@ -169,7 +169,12 @@ class _OrderView extends StatelessWidget {
             Padding(
               padding: const EdgeInsetsDirectional.all(AppSpacing.md),
               child: AppSummaryRows(
-                rows: const [],
+                rows: [
+                  AppSummaryRow(
+                    label: context.tr('marketplace.cart.units'),
+                    value: context.formatNumber(order.unitCount),
+                  ),
+                ],
                 total: AppSummaryRow(
                   label: context.tr('marketplace.checkout.total'),
                   value: AppMoneyText.format(context, order.total),
