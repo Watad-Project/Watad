@@ -289,10 +289,16 @@ class ContractorProjectTasksPage extends StatelessWidget {
   }
 
   Future<void> _handleUpdateTask(BuildContext context) async {
-    final callback = onUpdateTask;
-    if (callback == null) return;
     final bloc = context.read<ContractorProjectTasksBloc>();
-    await callback(context, projectId);
+    final callback = onUpdateTask;
+    if (callback != null) {
+      await callback(context, projectId);
+    } else {
+      await context.pushNamed<bool>(
+        ContractorTasksRoutes.taskUpdateName,
+        pathParameters: {'projectId': projectId},
+      );
+    }
     if (context.mounted) {
       bloc.add(ContractorProjectTasksFetched(projectId));
     }
@@ -302,10 +308,18 @@ class ContractorProjectTasksPage extends StatelessWidget {
     BuildContext context,
     ContractorProjectTask task,
   ) async {
-    final callback = onTaskTap;
-    if (callback == null) return;
     final bloc = context.read<ContractorProjectTasksBloc>();
-    await callback(context, task);
+    final callback = onTaskTap;
+    if (callback != null) {
+      await callback(context, task);
+    } else if (task.lastUpdateId case final updateId?) {
+      await context.pushNamed<void>(
+        ContractorTasksRoutes.taskUpdateStatusName,
+        pathParameters: {'projectId': projectId, 'updateId': updateId},
+      );
+    } else {
+      return;
+    }
     if (context.mounted) {
       bloc.add(ContractorProjectTasksFetched(projectId));
     }
