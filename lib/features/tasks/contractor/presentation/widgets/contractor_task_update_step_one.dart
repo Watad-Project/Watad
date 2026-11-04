@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/feedback/app_empty_view.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -15,6 +16,7 @@ class ContractorTaskUpdateStepOne extends StatelessWidget {
     required this.tasks,
     required this.selectedTaskId,
     required this.onSelectTask,
+    this.onAddTask,
     this.now,
     super.key,
   });
@@ -22,14 +24,35 @@ class ContractorTaskUpdateStepOne extends StatelessWidget {
   final List<ContractorProjectTask> tasks;
   final String? selectedTaskId;
   final ValueChanged<String> onSelectTask;
+
+  /// «إضافة مهمة», when no task is open (GRA-38).
+  final VoidCallback? onAddTask;
   final DateTime? now;
 
   @override
   Widget build(BuildContext context) {
     if (tasks.isEmpty) {
-      return AppEmptyView(
-        message: context.tr('tasks.contractor.update_no_open_tasks'),
-        icon: Icons.task_alt_outlined,
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppEmptyView(
+                message: context.tr('tasks.contractor.update_no_open_tasks'),
+                icon: Icons.task_alt_outlined,
+              ),
+              if (onAddTask != null)
+                AppButton(
+                  key: const Key('contractor_task_update_add_task'),
+                  label: context.tr('tasks.contractor.update_add_task'),
+                  variant: AppButtonVariant.secondary,
+                  icon: Icons.add_rounded,
+                  onPressed: onAddTask,
+                ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -56,6 +79,11 @@ class ContractorTaskUpdateStepOne extends StatelessWidget {
             now: now,
           ),
         ],
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          context.tr('tasks.contractor.update_step1_footnote'),
+          style: AppTextStyles.caption,
+        ),
       ],
     );
   }

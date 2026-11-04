@@ -163,7 +163,7 @@ void main() {
       expect(find.text('فيلا سكنية — حي الياسمين'), findsOneWidget);
       expect(find.text('اللياسة الداخلية'), findsOneWidget);
       expect(
-        find.text('أُرسل اليوم ٩:٤٠ ص · الحالة المقترحة: منجزة'),
+        find.text('أُرسل اليوم ٩:٤٠ ص، الحالة المقترحة: منجزة'),
         findsOneWidget,
       );
       final pendingCard = tester.widget<AppStatusCard>(
@@ -222,7 +222,7 @@ void main() {
       expect(acceptedCard.tone, AppTone.success);
       expect(find.text('قبل العميل التحديث'), findsOneWidget);
       expect(
-        find.text('المهمة معتمدة · أُنشئت دفعة ٢٤٬٠٠٠ ر.س'),
+        find.text('المهمة معتمدة، أُنشئت دفعة ٢٤٬٠٠٠ ر.س'),
         findsOneWidget,
       );
     },

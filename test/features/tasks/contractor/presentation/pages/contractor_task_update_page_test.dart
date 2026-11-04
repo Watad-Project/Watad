@@ -10,18 +10,22 @@ import 'package:watad/core/enums/task_status.dart';
 import 'package:watad/core/enums/task_update_decision.dart';
 import 'package:watad/core/enums/task_update_state.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_evidence_photo.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_project.dart';
+import 'package:watad/features/tasks/contractor/domain/usecases/contractor_create_task_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_project_tasks_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_get_task_project_use_case.dart';
 import 'package:watad/features/tasks/contractor/domain/usecases/contractor_submit_task_update_use_case.dart';
+import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_add_task_bloc.dart';
 import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_project_tasks_bloc.dart';
 import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_task_update_bloc.dart';
 import 'package:watad/features/tasks/contractor/presentation/bloc/contractor_task_update_step_cubit.dart';
+import 'package:watad/features/tasks/contractor/presentation/pages/contractor_add_task_page.dart';
 import 'package:watad/features/tasks/contractor/presentation/pages/contractor_task_update_page.dart';
 
 import '../../../../../helpers/fake_app_session.dart';
@@ -129,8 +133,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Step 1 assertions: heading, both open tasks, relative time.
-      expect(find.text('ما المهمة التي تريد تحديثها؟'), findsOneWidget);
+      // Step 1 assertions: the project in the top bar, heading, both open
+      // tasks, relative time and the footnote.
+      expect(find.text(sampleProject.displayTitle), findsOneWidget);
+      expect(find.text('تحديث مهمة'), findsOneWidget);
+      expect(
+        find.text(
+          'المهام المعتمدة والمدفوعة، والمقترحة التي لم يقبلها العميل، '
+          'لا تظهر هنا.',
+        ),
+        findsOneWidget,
+      );
       expect(find.text('بناء الجدران والهيكل'), findsOneWidget);
       expect(find.text('تمديد الكهرباء والسباكة'), findsOneWidget);
       expect(find.text('آخر تحديث: قبل يومين'), findsOneWidget);
@@ -163,7 +176,7 @@ void main() {
         find.byKey(const Key('contractor_task_update_back_to_step1')),
       );
       await tester.pumpAndSettle();
-      expect(find.text('ما المهمة التي تريد تحديثها؟'), findsOneWidget);
+      expect(find.text('تحديث مهمة'), findsOneWidget);
       expect(cubit.state.selectedTaskId, 't-1');
 
       // Advance back to Step 2.
@@ -234,9 +247,34 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ContractorTaskUpdatePage), findsOneWidget);
-      expect(find.text('ما المهمة التي تريد تحديثها؟'), findsOneWidget);
+      expect(find.text('تحديث مهمة'), findsOneWidget);
     },
   );
+
+  testWidgets('no open task offers «إضافة مهمة»', (tester) async {
+    repository.tasksResult = const Success([]);
+    getIt.registerFactory<ContractorAddTaskBloc>(
+      () => ContractorAddTaskBloc(
+        ContractorGetTaskProjectUseCase(repository),
+        ContractorGetProjectTasksUseCase(repository),
+        ContractorCreateTaskUseCase(repository),
+      ),
+    );
+    final router = await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.contractor),
+      initialLocation: '/contractor/tasks/p-1/updates/new',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('لا توجد مهام مفتوحة للتحديث حالياً'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('contractor_task_update_add_task')));
+    await tester.pumpAndSettle();
+
+    final top = router.routerDelegate.currentConfiguration.last;
+    expect(top.route.name, ContractorTasksRoutes.addTaskName);
+    expect(find.byType(ContractorAddTaskPage), findsOneWidget);
+  });
 
   testWidgets(
     'renders Step 1 and Step 2 without overflow at 200% bold text scale',
