@@ -96,9 +96,8 @@ class ProfileMenu extends StatelessWidget {
               key: const Key('profile_menu_sales'),
               icon: Icons.sell_outlined,
               label: context.tr('profile.menu.sales'),
-              tag: comingSoon,
-              isMuted: true,
-              onTap: showComingSoon,
+              onTap: () =>
+                  context.pushNamed(MarketplaceRoutes.marketplaceSalesName),
             ),
           ],
         ),

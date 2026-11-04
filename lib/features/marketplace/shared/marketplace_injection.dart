@@ -24,8 +24,10 @@ import 'package:watad/features/marketplace/shared/domain/usecases/get_marketplac
 import 'package:watad/features/marketplace/shared/domain/usecases/get_my_marketplace_item_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_my_marketplace_items_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_my_orders_use_case.dart';
+import 'package:watad/features/marketplace/shared/domain/usecases/get_my_sales_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_order_details_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_order_use_case.dart';
+import 'package:watad/features/marketplace/shared/domain/usecases/mark_order_shipped_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/pay_order_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/place_order_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/remove_from_cart_use_case.dart';
@@ -41,6 +43,7 @@ import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_item_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_order_details_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_orders_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_sales_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_item_form_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_items_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/payment_bloc.dart';
@@ -90,9 +93,11 @@ void registerMarketplaceDependencies(GetIt getIt) {
     ..registerLazySingleton(() => PayOrderUseCase(getIt()))
     ..registerLazySingleton(() => GetOrderUseCase(getIt()))
     ..registerLazySingleton(() => GetMyOrdersUseCase(getIt()))
+    ..registerLazySingleton(() => GetMySalesUseCase(getIt()))
     ..registerLazySingleton(() => GetOrderDetailsUseCase(getIt()))
     ..registerLazySingleton(() => CancelOrderUseCase(getIt()))
     ..registerLazySingleton(() => ConfirmOrderDeliveredUseCase(getIt()))
+    ..registerLazySingleton(() => MarkOrderShippedUseCase(getIt()))
     ..registerFactory(() => MarketplaceBloc(getIt()))
     ..registerFactory(() => MarketplaceItemBloc(getIt(), getIt()))
     ..registerFactory(() => CartCountBloc(getIt()))
@@ -100,8 +105,9 @@ void registerMarketplaceDependencies(GetIt getIt) {
     ..registerFactory(() => CheckoutBloc(getIt(), getIt()))
     ..registerFactory(() => PaymentBloc(getIt(), getIt(), getIt()))
     ..registerFactory(() => MarketplaceOrdersBloc(getIt()))
+    ..registerFactory(() => MarketplaceSalesBloc(getIt()))
     ..registerFactory(
-      () => MarketplaceOrderDetailsBloc(getIt(), getIt(), getIt()),
+      () => MarketplaceOrderDetailsBloc(getIt(), getIt(), getIt(), getIt()),
     )
     ..registerFactory(() => MyItemsBloc(getIt(), getIt(), getIt()))
     ..registerFactory(() => MyItemFormBloc(getIt(), getIt(), getIt()))

@@ -35,6 +35,10 @@ class OrdersRepositoryImpl implements OrdersRepository {
       guardSupabaseCall(_remote.getMyPurchases);
 
   @override
+  Future<Result<List<MarketplaceOrder>>> getMySales() =>
+      guardSupabaseCall(_remote.getMySales);
+
+  @override
   Future<Result<List<OrderLine>>> getOrderLines(String orderId) =>
       guardSupabaseCall(() => _remote.getOrderLines(orderId));
 
@@ -45,6 +49,10 @@ class OrdersRepositoryImpl implements OrdersRepository {
   @override
   Future<Result<void>> cancelOrder(String orderId) =>
       guardSupabaseCall(() => _remote.cancelOrder(orderId));
+
+  @override
+  Future<Result<void>> markShipped(String orderId) =>
+      guardSupabaseCall(() => _remote.markShipped(orderId));
 
   @override
   Future<Result<void>> confirmDelivered(String orderId) =>

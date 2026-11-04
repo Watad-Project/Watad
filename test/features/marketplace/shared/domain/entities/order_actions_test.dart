@@ -17,6 +17,7 @@ void main() {
       expect(actions.canPay, isTrue);
       expect(actions.canCancel, isTrue);
       expect(actions.canConfirmDelivery, isFalse);
+      expect(actions.canShip, isFalse);
       expect(actions.canReview, isFalse);
     });
 
@@ -26,6 +27,7 @@ void main() {
         expect(actions.canConfirmDelivery, isTrue, reason: status.value);
         expect(actions.canCancel, isFalse, reason: status.value);
         expect(actions.canPay, isFalse, reason: status.value);
+        expect(actions.canShip, isFalse, reason: status.value);
       }
     });
 
@@ -43,6 +45,7 @@ void main() {
             actions.canPay,
             actions.canCancel,
             actions.canConfirmDelivery,
+            actions.canShip,
             actions.canReview,
           ],
           everyElement(isFalse),
@@ -60,22 +63,58 @@ void main() {
     });
   });
 
-  test('the seller has none of the buyer actions', () {
-    for (final status in OrderStatus.values) {
-      final actions = OrderActions.of(
-        fakeOrder(status: status, role: OrderRole.seller, canReview: true),
-      );
-      expect(
-        [
-          actions.canPay,
-          actions.canCancel,
-          actions.canConfirmDelivery,
-          actions.canReview,
-        ],
-        everyElement(isFalse),
-        reason: status.value,
-      );
-    }
+  group('the seller', () {
+    OrderActions of(OrderStatus status, {bool canReview = false}) =>
+        OrderActions.of(
+          fakeOrder(
+            status: status,
+            role: OrderRole.seller,
+            canReview: canReview,
+          ),
+        );
+
+    test('cannot pay, cancel or ship an unpaid order', () {
+      final actions = of(OrderStatus.pendingPayment);
+      expect(actions.canCancel, isFalse);
+      expect(actions.canShip, isFalse);
+      expect(actions.canPay, isFalse);
+      expect(actions.canConfirmDelivery, isFalse);
+      expect(actions.canReview, isFalse);
+    });
+
+    test('ships a paid order only', () {
+      final paid = of(OrderStatus.paid);
+      expect(paid.canShip, isTrue);
+      expect(paid.canCancel, isFalse);
+      expect(paid.canConfirmDelivery, isFalse);
+
+      final shipped = of(OrderStatus.shipped);
+      expect(shipped.canShip, isFalse);
+      expect(shipped.canCancel, isFalse);
+    });
+
+    test('reviews a delivered order only when not reviewed yet', () {
+      expect(of(OrderStatus.delivered, canReview: true).canReview, isTrue);
+      expect(of(OrderStatus.delivered).canReview, isFalse);
+      expect(of(OrderStatus.delivered).canShip, isFalse);
+    });
+
+    test('does nothing with a cancelled or refunded order', () {
+      for (final status in [OrderStatus.cancelled, OrderStatus.refunded]) {
+        final actions = of(status);
+        expect(
+          [
+            actions.canPay,
+            actions.canCancel,
+            actions.canConfirmDelivery,
+            actions.canShip,
+            actions.canReview,
+          ],
+          everyElement(isFalse),
+          reason: status.value,
+        );
+      }
+    });
   });
 
   test('the filter chips count each status, and «الكل» all of them', () {

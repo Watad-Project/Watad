@@ -5,17 +5,22 @@ import 'package:watad/features/marketplace/shared/domain/entities/order_details.
 import 'package:watad/features/marketplace/shared/domain/usecases/cancel_order_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/confirm_order_delivered_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_order_details_use_case.dart';
+import 'package:watad/features/marketplace/shared/domain/usecases/mark_order_shipped_use_case.dart';
 
 part 'marketplace_order_details_event.dart';
 part 'marketplace_order_details_state.dart';
 
-/// The order details page (GRA-69), for the buyer and the seller: the
-/// order, its products and timeline, and the buyer's cancel and «تم
-/// الاستلام». Every action reloads the order from the server.
+/// The order details page (GRA-69, GRA-71), for the buyer and the seller:
+/// the order, its products and timeline, cancel, «تم الشحن» and
+/// «تم الاستلام». Every action reloads the order from the server.
 class MarketplaceOrderDetailsBloc
     extends Bloc<MarketplaceOrderDetailsEvent, MarketplaceOrderDetailsState> {
-  MarketplaceOrderDetailsBloc(this._getDetails, this._cancel, this._confirm)
-    : super(const MarketplaceOrderDetailsState()) {
+  MarketplaceOrderDetailsBloc(
+    this._getDetails,
+    this._cancel,
+    this._confirm,
+    this._ship,
+  ) : super(const MarketplaceOrderDetailsState()) {
     on<MarketplaceOrderDetailsFetched>(_onFetched);
     on<MarketplaceOrderCancelled>(
       (event, emit) => _act(emit, OrderDetailsAction.cancel),
@@ -23,11 +28,15 @@ class MarketplaceOrderDetailsBloc
     on<MarketplaceOrderDeliveryConfirmed>(
       (event, emit) => _act(emit, OrderDetailsAction.confirmDelivery),
     );
+    on<MarketplaceOrderShipped>(
+      (event, emit) => _act(emit, OrderDetailsAction.ship),
+    );
   }
 
   final GetOrderDetailsUseCase _getDetails;
   final CancelOrderUseCase _cancel;
   final ConfirmOrderDeliveredUseCase _confirm;
+  final MarkOrderShippedUseCase _ship;
 
   Future<void> _onFetched(
     MarketplaceOrderDetailsFetched event,
@@ -91,6 +100,7 @@ class MarketplaceOrderDetailsBloc
     final result = switch (action) {
       OrderDetailsAction.cancel => await _cancel(order),
       OrderDetailsAction.confirmDelivery => await _confirm(order),
+      OrderDetailsAction.ship => await _ship(order),
     };
     switch (result) {
       case Success():

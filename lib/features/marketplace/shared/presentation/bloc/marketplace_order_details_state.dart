@@ -2,8 +2,8 @@ part of 'marketplace_order_details_bloc.dart';
 
 enum MarketplaceOrderDetailsStatus { initial, loading, success, failure }
 
-/// The buyer's actions on the page.
-enum OrderDetailsAction { cancel, confirmDelivery }
+/// The buyer's and seller's actions on the page.
+enum OrderDetailsAction { cancel, confirmDelivery, ship }
 
 final class MarketplaceOrderDetailsState {
   const MarketplaceOrderDetailsState({

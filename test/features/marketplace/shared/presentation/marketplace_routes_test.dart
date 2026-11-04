@@ -20,15 +20,18 @@ import 'package:watad/features/marketplace/shared/presentation/pages/marketplace
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_orders_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_payment_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_sales_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/my_items_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/new_my_item_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/widgets/marketplace_item_card.dart';
 import 'package:watad/features/marketplace/shared/presentation/widgets/my_item_card.dart';
+import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_cart_repository.dart';
 import '../../../../helpers/fake_marketplace_repository.dart';
 import '../../../../helpers/fake_orders_repository.dart';
+import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -784,6 +787,117 @@ void main() {
     });
   });
 
+  group('my sales', () {
+    setUp(() {
+      for (final order in [
+        fakeOrder(
+          id: '1a2b3c4d-0000-4000-8000-000000000001',
+          status: OrderStatus.delivered,
+          role: OrderRole.seller,
+          createdAt: DateTime.utc(2026, 10, 20),
+        ),
+        fakeOrder(
+          status: OrderStatus.paid,
+          role: OrderRole.seller,
+          createdAt: DateTime.utc(2026, 11, 1),
+        ),
+        fakeOrder(id: 'ffff0000-0000-4000-8000-000000000002'),
+      ]) {
+        orders.orders[order.id] = order;
+      }
+    });
+
+    Future<GoRouter> openSales(
+      WidgetTester tester, {
+      double textScale = 1,
+      bool boldText = false,
+    }) => open(
+      tester,
+      routeName: MarketplaceRoutes.marketplaceSalesName,
+      textScale: textScale,
+      boldText: boldText,
+    );
+
+    testWidgets('the orders I sold, newest first, with buyer name and counts', (
+      tester,
+    ) async {
+      final router = await openSales(tester);
+
+      expect(currentPath(router), MarketplaceRoutes.marketplaceSalesPath);
+      expect(find.byType(MarketplaceSalesPage), findsOneWidget);
+      // The order I bought isn't in «مبيعاتي».
+      expect(find.textContaining('FFFF0000'), findsNothing);
+      expect(find.text('طلب رقم 7C9E6679'), findsOneWidget);
+      expect(find.text('طلب رقم 1A2B3C4D'), findsOneWidget);
+      expect(find.text('خالد المطيري'), findsNWidgets(2));
+      expect(find.text('قطعتان'), findsNWidgets(2));
+      expect(find.text('الكل (٢)'), findsOneWidget);
+      expect(find.text('مدفوع (١)'), findsOneWidget);
+      expect(find.text('ملغي (٠)'), findsOneWidget);
+      final newest = tester.getTopLeft(find.text('طلب رقم 7C9E6679'));
+      final older = tester.getTopLeft(find.text('طلب رقم 1A2B3C4D'));
+      expect(newest.dy, lessThan(older.dy));
+    });
+
+    testWidgets('a chip filters, and a row opens the order', (tester) async {
+      await openSales(tester);
+
+      Future<void> tapChip(String label) async {
+        await tester.ensureVisible(find.text(label));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+
+      await tapChip('تم التسليم (١)');
+      expect(find.text('طلب رقم 7C9E6679'), findsNothing);
+      expect(find.text('طلب رقم 1A2B3C4D'), findsOneWidget);
+
+      await tapChip('ملغي (٠)');
+      expect(find.byKey(const Key('sales_filter_empty')), findsOneWidget);
+
+      await tapChip('الكل (٢)');
+      await tester.tap(find.text('طلب رقم 7C9E6679'));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarketplaceOrderDetailsPage), findsOneWidget);
+      expect(find.text('طلب رقم 7C9E6679'), findsOneWidget);
+    });
+
+    testWidgets("tapping the buyer's name opens their public profile", (
+      tester,
+    ) async {
+      registerFakePublicProfile();
+      await openSales(tester);
+
+      await tester.tap(
+        find.byKey(
+          const Key('order_party_7c9e6679-7425-40de-944b-e07fc1f90ae7'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(PublicProfilePage), findsOneWidget);
+    });
+
+    testWidgets('no sales yet says so, with the way to my items', (
+      tester,
+    ) async {
+      orders.orders.clear();
+      await openSales(tester);
+
+      expect(find.byKey(const Key('sales_empty')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('sales_my_items')));
+      await tester.pumpAndSettle();
+      expect(find.byType(MyItemsPage), findsOneWidget);
+    });
+
+    testWidgets('my sales fit large bold text at 200%', (tester) async {
+      await openSales(tester, textScale: largeTextScale, boldText: true);
+
+      expect(find.byType(MarketplaceSalesPage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('order details', () {
     final orderId = fakeOrder().id;
 
@@ -952,22 +1066,34 @@ void main() {
       expect(find.byKey(const Key('order_confirm_delivery')), findsOneWidget);
     });
 
-    testWidgets("the seller sees the buyer and none of the buyer's actions", (
-      tester,
-    ) async {
-      orders.orders[orderId] = fakeOrder(
-        status: OrderStatus.paid,
-        role: OrderRole.seller,
-      );
-      await openOrder(tester);
+    testWidgets(
+      'the seller sees the buyer, ships a paid order, and has no buyer actions',
+      (tester) async {
+        orders.orders[orderId] = fakeOrder(
+          status: OrderStatus.paid,
+          role: OrderRole.seller,
+        );
+        await openOrder(tester);
 
-      expect(find.text('المشتري'), findsOneWidget);
-      expect(find.text('خالد المطيري'), findsNWidgets(2));
-      await scrollTo(tester, find.byKey(const Key('order_seller_actions')));
-      expect(find.text('مراسلة المشتري'), findsOneWidget);
-      expect(find.byKey(const Key('order_buyer_actions')), findsNothing);
-      expect(find.byKey(const Key('order_confirm_delivery')), findsNothing);
-    });
+        expect(find.text('المشتري'), findsOneWidget);
+        expect(find.text('خالد المطيري'), findsNWidgets(2));
+        await scrollTo(tester, find.byKey(const Key('order_seller_actions')));
+        expect(find.text('مراسلة المشتري'), findsOneWidget);
+        expect(find.byKey(const Key('order_ship')), findsOneWidget);
+        expect(find.byKey(const Key('order_buyer_actions')), findsNothing);
+        expect(find.byKey(const Key('order_confirm_delivery')), findsNothing);
+
+        await tester.tap(find.byKey(const Key('order_ship')));
+        await tester.pumpAndSettle();
+        expect(find.text('هل شحنت الطلب؟'), findsOneWidget);
+        await tester.tap(find.text('تم الشحن').last);
+        await tester.pumpAndSettle();
+
+        expect(orders.shipped, [orderId]);
+        expect(find.text('تم تحديث حالة الطلب إلى تم الشحن'), findsOneWidget);
+        expect(find.byKey(const Key('order_ship')), findsNothing);
+      },
+    );
 
     testWidgets('an order I cannot see shows the error', (tester) async {
       orders.orders.clear();

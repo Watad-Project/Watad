@@ -2,9 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:watad/core/enums/order_status.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
+import 'package:watad/features/marketplace/shared/domain/entities/order_role.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/cancel_order_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/confirm_order_delivered_use_case.dart';
 import 'package:watad/features/marketplace/shared/domain/usecases/get_order_details_use_case.dart';
+import 'package:watad/features/marketplace/shared/domain/usecases/mark_order_shipped_use_case.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_order_details_bloc.dart';
 
 import '../../../../../helpers/fake_orders_repository.dart';
@@ -17,6 +19,7 @@ void main() {
     GetOrderDetailsUseCase(orders),
     CancelOrderUseCase(orders),
     ConfirmOrderDeliveredUseCase(orders),
+    MarkOrderShippedUseCase(orders),
   );
 
   Future<MarketplaceOrderDetailsState> loaded(
@@ -69,6 +72,24 @@ void main() {
     );
     expect(state.doneAction, OrderDetailsAction.confirmDelivery);
     expect(state.details?.actions.canReview, isTrue);
+    await bloc.close();
+  });
+
+  test('«تم الشحن» on a paid seller order marks it shipped', () async {
+    orders.orders[orderId] = fakeOrder(
+      status: OrderStatus.paid,
+      role: OrderRole.seller,
+    );
+    final bloc = buildBloc()..add(MarketplaceOrderDetailsFetched(orderId));
+    await loaded(bloc);
+
+    bloc.add(const MarketplaceOrderShipped());
+    final state = await bloc.stream.firstWhere(
+      (s) => s.details?.order.status == OrderStatus.shipped,
+    );
+    expect(state.doneAction, OrderDetailsAction.ship);
+    expect(state.details?.actions.canShip, isFalse);
+    expect(orders.shipped, [orderId]);
     await bloc.close();
   });
 

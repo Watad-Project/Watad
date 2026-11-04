@@ -17,11 +17,15 @@ abstract interface class OrdersRemoteDataSource {
 
   Future<List<MarketplaceOrderModel>> getMyPurchases();
 
+  Future<List<MarketplaceOrderModel>> getMySales();
+
   Future<List<OrderLineModel>> getOrderLines(String orderId);
 
   Future<List<OrderStatusChangeModel>> getStatusHistory(String orderId);
 
   Future<void> cancelOrder(String orderId);
+
+  Future<void> markShipped(String orderId);
 
   Future<void> confirmDelivered(String orderId);
 
@@ -99,6 +103,16 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
   }
 
   @override
+  Future<List<MarketplaceOrderModel>> getMySales() async {
+    final rows = await _client
+        .from('v_my_orders')
+        .select(_orderColumns)
+        .eq('my_role', 'seller')
+        .order('created_at', ascending: false);
+    return rows.map(_toOrder).toList();
+  }
+
+  @override
   Future<List<OrderLineModel>> getOrderLines(String orderId) async {
     final rows = await _client
         .from('v_order_items')
@@ -122,6 +136,10 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
   @override
   Future<void> cancelOrder(String orderId) =>
       _client.rpc<void>('cancel_order', params: {'p_order_id': orderId});
+
+  @override
+  Future<void> markShipped(String orderId) =>
+      _client.rpc<void>('mark_order_shipped', params: {'p_order_id': orderId});
 
   @override
   Future<void> confirmDelivered(String orderId) => _client.rpc<void>(

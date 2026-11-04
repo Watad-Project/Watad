@@ -31,6 +31,10 @@ abstract final class MarketplaceRoutes {
   static const String marketplaceOrdersName = 'marketplace-orders';
   static const String marketplaceOrdersPath = '/marketplace/orders';
 
+  /// «مبيعاتي»: the orders I received as a seller (GRA-71).
+  static const String marketplaceSalesName = 'marketplace-sales';
+  static const String marketplaceSalesPath = '/marketplace/sales';
+
   /// One order, for its buyer and its seller (GRA-69). Notifications
   /// about an order open it.
   static const String marketplaceOrderDetailsName = 'marketplace-order-details';

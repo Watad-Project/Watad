@@ -242,6 +242,12 @@
     "empty_filter": "No orders with this status",
     "browse": "Browse the market"
   },
+  "my_sales": {
+    "title": "My sales",
+    "empty": "No one has ordered your items yet",
+    "empty_filter": "No orders with this status",
+    "my_items": "My items"
+  },
   "order_details": {
     "title": "Order details",
     "seller": "Seller",
@@ -259,6 +265,10 @@
     "confirm_title": "Did you receive your order?",
     "confirm_message": "Confirm only once the products have reached you. The seller will be told it was delivered, and this can't be undone.",
     "delivered": "Delivery confirmed",
+    "ship": "Mark as shipped",
+    "ship_title": "Did you ship this order?",
+    "ship_message": "Confirm once the order has been handed over for shipping. The buyer will be told it is on the way.",
+    "shipped": "Order marked as shipped",
     "cancel": "Cancel order",
     "cancel_title": "Cancel the order?",
     "cancel_message": "The order will be cancelled and its quantities go back to the seller. This can't be undone.",
@@ -266,9 +276,11 @@
     "message_seller": "Message the seller",
     "message_buyer": "Message the buyer",
     "review": "Rate the seller",
+    "review_buyer": "Rate the buyer",
     "review_coming_soon": "Ratings are coming soon",
     "report": "Report the order",
     "error_cannot_cancel": "This order can't be cancelled: only unpaid orders can",
-    "error_cannot_confirm": "You can confirm delivery only once the order is paid"
+    "error_cannot_confirm": "You can confirm delivery only once the order is paid",
+    "error_cannot_ship": "You can mark the order as shipped only while it is paid"
   }
 }

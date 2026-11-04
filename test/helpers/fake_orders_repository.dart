@@ -99,9 +99,10 @@ MarketplaceOrder orderWithStatus(
 /// A hand-written [OrdersRepository] (APP_ARCHITECTURE.md §16). It keeps
 /// [orders] by id, creates one on [checkout], and pays it like
 /// `simulate_order_payment()`: `succeed: false` is refused as a
-/// [ServerFailure] (`payment_declined` has no code). [cancelOrder] and
-/// [confirmDelivered] change the status and add a step to the timeline,
-/// like `cancel_order()` and `confirm_order_delivered()`.
+/// [ServerFailure] (`payment_declined` has no code). [cancelOrder],
+/// [confirmDelivered], and [markShipped] change the status and add a step
+/// to the timeline, like `cancel_order()`, `confirm_order_delivered()`,
+/// and `mark_order_shipped()`.
 class FakeOrdersRepository implements OrdersRepository {
   List<MarketplaceAddress> addresses = [fakeHomeAddress];
   int unpaidCount = 0;
@@ -121,14 +122,18 @@ class FakeOrdersRepository implements OrdersRepository {
   Result<MarketplaceOrder?>? orderResult;
   Result<void>? paymentResult;
   Result<List<MarketplaceOrder>>? purchasesResult;
+  Result<List<MarketplaceOrder>>? salesResult;
   Result<List<OrderLine>>? linesResult;
   Result<List<OrderStatusChange>>? historyResult;
   Result<void>? cancelResult;
   Result<void>? confirmResult;
+  Result<void>? shipResult;
 
-  /// The orders [cancelOrder] and [confirmDelivered] were called for.
+  /// The orders [cancelOrder], [confirmDelivered], and [markShipped] were
+  /// called for.
   final List<String> cancelled = [];
   final List<String> confirmed = [];
+  final List<String> shipped = [];
 
   /// Every [checkout] and [simulatePayment] call, in order: all that ever
   /// reaches the repository.
@@ -167,6 +172,16 @@ class FakeOrdersRepository implements OrdersRepository {
   }
 
   @override
+  Future<Result<List<MarketplaceOrder>>> getMySales() async {
+    if (salesResult case final result?) return result;
+    final mine = [
+      for (final order in orders.values)
+        if (order.myRole == OrderRole.seller) order,
+    ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return Success(mine);
+  }
+
+  @override
   Future<Result<List<OrderLine>>> getOrderLines(String orderId) async =>
       linesResult ?? Success(lines[orderId] ?? fakeOrderLines);
 
@@ -196,6 +211,13 @@ class FakeOrdersRepository implements OrdersRepository {
     confirmed.add(orderId);
     if (confirmResult case final result?) return result;
     return _change(orderId, OrderStatus.delivered, canReview: true);
+  }
+
+  @override
+  Future<Result<void>> markShipped(String orderId) async {
+    shipped.add(orderId);
+    if (shipResult case final result?) return result;
+    return _change(orderId, OrderStatus.shipped);
   }
 
   Result<void> _change(String orderId, OrderStatus status, {bool? canReview}) {

@@ -7,9 +7,10 @@ import 'package:watad/features/marketplace/shared/domain/entities/order_line.dar
 import 'package:watad/features/marketplace/shared/domain/entities/order_status_change.dart';
 
 /// Marketplace orders: checkout, the demo payment, reading them back and
-/// the buyer's actions (`v_my_orders`, `v_order_items`,
+/// the buyer's and seller's actions (`v_my_orders`, `v_order_items`,
 /// `v_order_status_history`, `v_my_addresses`, `checkout`,
-/// `simulate_order_payment`, `cancel_order`, `confirm_order_delivered`).
+/// `simulate_order_payment`, `cancel_order`, `mark_order_shipped`,
+/// `confirm_order_delivered`).
 abstract interface class OrdersRepository {
   /// The buyer's saved addresses, newest first.
   Future<Result<List<MarketplaceAddress>>> getMyAddresses();
@@ -26,6 +27,9 @@ abstract interface class OrdersRepository {
   /// The orders I bought, newest first.
   Future<Result<List<MarketplaceOrder>>> getMyPurchases();
 
+  /// The orders of my listings, newest first.
+  Future<Result<List<MarketplaceOrder>>> getMySales();
+
   /// The products of one of my orders, in the order they were added.
   Future<Result<List<OrderLine>>> getOrderLines(String orderId);
 
@@ -34,6 +38,9 @@ abstract interface class OrdersRepository {
 
   /// Cancels an unpaid order; its stock goes back to the listings.
   Future<Result<void>> cancelOrder(String orderId);
+
+  /// The seller marks a paid order as shipped.
+  Future<Result<void>> markShipped(String orderId);
 
   /// The buyer says a paid or shipped order arrived.
   Future<Result<void>> confirmDelivered(String orderId);

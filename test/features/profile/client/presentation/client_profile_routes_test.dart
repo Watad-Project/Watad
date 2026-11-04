@@ -8,6 +8,7 @@ import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_profile_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_orders_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_sales_page.dart';
 import 'package:watad/features/profile/client/presentation/pages/client_profile_page.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_rating.dart';
@@ -107,6 +108,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(MarketplaceOrdersPage), findsOneWidget);
+  });
+
+  testWidgets('«مبيعاتي» opens my sales (GRA-71)', (tester) async {
+    registerFakeMarketplace();
+    await openProfile(tester);
+
+    final sales = find.byKey(const Key('profile_menu_sales'));
+    await scrollTo(tester, sales);
+    await tester.tap(sales);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MarketplaceSalesPage), findsOneWidget);
   });
 
   testWidgets('a suspended client sees why, and the edit row says so', (
