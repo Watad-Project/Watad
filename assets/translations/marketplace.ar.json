@@ -118,7 +118,6 @@
     "seller_title": "البائع",
     "message_seller": "مراسلة البائع",
     "report": "إبلاغ عن المنتج",
-    "coming_soon": "قريبًا",
     "quantity_label": "الكمية",
     "add_to_cart": "أضف للسلة",
     "added": "أُضيف المنتج إلى السلة",
@@ -265,7 +264,6 @@
     "message_seller": "مراسلة البائع",
     "message_buyer": "مراسلة المشتري",
     "review": "تقييم البائع",
-    "review_coming_soon": "التقييم متاح قريبًا",
     "report": "إبلاغ عن الطلب",
     "error_cannot_cancel": "لا يمكن إلغاء هذا الطلب: يُلغى الطلب قبل دفعه فقط",
     "error_cannot_confirm": "يمكنك تأكيد الاستلام بعد دفع الطلب فقط"

@@ -12,10 +12,12 @@ import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_payments_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/router/routes/evidence_routes.dart';
+import 'package:watad/core/router/routes/reviews_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -82,6 +84,18 @@ class ClientProjectTasksPage extends StatelessWidget {
                     pathParameters: {'projectId': projectId},
                   ),
                 ),
+              // Rate the contractor once the project is completed (GRA-61).
+              if (project?.status == ProjectStatus.completed)
+                if (project?.takerId case final takerId?)
+                  AppIconButton(
+                    key: const Key('client_project_tasks_review'),
+                    icon: Icons.star_outline_rounded,
+                    tooltip: context.tr('projects.client.review_contractor'),
+                    onPressed: () => context.pushNamed(
+                      ReviewsRoutes.writeReviewName,
+                      queryParameters: {'user': takerId, 'project': projectId},
+                    ),
+                  ),
             ],
           ),
           // Loading, the tasks and errors fade into each other.

@@ -25,6 +25,7 @@ import 'package:watad/features/profile/shared/profile_injection.dart';
 import 'package:watad/features/projects/client/client_projects_injection.dart';
 import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
+import 'package:watad/features/reviews/shared/reviews_injection.dart';
 import 'package:watad/features/settings/shared/settings_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
 import 'package:watad/features/support/shared/support_injection.dart';
@@ -74,6 +75,7 @@ void configureDependencies() {
   registerNotificationsDependencies(getIt);
   registerOnboardingDependencies(getIt);
   registerProfileDependencies(getIt);
+  registerReviewsDependencies(getIt);
   registerSettingsDependencies(getIt);
   registerSplashDependencies(getIt);
   registerSupportDependencies(getIt);

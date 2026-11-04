@@ -112,6 +112,7 @@
       "few": "{} days ago",
       "many": "{} days ago",
       "other": "{} days ago"
-    }
+    },
+    "review_client": "Rate the client"
   }
 }
