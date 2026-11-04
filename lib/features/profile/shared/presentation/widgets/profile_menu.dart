@@ -5,6 +5,7 @@ import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_menu_row.dart';
 import 'package:watad/core/components/layout/app_section_header.dart';
+import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/core/router/routes/settings_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 
@@ -80,9 +81,8 @@ class ProfileMenu extends StatelessWidget {
               key: const Key('profile_menu_orders'),
               icon: Icons.shopping_bag_outlined,
               label: context.tr('profile.menu.orders'),
-              tag: comingSoon,
-              isMuted: true,
-              onTap: showComingSoon,
+              onTap: () =>
+                  context.pushNamed(MarketplaceRoutes.marketplaceOrdersName),
             ),
             AppMenuRow(
               key: const Key('profile_menu_listings'),

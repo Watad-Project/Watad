@@ -7,11 +7,13 @@ import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_profile_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_orders_page.dart';
 import 'package:watad/features/profile/client/presentation/pages/client_profile_page.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_rating.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_marketplace_repository.dart';
 import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
@@ -84,15 +86,27 @@ void main() {
   testWidgets('a row whose screen is not built yet says so', (tester) async {
     await openProfile(tester);
 
-    final orders = find.byKey(const Key('profile_menu_orders'));
-    await scrollTo(tester, orders);
-    await tester.tap(orders);
+    final listings = find.byKey(const Key('profile_menu_listings'));
+    await scrollTo(tester, listings);
+    await tester.tap(listings);
     await tester.pump();
 
     expect(
       find.text('هذه الشاشة قيد الإنشاء، وستتوفر قريبًا.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('«طلباتي» opens my orders (GRA-69)', (tester) async {
+    registerFakeMarketplace();
+    await openProfile(tester);
+
+    final orders = find.byKey(const Key('profile_menu_orders'));
+    await scrollTo(tester, orders);
+    await tester.tap(orders);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MarketplaceOrdersPage), findsOneWidget);
   });
 
   testWidgets('a suspended client sees why, and the edit row says so', (

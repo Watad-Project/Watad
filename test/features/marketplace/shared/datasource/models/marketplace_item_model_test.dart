@@ -80,4 +80,39 @@ void main() {
     expect(model.sellerRatingAvg, isNull);
     expect(model.isMine, isTrue);
   });
+
+  test('my hidden listing, and one an admin removed', () {
+    Map<String, dynamic> row({String? removedAt, String? reason}) => {
+      'id': 'i-3',
+      'item_name': 'سقالات',
+      'description': null,
+      'price': 800,
+      'stock_quantity': 4,
+      'in_stock': true,
+      'is_active': false,
+      'category': 'tools_equipment',
+      'photo_paths': <String>[],
+      'created_at': '2026-10-16T09:00:00+00:00',
+      'updated_at': '2026-10-22T12:00:00+00:00',
+      'seller_id': 'u-2',
+      'seller_name': 'سارة',
+      'seller_is_verified_business': false,
+      'seller_rating_avg': null,
+      'seller_rating_count': 0,
+      'is_mine': true,
+      'removed_at': removedAt,
+      'removal_reason': reason,
+    };
+
+    final hidden = MarketplaceItemModel.fromJson(row());
+    expect(hidden.isActive, isFalse);
+    expect(hidden.isRemoved, isFalse);
+
+    final removed = MarketplaceItemModel.fromJson(
+      row(removedAt: '2026-10-22T12:00:00+00:00', reason: 'صور غير مطابقة'),
+    );
+    expect(removed.isRemoved, isTrue);
+    expect(removed.removedAt?.isUtc, isTrue);
+    expect(removed.removalReason, 'صور غير مطابقة');
+  });
 }

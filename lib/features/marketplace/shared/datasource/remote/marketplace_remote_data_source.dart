@@ -8,6 +8,17 @@ import 'package:watad/features/marketplace/shared/domain/entities/marketplace_so
 
 abstract interface class MarketplaceRemoteDataSource {
   Future<List<MarketplaceItemModel>> getItems(MarketplaceQuery query);
+
+  /// Null when the view has no row: hidden or deleted, for anyone but the
+  /// seller.
+  Future<MarketplaceItemModel?> getItem(String itemId);
+
+  /// The rows the view still has for [itemIds], in no particular order.
+  Future<List<MarketplaceItemModel>> getItemsByIds(List<String> itemIds);
+
+  /// The signed-in user's id, or null when nobody is signed in.
+  String? currentUserId();
+
   Future<List<MarketplaceItemModel>> getMyItems();
   Future<MarketplaceItemModel> getMyItem(String itemId);
   Future<MarketplaceItemModel> createItem(MarketplaceItemDraft draft);
@@ -69,6 +80,29 @@ class MarketplaceRemoteDataSourceImpl implements MarketplaceRemoteDataSource {
     );
     return rows.map(_toModel).toList();
   }
+
+  @override
+  Future<MarketplaceItemModel?> getItem(String itemId) async {
+    final row = await _client
+        .from('v_marketplace_items')
+        .select(_columns)
+        .eq('id', itemId)
+        .maybeSingle();
+    return row == null ? null : _toModel(row);
+  }
+
+  @override
+  Future<List<MarketplaceItemModel>> getItemsByIds(List<String> itemIds) async {
+    if (itemIds.isEmpty) return const [];
+    final rows = await _client
+        .from('v_marketplace_items')
+        .select(_columns)
+        .inFilter('id', itemIds);
+    return rows.map(_toModel).toList();
+  }
+
+  @override
+  String? currentUserId() => _client.auth.currentUser?.id;
 
   @override
   Future<List<MarketplaceItemModel>> getMyItems() async {
