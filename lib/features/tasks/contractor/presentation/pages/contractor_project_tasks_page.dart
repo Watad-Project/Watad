@@ -286,7 +286,7 @@ class ContractorProjectTasksPage extends StatelessWidget {
           args: [context.formatNumber(state.proposedCount)],
         ),
     ];
-    return parts.join(' · ');
+    return parts.join(context.tr('tasks.contractor.separator'));
   }
 
   Future<void> _handleAddTask(BuildContext context) async {

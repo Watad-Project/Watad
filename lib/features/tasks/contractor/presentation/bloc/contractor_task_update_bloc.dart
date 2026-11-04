@@ -40,46 +40,42 @@ class ContractorTaskUpdateBloc
       ),
     );
 
-    final (projectResult, tasksResult) = await (
-      _getProject(event.projectId),
-      _getProjectTasks(event.projectId),
-    ).wait;
-
-    if (projectResult case Failed(:final failure)) {
-      emit(
-        state.copyWith(
-          status: ContractorTaskUpdateStatus.failure,
-          failure: failure,
-        ),
-      );
-      return;
+    // One after the other, so a failure reaches the screen as it is.
+    final ContractorTaskProject project;
+    switch (await _getProject(event.projectId)) {
+      case Success(:final data):
+        project = data;
+      case Failed(:final failure):
+        emit(
+          state.copyWith(
+            status: ContractorTaskUpdateStatus.failure,
+            failure: failure,
+          ),
+        );
+        return;
     }
 
-    if (tasksResult case Failed(:final failure)) {
-      emit(
-        state.copyWith(
-          status: ContractorTaskUpdateStatus.failure,
-          failure: failure,
-        ),
-      );
-      return;
+    switch (await _getProjectTasks(event.projectId)) {
+      case Success(data: final allTasks):
+        emit(
+          state.copyWith(
+            status: ContractorTaskUpdateStatus.success,
+            project: project,
+            tasks: [
+              for (final task in allTasks)
+                if (task.canSendUpdate) task,
+            ],
+            clearFailure: true,
+          ),
+        );
+      case Failed(:final failure):
+        emit(
+          state.copyWith(
+            status: ContractorTaskUpdateStatus.failure,
+            failure: failure,
+          ),
+        );
     }
-
-    final project = (projectResult as Success<ContractorTaskProject>).data;
-    final allTasks = (tasksResult as Success<List<ContractorProjectTask>>).data;
-    final openTasks = [
-      for (final task in allTasks)
-        if (task.canSendUpdate) task,
-    ];
-
-    emit(
-      state.copyWith(
-        status: ContractorTaskUpdateStatus.success,
-        project: project,
-        tasks: openTasks,
-        clearFailure: true,
-      ),
-    );
   }
 
   Future<void> _onSubmitted(

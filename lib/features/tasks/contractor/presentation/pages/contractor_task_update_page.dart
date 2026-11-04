@@ -96,7 +96,8 @@ class ContractorTaskUpdatePage extends StatelessWidget {
                 },
                 child: Scaffold(
                   appBar: AppTopBar(
-                    title: context.tr('tasks.contractor.update_title'),
+                    // The project's title, «فيلا سكنية — حي الياسمين».
+                    title: state.project?.displayTitle ?? '',
                     onBack: () {
                       if (isStepTwo) {
                         cubit.backToStepOne();
@@ -184,6 +185,10 @@ class ContractorTaskUpdatePage extends StatelessWidget {
       tasks: state.tasks,
       selectedTaskId: stepState.selectedTaskId,
       onSelectTask: cubit.selectTask,
+      onAddTask: () => context.pushNamed(
+        ContractorTasksRoutes.addTaskName,
+        pathParameters: {'projectId': projectId},
+      ),
       now: now,
     );
   }
