@@ -278,6 +278,7 @@
     "report": "Report the order",
     "error_cannot_cancel": "This order can't be cancelled: only unpaid orders can",
     "error_cannot_confirm": "You can confirm delivery only once the order is paid",
-    "error_cannot_ship": "You can mark the order as shipped only while it is paid"
+    "error_cannot_ship": "You can mark the order as shipped only while it is paid",
+    "cancel_message_seller": "The order will be cancelled and its quantities go back to your listings. This can't be undone."
   }
 }

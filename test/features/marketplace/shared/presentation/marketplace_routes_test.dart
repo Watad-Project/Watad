@@ -1155,6 +1155,64 @@ void main() {
       },
     );
 
+    testWidgets('the seller cancels an unpaid sale', (tester) async {
+      orders.orders[orderId] = fakeOrder(role: OrderRole.seller);
+      await openOrder(tester);
+
+      await scrollTo(tester, find.byKey(const Key('order_cancel')));
+      await tester.tap(find.byKey(const Key('order_cancel')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'سيُلغى الطلب وتعود كمياته إلى منتجاتك في السوق. لا يمكن التراجع.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('إلغاء الطلب').last);
+      await tester.pumpAndSettle();
+
+      expect(orders.cancelled, [orderId]);
+    });
+
+    testWidgets('«تقييم المشتري» opens the review sheet for the buyer', (
+      tester,
+    ) async {
+      final reviews = FakeReviewsRepository();
+      registerFakeReviews(reviews);
+      orders.orders[orderId] = fakeOrder(
+        status: OrderStatus.delivered,
+        role: OrderRole.seller,
+        canReview: true,
+      );
+      await openOrder(tester);
+
+      await scrollTo(tester, find.byKey(const Key('order_review')));
+      await tester.tap(find.byKey(const Key('order_review')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WriteReviewPage), findsOneWidget);
+      expect(reviews.drafts.single.targetUserId, 'u-buyer');
+      expect(reviews.drafts.single.orderId, orderId);
+    });
+
+    testWidgets("the seller's «إبلاغ عن الطلب» opens a new report", (
+      tester,
+    ) async {
+      registerFakeSupport();
+      orders.orders[orderId] = fakeOrder(
+        status: OrderStatus.paid,
+        role: OrderRole.seller,
+      );
+      await openOrder(tester);
+
+      await scrollTo(tester, find.byKey(const Key('order_report')));
+      await tester.tap(find.byKey(const Key('order_report')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SupportNewReportPage), findsOneWidget);
+      expect(find.text('عن طلب'), findsOneWidget);
+    });
+
     testWidgets('an order I cannot see shows the error', (tester) async {
       orders.orders.clear();
       await openOrder(tester);

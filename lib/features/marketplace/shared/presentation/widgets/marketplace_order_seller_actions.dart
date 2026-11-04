@@ -1,21 +1,25 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
-import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_menu_row.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/order_actions.dart';
 
-/// The seller's part of the order page (GRA-71): mark as shipped, message
-/// the buyer; review and report come later (GRA-61, GRA-63).
-/// Each button shows only when the order allows it ([OrderActions]).
+/// The seller's part of the order page (GRA-71): mark as shipped, cancel
+/// while unpaid, message the buyer, rate them (GRA-61) and report the order
+/// (GRA-63). Each button shows only when the order allows it
+/// ([OrderActions]).
 class MarketplaceOrderSellerActions extends StatelessWidget {
   const MarketplaceOrderSellerActions({
     required this.actions,
     required this.isBusy,
     required this.isShipping,
+    required this.isCancelling,
     required this.onShip,
+    required this.onCancel,
     required this.onMessage,
+    required this.onReview,
+    required this.onReport,
     super.key,
   });
 
@@ -24,8 +28,16 @@ class MarketplaceOrderSellerActions extends StatelessWidget {
   /// An action is being sent: the others wait.
   final bool isBusy;
   final bool isShipping;
+  final bool isCancelling;
   final VoidCallback onShip;
+  final VoidCallback onCancel;
   final VoidCallback onMessage;
+
+  /// Rate the buyer (GRA-61).
+  final VoidCallback onReview;
+
+  /// A new report about this order (GRA-63).
+  final VoidCallback onReport;
 
   @override
   Widget build(BuildContext context) {
@@ -50,27 +62,29 @@ class MarketplaceOrderSellerActions extends StatelessWidget {
           variant: AppButtonVariant.secondary,
           onPressed: onMessage,
         ),
+        if (actions.canCancel) ...[
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            key: const Key('order_cancel'),
+            label: context.tr('marketplace.order_details.cancel'),
+            variant: AppButtonVariant.link,
+            isLoading: isCancelling,
+            onPressed: isBusy ? null : onCancel,
+          ),
+        ],
         const SizedBox(height: AppSpacing.md),
         if (actions.canReview)
           AppMenuRow(
             key: const Key('order_review'),
             icon: Icons.star_outline,
             label: context.tr('marketplace.order_details.review_buyer'),
-            tag: context.tr('marketplace.item_details.coming_soon'),
-            isMuted: true,
-            onTap: () => context.showSnackBar(
-              context.tr('marketplace.order_details.review_coming_soon'),
-            ),
+            onTap: onReview,
           ),
         AppMenuRow(
           key: const Key('order_report'),
           icon: Icons.flag_outlined,
           label: context.tr('marketplace.order_details.report'),
-          tag: context.tr('marketplace.item_details.coming_soon'),
-          isMuted: true,
-          onTap: () => context.showSnackBar(
-            context.tr('marketplace.item_details.report_coming_soon'),
-          ),
+          onTap: onReport,
         ),
       ],
     );

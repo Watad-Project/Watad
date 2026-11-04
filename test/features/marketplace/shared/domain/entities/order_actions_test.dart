@@ -73,9 +73,10 @@ void main() {
           ),
         );
 
-    test('cannot pay, cancel or ship an unpaid order', () {
+    test('cancels an unpaid order, but cannot pay or ship it', () {
       final actions = of(OrderStatus.pendingPayment);
-      expect(actions.canCancel, isFalse);
+      // `cancel_order()` lets the seller cancel an unpaid order too.
+      expect(actions.canCancel, isTrue);
       expect(actions.canShip, isFalse);
       expect(actions.canPay, isFalse);
       expect(actions.canConfirmDelivery, isFalse);

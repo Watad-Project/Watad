@@ -18,8 +18,10 @@ class OrderActions {
     final isUnpaid = order.status == OrderStatus.pendingPayment;
     final canReview = order.status == OrderStatus.delivered && order.canReview;
     if (order.myRole == OrderRole.seller) {
+      // `cancel_order()` lets the seller cancel an unpaid order too.
       return OrderActions(
         canShip: order.status == OrderStatus.paid,
+        canCancel: isUnpaid,
         canReview: canReview,
       );
     }
@@ -39,7 +41,8 @@ class OrderActions {
   /// «تم الشحن»: paid, by the seller.
   final bool canShip;
 
-  /// «إلغاء الطلب»: only while unpaid; a paid order needs a refund.
+  /// «إلغاء الطلب»: only while unpaid, by the buyer or the seller; a paid
+  /// order needs a refund.
   final bool canCancel;
 
   /// «تم الاستلام»: paid or shipped, by the buyer.
