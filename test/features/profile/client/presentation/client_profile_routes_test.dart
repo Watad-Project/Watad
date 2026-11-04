@@ -12,11 +12,13 @@ import 'package:watad/features/marketplace/shared/presentation/pages/marketplace
 import 'package:watad/features/profile/client/presentation/pages/client_profile_page.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_rating.dart';
+import 'package:watad/features/support/shared/presentation/pages/support_reports_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_marketplace_repository.dart';
 import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
+import '../../../../helpers/fake_support_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -147,6 +149,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('سارة العتيبي'), findsOneWidget);
+  });
+
+  testWidgets('«المساعدة والدعم» opens my reports', (tester) async {
+    registerFakeSupport();
+    await openProfile(tester);
+
+    final help = find.byKey(const Key('profile_menu_help'));
+    await scrollTo(tester, help);
+    await tester.ensureVisible(help);
+    await tester.pumpAndSettle();
+    await tester.tap(help);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SupportReportsPage), findsOneWidget);
   });
 
   testWidgets('«حسابي» fits large, bold text', (tester) async {

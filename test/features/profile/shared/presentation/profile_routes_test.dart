@@ -17,11 +17,13 @@ import 'package:watad/features/profile/shared/domain/entities/my_profile_busines
 import 'package:watad/features/profile/shared/domain/entities/public_profile.dart';
 import 'package:watad/features/profile/shared/presentation/pages/profile_edit_page.dart';
 import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
+import 'package:watad/features/support/shared/presentation/pages/support_new_report_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
+import '../../../../helpers/fake_support_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -413,6 +415,17 @@ void main() {
       await chat.dispose();
     });
 
+    testWidgets('«إبلاغ» opens a new report about the user', (tester) async {
+      registerFakeSupport();
+      await openPublic(tester);
+
+      await tester.tap(find.byKey(const Key('public_profile_report')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SupportNewReportPage), findsOneWidget);
+      expect(find.text('عن مستخدم'), findsOneWidget);
+    });
+
     testWidgets('my own profile offers to edit it, not to message', (
       tester,
     ) async {
@@ -420,6 +433,7 @@ void main() {
       await openPublic(tester);
 
       expect(find.byKey(const Key('public_profile_message')), findsNothing);
+      expect(find.byKey(const Key('public_profile_report')), findsNothing);
       expect(find.byKey(const Key('public_profile_edit')), findsOneWidget);
       expect(find.text('متصل الآن'), findsOneWidget);
     });

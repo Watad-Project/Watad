@@ -162,6 +162,7 @@
     "reject_send": "إرسال الرفض للمقاول",
     "reject_sent": "أُرسل الرفض للمقاول",
     "reject_details_too_long": "اكتب التفاصيل في ١٠٠٠ حرف أو أقل.",
-    "export_evidence": "تصدير سجل المشروع (PDF)"
+    "export_evidence": "تصدير سجل المشروع (PDF)",
+    "review_contractor": "تقييم المقاول"
   }
 }

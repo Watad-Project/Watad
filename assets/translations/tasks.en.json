@@ -59,9 +59,8 @@
     "add_error_amount_exceeds_remaining": "Amount exceeds the remaining contract budget ({})",
     "add_error_not_in_progress": "This project is no longer in progress",
     "export_evidence": "Export project record (PDF)",
-    "update_title": "Update progress",
-    "update_step1_heading": "Which task do you want to update?",
-    "update_step1_subtitle": "Choose the task, then add photos and the new state",
+    "update_step1_heading": "Update a task",
+    "update_step1_subtitle": "Choose the task you want to update. Only open tasks are shown.",
     "update_task_amount_and_status": "{} · {}",
     "update_last_updated": "Last updated: {}",
     "update_no_updates_yet": "No update sent yet",
@@ -112,6 +111,10 @@
       "few": "{} days ago",
       "many": "{} days ago",
       "other": "{} days ago"
-    }
+    },
+    "update_step1_footnote": "Approved and paid tasks, and proposed tasks the client hasn't accepted, don't show here.",
+    "update_add_task": "Add a task",
+    "separator": " · "
+    "review_client": "Rate the client"
   }
 }

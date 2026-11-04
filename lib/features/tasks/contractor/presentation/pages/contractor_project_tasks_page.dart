@@ -13,10 +13,12 @@ import 'package:watad/core/components/feedback/app_error_view.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_action_bar.dart';
 import 'package:watad/core/components/layout/app_top_bar.dart';
+import 'package:watad/core/enums/project_status.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
 import 'package:watad/core/router/routes/evidence_routes.dart';
+import 'package:watad/core/router/routes/reviews_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -97,6 +99,21 @@ class ContractorProjectTasksPage extends StatelessWidget {
                     pathParameters: {'projectId': project.id},
                   ),
                 ),
+              // Rate the client once the project is completed (GRA-61).
+              if (project?.status == ProjectStatus.completed)
+                if (project?.ownerId case final ownerId?)
+                  AppIconButton(
+                    key: const Key('contractor_project_tasks_review'),
+                    icon: Icons.star_outline_rounded,
+                    tooltip: context.tr('tasks.contractor.review_client'),
+                    onPressed: () => context.pushNamed(
+                      ReviewsRoutes.writeReviewName,
+                      queryParameters: {
+                        'user': ownerId,
+                        'project': project!.id,
+                      },
+                    ),
+                  ),
             ],
           ),
           body: AnimatedSwitcher(
@@ -269,7 +286,7 @@ class ContractorProjectTasksPage extends StatelessWidget {
           args: [context.formatNumber(state.proposedCount)],
         ),
     ];
-    return parts.join(' · ');
+    return parts.join(context.tr('tasks.contractor.separator'));
   }
 
   Future<void> _handleAddTask(BuildContext context) async {

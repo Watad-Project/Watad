@@ -18,6 +18,8 @@ import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/core/router/routes/profile_routes.dart';
+import 'package:watad/core/router/routes/reviews_routes.dart';
+import 'package:watad/core/router/routes/support_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/order_details.dart';
@@ -249,6 +251,19 @@ class _OrderView extends StatelessWidget {
               );
               bloc.add(const MarketplaceOrderDetailsFetched());
             },
+            onReview: () async {
+              final saved = await context.pushNamed<bool>(
+                ReviewsRoutes.writeReviewName,
+                queryParameters: {'user': order.sellerId, 'order': order.id},
+              );
+              if (saved ?? false) {
+                bloc.add(const MarketplaceOrderDetailsFetched());
+              }
+            },
+            onReport: () => context.pushNamed(
+              SupportRoutes.supportNewReportName,
+              queryParameters: {'target': 'order', 'id': order.id},
+            ),
             onConfirmDelivery: () async {
               final confirmed = await AppConfirmDialog.show(
                 context,

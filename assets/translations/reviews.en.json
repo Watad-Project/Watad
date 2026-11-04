@@ -1,0 +1,14 @@
+{
+  "title": "Rate {}",
+  "edit_title": "Edit your review of {}",
+  "no_name": "the other party",
+  "about_project": "How was working with them on this project?",
+  "about_order": "How was dealing with them on this order?",
+  "stars": "{} out of 5",
+  "comment_label": "Comment (optional)",
+  "comment_hint": "What went well, and what could be better?",
+  "save": "Save review",
+  "saved": "Your review is saved",
+  "error_rating": "Choose the number of stars",
+  "error_comment_long": "The comment is longer than 2000 characters"
+}

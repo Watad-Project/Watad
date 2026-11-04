@@ -18,6 +18,7 @@ import 'package:watad/core/utils/app_notification_links.dart';
 import 'package:watad/core/utils/money.dart';
 import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
 import 'package:watad/features/evidence/shared/presentation/pages/evidence_export_page.dart';
+import 'package:watad/features/reviews/shared/presentation/pages/write_review_page.dart';
 import 'package:watad/features/tasks/contractor/contractor_tasks_injection.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_project_task.dart';
 import 'package:watad/features/tasks/contractor/domain/entities/contractor_task_project.dart';
@@ -33,6 +34,7 @@ import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_chat_repository.dart';
 import '../../../../helpers/fake_contractor_tasks_repository.dart';
 import '../../../../helpers/fake_evidence_repository.dart';
+import '../../../../helpers/fake_reviews_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -57,6 +59,7 @@ void main() {
     title: 'فيلا سكنية — حي الياسمين',
     status: ProjectStatus.completed,
     ownerName: 'عبدالله الحربي',
+    ownerId: 'u-client',
     city: 'الرياض',
     district: 'حي الياسمين',
     agreedAmount: const Money.halalas(48000000),
@@ -172,6 +175,41 @@ void main() {
     expect(chat.started, ['u-client p-1']);
     expect(find.byType(ChatConversationPage), findsOneWidget);
     await chat.dispose();
+  });
+
+  testWidgets('a completed job lets the contractor rate the client', (
+    tester,
+  ) async {
+    final reviews = FakeReviewsRepository();
+    registerFakeReviews(reviews);
+    repository.projectResult = Success(completedProject);
+    await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.contractor),
+      initialLocation: '/contractor/tasks/p-1',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('contractor_project_tasks_review')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WriteReviewPage), findsOneWidget);
+    expect(reviews.drafts.single.targetUserId, 'u-client');
+    expect(reviews.drafts.single.projectId, 'p-1');
+  });
+
+  testWidgets('a job in progress has no review button', (tester) async {
+    await pumpAppRouter(
+      tester,
+      session: FakeAppSession()..signIn(AppRole.contractor),
+      initialLocation: '/contractor/tasks/p-1',
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('contractor_project_tasks_review')),
+      findsNothing,
+    );
   });
 
   testWidgets('the job screen exports its record', (tester) async {

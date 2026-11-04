@@ -5,12 +5,12 @@ import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_icon_tag.dart';
 import 'package:watad/core/components/display/app_money_text.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
-import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_menu_row.dart';
 import 'package:watad/core/components/layout/app_section_header.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/profile_routes.dart';
+import 'package:watad/core/router/routes/support_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -118,15 +118,14 @@ class MarketplaceItemDetails extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          // Help and support (GRA-63) turns this row on.
+          // A new report about this item (GRA-63).
           AppMenuRow(
             key: const Key('marketplace_item_report'),
             icon: Icons.flag_outlined,
             label: context.tr('marketplace.item_details.report'),
-            tag: context.tr('marketplace.item_details.coming_soon'),
-            isMuted: true,
-            onTap: () => context.showSnackBar(
-              context.tr('marketplace.item_details.report_coming_soon'),
+            onTap: () => context.pushNamed(
+              SupportRoutes.supportNewReportName,
+              queryParameters: {'target': 'item', 'id': item.id},
             ),
           ),
         ],
