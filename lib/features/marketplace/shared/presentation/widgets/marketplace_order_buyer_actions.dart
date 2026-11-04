@@ -1,13 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:watad/core/components/buttons/app_button.dart';
-import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_menu_row.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/order_actions.dart';
 
 /// The buyer's part of the order page: pay, confirm delivery, cancel,
-/// message the seller, report it (GRA-63); the review comes later (GRA-61).
+/// message the seller, rate them (GRA-61) and report the order (GRA-63).
 /// Each button shows only when the order allows it ([OrderActions]).
 class MarketplaceOrderBuyerActions extends StatelessWidget {
   const MarketplaceOrderBuyerActions({
@@ -20,6 +19,7 @@ class MarketplaceOrderBuyerActions extends StatelessWidget {
     required this.onCancel,
     required this.onMessage,
     required this.onReport,
+    required this.onReview,
     super.key,
   });
 
@@ -36,6 +36,9 @@ class MarketplaceOrderBuyerActions extends StatelessWidget {
 
   /// A new report about this order (GRA-63).
   final VoidCallback onReport;
+
+  /// Rate the seller (GRA-61).
+  final VoidCallback onReview;
 
   @override
   Widget build(BuildContext context) {
@@ -85,11 +88,7 @@ class MarketplaceOrderBuyerActions extends StatelessWidget {
             key: const Key('order_review'),
             icon: Icons.star_outline,
             label: context.tr('marketplace.order_details.review'),
-            tag: context.tr('marketplace.item_details.coming_soon'),
-            isMuted: true,
-            onTap: () => context.showSnackBar(
-              context.tr('marketplace.order_details.review_coming_soon'),
-            ),
+            onTap: onReview,
           ),
         AppMenuRow(
           key: const Key('order_report'),
