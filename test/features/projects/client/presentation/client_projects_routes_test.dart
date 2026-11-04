@@ -40,6 +40,7 @@ import 'package:watad/features/projects/client/presentation/pages/client_task_de
 import 'package:watad/features/projects/client/presentation/pages/client_task_update_page.dart';
 import 'package:watad/features/projects/client/presentation/pages/client_task_update_reject_page.dart';
 import 'package:watad/features/projects/client/presentation/widgets/client_task_date.dart';
+import 'package:watad/features/reviews/shared/presentation/pages/write_review_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_chat_repository.dart';
@@ -48,6 +49,7 @@ import '../../../../helpers/fake_client_projects_repository.dart';
 import '../../../../helpers/fake_evidence_repository.dart';
 import '../../../../helpers/fake_network_images.dart';
 import '../../../../helpers/fake_profile_repository.dart';
+import '../../../../helpers/fake_reviews_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -617,6 +619,35 @@ void main() {
     expect(find.byKey(const Key('client_project_tasks_message')), findsNothing);
     // Not on the blockchain, so nothing to export.
     expect(find.byKey(const Key('client_project_tasks_export')), findsNothing);
+  });
+
+  testWidgets('a completed project lets the client rate the contractor', (
+    tester,
+  ) async {
+    final reviews = FakeReviewsRepository();
+    registerFakeReviews(reviews);
+    await openTasks(tester);
+    expect(find.byKey(const Key('client_project_tasks_review')), findsNothing);
+
+    repository.projectResult = Success(
+      ClientProject(
+        id: 'p-3',
+        title: 'بناء ملحق',
+        status: ProjectStatus.completed,
+        city: 'جدة',
+        pendingOfferCount: 0,
+        takerId: 'u-contractor',
+        createdAt: DateTime.utc(2026, 10, 17),
+      ),
+    );
+    await tester.drag(find.byType(ListView).first, const Offset(0, 300));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('client_project_tasks_review')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WriteReviewPage), findsOneWidget);
+    expect(reviews.drafts.single.targetUserId, 'u-contractor');
+    expect(reviews.drafts.single.projectId, 'p-3');
   });
 
   testWidgets('the project screen exports its record', (tester) async {

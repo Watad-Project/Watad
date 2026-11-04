@@ -12,6 +12,7 @@ import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/profile_routes.dart';
+import 'package:watad/core/router/routes/support_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -117,7 +118,7 @@ class PublicProfilePage extends StatelessWidget {
     );
   }
 
-  /// «مراسلة» for someone else, «تعديل الملف» on my own profile, and
+  /// «مراسلة» and «إبلاغ» for someone else, «تعديل الملف» on my own profile, and
   /// nothing for a closed account.
   List<Widget> _actions(BuildContext context, PublicProfile profile) {
     if (profile.isDeleted) return const [];
@@ -131,7 +132,7 @@ class PublicProfilePage extends StatelessWidget {
           icon: Icons.edit_outlined,
           onPressed: () => context.pushNamed(ProfileRoutes.profileEditName),
         )
-      else
+      else ...[
         AppButton(
           key: const Key('public_profile_message'),
           label: context.tr('profile.public.message'),
@@ -141,6 +142,18 @@ class PublicProfilePage extends StatelessWidget {
             pathParameters: {'userId': profile.id},
           ),
         ),
+        const SizedBox(height: AppSpacing.xs),
+        AppButton(
+          key: const Key('public_profile_report'),
+          label: context.tr('profile.public.report'),
+          variant: AppButtonVariant.link,
+          icon: Icons.flag_outlined,
+          onPressed: () => context.pushNamed(
+            SupportRoutes.supportNewReportName,
+            queryParameters: {'target': 'user', 'id': profile.id},
+          ),
+        ),
+      ],
     ];
   }
 
