@@ -115,5 +115,6 @@
     "update_step1_footnote": "Approved and paid tasks, and proposed tasks the client hasn't accepted, don't show here.",
     "update_add_task": "Add a task",
     "separator": " · "
+    "review_client": "Rate the client"
   }
 }

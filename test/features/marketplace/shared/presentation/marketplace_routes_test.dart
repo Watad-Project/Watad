@@ -24,12 +24,16 @@ import 'package:watad/features/marketplace/shared/presentation/pages/my_items_pa
 import 'package:watad/features/marketplace/shared/presentation/pages/new_my_item_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/widgets/marketplace_item_card.dart';
 import 'package:watad/features/marketplace/shared/presentation/widgets/my_item_card.dart';
+import 'package:watad/features/reviews/shared/presentation/pages/write_review_page.dart';
+import 'package:watad/features/support/shared/presentation/pages/support_new_report_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_cart_repository.dart';
 import '../../../../helpers/fake_marketplace_repository.dart';
 import '../../../../helpers/fake_orders_repository.dart';
+import '../../../../helpers/fake_reviews_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
+import '../../../../helpers/fake_support_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
 
@@ -282,6 +286,28 @@ void main() {
       textScale: textScale,
       boldText: boldText,
     );
+
+    testWidgets('«إبلاغ عن المنتج» opens a new report about the item', (
+      tester,
+    ) async {
+      registerFakeSupport();
+      await openItem(tester, 'i-steel');
+
+      final report = find.byKey(const Key('marketplace_item_report'));
+      await tester.scrollUntilVisible(
+        report,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      // Clear of the buy bar at the bottom.
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
+      await tester.pumpAndSettle();
+      await tester.tap(report);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SupportNewReportPage), findsOneWidget);
+      expect(find.text('عن منتج'), findsOneWidget);
+    });
 
     testWidgets("someone else's item: seller, messaging and add to cart", (
       tester,
@@ -844,6 +870,40 @@ void main() {
       expect(find.byKey(const Key('order_message')), findsOneWidget);
       expect(find.byKey(const Key('order_confirm_delivery')), findsNothing);
       expect(find.byKey(const Key('order_review')), findsNothing);
+    });
+
+    testWidgets('«تقييم البائع» opens the review sheet for the order', (
+      tester,
+    ) async {
+      final reviews = FakeReviewsRepository();
+      registerFakeReviews(reviews);
+      orders.orders[orderId] = fakeOrder(
+        status: OrderStatus.delivered,
+        canReview: true,
+      );
+      await openOrder(tester);
+
+      await scrollTo(tester, find.byKey(const Key('order_review')));
+      await tester.tap(find.byKey(const Key('order_review')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WriteReviewPage), findsOneWidget);
+      expect(reviews.drafts.single.orderId, orderId);
+    });
+
+    testWidgets('«إبلاغ عن الطلب» opens a new report about the order', (
+      tester,
+    ) async {
+      final support = FakeSupportRepository();
+      registerFakeSupport(support);
+      await openOrder(tester);
+
+      await scrollTo(tester, find.byKey(const Key('order_report')));
+      await tester.tap(find.byKey(const Key('order_report')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SupportNewReportPage), findsOneWidget);
+      expect(find.text('عن طلب'), findsOneWidget);
     });
 
     testWidgets('«إلغاء الطلب» asks, cancels, and shows «ملغي»', (
