@@ -36,8 +36,18 @@ void main() {
     expect(orders.cancelled, isEmpty);
   });
 
-  test('the seller cannot cancel here (GRA-71)', () async {
-    final result = await cancel(fakeOrder(role: OrderRole.seller));
+  test('the seller cancels an unpaid sale too (GRA-71)', () async {
+    final order = fakeOrder(role: OrderRole.seller);
+    orders.orders[order.id] = order;
+
+    expect(await cancel(order), isA<Success<void>>());
+    expect(orders.cancelled, [order.id]);
+  });
+
+  test('the seller cannot cancel a paid sale', () async {
+    final result = await cancel(
+      fakeOrder(role: OrderRole.seller, status: OrderStatus.paid),
+    );
 
     expect(errorOf(result), 'marketplace.order_details.error_cannot_cancel');
     expect(orders.cancelled, isEmpty);

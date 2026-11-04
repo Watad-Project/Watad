@@ -6,44 +6,60 @@ import 'package:watad/core/components/display/app_status_badge.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/features/marketplace/shared/domain/entities/marketplace_order.dart';
+import 'package:watad/features/marketplace/shared/domain/entities/order_role.dart';
 import 'package:watad/features/marketplace/shared/presentation/widgets/marketplace_order_labels.dart';
 
-/// One order in «طلباتي»: the seller, the order number, units and date,
-/// the total and the status. A tap opens the order.
+/// One order in «طلباتي» or «مبيعاتي»: the other party, the order number,
+/// units and date, the total and the status. A tap opens the order; when
+/// [onPartyTap] is given, tapping the other party's name opens their
+/// public profile.
 class MarketplaceOrderTile extends StatelessWidget {
   const MarketplaceOrderTile({
     required this.order,
     required this.onTap,
+    this.onPartyTap,
     super.key,
   });
 
   final MarketplaceOrder order;
   final VoidCallback onTap;
 
+  /// Opens the other party's public profile (`ProfileRoutes.publicProfileName`).
+  final VoidCallback? onPartyTap;
+
   @override
   Widget build(BuildContext context) {
+    final isSeller = order.myRole == OrderRole.seller;
+    final partyName = isSeller ? order.buyerName : order.sellerName;
+    final partyAvatarUrl = isSeller
+        ? order.buyerAvatarUrl
+        : order.sellerAvatarUrl;
+    final nameText = Text(
+      partyName,
+      style: AppTextStyles.label,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
     return AppCard(
       key: Key('order_${order.id}'),
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppAvatar(
-            url: order.sellerAvatarUrl,
-            size: 40,
-            semanticLabel: order.sellerName,
-          ),
+          AppAvatar(url: partyAvatarUrl, size: 40, semanticLabel: partyName),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  order.sellerName,
-                  style: AppTextStyles.label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                if (onPartyTap case final onPartyTap?)
+                  InkWell(
+                    key: Key('order_party_${order.id}'),
+                    onTap: onPartyTap,
+                    child: nameText,
+                  )
+                else
+                  nameText,
                 const SizedBox(height: AppSpacing.xxs),
                 // One line each, so a long number never splits «٥ قطع».
                 Text(

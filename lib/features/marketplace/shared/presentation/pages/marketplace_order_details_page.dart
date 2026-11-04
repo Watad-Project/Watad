@@ -52,6 +52,7 @@ class MarketplaceOrderDetailsPage extends StatelessWidget {
                 'marketplace.order_details.cancelled',
               OrderDetailsAction.confirmDelivery =>
                 'marketplace.order_details.delivered',
+              OrderDetailsAction.ship => 'marketplace.order_details.shipped',
             }),
           ),
         ),
@@ -296,9 +297,50 @@ class _OrderView extends StatelessWidget {
           )
         else
           MarketplaceOrderSellerActions(
+            actions: details.actions,
+            isBusy: state.pendingAction != null,
+            isShipping: state.pendingAction == OrderDetailsAction.ship,
+            isCancelling: state.pendingAction == OrderDetailsAction.cancel,
+            onShip: () async {
+              final confirmed = await AppConfirmDialog.show(
+                context,
+                title: context.tr('marketplace.order_details.ship_title'),
+                message: context.tr('marketplace.order_details.ship_message'),
+                confirmLabel: context.tr('marketplace.order_details.ship'),
+              );
+              if (confirmed != null) {
+                bloc.add(const MarketplaceOrderShipped());
+              }
+            },
             onMessage: () => context.pushNamed(
               ChatRoutes.chatStartName,
               pathParameters: {'userId': otherId},
+            ),
+            onCancel: () async {
+              final confirmed = await AppConfirmDialog.show(
+                context,
+                title: context.tr('marketplace.order_details.cancel_title'),
+                message: context.tr(
+                  'marketplace.order_details.cancel_message_seller',
+                ),
+                confirmLabel: context.tr('marketplace.order_details.cancel'),
+              );
+              if (confirmed != null) {
+                bloc.add(const MarketplaceOrderCancelled());
+              }
+            },
+            onReview: () async {
+              final saved = await context.pushNamed<bool>(
+                ReviewsRoutes.writeReviewName,
+                queryParameters: {'user': order.buyerId, 'order': order.id},
+              );
+              if (saved ?? false) {
+                bloc.add(const MarketplaceOrderDetailsFetched());
+              }
+            },
+            onReport: () => context.pushNamed(
+              SupportRoutes.supportNewReportName,
+              queryParameters: {'target': 'order', 'id': order.id},
             ),
           ),
       ],

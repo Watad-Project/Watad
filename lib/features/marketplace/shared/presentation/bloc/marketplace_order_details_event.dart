@@ -23,3 +23,8 @@ final class MarketplaceOrderDeliveryConfirmed
     extends MarketplaceOrderDetailsEvent {
   const MarketplaceOrderDeliveryConfirmed();
 }
+
+/// «تم الشحن», after the confirmation.
+final class MarketplaceOrderShipped extends MarketplaceOrderDetailsEvent {
+  const MarketplaceOrderShipped();
+}

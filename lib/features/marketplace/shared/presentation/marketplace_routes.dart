@@ -9,6 +9,7 @@ import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_item_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_order_details_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_orders_bloc.dart';
+import 'package:watad/features/marketplace/shared/presentation/bloc/marketplace_sales_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_item_form_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/my_items_bloc.dart';
 import 'package:watad/features/marketplace/shared/presentation/bloc/payment_bloc.dart';
@@ -20,6 +21,7 @@ import 'package:watad/features/marketplace/shared/presentation/pages/marketplace
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_orders_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_payment_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_sales_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/my_items_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/new_my_item_page.dart';
 
@@ -107,6 +109,15 @@ final List<RouteBase> marketplaceRoutes = [
       create: (_) =>
           getIt<MarketplaceOrdersBloc>()..add(const MarketplaceOrdersFetched()),
       child: const MarketplaceOrdersPage(),
+    ),
+  ),
+  GoRoute(
+    name: MarketplaceRoutes.marketplaceSalesName,
+    path: MarketplaceRoutes.marketplaceSalesPath,
+    builder: (context, state) => BlocProvider(
+      create: (_) =>
+          getIt<MarketplaceSalesBloc>()..add(const MarketplaceSalesFetched()),
+      child: const MarketplaceSalesPage(),
     ),
   ),
   GoRoute(

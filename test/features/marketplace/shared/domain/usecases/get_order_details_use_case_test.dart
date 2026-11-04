@@ -35,7 +35,9 @@ void main() {
 
     final details = (result as Success<OrderDetails>).data;
     expect(details.order.myRole, OrderRole.seller);
-    expect(details.actions.canCancel, isFalse);
+    // An unpaid sale: the seller may cancel it, not ship it yet (GRA-71).
+    expect(details.actions.canCancel, isTrue);
+    expect(details.actions.canShip, isFalse);
   });
 
   test('an order I cannot see is not found', () async {
