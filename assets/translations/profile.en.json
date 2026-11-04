@@ -141,6 +141,7 @@
     "more_reviews": "Show more",
     "from_project": "Project",
     "from_order": "Order",
-    "stars": "{} out of 5 stars"
+    "stars": "{} out of 5 stars",
+    "report": "Report"
   }
 }

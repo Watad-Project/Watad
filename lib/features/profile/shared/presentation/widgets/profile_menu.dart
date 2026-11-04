@@ -7,6 +7,7 @@ import 'package:watad/core/components/layout/app_menu_row.dart';
 import 'package:watad/core/components/layout/app_section_header.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
 import 'package:watad/core/router/routes/settings_routes.dart';
+import 'package:watad/core/router/routes/support_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 
 /// The rows of the account tab (GRA-59), in three groups: the account, the
@@ -110,9 +111,7 @@ class ProfileMenu extends StatelessWidget {
               key: const Key('profile_menu_help'),
               icon: Icons.support_agent_outlined,
               label: context.tr('profile.menu.help'),
-              tag: comingSoon,
-              isMuted: true,
-              onTap: showComingSoon,
+              onTap: () => context.pushNamed(SupportRoutes.supportReportsName),
             ),
             AppMenuRow(
               key: const Key('profile_menu_settings'),

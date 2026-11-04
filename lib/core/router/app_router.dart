@@ -39,6 +39,7 @@ import 'package:watad/features/reports/admin/presentation/admin_reports_routes.d
 import 'package:watad/features/review/admin/presentation/admin_review_routes.dart';
 import 'package:watad/features/settings/shared/presentation/settings_routes.dart';
 import 'package:watad/features/splash/shared/presentation/splash_routes.dart';
+import 'package:watad/features/support/shared/presentation/support_routes.dart';
 import 'package:watad/features/tasks/contractor/presentation/contractor_tasks_routes.dart';
 import 'package:watad/features/users/admin/presentation/admin_users_routes.dart';
 import 'package:watad/features/work/contractor/presentation/contractor_work_routes.dart';
@@ -100,6 +101,7 @@ GoRouter createAppRouter({
       ...profileRoutes,
       ...settingsRoutes,
       ...splashRoutes,
+      ...supportRoutes,
     ],
   );
 }

@@ -27,6 +27,7 @@ import 'package:watad/features/reports/admin/admin_reports_injection.dart';
 import 'package:watad/features/review/admin/admin_review_injection.dart';
 import 'package:watad/features/settings/shared/settings_injection.dart';
 import 'package:watad/features/splash/shared/splash_injection.dart';
+import 'package:watad/features/support/shared/support_injection.dart';
 import 'package:watad/features/tasks/contractor/contractor_tasks_injection.dart';
 import 'package:watad/features/users/admin/admin_users_injection.dart';
 import 'package:watad/features/work/contractor/contractor_work_injection.dart';
@@ -75,6 +76,7 @@ void configureDependencies() {
   registerProfileDependencies(getIt);
   registerSettingsDependencies(getIt);
   registerSplashDependencies(getIt);
+  registerSupportDependencies(getIt);
 }
 
 /// Called once from main(), after configureDependencies(): the services that
