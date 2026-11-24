@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_top_toast.dart';
 import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
+import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_navigation_routes.dart';
 import 'package:watad/core/router/routes/notifications_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/core/utils/app_notification_links.dart';
+import 'package:watad/features/chat/shared/presentation/pages/chat_conversation_page.dart';
 import 'package:watad/features/notifications/shared/domain/entities/notification_tap.dart';
 import 'package:watad/features/notifications/shared/domain/entities/user_notification.dart';
 import 'package:watad/features/notifications/shared/presentation/pages/notifications_page.dart';
@@ -15,6 +20,7 @@ import 'package:watad/features/notifications/shared/presentation/widgets/notific
 import '../../../../../helpers/fake_admin_dashboard_repository.dart';
 import '../../../../../helpers/fake_admin_review_repository.dart';
 import '../../../../../helpers/fake_app_session.dart';
+import '../../../../../helpers/fake_chat_repository.dart';
 import '../../../../../helpers/fake_client_home_repository.dart';
 import '../../../../../helpers/fake_notifications_repository.dart';
 import '../../../../../helpers/fake_splash_repository.dart';
@@ -136,6 +142,72 @@ void main() {
     expect(repository.markedRead, [
       ['n-1'],
     ]);
+  });
+
+  group('a new message (GRA-77)', () {
+    late FakeChatRepository chat;
+
+    setUp(() {
+      chat = FakeChatRepository();
+      registerFakeChat(chat);
+    });
+
+    tearDown(() => chat.dispose());
+
+    UserNotification message(String chatId) => UserNotification(
+      id: 'n-$chatId',
+      title: 'مؤسسة الأساس الحديث',
+      body: 'متى نبدأ؟',
+      data: {'type': 'message', 'chat_id': chatId},
+      createdAt: DateTime.now().toUtc(),
+    );
+
+    /// The home, then the conversation of [fakeChatId] over it.
+    Future<void> openChat(WidgetTester tester) async {
+      await openHome(tester);
+      final context = tester.element(find.byType(NotificationsBell));
+      unawaited(
+        GoRouter.of(context).pushNamed(
+          ChatRoutes.chatConversationName,
+          pathParameters: {'chatId': fakeChatId},
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(ChatConversationPage), findsOneWidget);
+    }
+
+    testWidgets('in the chat it belongs to: no banner, and it is read', (
+      tester,
+    ) async {
+      await openChat(tester);
+
+      repository.arrive(message(fakeChatId));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppTopToast), findsNothing);
+      expect(repository.markedRead, [
+        ['n-$fakeChatId'],
+      ]);
+    });
+
+    testWidgets('in another chat: the banner shows as usual', (tester) async {
+      await openChat(tester);
+
+      repository.arrive(message('c-other'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppTopToast), findsOneWidget);
+      expect(repository.markedRead, isEmpty);
+    });
+
+    testWidgets('outside any chat: the banner shows', (tester) async {
+      await openHome(tester);
+
+      repository.arrive(message(fakeChatId));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppTopToast), findsOneWidget);
+    });
   });
 
   testWidgets('a tapped push reads it and opens the screen of its event', (

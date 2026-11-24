@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/feedback/app_top_toast.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/notifications_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/features/notifications/shared/presentation/bloc/notifications_bell_bloc.dart';
@@ -71,6 +72,12 @@ class _NotificationsBellState extends State<NotificationsBell> {
     // screen is showing (the bell's tab stays alive under every page).
     final arrived = state.arrived;
     if (arrived != null && !identical(arrived, previous.arrived)) {
+      if (_isOpenChat(context, arrived.data)) {
+        // A message in the chat on screen shows there; no banner, and the
+        // bell doesn't count it (GRA-77).
+        widget.bloc.add(NotificationsBellOpened(arrived.id));
+        return;
+      }
       AppTopToast.show(
         context,
         title: arrived.title,
@@ -87,6 +94,21 @@ class _NotificationsBellState extends State<NotificationsBell> {
     if (tapped != null && !identical(tapped, previous.tapped)) {
       NotificationNavigator.openOrList(context, tapped.data);
     }
+  }
+
+  /// [data] is a new message (`type` `message`) in the chat whose
+  /// conversation is the page on top now.
+  static bool _isOpenChat(BuildContext context, Map<String, Object?> data) {
+    final chatId = data['chat_id'];
+    if (data['type'] != 'message' || chatId == null) return false;
+    final matches = GoRouter.maybeOf(context)
+        ?.routerDelegate
+        .currentConfiguration;
+    if (matches == null || matches.isEmpty) return false;
+    final top = matches.last;
+    return top.route.name == ChatRoutes.chatConversationName &&
+        top.matchedLocation ==
+            ChatRoutes.chatConversationPath.replaceFirst(':chatId', '$chatId');
   }
 
   Future<void> _openList(BuildContext context) async {
