@@ -7,14 +7,18 @@ import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/error/result.dart';
 import 'package:watad/core/router/routes/client_profile_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/location/shared/presentation/pages/location_addresses_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_orders_page.dart';
 import 'package:watad/features/marketplace/shared/presentation/pages/marketplace_sales_page.dart';
+import 'package:watad/features/marketplace/shared/presentation/pages/my_items_page.dart';
 import 'package:watad/features/profile/client/presentation/pages/client_profile_page.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
 import 'package:watad/features/profile/shared/domain/entities/profile_rating.dart';
+import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
 import 'package:watad/features/support/shared/presentation/pages/support_reports_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_location_repository.dart';
 import '../../../../helpers/fake_marketplace_repository.dart';
 import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
@@ -86,18 +90,43 @@ void main() {
     expect(find.text('لا تقييمات بعد'), findsOneWidget);
   });
 
-  testWidgets('a row whose screen is not built yet says so', (tester) async {
+  Future<void> tapRow(WidgetTester tester, String key) async {
+    final row = find.byKey(Key(key));
+    await scrollTo(tester, row);
+    await tester.ensureVisible(row);
+    await tester.pumpAndSettle();
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('«ملفي العام» opens my public profile', (tester) async {
     await openProfile(tester);
 
-    final listings = find.byKey(const Key('profile_menu_listings'));
-    await scrollTo(tester, listings);
-    await tester.tap(listings);
-    await tester.pump();
+    await tapRow(tester, 'profile_menu_public_profile');
 
+    expect(find.byType(PublicProfilePage), findsOneWidget);
     expect(
-      find.text('هذه الشاشة قيد الإنشاء، وستتوفر قريبًا.'),
-      findsOneWidget,
+      repository.calls,
+      contains('getPublicProfile(${fakeClientProfile.id})'),
     );
+  });
+
+  testWidgets('«عناويني» opens my saved addresses', (tester) async {
+    registerFakeLocationAddresses(FakeLocationRepository());
+    await openProfile(tester);
+
+    await tapRow(tester, 'profile_menu_addresses');
+
+    expect(find.byType(LocationAddressesPage), findsOneWidget);
+  });
+
+  testWidgets('«منتجاتي» opens my listings (GRA-70)', (tester) async {
+    registerFakeMarketplace();
+    await openProfile(tester);
+
+    await tapRow(tester, 'profile_menu_listings');
+
+    expect(find.byType(MyItemsPage), findsOneWidget);
   });
 
   testWidgets('«طلباتي» opens my orders (GRA-69)', (tester) async {

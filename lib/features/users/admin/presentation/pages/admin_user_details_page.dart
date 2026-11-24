@@ -13,6 +13,7 @@ import 'package:watad/core/enums/user_role.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/admin_review_routes.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -99,6 +100,18 @@ class AdminUserDetailsPage extends StatelessWidget {
           onOpenReview: () => context.goNamed(
             AdminNavigationRoutes.navigationName,
             queryParameters: {'tab': AdminReviewRoutes.reviewName},
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        // What everyone else sees of them (GRA-58).
+        AppButton(
+          key: const Key('admin_user_public_profile'),
+          label: context.tr('users.public_profile'),
+          variant: AppButtonVariant.secondary,
+          icon: Icons.badge_outlined,
+          onPressed: () => context.pushNamed(
+            ProfileRoutes.publicProfileName,
+            pathParameters: {'userId': user.id},
           ),
         ),
         const SizedBox(height: AppSpacing.lg),

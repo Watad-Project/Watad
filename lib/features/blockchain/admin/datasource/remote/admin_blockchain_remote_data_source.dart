@@ -29,8 +29,8 @@ class AdminBlockchainRemoteDataSourceImpl
   final SupabaseClient _client;
 
   static const String _projectColumns =
-      'project_id, project_title, project_status, owner_name, '
-      'contractor_name, sync_status, version, attempts, last_attempt_at, '
+      'project_id, project_title, project_status, owner_id, owner_name, '
+      'contractor_id, contractor_name, sync_status, version, attempts, last_attempt_at, '
       'next_attempt_at, synced_at, last_message';
 
   @override

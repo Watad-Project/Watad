@@ -20,5 +20,15 @@
   "mock_current_postal_code": "13324",
   "additional_number_label": "Additional Number",
   "short_address_label": "Short National Address",
-  "search_no_results": "No place has this name"
+  "search_no_results": "No place has this name",
+  "addresses_title": "My addresses",
+  "addresses_empty": "No saved addresses yet. Add one to pick it quickly when you post a project or check out.",
+  "addresses_add": "Add an address",
+  "addresses_no_name": "Address",
+  "addresses_project_site": "Site of an ongoing project; it can't be deleted until the project ends.",
+  "addresses_delete": "Delete address",
+  "addresses_delete_title": "Delete the address?",
+  "addresses_delete_message": "It will be removed from your saved addresses. Past orders keep their own copy of it.",
+  "addresses_deleted": "Address deleted",
+  "addresses_error_project_site": "The site of an ongoing project can't be deleted"
 }

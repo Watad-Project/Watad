@@ -4,6 +4,7 @@ class ProfileReviewModel extends ProfileReview {
   const ProfileReviewModel({
     required super.id,
     required super.reviewerName,
+    super.reviewerId,
     required super.rating,
     required super.isFromProject,
     required super.createdAt,
@@ -19,6 +20,7 @@ class ProfileReviewModel extends ProfileReview {
     return ProfileReviewModel(
       id: json['id'] as String,
       reviewerName: (json['reviewer_name'] as String?)?.trim() ?? '',
+      reviewerId: json['reviewer_id'] as String?,
       reviewerAvatarUrl: json['reviewer_avatar_url'] as String?,
       rating: (json['rating'] as num).toInt(),
       comment: comment == null || comment.isEmpty ? null : comment,

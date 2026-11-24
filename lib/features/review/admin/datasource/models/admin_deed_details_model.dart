@@ -32,6 +32,7 @@ class AdminDeedDetailsModel extends AdminDeedDetails {
       ),
       requester: AdminReviewRequester(
         name: json['owner_name'] as String? ?? '',
+        userId: json['owner_id'] as String?,
         avatarUrl: json['owner_avatar_url'] as String?,
         memberSince: _date(json['member_since']),
         nationalId: json['owner_national_id'] as String?,

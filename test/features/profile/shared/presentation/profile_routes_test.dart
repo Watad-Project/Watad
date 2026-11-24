@@ -14,6 +14,7 @@ import 'package:watad/features/profile/client/presentation/pages/client_profile_
 import 'package:watad/features/profile/contractor/presentation/pages/contractor_profile_page.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile.dart';
 import 'package:watad/features/profile/shared/domain/entities/my_profile_business.dart';
+import 'package:watad/features/profile/shared/domain/entities/profile_review.dart';
 import 'package:watad/features/profile/shared/domain/entities/public_profile.dart';
 import 'package:watad/features/profile/shared/presentation/pages/profile_edit_page.dart';
 import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
@@ -401,6 +402,30 @@ void main() {
         find.byKey(const Key('public_profile_more_reviews')),
         findsNothing,
       );
+    });
+
+    testWidgets("a review opens its reviewer's public profile", (tester) async {
+      repository.reviews = [
+        ProfileReview(
+          id: 'r-x',
+          reviewerId: 'u-reviewer',
+          reviewerName: 'سارة',
+          rating: 5,
+          isFromProject: true,
+          createdAt: DateTime.utc(2026, 10, 1),
+        ),
+      ];
+      await openPublic(tester);
+
+      await tester.dragUntilVisible(
+        find.text('سارة'),
+        find.byType(ListView),
+        const Offset(0, -300),
+      );
+      await tester.tap(find.text('سارة'));
+      await tester.pumpAndSettle();
+
+      expect(repository.calls, contains('getPublicProfile(u-reviewer)'));
     });
 
     testWidgets('«مراسلة» starts a chat without a project', (tester) async {

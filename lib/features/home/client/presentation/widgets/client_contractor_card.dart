@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/display/app_business_mini_card.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/features/home/client/domain/entities/client_contractor.dart';
 
 /// One contractor as a card: photo (or the default avatar), name with the
@@ -29,6 +31,11 @@ class ClientContractorCard extends StatelessWidget {
       ratingLabel: rating == null
           ? '–'
           : context.formatNumber(rating, decimals: 1),
+      // Its public profile (GRA-58).
+      onTap: () => context.pushNamed(
+        ProfileRoutes.publicProfileName,
+        pathParameters: {'userId': contractor.id},
+      ),
       projectsLabel: context.plural(
         'home.projects_count',
         projects,

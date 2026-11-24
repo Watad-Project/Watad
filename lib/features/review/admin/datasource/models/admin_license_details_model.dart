@@ -28,6 +28,8 @@ class AdminLicenseDetailsModel extends AdminLicenseDetails {
       ),
       requester: AdminReviewRequester(
         name: json['owner_name'] as String? ?? '',
+        // A business's key is its owner's user id.
+        userId: json['business_id'] as String?,
         avatarUrl: json['owner_avatar_url'] as String?,
         memberSince: _date(json['member_since']),
         nationalId: json['owner_national_id'] as String?,

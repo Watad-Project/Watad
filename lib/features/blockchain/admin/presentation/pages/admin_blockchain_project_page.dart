@@ -16,6 +16,7 @@ import 'package:watad/core/components/layout/app_top_bar.dart';
 import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/evidence_routes.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -180,18 +181,22 @@ class _Header extends StatelessWidget {
       children: [
         Text(project.title, style: AppTextStyles.h2),
         const SizedBox(height: AppSpacing.xs),
-        Text(
-          context.tr(
+        _PersonLine(
+          key: const Key('admin_blockchain_project_client'),
+          text: context.tr(
             'blockchain.admin.client_line',
             args: [project.ownerName ?? noName],
           ),
+          userId: project.ownerId,
           style: secondary,
         ),
-        Text(
-          context.tr(
+        _PersonLine(
+          key: const Key('admin_blockchain_project_contractor'),
+          text: context.tr(
             'blockchain.admin.contractor_line',
             args: [project.contractorName ?? noName],
           ),
+          userId: project.contractorId,
           style: secondary,
         ),
       ],
@@ -256,6 +261,34 @@ class _Details extends StatelessWidget {
           value: AdminBlockchainDate.format(context, project.syncedAt),
         ),
       ],
+    );
+  }
+}
+
+/// «العميل: …» or «المقاول: …»; a tap opens their public profile (GRA-58).
+class _PersonLine extends StatelessWidget {
+  const _PersonLine({
+    required this.text,
+    required this.userId,
+    required this.style,
+    super.key,
+  });
+
+  final String text;
+  final String? userId;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: switch (userId) {
+        final userId? => () => context.pushNamed(
+          ProfileRoutes.publicProfileName,
+          pathParameters: {'userId': userId},
+        ),
+        null => null,
+      },
+      child: Text(text, style: style),
     );
   }
 }
