@@ -1,8 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:watad/core/components/buttons/app_button.dart';
 import 'package:watad/core/components/display/app_key_value_list.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
 import 'package:watad/core/components/layout/app_section_header.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -69,6 +72,12 @@ class AdminReportOverview extends StatelessWidget {
             ),
           ],
         ),
+        if (report.reporterId case final reporterId?)
+          _ProfileLink(
+            key: const Key('admin_report_reporter_profile'),
+            label: context.tr('reports.reporter_profile'),
+            userId: reporterId,
+          ),
         AppSectionHeader(
           title: context.tr('reports.description'),
           padding: _sectionPadding,
@@ -99,6 +108,12 @@ class AdminReportOverview extends StatelessWidget {
                 ),
             ],
           ),
+          if (report.targetUserId case final targetUserId?)
+            _ProfileLink(
+              key: const Key('admin_report_target_profile'),
+              label: context.tr('reports.target_profile'),
+              userId: targetUserId,
+            ),
         ],
         if (report.evidence case final evidence?) ...[
           AppSectionHeader(
@@ -130,6 +145,30 @@ class _Evidence extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsetsDirectional.all(AppSpacing.md),
         child: Text(text, style: AppTextStyles.body),
+      ),
+    );
+  }
+}
+
+/// A person's public profile (GRA-58), under what names them.
+class _ProfileLink extends StatelessWidget {
+  const _ProfileLink({required this.label, required this.userId, super.key});
+
+  final String label;
+  final String userId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: AppButton(
+        label: label,
+        variant: AppButtonVariant.link,
+        icon: Icons.badge_outlined,
+        onPressed: () => context.pushNamed(
+          ProfileRoutes.publicProfileName,
+          pathParameters: {'userId': userId},
+        ),
       ),
     );
   }

@@ -18,6 +18,7 @@ import 'package:watad/core/localization/app_localization.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/contractor_tasks_routes.dart';
 import 'package:watad/core/router/routes/evidence_routes.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/router/routes/reviews_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_motion.dart';
@@ -162,7 +163,21 @@ class ContractorProjectTasksPage extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(project.displayTitle, style: AppTextStyles.h1),
           const SizedBox(height: AppSpacing.xxs),
-          Text(_subtitle(context, project), style: AppTextStyles.caption),
+          // The client's public profile (GRA-58).
+          InkWell(
+            key: const Key('contractor_project_tasks_client'),
+            onTap: switch (project.ownerId) {
+              final ownerId? => () => context.pushNamed(
+                ProfileRoutes.publicProfileName,
+                pathParameters: {'userId': ownerId},
+              ),
+              null => null,
+            },
+            child: Text(
+              _subtitle(context, project),
+              style: AppTextStyles.caption,
+            ),
+          ),
           const SizedBox(height: AppSpacing.lg),
           if (state.tasks.isEmpty)
             AppEmptyView(

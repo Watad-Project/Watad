@@ -17,6 +17,7 @@ import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/client_payments_routes.dart';
 import 'package:watad/core/router/routes/client_projects_routes.dart';
 import 'package:watad/core/router/routes/evidence_routes.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/router/routes/reviews_routes.dart';
 import 'package:watad/core/theme/app_motion.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -147,7 +148,21 @@ class ClientProjectTasksPage extends StatelessWidget {
           ),
           if (contractor != null) ...[
             const SizedBox(height: AppSpacing.xxs),
-            AppVerifiedName(name: contractor, style: AppTextStyles.label),
+            // The contractor's public profile (GRA-58).
+            InkWell(
+              key: const Key('client_project_tasks_contractor'),
+              onTap: switch (project.takerId) {
+                final takerId? => () => context.pushNamed(
+                  ProfileRoutes.publicProfileName,
+                  pathParameters: {'userId': takerId},
+                ),
+                null => null,
+              },
+              child: AppVerifiedName(
+                name: contractor,
+                style: AppTextStyles.label,
+              ),
+            ),
           ],
           const SizedBox(height: AppSpacing.lg),
           if (state.tasks.isEmpty)

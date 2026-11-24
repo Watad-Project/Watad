@@ -28,7 +28,8 @@ class AdminReportsRemoteDataSourceImpl implements AdminReportsRemoteDataSource {
 
   static const String _columns =
       'id, report_type, description, status, target_type, target_id, '
-      'evidence_snapshot, reporter_name, target_user_id, target_user_name, '
+      'evidence_snapshot, reporter_id, reporter_name, target_user_id, '
+      'target_user_name, '
       'assigned_admin_id, assigned_admin_name, resolution_note, created_at, '
       'resolved_at';
 

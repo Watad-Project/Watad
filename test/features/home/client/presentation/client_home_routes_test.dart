@@ -12,9 +12,11 @@ import 'package:watad/features/home/client/domain/entities/client_home_profile.d
 import 'package:watad/features/home/client/presentation/pages/client_contractors_page.dart';
 import 'package:watad/features/home/client/presentation/pages/client_home_page.dart';
 import 'package:watad/features/home/client/presentation/widgets/client_home_greeting_header.dart';
+import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
 
 import '../../../../helpers/fake_app_session.dart';
 import '../../../../helpers/fake_client_home_repository.dart';
+import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -82,6 +84,21 @@ void main() {
     // Each card says where the contractor works.
     expect(find.text('المدينة المنورة'), findsOneWidget);
     expect(find.text('لم تُحدَّد المدينة'), findsOneWidget);
+  });
+
+  testWidgets("a contractor's card opens its public profile", (tester) async {
+    final profiles = FakeProfileRepository();
+    registerFakePublicProfile(profiles);
+    await openHome(tester);
+
+    await tester.tap(find.byType(AppBusinessMiniCard).first);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PublicProfilePage), findsOneWidget);
+    expect(
+      profiles.calls.where((c) => c.startsWith('getPublicProfile(')),
+      hasLength(1),
+    );
   });
 
   testWidgets('«جوال موثّق» shows only for a confirmed phone', (tester) async {

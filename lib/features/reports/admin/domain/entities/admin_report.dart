@@ -15,6 +15,7 @@ class AdminReport {
     this.targetId,
     this.evidence,
     this.reporterName,
+    this.reporterId,
     this.targetUserId,
     this.targetUserName,
     this.assignedAdminName,
@@ -40,6 +41,9 @@ class AdminReport {
   final String? evidence;
 
   final String? reporterName;
+
+  /// Opens the reporter's public profile (GRA-58).
+  final String? reporterId;
 
   /// The reported user, only when the ticket is about a user.
   final String? targetUserId;

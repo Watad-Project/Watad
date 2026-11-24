@@ -13,6 +13,8 @@ class AdminBlockchainProject {
     required this.attempts,
     this.ownerName,
     this.contractorName,
+    this.ownerId,
+    this.contractorId,
     this.lastAttemptAt,
     this.nextAttemptAt,
     this.syncedAt,
@@ -35,6 +37,10 @@ class AdminBlockchainProject {
 
   /// The contractor's company.
   final String? contractorName;
+
+  /// Their public profiles (GRA-58).
+  final String? ownerId;
+  final String? contractorId;
 
   final DateTime? lastAttemptAt;
 

@@ -279,6 +279,17 @@ void main() {
     );
   });
 
+  testWidgets("a chat's photo opens their public profile", (tester) async {
+    registerFakePublicProfile();
+    repository.chatsResult = Success([summary()]);
+    await openChats(tester);
+
+    await tester.tap(find.byKey(const Key('chat_list_person_$fakeChatId')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PublicProfilePage), findsOneWidget);
+  });
+
   testWidgets('my own last message reads «أنت: …»', (tester) async {
     repository.chatsResult = Success([summary(unread: 0, mine: true)]);
     await openChats(tester);

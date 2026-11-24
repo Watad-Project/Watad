@@ -16,6 +16,7 @@ class LocationAddressModel extends LocationAddress {
     super.additionalNumber,
     super.shortAddress,
     super.isSaved = false,
+    super.isActiveProjectSite = false,
   });
 
   /// Creates a model from a JSON map.
@@ -33,6 +34,7 @@ class LocationAddressModel extends LocationAddress {
       additionalNumber: json['additional_number'] as String?,
       shortAddress: json['short_address'] as String?,
       isSaved: json['is_saved'] as bool? ?? true,
+      isActiveProjectSite: json['is_active_project_site'] as bool? ?? false,
     );
   }
 

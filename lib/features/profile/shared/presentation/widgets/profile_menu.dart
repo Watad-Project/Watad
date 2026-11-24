@@ -5,7 +5,9 @@ import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/feedback/app_snack_bar.dart';
 import 'package:watad/core/components/layout/app_menu_row.dart';
 import 'package:watad/core/components/layout/app_section_header.dart';
+import 'package:watad/core/router/routes/location_routes.dart';
 import 'package:watad/core/router/routes/marketplace_routes.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/router/routes/settings_routes.dart';
 import 'package:watad/core/router/routes/support_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
@@ -13,13 +15,20 @@ import 'package:watad/core/theme/app_spacing.dart';
 /// The rows of the account tab (GRA-59), in three groups: the account, the
 /// marketplace, and help and settings.
 ///
-/// A row whose screen isn't built yet is grayed out with «قريبًا», and a
-/// tap says so. The issue that builds the screen turns its row on: my
-/// public profile (GRA-58), my orders (GRA-69), my listings (GRA-70), my
-/// sales (GRA-71), help and support (GRA-63) and settings (GRA-62). Saved
-/// addresses has no issue yet: GRA-19 built only the map picker.
+/// Each row opens its screen: my public profile as others see it (GRA-58),
+/// my saved addresses, my orders (GRA-69), my listings (GRA-70), my sales
+/// (GRA-71), help and support (GRA-63) and settings (GRA-62). A row whose
+/// screen isn't built yet would be grayed out with «قريبًا».
 class ProfileMenu extends StatelessWidget {
-  const ProfileMenu({required this.isSuspended, this.onEditProfile, super.key});
+  const ProfileMenu({
+    required this.userId,
+    required this.isSuspended,
+    this.onEditProfile,
+    super.key,
+  });
+
+  /// The signed-in user, for «ملفي العام».
+  final String userId;
 
   /// A suspended account can't edit its profile, so that row says why.
   final bool isSuspended;
@@ -60,17 +69,17 @@ class ProfileMenu extends StatelessWidget {
               key: const Key('profile_menu_public_profile'),
               icon: Icons.badge_outlined,
               label: context.tr('profile.menu.public_profile'),
-              tag: comingSoon,
-              isMuted: true,
-              onTap: showComingSoon,
+              onTap: () => context.pushNamed(
+                ProfileRoutes.publicProfileName,
+                pathParameters: {'userId': userId},
+              ),
             ),
             AppMenuRow(
               key: const Key('profile_menu_addresses'),
               icon: Icons.location_on_outlined,
               label: context.tr('profile.menu.addresses'),
-              tag: comingSoon,
-              isMuted: true,
-              onTap: showComingSoon,
+              onTap: () =>
+                  context.pushNamed(LocationRoutes.locationAddressesName),
             ),
           ],
         ),
@@ -89,9 +98,7 @@ class ProfileMenu extends StatelessWidget {
               key: const Key('profile_menu_listings'),
               icon: Icons.inventory_2_outlined,
               label: context.tr('profile.menu.listings'),
-              tag: comingSoon,
-              isMuted: true,
-              onTap: showComingSoon,
+              onTap: () => context.pushNamed(MarketplaceRoutes.myItemsName),
             ),
             AppMenuRow(
               key: const Key('profile_menu_sales'),

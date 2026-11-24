@@ -2,12 +2,16 @@
 class AdminReviewRequester {
   const AdminReviewRequester({
     required this.name,
+    this.userId,
     this.avatarUrl,
     this.memberSince,
     this.nationalId,
   });
 
   final String name;
+
+  /// Opens their public profile (GRA-58).
+  final String? userId;
   final String? avatarUrl;
 
   /// When their account was created (UTC).

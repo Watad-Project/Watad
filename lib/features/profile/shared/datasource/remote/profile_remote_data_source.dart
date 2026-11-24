@@ -245,7 +245,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     final rows = await _client
         .from('v_reviews')
         .select(
-          'id, reviewer_name, reviewer_avatar_path, rating, comment, '
+          'id, reviewer_id, reviewer_name, reviewer_avatar_path, rating, '
+          'comment, '
           'context_type, created_at',
         )
         .eq('target_user_id', query.userId)

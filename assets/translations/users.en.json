@@ -96,5 +96,6 @@
   "national_id": "ID / iqama number",
   "account_id": "Account ID",
   "not_given": "Not given",
-  "copied": "Copied"
+  "copied": "Copied",
+  "public_profile": "View public profile"
 }
