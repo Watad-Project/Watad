@@ -8,6 +8,7 @@ import 'package:watad/features/blockchain/admin/domain/repositories/admin_blockc
 import 'package:watad/features/blockchain/admin/domain/usecases/admin_check_blockchain_health_use_case.dart';
 import 'package:watad/features/blockchain/admin/domain/usecases/admin_get_blockchain_overview_use_case.dart';
 import 'package:watad/features/blockchain/admin/domain/usecases/admin_get_blockchain_project_use_case.dart';
+import 'package:watad/features/blockchain/admin/domain/usecases/admin_get_blockchain_uptime_use_case.dart';
 import 'package:watad/features/blockchain/admin/domain/usecases/admin_resync_blockchain_project_use_case.dart';
 import 'package:watad/features/blockchain/admin/presentation/bloc/admin_blockchain_bloc.dart';
 import 'package:watad/features/blockchain/admin/presentation/bloc/admin_blockchain_project_bloc.dart';
@@ -25,8 +26,9 @@ void registerAdminBlockchainDependencies(GetIt getIt) {
     ..registerLazySingleton(() => AdminGetBlockchainOverviewUseCase(getIt()))
     ..registerLazySingleton(() => AdminGetBlockchainProjectUseCase(getIt()))
     ..registerLazySingleton(() => AdminCheckBlockchainHealthUseCase(getIt()))
+    ..registerLazySingleton(() => AdminGetBlockchainUptimeUseCase(getIt()))
     ..registerLazySingleton(() => AdminResyncBlockchainProjectUseCase(getIt()))
-    ..registerFactory(() => AdminBlockchainBloc(getIt(), getIt()))
+    ..registerFactory(() => AdminBlockchainBloc(getIt(), getIt(), getIt()))
     ..registerFactory(() => AdminBlockchainProjectBloc(getIt(), getIt()))
     // The admin's navigation shows this as its «البلوك تشين» tab; the tab
     // reads the monitor and checks the ledger each time it shows.

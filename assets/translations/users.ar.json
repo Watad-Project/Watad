@@ -96,5 +96,6 @@
   "national_id": "رقم الهوية / الإقامة",
   "account_id": "معرّف الحساب",
   "not_given": "غير متوفر",
-  "copied": "نُسخ"
+  "copied": "نُسخ",
+  "public_profile": "عرض الملف العام"
 }

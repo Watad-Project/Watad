@@ -3,6 +3,7 @@ class ProfileReview {
   const ProfileReview({
     required this.id,
     required this.reviewerName,
+    this.reviewerId,
     required this.rating,
     required this.isFromProject,
     required this.createdAt,
@@ -12,6 +13,9 @@ class ProfileReview {
 
   final String id;
   final String reviewerName;
+
+  /// Opens their public profile; null for an account closed since.
+  final String? reviewerId;
   final String? reviewerAvatarUrl;
 
   /// From 1 to 5.

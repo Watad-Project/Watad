@@ -1,10 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/display/app_key_value_list.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
 import 'package:watad/core/components/layout/app_section_header.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
 import 'package:watad/core/theme/app_tone.dart';
@@ -38,6 +40,15 @@ class AdminReviewRequesterView extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         AppCard(
+          key: const Key('admin_review_requester'),
+          // Their public profile (GRA-58).
+          onTap: switch (requester.userId) {
+            final userId? => () => context.pushNamed(
+              ProfileRoutes.publicProfileName,
+              pathParameters: {'userId': userId},
+            ),
+            null => null,
+          },
           child: Row(
             children: [
               AppAvatar(

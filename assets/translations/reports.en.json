@@ -94,5 +94,7 @@
   "close_section": "Close the report",
   "resolve": "Resolved",
   "reject": "Dismiss",
-  "read_only": "This report is closed: it can't be assigned or closed again."
+  "read_only": "This report is closed: it can't be assigned or closed again.",
+  "reporter_profile": "Reporter's public profile",
+  "target_profile": "Reported user's public profile"
 }

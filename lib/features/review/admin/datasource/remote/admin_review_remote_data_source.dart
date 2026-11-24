@@ -102,7 +102,7 @@ class AdminReviewRemoteDataSourceImpl implements AdminReviewRemoteDataSource {
         .from('v_admin_deed_queue')
         .select(
           'project_id, title, description, budget, city, district, '
-          'photo_paths, deed_storage_path, requested_at, owner_name, '
+          'photo_paths, deed_storage_path, requested_at, owner_id, owner_name, '
           'owner_avatar_path, member_since, owner_national_id',
         )
         .eq('project_id', projectId)

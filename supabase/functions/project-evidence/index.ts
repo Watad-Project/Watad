@@ -32,12 +32,16 @@
 //   EVIDENCE_SIGNING_KEY     an Ed25519 private key, PKCS#8 DER in base64:
 //                            openssl genpkey -algorithm ed25519 -outform DER | base64
 //   EVIDENCE_SIGNING_KEY_ID  a name for that key, e.g. "evidence-2026-10"
+// The last three are optional since migration 90 (GRA-76): whatever isn't
+// set here comes from the Vault (project_evidence_config()), and the first
+// export makes an Ed25519 key on the server and keeps it there
+// (project_evidence_store_signing_key()). The key never leaves the server.
 // Deployed with verify_jwt off; the function checks the caller's session
 // itself (ARCHITECTURE.md §6).
 
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 import type { Project } from '../_shared/reconcile.ts';
-import { compare, fingerprintAndSign, fromBase64 } from './evidence.ts';
+import { compare, fingerprintAndSign, fromBase64, toBase64 } from './evidence.ts';
 
 const json = (body: unknown, status = 200) => Response.json(body, { status });
 
@@ -63,9 +67,6 @@ Deno.serve(async (req: Request) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
   const chainUrl = (Deno.env.get('BLOCKCHAIN_API_URL') ?? '').replace(/\/+$/, '');
   const chainKey = Deno.env.get('BLOCKCHAIN_API_KEY') ?? '';
-  const dbSecret = Deno.env.get('PROJECT_EVIDENCE_SECRET') ?? '';
-  const signingKey = Deno.env.get('EVIDENCE_SIGNING_KEY') ?? '';
-  const keyId = Deno.env.get('EVIDENCE_SIGNING_KEY_ID') ?? '';
 
   // Only a signed-in user, checked before anything else.
   const token = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
@@ -84,9 +85,14 @@ Deno.serve(async (req: Request) => {
     return json({ error: 'invalid_body' }, 400);
   }
 
-  if (!chainUrl || !chainKey || !dbSecret || !signingKey || !keyId) {
-    return json({ error: 'not_configured' }, 500);
-  }
+  if (!chainUrl || !chainKey) return json({ error: 'not_configured' }, 500);
+
+  // The database: checks the caller, and reads what the sync sends.
+  const db = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+  const keys = await evidenceKeys(db);
+  if (!keys) return json({ error: 'not_configured' }, 500);
+  const { dbSecret, signingKey, keyId } = keys;
   let privateKey: CryptoKey;
   let publicKey: string;
   try {
@@ -96,8 +102,6 @@ Deno.serve(async (req: Request) => {
     return json({ error: 'not_configured' }, 500);
   }
 
-  // The database: checks the caller, and reads what the sync sends.
-  const db = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   const collected = await db.rpc('project_evidence_collect', {
     p_secret: dbSecret,
     p_user_id: user.user.id,
@@ -171,3 +175,57 @@ Deno.serve(async (req: Request) => {
     public_key: publicKey,
   });
 });
+
+interface EvidenceKeys {
+  dbSecret: string;
+  signingKey: string;
+  keyId: string;
+}
+
+/** What project_evidence_config() and project_evidence_store_signing_key() return (migration 90). */
+interface VaultKeys {
+  db_secret: string | null;
+  signing_key: string | null;
+  key_id: string | null;
+}
+
+/**
+ * The shared secret and the signing key: the function's own secrets when they are set, else the Vault's. When
+ * neither has a signing key, the first export makes an Ed25519 key here and stores it in the Vault; a second export
+ * at the same moment gets the stored one back. Null when they can't be found or stored.
+ */
+async function evidenceKeys(db: SupabaseClient): Promise<EvidenceKeys | null> {
+  const fromEnv: EvidenceKeys = {
+    dbSecret: Deno.env.get('PROJECT_EVIDENCE_SECRET') ?? '',
+    signingKey: Deno.env.get('EVIDENCE_SIGNING_KEY') ?? '',
+    keyId: Deno.env.get('EVIDENCE_SIGNING_KEY_ID') ?? '',
+  };
+  const envHasKey = Boolean(fromEnv.signingKey && fromEnv.keyId);
+  if (fromEnv.dbSecret && envHasKey) return fromEnv;
+
+  const stored = await db.rpc('project_evidence_config');
+  if (stored.error) return null;
+  let vault = stored.data as VaultKeys;
+  if (!envHasKey && !vault.signing_key) {
+    let pkcs8: string;
+    try {
+      const pair = (await crypto.subtle.generateKey('Ed25519', true, ['sign', 'verify'])) as CryptoKeyPair;
+      pkcs8 = toBase64(await crypto.subtle.exportKey('pkcs8', pair.privateKey));
+    } catch {
+      return null;
+    }
+    const saved = await db.rpc('project_evidence_store_signing_key', {
+      p_key: pkcs8,
+      p_key_id: `evidence-${new Date().toISOString().slice(0, 7)}`,
+    });
+    if (saved.error) return null;
+    vault = saved.data as VaultKeys;
+  }
+  const keys: EvidenceKeys = {
+    dbSecret: fromEnv.dbSecret || vault.db_secret || '',
+    // The key and its id always come from the same place.
+    signingKey: envHasKey ? fromEnv.signingKey : vault.signing_key ?? '',
+    keyId: envHasKey ? fromEnv.keyId : vault.key_id ?? '',
+  };
+  return keys.dbSecret && keys.signingKey && keys.keyId ? keys : null;
+}

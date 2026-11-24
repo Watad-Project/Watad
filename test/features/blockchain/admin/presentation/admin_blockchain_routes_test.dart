@@ -10,6 +10,7 @@ import 'package:watad/core/router/routes/admin_blockchain_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_health.dart';
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_health_problem.dart';
+import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_uptime.dart';
 import 'package:watad/features/blockchain/admin/presentation/pages/admin_blockchain_page.dart';
 import 'package:watad/features/blockchain/admin/presentation/pages/admin_blockchain_project_page.dart';
 import 'package:watad/features/blockchain/admin/presentation/widgets/admin_blockchain_project_card.dart';
@@ -86,6 +87,60 @@ void main() {
     expect(find.text('متصل'), findsOneWidget);
     expect(find.text('فحص الآن'), findsOneWidget);
     expect(repository.healthChecks, 1);
+  });
+
+  testWidgets('the uptime of the last 24 hours shows next to the ledger', (
+    tester,
+  ) async {
+    await openMonitor(tester);
+    final uptime = find.byKey(const Key('admin_blockchain_uptime'));
+    await tester.ensureVisible(uptime);
+    await tester.pumpAndSettle();
+
+    expect(find.text('توفّر الشبكة، آخر ٢٤ ساعة'), findsOneWidget);
+    Finder inUptime(String text) =>
+        find.descendant(of: uptime, matching: find.text(text));
+    expect(inUptime('٩٩٫٨٦٪'), findsOneWidget);
+    expect(inUptime('٧١٧ من ٧١٨'), findsOneWidget);
+    expect(inUptime('تعمل'), findsOneWidget);
+    expect(inUptime('يعمل كل دقيقتين'), findsOneWidget);
+  });
+
+  testWidgets('a stopped monitor says the network state is unknown', (
+    tester,
+  ) async {
+    repository.uptimeResult = Success(
+      AdminBlockchainUptime(
+        checks: 0,
+        healthy: 0,
+        lastCheckAt: DateTime.utc(2026, 11, 18, 18),
+        lastCheckOk: true,
+        isMonitorRunning: false,
+      ),
+    );
+    await openMonitor(tester);
+    await tester.ensureVisible(
+      find.byKey(const Key('admin_blockchain_uptime')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('لا فحوص في آخر ٢٤ ساعة'), findsOneWidget);
+    expect(find.text('غير معروف (لا فحص حديث)'), findsOneWidget);
+    expect(find.text('متوقف'), findsOneWidget);
+  });
+
+  testWidgets('an uptime that cannot load says so, the rest stays', (
+    tester,
+  ) async {
+    repository.uptimeResult = const Failed(NetworkFailure());
+    await openMonitor(tester);
+    await tester.ensureVisible(
+      find.byKey(const Key('admin_blockchain_uptime')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('تعذّر التحميل'), findsOneWidget);
+    expect(find.text('متصل'), findsOneWidget);
   });
 
   testWidgets('the projects show those that need attention first', (

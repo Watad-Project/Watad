@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/components/display/app_card.dart';
 import 'package:watad/core/components/display/app_status_badge.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -28,6 +30,14 @@ class PublicProfileReviewTile extends StatelessWidget {
         : review.reviewerName;
     final comment = review.comment;
     return AppCard(
+      // The reviewer's own public profile.
+      onTap: switch (review.reviewerId) {
+        final reviewerId? => () => context.pushNamed(
+          ProfileRoutes.publicProfileName,
+          pathParameters: {'userId': reviewerId},
+        ),
+        null => null,
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

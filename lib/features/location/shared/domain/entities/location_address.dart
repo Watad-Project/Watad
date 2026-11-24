@@ -15,6 +15,7 @@ class LocationAddress {
     this.additionalNumber,
     this.shortAddress,
     this.isSaved = false,
+    this.isActiveProjectSite = false,
   });
 
   /// Unique identifier of the address.
@@ -52,6 +53,10 @@ class LocationAddress {
 
   /// Whether this address is saved in the user's address book.
   final bool isSaved;
+
+  /// The site of one of my projects that is still going: it can't be
+  /// deleted, or the contractor would lose the site's address.
+  final bool isActiveProjectSite;
 
   /// Formatted single-line display representation:
   /// e.g. "الرياض · النرجس · طريق الأمير سلمان · 7421"

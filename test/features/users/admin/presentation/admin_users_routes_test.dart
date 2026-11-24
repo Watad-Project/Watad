@@ -7,6 +7,7 @@ import 'package:watad/core/di/injection.dart';
 import 'package:watad/core/router/routes/admin_navigation_routes.dart';
 import 'package:watad/core/router/routes/admin_users_routes.dart';
 import 'package:watad/core/supabase/app_session.dart';
+import 'package:watad/features/profile/shared/presentation/pages/public_profile_page.dart';
 import 'package:watad/features/users/admin/presentation/pages/admin_user_details_page.dart';
 import 'package:watad/features/users/admin/presentation/pages/admin_users_page.dart';
 import 'package:watad/features/users/admin/presentation/widgets/admin_user_tile.dart';
@@ -14,6 +15,7 @@ import 'package:watad/features/users/admin/presentation/widgets/admin_user_tile.
 import '../../../../helpers/fake_admin_dashboard_repository.dart';
 import '../../../../helpers/fake_admin_users_repository.dart';
 import '../../../../helpers/fake_app_session.dart';
+import '../../../../helpers/fake_profile_repository.dart';
 import '../../../../helpers/fake_splash_repository.dart';
 import '../../../../helpers/pump_component.dart';
 import '../../../../helpers/pump_router.dart';
@@ -156,6 +158,31 @@ void main() {
       const Offset(0, -200),
     );
     expect(find.text('مشاريع كمقاول'), findsNothing);
+  });
+
+  testWidgets('«عرض الملف العام» opens what others see of them', (
+    tester,
+  ) async {
+    final profiles = FakeProfileRepository();
+    registerFakePublicProfile(profiles);
+    await open(
+      tester,
+      AdminUsersRoutes.userDetailsName,
+      pathParameters: {'userId': 'u-client'},
+    );
+
+    final button = find.byKey(const Key('admin_user_public_profile'));
+    await tester.dragUntilVisible(
+      button,
+      find.byType(ListView).first,
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PublicProfilePage), findsOneWidget);
+    expect(profiles.calls, contains('getPublicProfile(u-client)'));
   });
 
   testWidgets('a contractor is a contractor only', (tester) async {

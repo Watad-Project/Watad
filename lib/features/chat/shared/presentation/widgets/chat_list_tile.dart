@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:watad/core/components/display/app_avatar.dart';
 import 'package:watad/core/localization/app_localization.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -44,7 +46,22 @@ class ChatListTile extends StatelessWidget {
           children: [
             Stack(
               children: [
-                AppAvatar(url: other?.avatarUrl, semanticLabel: other?.name),
+                // Their public profile (GRA-58); the rest opens the chat.
+                InkWell(
+                  key: Key('chat_list_person_${chat.chatId}'),
+                  customBorder: const CircleBorder(),
+                  onTap: switch (other) {
+                    final other? => () => context.pushNamed(
+                      ProfileRoutes.publicProfileName,
+                      pathParameters: {'userId': other.id},
+                    ),
+                    null => null,
+                  },
+                  child: AppAvatar(
+                    url: other?.avatarUrl,
+                    semanticLabel: other?.name,
+                  ),
+                ),
                 if (other?.isOnline ?? false)
                   PositionedDirectional(
                     bottom: 0,

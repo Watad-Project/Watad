@@ -65,6 +65,22 @@
     "resync_message": "سيُنسخ المشروع إلى البلوك تشين من جديد، ويظهر بانتظار المزامنة حتى تنتهي.",
     "resync_sent": "أُرسلت إعادة المزامنة",
     "not_found": "هذا المشروع غير متعاقد عليه",
-    "export_evidence": "تصدير سجل المشروع (PDF)"
+    "export_evidence": "تصدير سجل المشروع (PDF)",
+    "uptime": "توفّر الشبكة، آخر ٢٤ ساعة",
+    "uptime_percent": "نسبة التشغيل",
+    "uptime_percent_value": "{}٪",
+    "uptime_no_checks": "لا فحوص في آخر ٢٤ ساعة",
+    "uptime_checks": "الفحوص الناجحة",
+    "uptime_checks_value": "{} من {}",
+    "uptime_last_check": "آخر فحص",
+    "uptime_network_now": "الشبكة الآن",
+    "uptime_network_up": "تعمل",
+    "uptime_network_down": "متوقفة",
+    "uptime_network_unknown": "غير معروف (لا فحص حديث)",
+    "uptime_monitor": "الفحص الدوري",
+    "uptime_monitor_running": "يعمل كل دقيقتين",
+    "uptime_monitor_stopped": "متوقف",
+    "uptime_loading": "جارٍ التحميل",
+    "uptime_failed": "تعذّر التحميل"
   }
 }

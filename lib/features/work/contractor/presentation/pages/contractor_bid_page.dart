@@ -20,6 +20,7 @@ import 'package:watad/core/error/failure.dart';
 import 'package:watad/core/router/routes/chat_routes.dart';
 import 'package:watad/core/router/routes/contractor_work_routes.dart';
 import 'package:watad/core/router/routes/kyc_routes.dart';
+import 'package:watad/core/router/routes/profile_routes.dart';
 import 'package:watad/core/theme/app_colors.dart';
 import 'package:watad/core/theme/app_spacing.dart';
 import 'package:watad/core/theme/app_text_styles.dart';
@@ -383,35 +384,46 @@ class _BidFormContent extends StatelessWidget {
                       const Divider(height: 1, color: AppColors.border),
                       if (project.ownerName.trim().isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.md),
-                        Row(
-                          children: [
-                            AppAvatar(
-                              url: project.ownerAvatarUrl,
-                              size: 44,
-                              semanticLabel: project.ownerName,
+                        // The client's public profile (GRA-58).
+                        InkWell(
+                          key: const Key('contractor_bid_owner'),
+                          onTap: switch (project.ownerId) {
+                            final ownerId? => () => context.pushNamed(
+                              ProfileRoutes.publicProfileName,
+                              pathParameters: {'userId': ownerId},
                             ),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    context.tr(
-                                      'work.contractor.client_label',
-                                      namedArgs: {'name': project.ownerName},
-                                    ),
-                                    style: AppTextStyles.label.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.ink,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
+                            null => null,
+                          },
+                          child: Row(
+                            children: [
+                              AppAvatar(
+                                url: project.ownerAvatarUrl,
+                                size: 44,
+                                semanticLabel: project.ownerName,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      context.tr(
+                                        'work.contractor.client_label',
+                                        namedArgs: {'name': project.ownerName},
+                                      ),
+                                      style: AppTextStyles.label.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.ink,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         const Divider(height: 1, color: AppColors.border),

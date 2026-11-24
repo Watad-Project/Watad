@@ -20,5 +20,15 @@
   "mock_current_postal_code": "13324",
   "additional_number_label": "الرقم الإضافي",
   "short_address_label": "العنوان الوطني المختصر",
-  "search_no_results": "لا يوجد مكان بهذا الاسم"
+  "search_no_results": "لا يوجد مكان بهذا الاسم",
+  "addresses_title": "عناويني",
+  "addresses_empty": "لا عناوين محفوظة بعد. أضف عنوانًا لتختاره بسرعة عند نشر مشروع أو إتمام طلب.",
+  "addresses_add": "إضافة عنوان",
+  "addresses_no_name": "عنوان",
+  "addresses_project_site": "موقع مشروع قائم، لا يمكن حذفه حتى ينتهي المشروع.",
+  "addresses_delete": "حذف العنوان",
+  "addresses_delete_title": "حذف العنوان؟",
+  "addresses_delete_message": "سيُحذف من عناويني المحفوظة. الطلبات السابقة تحتفظ بنسختها من العنوان.",
+  "addresses_deleted": "تم حذف العنوان",
+  "addresses_error_project_site": "لا يمكن حذف موقع مشروع قائم"
 }

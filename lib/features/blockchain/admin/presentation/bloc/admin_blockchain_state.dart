@@ -4,6 +4,8 @@ enum AdminBlockchainStatus { initial, loading, success, failure }
 
 enum AdminBlockchainHealthStatus { initial, checking, success, failure }
 
+enum AdminBlockchainUptimeStatus { initial, loading, success, failure }
+
 final class AdminBlockchainState {
   const AdminBlockchainState({
     this.status = AdminBlockchainStatus.initial,
@@ -13,6 +15,9 @@ final class AdminBlockchainState {
     this.healthStatus = AdminBlockchainHealthStatus.initial,
     this.health,
     this.healthFailure,
+    this.uptimeStatus = AdminBlockchainUptimeStatus.initial,
+    this.uptime,
+    this.uptimeFailure,
   });
 
   /// The summary and the projects, kept while they load again.
@@ -28,6 +33,13 @@ final class AdminBlockchainState {
 
   /// Why the check itself couldn't run (not: the ledger is down).
   final Failure? healthFailure;
+
+  /// The network's uptime (GRA-75), kept while it loads again.
+  final AdminBlockchainUptimeStatus uptimeStatus;
+  final AdminBlockchainUptime? uptime;
+
+  /// Why the uptime couldn't load.
+  final Failure? uptimeFailure;
 
   /// The projects of the selected chip, those that need attention first.
   List<AdminBlockchainProject> get visibleProjects => [
@@ -56,6 +68,9 @@ final class AdminBlockchainState {
     AdminBlockchainHealthStatus? healthStatus,
     AdminBlockchainHealth? Function()? health,
     Failure? Function()? healthFailure,
+    AdminBlockchainUptimeStatus? uptimeStatus,
+    AdminBlockchainUptime? Function()? uptime,
+    Failure? Function()? uptimeFailure,
   }) {
     return AdminBlockchainState(
       status: status ?? this.status,
@@ -67,6 +82,11 @@ final class AdminBlockchainState {
       healthFailure: healthFailure == null
           ? this.healthFailure
           : healthFailure(),
+      uptimeStatus: uptimeStatus ?? this.uptimeStatus,
+      uptime: uptime == null ? this.uptime : uptime(),
+      uptimeFailure: uptimeFailure == null
+          ? this.uptimeFailure
+          : uptimeFailure(),
     );
   }
 }

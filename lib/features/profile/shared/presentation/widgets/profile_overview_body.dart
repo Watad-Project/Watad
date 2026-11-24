@@ -108,6 +108,7 @@ class _ProfileOverviewContent extends StatelessWidget {
           ],
           const SizedBox(height: AppSpacing.lg),
           ProfileMenu(
+            userId: profile.id,
             isSuspended: profile.isSuspended,
             onEditProfile: () => _editProfile(context),
           ),

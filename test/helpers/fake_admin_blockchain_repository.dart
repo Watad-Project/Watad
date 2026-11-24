@@ -9,6 +9,7 @@ import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_project.dart';
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_summary.dart';
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_sync_status.dart';
+import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_uptime.dart';
 import 'package:watad/features/blockchain/admin/domain/repositories/admin_blockchain_repository.dart';
 
 /// A synced project and one that needs attention, like the live data.
@@ -71,6 +72,18 @@ class FakeAdminBlockchainRepository implements AdminBlockchainRepository {
     ),
   );
 
+  /// 717 healthy checks of 718, the last a minute ago: the network is up.
+  Result<AdminBlockchainUptime> uptimeResult = Success(
+    AdminBlockchainUptime(
+      checks: 718,
+      healthy: 717,
+      uptimePercent: 99.86,
+      lastCheckAt: DateTime.now().subtract(const Duration(minutes: 1)),
+      lastCheckOk: true,
+      isMonitorRunning: true,
+    ),
+  );
+
   /// Answers [getProject]: the project of [overviewResult] with that id,
   /// or [NotFoundFailure], unless set.
   Result<AdminBlockchainProject>? projectResult;
@@ -98,6 +111,9 @@ class FakeAdminBlockchainRepository implements AdminBlockchainRepository {
     }
     return const Failed(NotFoundFailure());
   }
+
+  @override
+  Future<Result<AdminBlockchainUptime>> getUptime() async => uptimeResult;
 
   @override
   Future<Result<AdminBlockchainHealth>> checkHealth() async {
