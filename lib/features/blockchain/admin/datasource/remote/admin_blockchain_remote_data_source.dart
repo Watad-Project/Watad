@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:watad/features/blockchain/admin/datasource/models/admin_blockchain_health_model.dart';
 import 'package:watad/features/blockchain/admin/datasource/models/admin_blockchain_project_model.dart';
 import 'package:watad/features/blockchain/admin/datasource/models/admin_blockchain_summary_model.dart';
+import 'package:watad/features/blockchain/admin/datasource/models/admin_blockchain_uptime_model.dart';
 
 abstract interface class AdminBlockchainRemoteDataSource {
   /// Throws PGRST116 (not found) for a user who isn't an admin.
@@ -12,6 +13,9 @@ abstract interface class AdminBlockchainRemoteDataSource {
   /// Throws PGRST116 (not found) when [projectId] isn't a contracted
   /// project.
   Future<AdminBlockchainProjectModel> getProject(String projectId);
+
+  /// Throws PGRST116 (not found) for a user who isn't an admin.
+  Future<AdminBlockchainUptimeModel> getUptime();
 
   Future<AdminBlockchainHealthModel> checkHealth();
 
@@ -58,6 +62,18 @@ class AdminBlockchainRemoteDataSourceImpl
         .eq('project_id', projectId)
         .single();
     return AdminBlockchainProjectModel.fromJson(row);
+  }
+
+  @override
+  Future<AdminBlockchainUptimeModel> getUptime() async {
+    final row = await _client
+        .from('v_admin_blockchain_uptime')
+        .select(
+          'checks_24h, healthy_24h, uptime_pct_24h, last_check_at, '
+          'last_check_ok, monitor_running',
+        )
+        .single();
+    return AdminBlockchainUptimeModel.fromJson(row);
   }
 
   @override

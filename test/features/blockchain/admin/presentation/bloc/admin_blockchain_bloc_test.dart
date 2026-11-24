@@ -5,6 +5,7 @@ import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_overall.dart';
 import 'package:watad/features/blockchain/admin/domain/usecases/admin_check_blockchain_health_use_case.dart';
 import 'package:watad/features/blockchain/admin/domain/usecases/admin_get_blockchain_overview_use_case.dart';
+import 'package:watad/features/blockchain/admin/domain/usecases/admin_get_blockchain_uptime_use_case.dart';
 import 'package:watad/features/blockchain/admin/presentation/bloc/admin_blockchain_bloc.dart';
 
 import '../../../../../helpers/fake_admin_blockchain_repository.dart';
@@ -13,6 +14,7 @@ AdminBlockchainBloc _bloc(FakeAdminBlockchainRepository repository) =>
     AdminBlockchainBloc(
       AdminGetBlockchainOverviewUseCase(repository),
       AdminCheckBlockchainHealthUseCase(repository),
+      AdminGetBlockchainUptimeUseCase(repository),
     );
 
 /// Lets the bloc finish the events sent so far.
@@ -85,6 +87,28 @@ void main() {
     expect(bloc.state.countOf(AdminBlockchainFilter.all), 2);
     expect(bloc.state.countOf(AdminBlockchainFilter.failed), 1);
     expect(bloc.state.countOf(AdminBlockchainFilter.waiting), 0);
+    await bloc.close();
+  });
+
+  test('loads the uptime beside the overview', () async {
+    final bloc = _bloc(FakeAdminBlockchainRepository())
+      ..add(const AdminBlockchainFetched());
+    await _settle();
+
+    expect(bloc.state.uptimeStatus, AdminBlockchainUptimeStatus.success);
+    expect(bloc.state.uptime!.healthy, 717);
+    await bloc.close();
+  });
+
+  test('an uptime that cannot load leaves the rest on screen', () async {
+    final repository = FakeAdminBlockchainRepository()
+      ..uptimeResult = const Failed(NotFoundFailure());
+    final bloc = _bloc(repository)..add(const AdminBlockchainFetched());
+    await _settle();
+
+    expect(bloc.state.uptimeStatus, AdminBlockchainUptimeStatus.failure);
+    expect(bloc.state.uptimeFailure, isA<NotFoundFailure>());
+    expect(bloc.state.status, AdminBlockchainStatus.success);
     await bloc.close();
   });
 }

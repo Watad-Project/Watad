@@ -65,6 +65,22 @@
     "resync_message": "The project is copied to the blockchain again, and shows as waiting until that's done.",
     "resync_sent": "Resync sent",
     "not_found": "This project isn't contracted",
-    "export_evidence": "Export project record (PDF)"
+    "export_evidence": "Export project record (PDF)",
+    "uptime": "Network uptime, last 24 hours",
+    "uptime_percent": "Uptime",
+    "uptime_percent_value": "{}%",
+    "uptime_no_checks": "No checks in the last 24 hours",
+    "uptime_checks": "Successful checks",
+    "uptime_checks_value": "{} of {}",
+    "uptime_last_check": "Last check",
+    "uptime_network_now": "Network now",
+    "uptime_network_up": "Up",
+    "uptime_network_down": "Down",
+    "uptime_network_unknown": "Unknown (no recent check)",
+    "uptime_monitor": "Scheduled check",
+    "uptime_monitor_running": "Running every 2 minutes",
+    "uptime_monitor_stopped": "Stopped",
+    "uptime_loading": "Loading",
+    "uptime_failed": "Couldn't load"
   }
 }

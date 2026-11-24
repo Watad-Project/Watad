@@ -21,6 +21,7 @@ import 'package:watad/features/blockchain/admin/presentation/widgets/admin_block
 import 'package:watad/features/blockchain/admin/presentation/widgets/admin_blockchain_project_card.dart';
 import 'package:watad/features/blockchain/admin/presentation/widgets/admin_blockchain_skeleton.dart';
 import 'package:watad/features/blockchain/admin/presentation/widgets/admin_blockchain_summary_section.dart';
+import 'package:watad/features/blockchain/admin/presentation/widgets/admin_blockchain_uptime_section.dart';
 
 /// «البلوك تشين» — the blockchain side of Watad: whether the ledger
 /// answers, how the sync stands and every contracted project, those that
@@ -106,6 +107,19 @@ class AdminBlockchainPage extends StatelessWidget {
           isChecking:
               state.healthStatus == AdminBlockchainHealthStatus.checking,
           onCheck: () => bloc.add(const AdminBlockchainHealthChecked()),
+        ),
+        AppSectionHeader(
+          title: context.tr('blockchain.admin.uptime'),
+          padding: const EdgeInsetsDirectional.only(
+            top: AppSpacing.lg,
+            bottom: AppSpacing.xs,
+          ),
+        ),
+        AdminBlockchainUptimeSection(
+          uptime: state.uptime,
+          failure: state.uptimeFailure,
+          isLoading: state.uptimeStatus == AdminBlockchainUptimeStatus.loading,
+          now: DateTime.now(),
         ),
         AdminBlockchainSummarySection(summary: overview.summary),
         AppSectionHeader(

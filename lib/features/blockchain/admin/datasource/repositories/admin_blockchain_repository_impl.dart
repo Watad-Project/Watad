@@ -4,6 +4,7 @@ import 'package:watad/features/blockchain/admin/datasource/remote/admin_blockcha
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_health.dart';
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_overview.dart';
 import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_project.dart';
+import 'package:watad/features/blockchain/admin/domain/entities/admin_blockchain_uptime.dart';
 import 'package:watad/features/blockchain/admin/domain/repositories/admin_blockchain_repository.dart';
 
 class AdminBlockchainRepositoryImpl implements AdminBlockchainRepository {
@@ -25,6 +26,10 @@ class AdminBlockchainRepositoryImpl implements AdminBlockchainRepository {
   @override
   Future<Result<AdminBlockchainProject>> getProject(String projectId) =>
       guardSupabaseCall(() => _remote.getProject(projectId));
+
+  @override
+  Future<Result<AdminBlockchainUptime>> getUptime() =>
+      guardSupabaseCall(_remote.getUptime);
 
   @override
   Future<Result<AdminBlockchainHealth>> checkHealth() =>
